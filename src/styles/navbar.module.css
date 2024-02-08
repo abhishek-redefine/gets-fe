@@ -1,0 +1,72 @@
+/* navbar.module.css */
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 8px; /* Adjust padding as needed */
+    background-color: #000; 
+    color: #fff;
+  }
+  
+  .logo {
+    width: 125px; /* Adjust width and height as needed */
+    height: 50px;
+    margin-left: 1px;
+    margin-right: 24px; /* Add margin to separate logo from other navbar items */
+  }
+  
+  .links {
+    display: flex;
+    margin: 8px;
+  }
+  
+  .links a {
+    font-size: 16px;
+    color: white;
+    text-align: center;
+    padding: 5px 12px;
+    text-decoration: none;
+    transition: background-color 0.3s ease; 
+  }
+  
+  .links a:hover {
+    color: #333;
+  }
+  
+  .icons {
+    display: flex;
+    align-items: center;
+  }
+  
+  .notificationIcon,
+  .profileIcon {
+    margin-left: 15px; 
+    margin-right: 5px;
+  }
+  
+  /* Placeholder styles for the icons */
+  .notificationIcon svg,
+  .profileIcon svg {
+    width: 24px;
+    height: 24px;
+    fill: #fff;
+  }
+  
+  .notificationIcon svg:hover,
+  .profileIcon svg:hover {
+    fill: #333; /* Hover color */
+  }
+  
+
+  .navbar a:hover {
+    background-color: #3D3D3D; /* Darker background color on hover */
+  }
+
+  .navbar a {
+    font-size: 16px;
+    color: white;
+    text-align: center;
+    padding: 5px 15px; /* Adjust padding as needed */
+    text-decoration: none;
+    transition: background-color 0.3s ease; /* Smooth transition on hover */
+  }

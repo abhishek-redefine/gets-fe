@@ -29,7 +29,7 @@ const withLayout = (WrappedComponent) => {
           <WrappedComponent {...props} />
         </main>
         <footer>
-          footer
+          footer 
         </footer>
         <Snackbar open={toast.message ? true : false} onClose={(e) => closeToast()} autoHideDuration={toastDuration}>
           <Alert severity={toast.type}>{toast.message}</Alert>

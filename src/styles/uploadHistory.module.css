@@ -1,0 +1,89 @@
+/* styles/uploadHistory.module.css */
+
+.container {
+    padding: 20px;
+  }
+  
+  .uploadBtn {
+    float: right;
+    margin-bottom: 10px;
+    padding: 12px;
+    cursor: pointer;
+    background-color: #0054B6;
+    color: white;
+  }
+  
+  .heading {
+    margin-bottom: 25px;
+  }
+  
+  .tableControls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+  }
+  
+  .leftControls {
+    display: flex;
+    align-items: center;
+  }
+  
+  .rightControls {
+    display: flex;
+    align-items: center;
+  }
+  
+  .pageSizer {
+    display: flex;
+    align-items: center;
+  }
+  
+  .pageSizer span {
+    margin-right: 5px;
+  }
+  
+  .uploadTable {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .uploadTable th, .uploadTable td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+  }
+  
+  .uploadTable th {
+    background-color: #f2f2f2;
+  }
+  
+  .uploadTable tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  .uploadTable tbody tr:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .pagination {
+    display: flex;
+    align-items: center;
+  }
+  
+  .pagination button {
+    padding: 8px 16px;
+    margin-right: 5px;
+   
+    color: #000;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .pagination button:disabled {
+    background-color: #ddd;
+    color: #666;
+    cursor: not-allowed;
+  }
+  

@@ -1,0 +1,76 @@
+/* components/UploadFile.module.css */
+
+.uploadContainer {
+ 
+    width: 1220px;
+    margin: 0 auto;
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .uploadHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .uploadContent {
+    margin-top: 20px;
+    border: 2px dashed transparent;
+    border-radius: 5px;
+    transition: border-color 0.3s ease;
+  }
+  
+  .dragging {
+    border-color: #007bff;
+  }
+  
+  .dragDropArea {
+    padding: 50px;
+    text-align: center;
+  }
+  
+  .uploadOptions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+  }
+  
+  .leftOptions {
+    display: flex;
+  }
+  
+  .rightOptions {
+    display: flex;
+  }
+  
+  .uploadBtn,
+  .cancelBtn {
+    padding: 10px 20px;
+    margin-left: 10px;
+    background-color: #007bff;
+    color: #fff;
+  }
+  
+  .importBtn,
+  .downloadTemplateBtn {
+    padding: 10px 20px;
+    margin-right: 10px;
+  }
+  
+  .viewHistoryBtn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: #fff;
+    cursor: pointer;
+  }
+  
+  .viewHistoryBtn:hover {
+    background-color: #0056b3;
+  }
+  

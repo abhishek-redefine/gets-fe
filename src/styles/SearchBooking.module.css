@@ -1,0 +1,144 @@
+/* Inline CSS extracted from React component SearchBooking */
+
+/* General styles */
+.search-booking-container {
+    margin-top: 20px;
+  }
+  
+  /* Filters, Apply, and Search */
+  .filter-container {
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+  
+  /* Filter icon */
+  .filter-icon-button {
+    height: 35px;
+    color: #000;
+    margin-right: 10px;
+    font-size: 12px;
+  }
+  
+  /* Dropdowns */
+  .dropdown-container {
+    display: flex;
+  }
+  
+  /* Dropdowns */
+  .dropdown {
+    margin-right: 10px;
+  }
+  
+  /* Apply button */
+  .apply-button {
+    height: 35px;
+    font-size: 12px;
+    background-color: #F6CE47;
+    color: #161616;
+    margin-right: 10px;
+    margin-left: 4px;
+  }
+  
+  /* Search input and button */
+  .search-container {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    margin-right: 10px;
+  }
+  
+  /* Search input */
+  .search-input {
+    height: 35px;
+    font-size: 12px;
+    margin-right: 10px;
+    padding-left: 10px;
+    margin-bottom: 0;
+  }
+  
+  /* Search button */
+  .search-button {
+    height: 35px;
+    background-color: #F6CE47;
+    color: #161616;
+    font-size: 12px;
+  }
+  
+  /* Selected values bar */
+  .selected-values-container {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+  
+  /* Selected values */
+  .selected-values {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    background-color: #fff; /* default background color */
+  }
+  
+  /* Actions bar */
+  .actions-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-right: 16px;
+    margin-top: 10px;
+    font-size: 12px;
+  }
+  
+  /* Action buttons */
+  .action-button {
+    margin-right: 1px;
+    color: #000;
+    font-size: 12px;
+  }
+  
+  /* Bookings table container */
+  .bookings-table-container {
+    margin-top: 20px;
+    margin-left: 16px;
+    margin-right: 16px;
+    font-size: 12px;
+  }
+  
+  /* Bookings table */
+  .bookings-table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  /* Table header */
+  .table-header {
+    border: 1px solid #ccc;
+    padding: 5px;
+    text-align: left;
+  }
+  
+  /* Table body */
+  .table-body {
+    border: 1px solid #ccc;
+    padding: 5px;
+    text-align: center;
+  }
+  
+  /* Pagination container */
+  .pagination-container {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+  

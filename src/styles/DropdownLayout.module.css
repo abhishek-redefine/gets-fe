@@ -1,0 +1,36 @@
+.card-container {
+    margin: 12px;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .card {
+    height: 425px;
+    width: 1250px;
+  }
+  
+  .radio-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .date-range-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .switch-container {
+    display: flex;
+    align-items: center;
+    margin-left: 20px;
+  }
+  
+  .button-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 85px;
+  }
+  

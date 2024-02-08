@@ -1,0 +1,98 @@
+.container {
+    margin: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 20px;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .heading {
+    font-size: 1rem;
+  }
+  
+  .buttons {
+    display: flex;
+  }
+  
+  .outlinedButton {
+    margin-right: 10px;
+    border: 1px solid #F6CE47;
+    color: #000;
+    background-color: transparent;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .containedButton {
+    background-color: #F6CE47;
+    color: #000;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .bookingTable {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .bookingTable th,
+  .bookingTable td {
+    border: 1px solid #ccc;
+    padding: 8px;
+  }
+  
+  .bookingTable th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    text-align: left;
+  }
+  
+  .bookingTable tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  
+  .bookingTable tr:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .tableControls {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  .leftControls {
+    display: flex;
+  }
+  
+  .pageSizer {
+    margin-right: 10px;
+  }
+  
+  .rightControls {
+    display: flex;
+  }
+  
+  .pagination button {
+    padding: 5px 10px;
+    margin-left: 5px;
+    cursor: pointer;
+    border: none;
+    background-color: #f0f0f0;
+    color: #000;
+    border-radius: 3px;
+  }
+  
+  .pagination button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  

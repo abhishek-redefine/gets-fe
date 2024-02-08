@@ -3,7 +3,7 @@ import withLayout from '@/layouts/unauth';
 const Home = () => {
   return (
     <div>
-      Hi there
+     Home
     </div>
   )
 }
