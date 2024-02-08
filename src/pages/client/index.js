@@ -95,7 +95,7 @@ const Client = () => {
               marginTop: "8px",
               marginLeft: "4px",
             }}
-            onClick={() => setShowAddHoliday(true)}
+           
           >
             Holiday
           </Button>
@@ -213,6 +213,8 @@ const Client = () => {
                   backgroundColor: "#F6CE47",
                   color: "#000",
                 }}
+                // onClick={() => setShowAddHoliday(true)
+                // }
               >
                 Add Holiday
               </Button>

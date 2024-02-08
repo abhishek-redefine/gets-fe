@@ -9,6 +9,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import TablePagination from "@mui/material/TablePagination";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/AdminSettings/Sidebar";
+import OfficeMapping from "@/components/AdminSettings/OfficeMapping";
 
 const Office = () => {
   const [selectedValues, setSelectedValues] = useState({
@@ -16,6 +17,8 @@ const Office = () => {
   });
 
   const [selectedOffices, setSelectedOffices] = useState([]);
+
+  const [showOfficeMapping, setShowOfficeMapping] = useState(false);
 
   const handleChange = (event) => {
     setSelectedValues({
@@ -29,6 +32,10 @@ const Office = () => {
       officeId: "",
     });
     setSelectedOffices([]);
+  };
+
+  const toggleOfficeMapping = () => {
+    setShowOfficeMapping(!showOfficeMapping);
   };
 
   const officeData = [
@@ -91,6 +98,8 @@ const Office = () => {
                 backgroundColor: "black",
                 color: "white",
               }}
+              onClick={toggleOfficeMapping}
+
             >
               Office Mapping
             </Button>
@@ -284,6 +293,7 @@ const Office = () => {
           </div>
         </div>
       </div>
+      {showOfficeMapping && <OfficeMapping/>}
     </div>
   );
 };
