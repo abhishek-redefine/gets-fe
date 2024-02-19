@@ -1,5 +1,6 @@
 // utils/axios.js
 
+import AuthService from '@/services/auth.service';
 import axios from 'axios';
 
 const axiosInstance = axios.create({
@@ -7,16 +8,51 @@ const axiosInstance = axios.create({
   // You can add other Axios configurations here
 });
 
+const refreshTokenAPI = async () => {
+  let tokenForRefresh = localStorage.getItem('token');
+  console.log("tokenForRefresh", tokenForRefresh);
+  if (tokenForRefresh) {
+    try {
+      const response = await AuthService.refreshToken({token: tokenForRefresh});
+      const { data } = response || {};
+      const { accessToken, token } = data || {};
+      if (accessToken && token) {
+        localStorage.setItem("token", token);
+        localStorage.setItem("accessToken", accessToken);
+        return true;
+      } else {
+        localStorage.clear();
+        window.location.href = "/";        
+        console.log("called else 1");
+        return false;
+      }
+    } catch (e) {
+      localStorage.clear();
+      window.location.href = "/";
+      console.error(e);
+      console.log("called catch 1");
+      return false;
+    }
+  } else {
+    localStorage.clear();
+    window.location.href = "/";
+    console.log("called else 2");
+    return false;
+  }
+};
+
 // Request interceptor
 axiosInstance.interceptors.request.use(
     (config) => {
-      let userToken = localStorage.getItem('token');
-      if (userToken && config?.headers) {
+      let userToken = localStorage.getItem('accessToken');
+      let allHeaders = config?.headers;
+      if (userToken && allHeaders && !allHeaders?.dontSendToken) {
         config.headers.Authorization = `Bearer ${userToken}`;
       }
       return config;
     },
     (error) => {
+      console.log("error", error);
       // Handle request error
       return Promise.reject(error);
     }
@@ -27,9 +63,18 @@ axiosInstance.interceptors.request.use(
     (response) => {
       return response;
     },
-    (error) => {
-      if (error?.response?.status === 401) {
-        localStorage.removeItem('token');
+    async (error) => {
+      const originalRequest = error.config;
+      if (error?.response?.status === 401 && !originalRequest._retry) {
+        originalRequest._retry = true;
+        try {
+          const isRefreshed = await refreshTokenAPI();
+          if (isRefreshed) {
+            return axiosInstance(originalRequest);
+          }
+        } catch (e) {
+          return Promise.reject(e);
+        }
       }
       return Promise.reject(error);
     }

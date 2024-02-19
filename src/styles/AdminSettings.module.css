@@ -1,0 +1,49 @@
+.adminContainer {
+    display: flex;
+}
+.leftMenuContainer {
+    width: 250px;
+    padding: 10px;
+}
+.leftMenuContainer nav a {
+    display: inline-block;
+    border: 1px solid #DBDCDD;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 5px 10px;
+    transition: 0.2s all linear;
+    -webkit-transition: 0.2s all linear;
+    -o-transition: 0.2s all linear;
+    -moz-transition: 0.2s all linear;
+}
+.leftMenuContainer nav a:hover {
+    background-color: #EEE;
+    transition: 0.2s all linear;
+    -webkit-transition: 0.2s all linear;
+    -o-transition: 0.2s all linear;
+    -moz-transition: 0.2s all linear;
+}
+.leftMenuContainer nav a.selected {
+    background-color: #292A2A;
+    color: white;
+    border-color: #292A2A;
+}
+.rightContainer {
+    width: calc(100% - 250px);
+}
+.roleSelectionContainer {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+}
+.roleSelectionContainer > div {
+    width: 200px;
+    margin-left: 20px;
+}
+.roleSelectionContainer button {
+    width: 150px;
+    margin: 0;
+}
+.permissionContainer {
+    margin-top: 40px;
+}

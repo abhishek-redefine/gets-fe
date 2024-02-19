@@ -4,6 +4,9 @@
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
+p, h1, h2, h3, h4, h5, h6, span, div {
+  color: #060808;
+}
 
 * {
   box-sizing: border-box;
@@ -14,6 +17,9 @@
 body {
   font-family: 'DM Sans', sans-serif;
 }
+button, label {
+  font-family: 'DM Sans', sans-serif !important;
+}
 a {
   color: inherit;
   text-decoration: none;
@@ -21,47 +27,54 @@ a {
 
 header {
   display: flex;
-  padding: 20px;
-  align-items: center;
-  margin-top: 20px;
+  background-color: #161616;
+  justify-content: space-between;
 }
-.headerAuth p {
-  flex-grow: 1;
-  text-align: center;
-}
-
 .btn {
   width: 100%;
   display: block;
+  cursor: pointer;
   margin: auto;
   padding: 15px 0;
   font-size: 15px;
-  border-radius: 15px;
+  border-radius: 8px;
   border: 1px solid;
   border-color: transparent;
+  transition: 0.2s all linear;
+  -moz-transition: 0.2s all linear;
+  -o-transition: 0.2s all linear;
+  -webkit-transition: 0.2s all linear;
+}
+.btn:hover {
+  transition: 0.2s all linear;
+  -moz-transition: 0.2s all linear;
+  -o-transition: 0.2s all linear;
+  -webkit-transition: 0.2s all linear;
 }
 .btn-primary {
-  color: white;
-  background-color: #2D8DFE;
+  color: black;
+  background-color: #F6CE47;
 }
+.btn-blk {
+  color: white;
+  background-color: #000000 !important;
+  border-color: #000000;
+}
+.btn-primary:hover {
+  background-color: #e4bf48;
+} 
 .btn-secondary {
   background-color: white;
-  border-color: #2D8DFE;
-}
-.primary-anchor {
-  color: #FEC42D;
-}
-.getting-started {
-  font-size: 24px;
+  border-color: #DBDCDD;
 }
 .form-control {
-  padding: 6px 0;
+  padding: 15px 0;
   position: relative;
 }
 .form-control input, .form-control select {
   border: 0;
-  background-color: #F4F5F7;
-  border-radius: 15px;
+  border: 1px solid #CCC;
+  border-radius: 8px;
   width: 100%;
   padding: 15px 48px;
   color: black;
@@ -102,34 +115,7 @@ header {
   right: 14px;
   top: 17px;
 }
-.otp-container {
-  display: flex;
-  margin-bottom: 25px;
-  justify-content: center;
-}
-.otp-individual-container {
-  width: 60px;
-  margin: 0 10px;
-}
-.otp-individual-container .form-control {
-  background-color: #F4F5F7;
-  border-radius: 15px;
-  padding: 0 15px;
-}
-.otp-individual-container input {
-  padding: 0;
-  background-color: transparent;
-  border-bottom: 1px solid #000;
-  border-radius: 0;
-  width: 60%;
-  outline: 0;
-  text-align: center;
-  padding: 20px 0;
-}
 
-.otp-individual-container input:focus {
-  border-color: #FEC42D;
-}
 .grey-color {
   color: #79869A;
 }
@@ -150,61 +136,272 @@ header {
 .subs-container-selected p {
   color: #2C8DFE;
 }
-.authInsideContainer {
-  height: calc(100vh - 70px);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-.settingIndividualContainer {
-  border-bottom: 1px solid #EAEAEA;
-  padding: 30px 10px;
-  width: 90%;
-  margin: auto;
-  display: flex;
-  justify-content: space-between;
-}
-.helpIndividualContainer {
-  border-bottom: 1px solid #EAEAEA;
-  padding: 30px 10px;
-  margin: auto;
-  display: flex;
-}
-.iconWithCircle span {
-  padding: 7px;
-  border: 1px solid #707070;
-  border-radius: 50%;
-}
-.iconWithCircle {
-  margin: 0 20px 0 10px;
-}
-.smallerP {
-  font-size: 14px;
-}
 button:disabled {
   background-color: rgb(170, 170, 170);
+  color: black !important;
 }
-.loggedInDrawer {
-  padding: 50px 30px;
-  background-color: #2C8DFE;
-  height: 100vh;
+.loginContainer {
+  display: flex;
 }
-.loggedInDrawerText {
+.loginContainerFirstChild {
+  max-height: 100vh;
   display: flex;
   align-items: center;
-  color: white;
-  padding: 15px 0;
+  flex: 1;
+  justify-content: center;
 }
-.loggedInDrawer button {
+.loginContainerFirstChild div {
+  width: 100%;
+  max-height: 100vh;
+  overflow: hidden;
+}
+.loginContainerFirstChild div img {
+  width: 100%;
+}
+.loginContainerSecondChild {
+  padding: 40px;
+  flex: 1;
+}
+.logoContainer {
+  text-align: center;
+}
+.logoContainer img {
+  width: 250px;
+}
+.loginForm {
   margin-top: 50px;
 }
-.loggedInDrawerText span {
-  margin-right: 5px;
+.loginFormContainer {
+  padding: 40px 0;
+  width: 80%;
+  margin: auto;
 }
-.dialogContainer h2, .dialogContainer button, .dialogContainer p {
-  font-family: 'DM Sans', sans-serif;
+.loginText {
+  font-size: 14px;
+  margin-top: 3px;
 }
-.subsBuyBtnContainer {
+.login-control label {
+  margin-bottom: 10px;
+  display: block;
+  font-size: 13px;
+}
+.login-control input {
+  padding: 20px 15px;
+} 
+.login-control button {
   padding: 20px;
+  font-weight: bold;
+}
+.forgotPwdTextContainer {
+  text-align: right;
+}
+.forgotPwdTextContainer a {
+  font-size: 14px;
+  text-decoration: underline;
+  color: #0054B6;
+}
+.keepMeLoggedIn {
+  margin-top: 15px;
+}
+.keepMeLoggedIn input {
+  width: auto;
+  position: relative;
+  top: 2px;
+}
+.keepMeLoggedIn label {
+  display: inline-block;
+  margin-left: 8px;
+}
+.starMark {
+  color: #FF0000;
+}
+.visibilityIconContainer {
+  position: absolute;
+  right: 18px;
+  top: 63px;
+}
+.visibilityIconContainer span {
+  font-size: 16px;
+  cursor: pointer;
+}
+.headerNavContainer {
+  display: flex;
+  align-items: center;
+}
+.headerNavContainer nav a {
+  color: white;
+  padding: 20px 15px;
+  display: inline-block;
+}
+.headerNavContainer nav a:hover{
+  background-color: #272727;
+}
+.headerNavContainer nav a.selected{
+  background-color: #393939;
+}
+.headerLogoContainer {
+  padding-left: 15px;
+}
+.headerLogoContainer img {
+  border-right: 1px solid #3D3D3D;
+  padding-right: 20px;
+  margin-top: 15px;
+}
+.headerBellContainer {
+  display: flex;
+  padding-right: 15px;
+  align-items: center;
+}
+.headerBellContainer .material-symbols-outlined {
+  color: white;
+}
+.headerBellContainer p {
+  margin-left: 25px;
+  cursor: pointer;
+  border-radius: 50%;
+  padding: 14px 6px;
+  height: 45px;
+  width: 45px;
+  font-size: 13px;
+  font-weight: bold;
+  background-color: #F6CE47;
+}
+.filtersContainer {
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+.filtersInnerContainer {
+  display: flex;
+}
+.filterTypeContainer {
+  background-color: white;
+}
+.commonTable {
+  padding: 10px;
+  background-color: white;
+  width: 100%;
+  border-radius: 10px;
+  border-collapse: collapse;
+}
+.commonTable td {
+  padding: 20px;
+  vertical-align: initial;
+}
+.commonTable td p {
+  padding: 10px 0;
+}
+.commonTable td label span {
+  font-size: 15px;
+}
+.commonTable thead td {
+  font-weight: bold;
+}
+.commonTable tr:last-child td {
+  border-bottom: 0;
+}
+.commonTable td, .commonTable tr:first-child td {
+  border-bottom: 1px solid #e9e9e9;
+}
+.mainSettingsContainer {
+  display: flex;
+  min-height: 95vh;
+  background-color: #f9f9f9;
+  flex-direction: column;
+  padding: 20px;
+}
+.internalSettingContainer {
+  padding: 20px 0;
+}
+.currentStateContainer {
+  display: flex;
+  margin-top: 20px;
+}
+.currentStateContainer button {
+  width: 180px;
+  margin: 0 0 0 20px;
+}
+.currentStateContainer button:first-child {
+  margin: 0;
+}
+.btnContainer {
+  display: flex;
+  justify-content: end;
+}
+.btnContainer button {
+  width: auto;
+  margin-right: 15px;
+  display: inline-block;
+  padding: 10px 20px;
+}
+.btnContainer button:first-child {
+  margin-right: 0;
+}
+.gridContainer {
+  padding: 30px 0;
+}
+.pageSubHeading {
+  background-color: white;
+  padding: 15px;
+  border-radius: 5px;
+}
+.addUpdateFormContainer {
+  margin-top: 20px;
+  background-color: white;
+  padding: 15px 0;
+  border-radius: 5px;
+}
+.form-control-input {
+  display: inline-block;
+  margin: 20px;
+  min-width: 250px;
+}
+.form-control-input .MuiFormControl-root {
+  min-width: 100%;
+}
+.pWithoutPadding {
+  padding: 0 !important;
+}
+.login-incorrect {
+  margin-bottom: 10px;
+  color: rgb(158, 50, 50);
+  font-size: 12px;
+  padding-left: 5px;
+}
+.bottomBtnContainerRescue {
   margin-bottom: 40px;
+}
+.bottomBtnContainer {
+  position: fixed;
+  bottom: 0;
+  width: calc(95% - 250px);
+  padding: 15px 10px;
+  text-align: right;
+  background-color: white;
+}
+.btn-primary-width {
+  width: auto;
+  margin: 0;
+  padding: 10px 20px;
+  display: inline-block;
+}
+.addBtnContainer {
+  padding: 15px 20px 0 20px;
+  margin-top: 5px;
+  border-top: 1px solid #DDD;
+  display: flex;
+  justify-content: space-between;
+}
+.addBtnContainer button {
+  margin: auto 20px;
+  display: inline-block;
+  width: auto;
+  padding: 12px 25px;
+}
+.errorHelperText {
+  color: #d32f2f;
+}
+.paginationContainer {
+  display: flex;
+  justify-content: right;
 }
