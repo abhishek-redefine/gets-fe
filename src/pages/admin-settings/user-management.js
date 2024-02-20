@@ -37,7 +37,6 @@ const UserManagement = () => {
 
 
     const changeState = (newState) => {
-        console.log("newState", newState);
         setCurrentState(newState.value);
         setSelectedRoleType(newState.defaultValue);
     }
@@ -56,13 +55,12 @@ const UserManagement = () => {
                     userType.value !== USER_TYPES.DRIVER && <button key={idx} onClick={() => changeState(userType)} className={`btn btn-secondary ${currentState === userType.value ? 'btn-blk' : ''}`}>{userType.displayName}</button>
                 ))}
             </div>
-            {console.log("selectedRoleType", selectedRoleType)}
             <div>
                 {currentState === USER_TYPES.EMPLOYEE && <EmployeeManagement onSuccess={onSuccess} roleType={selectedRoleType} />}
                 {currentState === USER_TYPES.ESCORT && <EscortManagement onSuccess={onSuccess} />}
                 {currentState === USER_TYPES.ADMIN && <AdminManagement onSuccess={onSuccess} roleType={selectedRoleType} />}
                 {currentState === USER_TYPES.VENDOR_TEAM && <VendorTeamManagement onSuccess={onSuccess} roleType={selectedRoleType} />}
-                {currentState === USER_TYPES.TEAM && <TeamManagement />}
+                {currentState === USER_TYPES.TEAM && <TeamManagement onSuccess={onSuccess} />}
             </div>
         </div>
     );

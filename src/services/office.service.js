@@ -107,6 +107,28 @@ const updateVendor = (data) => {
     });
 };
 
+const getAllTeams = (queryParams) => {
+    let url = `${API_PATH.API_VERSION}${API_PATH.TEAM_LISTING}`;
+    if (queryParams) {
+        url += `?${queryParams}`;
+    }
+    return axiosInstance.get(url).then((response) => {
+        return response;
+    });
+};
+
+const createTeams = (data) => {
+    return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.CREATE_TEAM}`, data).then((response) => {
+        return response;
+    });
+};
+
+const updateTeams = (data) => {
+    return axiosInstance.put(`${API_PATH.API_VERSION}${API_PATH.UPDATE_TEAM}`, data).then((response) => {
+        return response;
+    });
+};
+
 const OfficeService = {
     getAllOffices,
     createEmployee,
@@ -122,7 +144,10 @@ const OfficeService = {
     updateAdmin,
     getAllVendors,
     createVendor,
-    updateVendor
+    updateVendor,
+    getAllTeams,
+    createTeams,
+    updateTeams
 };
 
 export default OfficeService;

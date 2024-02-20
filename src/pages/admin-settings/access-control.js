@@ -15,8 +15,7 @@ const AccessControl = () => {
   const [allModules, setAllModules] = useState([]);
   const [modulePermissionsByRole, setModulePermissionsByRole] = useState([]);
   const [modulePermissionAPICalled, setModulePermissionAPICalled] = useState(false);
-  const [permissionsToSave, setPermissionsToSave] = useState({});
-  const [isEdit, setIsEdit] = useState(false);
+  const [allPermissions, setAllPermissions] = useState({});
 
   const handleChange = (e) => {
     let val = e.target.value;
@@ -50,7 +49,9 @@ const AccessControl = () => {
       const { data } = response || {};
       setModulePermissionsByRole(data);
       setModulePermissionAPICalled(true);
-      setIsEdit(!!data.length);
+      if (data.length) {
+        setAllCheckedValues(data);
+      }
     } catch (e) {
       setModulePermissionAPICalled(true);
     }
@@ -62,88 +63,129 @@ const AccessControl = () => {
   }, []);
 
   const viewRole = () => {
-    setModulePermissionsByRole([]);
-    setModulePermissionAPICalled(false);
+    resetData();
     getPermissionsByRole(selectedRole);
   };
 
-  const setPermission = (singleModule, subModule, permission) => {
-    let currentPermissions = {...permissionsToSave};
-    if (!currentPermissions?.role) {
-      currentPermissions.role = selectedRole;
-    }
-    let subModuleData = {
-      name: subModule.name,
-      description: subModule.description,
-      functionalities: [{
-        permissions: [permission]
-      }]
-    };
-    if (isEdit) {
-      subModuleData.id = subModule.id;
-    }
-    let moduleData = {
-      name: singleModule.name,
-      description: singleModule.description,
-      submodules: [subModuleData]
-    };
-    if (isEdit) {
-      moduleData.id = singleModule.id;
-    }
-    if (!currentPermissions?.modules) {    
-      currentPermissions.modules = [];
-      currentPermissions.modules.push(moduleData);
-    } else {
-      let isModuleFound = currentPermissions.modules.some((sModule, idx) => {
-        if (sModule?.name === singleModule?.name) {
-          let isSubModuleFound = sModule?.submodules?.some((sSubModule, sIdx) => {
-            if (sSubModule?.name === subModule?.name) {
-              let idxOfPerm = currentPermissions.modules[idx]?.submodules[sIdx].functionalities[0]?.permissions.indexOf(permission);
-              if (idxOfPerm > -1) {
-                currentPermissions.modules[idx]?.submodules[sIdx].functionalities[0]?.permissions?.splice(idxOfPerm, 1);
-                if (currentPermissions.modules[idx]?.submodules[sIdx].functionalities[0]?.permissions.length === 0) {
-                  currentPermissions.modules[idx]?.submodules.splice(sIdx, 1);                  
-                }
-                if (currentPermissions.modules[idx]?.submodules.length === 0) {
-                  currentPermissions.modules.splice(idx, 1);
-                }
-                if (currentPermissions.modules.length === 0) {
-                  currentPermissions = {};
-                }
-              } else {
-                currentPermissions.modules[idx]?.submodules[sIdx].functionalities[0]?.permissions?.push(permission);
-              }
-              return true;
-            }
-            return false;
-          });
-          if (!isSubModuleFound) {
-            currentPermissions.modules[idx]?.submodules.push(subModuleData);
+  const setAllCheckedValues = (apiModules) => {
+    let currentPermissions = {};
+    apiModules.forEach((module) => {
+      module?.submodules?.forEach((submodule) => {
+        const submodulePermissions = submodule?.functionalities?.[0]?.permissions;
+        if (submodulePermissions?.length) {
+          if (currentPermissions[module.name]) {
+            currentPermissions[module.name][submodule.name] = submodulePermissions;
+          } else {
+            currentPermissions[module.name] = {
+              [submodule.name]: submodulePermissions
+            };
           }
-          return true;
         }
-        return false;
       });
-      if (!isModuleFound) {
-        currentPermissions.modules.push(moduleData);
-      }
-    }
-    setPermissionsToSave(currentPermissions);
-  };
+    });
+    setAllPermissions(currentPermissions);
+  }
 
   const savePermissions = async () => {
+    let finalPermissions = {
+      role: selectedRole,
+      modules: []
+    };
+    Object.keys(allPermissions)?.length
+    if (Object.keys(allPermissions)?.length) {
+      Object.keys(allPermissions).forEach((moduleName) => {
+        const moduleDetails = {};
+        const allModuleDetails = allModules.filter((module) => module.name === moduleName)?.[0];
+        let currentModuleDetails = {};
+        if (modulePermissionsByRole.length) {
+          const savedModuleDetails = modulePermissionsByRole.filter((savedModule) => savedModule.name === moduleName)?.[0];
+          if (savedModuleDetails) {
+            currentModuleDetails = savedModuleDetails;
+          }
+        } 
+        if (allModuleDetails && !currentModuleDetails.id) {
+          currentModuleDetails = allModuleDetails;
+        }
+        if (currentModuleDetails.id) {
+          moduleDetails.id = currentModuleDetails.id;
+        }
+        moduleDetails.name = currentModuleDetails.name;
+        moduleDetails.description = currentModuleDetails.description;
+        if (allPermissions?.[moduleName] && Object.keys(allPermissions[moduleName])?.length) {
+          Object.keys(allPermissions[moduleName]).forEach((subModuleName) => {
+            let submoduleDetails = {};
+            if (currentModuleDetails.id) {
+              const savedSubmodule = currentModuleDetails.submodules.filter((submodule) => submodule.name === subModuleName)?.[0];
+              if (savedSubmodule) {
+                submoduleDetails = savedSubmodule;
+              }
+            } 
+            if (!submoduleDetails?.id) {
+              submoduleDetails = allModuleDetails.submodules.filter((submodule) => submodule.name === subModuleName)?.[0];
+            }
+            if (submoduleDetails) {
+              submoduleDetails.functionalities[0].permissions = allPermissions[moduleName][subModuleName];
+              if (moduleDetails.submodules?.length) {
+                moduleDetails.submodules.push(submoduleDetails);
+              } else {
+                moduleDetails.submodules = [submoduleDetails];
+              }
+            }
+          });
+        }
+        finalPermissions.modules.push(moduleDetails);
+      });
+    }
     try {
       if (!modulePermissionsByRole?.length) {
-        await RoleService.saveRolePermissions(permissionsToSave);
+        await RoleService.saveRolePermissions(finalPermissions);
       } else {
-        await RoleService.updateRolePermissions(permissionsToSave);
+        await RoleService.updateRolePermissions(finalPermissions);
       }
+      resetData();
+      setSelectedRole("");
       dispatch(toggleToast({ message: 'Permissions updated successfully', type: 'success' }));
     } catch (e) {
       dispatch(toggleToast({ message: 'Error saving permissions, please try again', type: 'error' }));
     }
   };
 
+  const resetData = () => {
+    setModulePermissionsByRole([]);
+    setModulePermissionAPICalled(false);
+    setAllPermissions({});
+  };
+
+  const getChecked = (singleModule, subModule, permission) => {
+    const currentModule = allPermissions[singleModule.name];
+    if (currentModule) {
+      const currentSubModule = currentModule[subModule.name];
+      return currentSubModule?.includes(permission);
+    }
+    return false;
+  };
+
+  const setAllPermission = (singleModule, subModule, permission) => {
+    const currentPermissions = {...allPermissions};
+    if (currentPermissions[singleModule.name]) {
+      if (currentPermissions[singleModule.name]?.[subModule.name]) {
+        const idxOfPermission = currentPermissions[singleModule.name][subModule.name].indexOf(permission);
+        if (idxOfPermission > -1) {
+          currentPermissions[singleModule.name][subModule.name].splice(idxOfPermission, 1);
+        } else {
+          currentPermissions[singleModule.name][subModule.name].push(permission);
+        }
+      } else {
+        currentPermissions[singleModule.name][subModule.name] = [permission];
+      }
+    } else {
+      currentPermissions[singleModule.name] = {
+        [subModule.name]: [permission]
+      };
+    }
+    setAllPermissions(currentPermissions);
+  }
+ 
   return (
     <div className='mainSettingsContainer'>
       <h2>Access Control</h2>
@@ -198,7 +240,7 @@ const AccessControl = () => {
                       <p key={sIdx_i} className='pWithoutPadding'>
                         {!!(subModule?.functionalities?.[0]?.permissions?.length) && 
                         subModule?.functionalities?.[0]?.permissions?.map((permission, pIdx) => (
-                          <FormControlLabel key={pIdx} control={<Checkbox onChange={() => setPermission(singleModule, subModule, permission)} />} label={PERMISSIONS[permission]} />
+                          <FormControlLabel checked={getChecked(singleModule, subModule, permission)} key={pIdx} control={<Checkbox onChange={() => setAllPermission(singleModule, subModule, permission)} />} label={PERMISSIONS[permission]} />
                         ))}
                       </p>
                     )))}

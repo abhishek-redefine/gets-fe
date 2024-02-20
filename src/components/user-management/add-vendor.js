@@ -44,11 +44,6 @@ const AddVendor = ({
         validationSchema: validationSchema,
         onSubmit: async (values) => {
             let allValues = {...values};
-            const role = allValues.role;
-            delete allValues.role;
-            if (allValues.roles) {
-                allValues.roles = [allValues.roles];
-            }
             Object.keys(allValues).forEach((objKey) => {
                 if (allValues[objKey] === null || allValues[objKey] === "") {
                     delete allValues[objKey];
@@ -56,10 +51,10 @@ const AddVendor = ({
             });
             try {
                 if (initialValues?.id) {
-                    await OfficeService.updateVendor({vendorTeamDTO: {...initialValues, ...allValues}, role});
+                    await OfficeService.updateVendor({vendorTeamDTO: {...initialValues, ...allValues}});
                     dispatch(toggleToast({ message: 'Vendor updated successfully!', type: 'success' }));
                 } else {
-                    await OfficeService.createVendor({vendorTeamDTO: allValues, role});
+                    await OfficeService.createVendor({vendorTeamDTO: allValues});
                     dispatch(toggleToast({ message: 'Vendor added successfully!', type: 'success' }));
                 }
                 onUserSuccess(true);
@@ -72,23 +67,8 @@ const AddVendor = ({
 
     const { errors, touched, values, handleChange, handleSubmit } = formik;
 
-
-    const { Gender: gender, TransportType: transportType, WeekDay: weekdays } = useSelector((state) => state.master);
     const dispatch = useDispatch();
     const [roles, setRoles] = useState([]);
-    const [offices, setOffice] = useState([]);    
-
-    const fetchMasterData = async (type) => {
-        try {
-            const response = await MasterDataService.getMasterData(type);
-            const { data } = response || {};
-            if (data?.length) {
-                dispatch(setMasterData({data, type}));
-            }
-        } catch (e) {
-
-        }
-    };
 
     const getAllRolesByType = async () => {
         try {
@@ -100,32 +80,9 @@ const AddVendor = ({
         }
     };
 
-    const fetchAllOffices = async () => {
-        try {
-            const response = await OfficeService.getAllOffices();
-            const { data } = response || {};
-            const { clientOfficeDTO } = data || {};
-            setOffice(clientOfficeDTO);
-        } catch (e) {
-
-        }
-    };
-
     useEffect(() => {
-        if (!gender?.length) {
-            fetchMasterData(MASTER_DATA_TYPES.GENDER);
-        }
-        if (!transportType?.length) {
-            fetchMasterData(MASTER_DATA_TYPES.TRANSPORT_TYPE);
-        }
-        if (!weekdays?.length) {
-            fetchMasterData(MASTER_DATA_TYPES.WEEKDAY);
-        }
         getAllRolesByType();
-        fetchAllOffices();
     }, []);
-
-    console.log("error", errors);
 
     return (
         <div>

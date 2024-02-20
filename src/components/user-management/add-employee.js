@@ -194,8 +194,6 @@ const AddEmployee = ({
         }
     };
 
-    console.log("Calluyes", values);
-
     return (
         <div>
             <h4 className='pageSubHeading'>{editEmployeeData?.id ? 'Edit' : 'Add'} Employee</h4>

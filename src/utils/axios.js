@@ -10,7 +10,6 @@ const axiosInstance = axios.create({
 
 const refreshTokenAPI = async () => {
   let tokenForRefresh = localStorage.getItem('token');
-  console.log("tokenForRefresh", tokenForRefresh);
   if (tokenForRefresh) {
     try {
       const response = await AuthService.refreshToken({token: tokenForRefresh});
@@ -22,21 +21,18 @@ const refreshTokenAPI = async () => {
         return true;
       } else {
         localStorage.clear();
-        window.location.href = "/";        
-        console.log("called else 1");
+        window.location.href = "/";
         return false;
       }
     } catch (e) {
       localStorage.clear();
       window.location.href = "/";
       console.error(e);
-      console.log("called catch 1");
       return false;
     }
   } else {
     localStorage.clear();
     window.location.href = "/";
-    console.log("called else 2");
     return false;
   }
 };
@@ -52,7 +48,7 @@ axiosInstance.interceptors.request.use(
       return config;
     },
     (error) => {
-      console.log("error", error);
+      console.error("error", error);
       // Handle request error
       return Promise.reject(error);
     }

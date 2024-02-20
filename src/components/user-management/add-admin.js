@@ -58,6 +58,7 @@ const AddAdmin = ({
                     dispatch(toggleToast({ message: 'Admin added successfully!', type: 'success' }));
                 }
                 onUserSuccess(true);
+                reset();
             } catch (e) {
                 console.error(e);
                 dispatch(toggleToast({ message: e?.response?.data?.message || 'Error adding admin, please try again later!', type: 'error' }));
@@ -66,8 +67,6 @@ const AddAdmin = ({
     });
 
     const { errors, touched, values, handleChange, handleSubmit } = formik;
-
-    console.log("err", errors);
 
     const { Gender: gender, TransportType: transportType, WeekDay: weekdays } = useSelector((state) => state.master);
     const dispatch = useDispatch();
@@ -120,6 +119,25 @@ const AddAdmin = ({
         getAllRolesByType();
         fetchAllOffices();
     }, []);
+
+    const reset = () => {
+        setInitialValues({
+            name: "",
+            mobile: "",
+            alternateMobile: "",
+            gender: "",
+            primaryOfficeId: "",
+            secondaryOfficeId: "",
+            address: "",
+            email: "",
+            roles: ""
+        });        
+    };
+
+    const onGoBack = () => {
+        reset();
+        onUserSuccess();
+    };
 
     return (
         <div>
@@ -246,7 +264,7 @@ const AddAdmin = ({
                         <button className='btn btn-secondary'>Reset</button>
                     </div>
                     <div>
-                        <button onClick={onUserSuccess} className='btn btn-secondary'>Back</button>
+                        <button onClick={onGoBack} className='btn btn-secondary'>Back</button>
                         <button type='submit' onClick={handleSubmit} className='btn btn-primary'>{editEmployeeData?.id ? 'Update' : 'Create'} Admin</button>
                     </div>
                 </div>

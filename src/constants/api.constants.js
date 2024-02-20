@@ -20,7 +20,10 @@ export const API_PATH = {
     ADMIN_LISTING: '/admin/all',
     CREATE_ADMIN: '/admin/create',
     UPDATE_ADMIN: '/admin/update',
-    VENDOR_LISTING: '/Vendor/vendorTeams',
-    CREATE_VENDOR: '/Vendor/create',
-    UPDATE_VENDOR: '/Vendor/update',
+    VENDOR_LISTING: '/vendor/vendorTeams',
+    CREATE_VENDOR: '/vendor/create',
+    UPDATE_VENDOR: '/vendor/update',
+    TEAM_LISTING: '/team/all',
+    CREATE_TEAM: '/team/create',
+    UPDATE_TEAM: '/team/update',
 };
