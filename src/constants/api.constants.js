@@ -26,4 +26,5 @@ export const API_PATH = {
     TEAM_LISTING: '/team/all',
     CREATE_TEAM: '/team/create',
     UPDATE_TEAM: '/team/update',
+    OFFICE_MAPPINGS: '/officeMapping'
 };

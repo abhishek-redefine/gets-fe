@@ -328,6 +328,15 @@ button:disabled {
   display: flex;
   justify-content: end;
 }
+.btnContainerWithLeftContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.btnContainerWithLeftContent button {
+  width: auto;
+  padding: 18px 20px;
+}
 .btnContainer button {
   width: auto;
   margin-right: 15px;
@@ -404,4 +413,21 @@ button:disabled {
 .paginationContainer {
   display: flex;
   justify-content: right;
+}
+.notFoundTableContent {
+  padding: 20px;
+  margin: auto;
+  height: 40vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.officeMappingContainer {
+  display: flex;
+  flex-direction: row;
+}
+.officeMappingContainer .formControlContainer {
+  flex-grow: 1;
+  display: flex;
 }

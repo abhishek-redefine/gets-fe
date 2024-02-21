@@ -7,6 +7,18 @@ const getAllOffices = () => {
     });
 };
 
+const createOfficeMapping = (data) => {
+    return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.OFFICE_MAPPINGS}`, data).then((response) => {
+        return response;
+    });
+};
+
+const getOfficeMapping = (officeId) => {
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.OFFICE_MAPPINGS}/${officeId}`).then((response) => {
+        return response;
+    });
+};
+
 const createEmployee = (data) => {
     return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.CREATE_EMPLOYEE}`, data).then((response) => {
         return response;
@@ -147,7 +159,9 @@ const OfficeService = {
     updateVendor,
     getAllTeams,
     createTeams,
-    updateTeams
+    updateTeams,
+    createOfficeMapping,
+    getOfficeMapping
 };
 
 export default OfficeService;
