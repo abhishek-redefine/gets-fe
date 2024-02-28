@@ -36,7 +36,6 @@ const AddOfficeMapping = ({
             }
         }
     });
-    console.log(formik)
     const { errors, touched, values, handleChange, handleSubmit } = formik;
 
     const dispatch = useDispatch();

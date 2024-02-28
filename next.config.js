@@ -8,7 +8,7 @@ const nextConfig = {
         destination: 'http://localhost:8010/api/:path*',
       },
     ]
-  }
+  },
 }
 
 module.exports = nextConfig
