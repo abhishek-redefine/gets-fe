@@ -14,8 +14,9 @@ const AdminManagement = ({
         display: "Admin Name"
     },
     {
-        key: "primaryOfficeId",
-        display: "Office"
+        key: "officeIds",
+        display: "Office",
+        type: "arr"
     },
     {
         key: "email",
@@ -86,11 +87,16 @@ const AdminManagement = ({
       }
     };
 
+    const addAdmin = () => {
+        setEditEmployeeData({});
+        setIsAddEdit(true);
+    }
+
     return (
         <div className='internalSettingContainer'>
             {!isAddEdit && <div>
                 <div className='btnContainer'>
-                    <button onClick={() => setIsAddEdit(true)} className='btn btn-primary'>Add Admin</button>
+                    <button onClick={addAdmin} className='btn btn-primary'>Add Admin</button>
                 </div>
                 <div className='gridContainer'>
                     <Grid onMenuItemClick={onMenuItemClick} handlePageChange={handlePageChange} pagination={paginationData} headers={headers} listing={employeeListing} />

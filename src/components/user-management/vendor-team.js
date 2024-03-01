@@ -15,8 +15,9 @@ const VendorTeamManagement = ({
         display: "Vendor Id"
     },
     {
-        key: "officeId",
-        display: "Office Id"
+        key: "officeIds",
+        display: "Vendor Office",
+        type: "arr"
     },
     {
         key: "name",
@@ -91,11 +92,16 @@ const VendorTeamManagement = ({
       }
     };
 
+    const addVendor = () => {
+        setEditEmployeeData({});
+        setIsAddEdit(true);
+    }
+
     return (
         <div className='internalSettingContainer'>
             {!isAddEdit && <div>
                 <div className='btnContainer'>
-                    <button onClick={() => setIsAddEdit(true)} className='btn btn-primary'>Add Vendor</button>
+                    <button onClick={addVendor} className='btn btn-primary'>Add Vendor</button>
                 </div>
                 <div className='gridContainer'>
                     <Grid onMenuItemClick={onMenuItemClick} handlePageChange={handlePageChange} pagination={paginationData} headers={headers} listing={employeeListing} />

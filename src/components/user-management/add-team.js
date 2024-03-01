@@ -17,7 +17,7 @@ const AddTeam = ({
 
     const [initialValues, setInitialValues] = useState({
         name: "",
-        officeId: "",
+        officeIds: [],
         managerIds: "",
         shiftType: "",
         description: "",
@@ -61,8 +61,7 @@ const AddTeam = ({
         }
     });
 
-    const { errors, touched, values, handleChange, handleSubmit } = formik;
-
+    const { errors, touched, values, handleChange, handleSubmit, handleReset } = formik;
 
     const { ShiftType: shiftTypes } = useSelector((state) => state.master);
     const dispatch = useDispatch();
@@ -102,20 +101,21 @@ const AddTeam = ({
 
     const searchForRM = async (e) => {
         try {
-            const response = await OfficeService.searchRM(e.target.value);
-            const { data } = response || {};
-            setSearchedReportingManager(data);
+            if (e.target.value) {
+                const response = await OfficeService.searchRM(e.target.value);
+                const { data } = response || {};
+                setSearchedReportingManager(data);
+            } else {
+                setSearchedReportingManager([]);
+            }
         } catch (e) {
             console.error(e);
-            setSearchedReportingManager([{name: "Piyush Modi", key: "EMP1"}]);
         }
     };    
 
     const onChangeHandler = (newValue, name, key) => {
         formik.setFieldValue(name, newValue?.[key] || "");
     };
-
-    console.log("error", errors);
 
     return (
         <div>
@@ -126,11 +126,13 @@ const AddTeam = ({
                         <FormControl required fullWidth>
                             <InputLabel id="primary-office-label">Office Id</InputLabel>
                             <Select
+                                style={{width: "250px"}}
                                 labelId="primary-office-label"
-                                id="officeId"
-                                value={values.officeId}
-                                error={touched.officeId && Boolean(errors.officeId)}
-                                name="officeId"
+                                id="officeIds"
+                                multiple
+                                value={values.officeIds}
+                                error={touched.officeIds && Boolean(errors.officeIds)}
+                                name="officeIds"
                                 label="Office Id"
                                 onChange={handleChange}
                             >
@@ -138,7 +140,7 @@ const AddTeam = ({
                                     <MenuItem key={idx} value={office.officeId}>{getFormattedLabel(office.officeId)}, {office.address}</MenuItem>
                                 ))}
                             </Select>
-                            {touched.officeId && errors.officeId && <FormHelperText className='errorHelperText'>{errors.officeId}</FormHelperText>}
+                            {touched.officeIds && errors.officeIds && <FormHelperText className='errorHelperText'>{errors.officeIds}</FormHelperText>}
                         </FormControl>
                     </div>
                     <div className='form-control-input'>
@@ -179,9 +181,9 @@ const AddTeam = ({
                                 onClose={() => {
                                     setOpenSearchRM(false);
                                 }}
-                                onChange={(e, val) => onChangeHandler(val, "managerIds", "key")}
-                                getOptionKey={(rm) => rm.key}
-                                getOptionLabel={(rm) => rm.name}
+                                onChange={(e, val) => onChangeHandler(val, "managerIds", "empId")}
+                                getOptionKey={(rm) => rm.empId}
+                                getOptionLabel={(rm) => `${rm.data}, ${rm.empId}`}
                                 freeSolo
                                 name="managerIds"
                                 renderInput={(params) => <TextField {...params} label="Search Team Manager"  onChange={searchForRM} />}
@@ -207,7 +209,7 @@ const AddTeam = ({
                 </div>
                 <div className='addBtnContainer'>
                     <div>
-                        <button className='btn btn-secondary'>Reset</button>
+                        <button onClick={handleReset} className='btn btn-secondary'>Reset</button>
                     </div>
                     <div>
                         <button onClick={onUserSuccess} className='btn btn-secondary'>Back</button>

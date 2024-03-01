@@ -18,7 +18,7 @@ const AddVendor = ({
 }) => {
 
     const [initialValues, setInitialValues] = useState({
-        officeId: "",
+        officeIds: [],
         vendorId: "",        
         name: "",
         address: "",
@@ -31,6 +31,18 @@ const AddVendor = ({
         remarks: "",
         roles: ""
     });
+    const [offices, setOffice] = useState([]);
+
+    const fetchAllOffices = async () => {
+        try {
+            const response = await OfficeService.getAllOffices();
+            const { data } = response || {};
+            const { clientOfficeDTO } = data || {};
+            setOffice(clientOfficeDTO);
+        } catch (e) {
+
+        }
+    };
 
     useState(() => {
         if (editEmployeeData?.id) {
@@ -65,7 +77,7 @@ const AddVendor = ({
         }
     });
 
-    const { errors, touched, values, handleChange, handleSubmit } = formik;
+    const { errors, touched, values, handleChange, handleSubmit, handleReset } = formik;
 
     const dispatch = useDispatch();
     const [roles, setRoles] = useState([]);
@@ -82,6 +94,7 @@ const AddVendor = ({
 
     useEffect(() => {
         getAllRolesByType();
+        fetchAllOffices();
     }, []);
 
     return (
@@ -90,9 +103,25 @@ const AddVendor = ({
             <div className='addUpdateFormContainer'>
                 <div>
                     <div className='form-control-input'>
-                            <TextField error={touched.officeId && Boolean(errors.officeId)} onChange={handleChange}
-                            helperText={touched.officeId && errors.officeId} required id="officeId" name="officeId"
-                            label="Office Id" variant="outlined"  value={values.officeId} />
+                        <FormControl required fullWidth>
+                            <InputLabel id="primary-office-label">Vendor Office</InputLabel>
+                            <Select
+                                style={{width: "250px"}}                                
+                                labelId="primary-office-label"
+                                id="officeIds"
+                                value={values.officeIds}
+                                error={touched.officeIds && Boolean(errors.officeIds)}
+                                name="officeIds"
+                                label="Vendor Office"
+                                multiple
+                                onChange={handleChange}
+                            >
+                                {!!offices?.length && offices.map((office, idx) => (
+                                    <MenuItem key={idx} value={office.officeId}>{getFormattedLabel(office.officeId)}, {office.address}</MenuItem>
+                                ))}
+                            </Select>
+                            {touched.officeIds && errors.officeIds && <FormHelperText className='errorHelperText'>{errors.officeIds}</FormHelperText>}
+                        </FormControl>
                     </div>
                     <div className='form-control-input'>
                             <TextField error={touched.vendorId && Boolean(errors.vendorId)} onChange={handleChange}
@@ -188,7 +217,7 @@ const AddVendor = ({
                 </div>
                 <div className='addBtnContainer'>
                     <div>
-                        <button className='btn btn-secondary'>Reset</button>
+                        <button onClick={handleReset} className='btn btn-secondary'>Reset</button>
                     </div>
                     <div>
                         <button onClick={onUserSuccess} className='btn btn-secondary'>Back</button>

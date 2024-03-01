@@ -23,10 +23,17 @@ const getUserRole = (userId) => {
     });
 };
 
+const logout = () => {
+    return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.LOGOUT}`).then((response) => {
+        return response;
+    });
+};
+
 const AuthService = {
     login,
     getUserRole,
-    refreshToken
+    refreshToken,
+    logout
 };
 
 export default AuthService;

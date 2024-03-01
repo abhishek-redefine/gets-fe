@@ -8,7 +8,7 @@ const getAllOffices = () => {
 };
 
 const createOfficeMapping = (data) => {
-    return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.OFFICE_MAPPINGS}`, data).then((response) => {
+    return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.OFFICE_MAPPINGS}${API_PATH.CREATE}`, data).then((response) => {
         return response;
     });
 };
@@ -141,6 +141,30 @@ const updateTeams = (data) => {
     });
 };
 
+const getAllHolidays = () => {
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.HOLIDAYS}${API_PATH.ALL}`).then((response) => {
+        return response;
+    });
+};
+
+const addHoliday = (data) => {
+    return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.HOLIDAYS}${API_PATH.CREATE}`, data).then((response) => {
+        return response;
+    });
+};
+
+const removeHoliday = (holidayId) => {
+    return axiosInstance.delete(`${API_PATH.API_VERSION}${API_PATH.HOLIDAYS}${API_PATH.DELETE}/${holidayId}`).then((response) => {
+        return response;
+    });
+};
+
+const getEmployeeDetails = (id) => {
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.EMP_BY_ID}/${id}`).then((response) => {
+        return response;
+    });
+};
+
 const OfficeService = {
     getAllOffices,
     createEmployee,
@@ -161,7 +185,11 @@ const OfficeService = {
     createTeams,
     updateTeams,
     createOfficeMapping,
-    getOfficeMapping
+    getOfficeMapping,
+    getAllHolidays,
+    addHoliday,
+    removeHoliday,
+    getEmployeeDetails
 };
 
 export default OfficeService;

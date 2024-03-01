@@ -13,18 +13,16 @@ const AddOfficeMapping = ({
 
     const [initialValues, setInitialValues] = useState({
         primaryOfficeId: "",
-        secondaryOfficeId: ""
+        secondaryOfficeId: []
     });
-
-    const [secondaryOfficeList, setSecondaryOfficeList] = useState([]);
-
+    
     const formik = useFormik({
         initialValues: initialValues,
         validationSchema: validationSchema,
         onSubmit: async (values) => {
             let allValues = {
                 primaryOfficeId: values.primaryOfficeId,
-                secondaryOfficeId: secondaryOfficeList.toString()
+                secondaryOfficeId: values.secondaryOfficeId.toString()
             };
             try {
                 await OfficeService.createOfficeMapping({officeMappingDTO: {...initialValues, ...allValues}});
@@ -55,18 +53,6 @@ const AddOfficeMapping = ({
     useEffect(() => {
         fetchAllOffices();
     }, []);
-
-
-    const handleSecondaryChange = (event) => {
-        const { target } = event || {};
-        const { name, value } = target || {};
-        formik.setFieldValue(name, value);
-        const currentList = secondaryOfficeList;
-        if (!currentList.includes(value)) {
-            currentList.push(value);
-            setSecondaryOfficeList(currentList);
-        }
-    };
   
     return (
         <div>
@@ -97,16 +83,17 @@ const AddOfficeMapping = ({
                     </div>
                     <div className='formControlContainer'>
                         {values?.primaryOfficeId && <div className='form-control-input'>
-                            <FormControl required fullWidth>
+                            <FormControl required fullWidth style={{width: "350px"}}>
                                 <InputLabel id="primary-office-label">Secondary Office</InputLabel>
                                 <Select
                                     labelId="primary-office-label"
                                     id="secondaryOfficeId"
+                                    multiple
                                     value={values.secondaryOfficeId}
                                     error={touched.secondaryOfficeId && Boolean(errors.secondaryOfficeId)}
                                     name="secondaryOfficeId"
                                     label="Secondary Office"
-                                    onChange={handleSecondaryChange}
+                                    onChange={handleChange}
                                 >
                                     {!!offices?.length && offices.map((office, idx) => (
                                         <MenuItem key={idx} value={office.officeId}>{getFormattedLabel(office.officeId)}, {office.address}</MenuItem>
@@ -114,9 +101,6 @@ const AddOfficeMapping = ({
                                 </Select>
                                 {touched.secondaryOfficeId && errors.secondaryOfficeId && <FormHelperText className='errorHelperText'>{errors.secondaryOfficeId}</FormHelperText>}
                             </FormControl>
-                            {!!secondaryOfficeList?.length && secondaryOfficeList.map((office, idx) => (
-                                <p key={idx}>{office}</p>
-                            ))}
                         </div>}
                     </div>
                 </div>

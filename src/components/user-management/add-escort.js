@@ -21,8 +21,7 @@ const AddEscort = ({
         mobile: "",
         alternateMobile: "",
         gender: "",
-        primaryOfficeId: "",
-        secondaryOfficeId: "",
+        officeIds: [],
         address: "",
         email: ""
     });
@@ -60,7 +59,7 @@ const AddEscort = ({
         }
     });
 
-    const { errors, touched, values, handleChange, handleSubmit } = formik;
+    const { errors, touched, values, handleChange, handleSubmit, handleReset } = formik;
 
     const { Gender: gender } = useSelector((state) => state.master);
     const dispatch = useDispatch();
@@ -149,7 +148,7 @@ const AddEscort = ({
                         required id="mobile" label="Mobile No" variant="outlined" />
                     </div>
                     <div className='form-control-input'>
-                        <TextField
+                        <TextField required
                         value={values.alternateMobile} onChange={handleChange}
                         error={touched.alternateMobile && Boolean(errors.alternateMobile)}
                         helperText={touched.alternateMobile && errors.alternateMobile}
@@ -159,11 +158,13 @@ const AddEscort = ({
                         <FormControl required fullWidth>
                             <InputLabel id="primary-office-label">Primary Office</InputLabel>
                             <Select
+                                style={{width: "250px"}}
                                 labelId="primary-office-label"
-                                id="primaryOfficeId"
-                                value={values.primaryOfficeId}
-                                error={touched.primaryOfficeId && Boolean(errors.primaryOfficeId)}
-                                name="primaryOfficeId"
+                                id="officeIds"
+                                multiple
+                                value={values.officeIds}
+                                error={touched.officeIds && Boolean(errors.officeIds)}
+                                name="officeIds"
                                 label="Primary Office"
                                 onChange={handleChange}
                             >
@@ -171,30 +172,9 @@ const AddEscort = ({
                                     <MenuItem key={idx} value={office.officeId}>{getFormattedLabel(office.officeId)}, {office.address}</MenuItem>
                                 ))}
                             </Select>
-                            {touched.primaryOfficeId && errors.primaryOfficeId && <FormHelperText className='errorHelperText'>{errors.primaryOfficeId}</FormHelperText>}
+                            {touched.officeIds && errors.officeIds && <FormHelperText className='errorHelperText'>{errors.officeIds}</FormHelperText>}
                         </FormControl>
                     </div>
-                    <div className='form-control-input'>
-                        <FormControl required fullWidth>
-                            <InputLabel id="primary-office-label">Secondary Office</InputLabel>
-                            <Select
-                                labelId="primary-office-label"
-                                id="secondaryOfficeId"
-                                value={values.secondaryOfficeId}
-                                error={touched.secondaryOfficeId && Boolean(errors.secondaryOfficeId)}
-                                name="secondaryOfficeId"
-                                label="Primary Office"
-                                onChange={handleChange}
-                            >
-                                {!!offices?.length && offices.map((office, idx) => (
-                                    <MenuItem key={idx} value={office.officeId}>{getFormattedLabel(office.officeId)}, {office.address}</MenuItem>
-                                ))}
-                            </Select>
-                            {touched.secondaryOfficeId && errors.secondaryOfficeId && <FormHelperText className='errorHelperText'>{errors.secondaryOfficeId}</FormHelperText>}
-                        </FormControl>
-                    </div>
-                </div>
-                <div>
                     <div className='form-control-input'>
                         <TextField
                         value={values.address} onChange={handleChange}
@@ -205,7 +185,7 @@ const AddEscort = ({
                 </div>
                 <div className='addBtnContainer'>
                     <div>
-                        <button className='btn btn-secondary'>Reset</button>
+                        <button onClick={handleReset} className='btn btn-secondary'>Reset</button>
                     </div>
                     <div>
                         <button onClick={onUserSuccess} className='btn btn-secondary'>Back</button>

@@ -27,10 +27,22 @@ export const API_PATH = {
     CREATE_TEAM: '/team/create',
     UPDATE_TEAM: '/team/update',
     OFFICE_MAPPINGS: '/officeMapping',
-    
     CREATE_SHIFT:'/shift/create',
     SHIFT_LISTING:'/shift/all',
     SHIFT_LISTING_ALL:'/shift/searchByBean',
     SHIFT_ENABLE_DISABLE:'/shift/enable',
-    SHIFT_UPDATE:'/shift/update'
+    SHIFT_UPDATE:'/shift/update',
+    HOLIDAYS: '/holiday',
+    CREATE: '/create',
+    DELETE: '/delete',
+    GET_BOOKINGS: '/booking/searchByBean',
+    SHIFT: "/shift",
+    IN: "/in",
+    OUT: "/out",
+    NODAL_LOCATIONS: '/location/nodal',
+    EMPLOYEES_BY_TEAM: '/emp/employeesByTeamId',
+    CREATE_BOOKING: '/booking/createBooking',
+    EMP_BY_ID: '/emp/byEmpId',
+    CANCEL_BOOKING: '/booking/cancel',
+    LOGOUT: '/unauthorised'
 };

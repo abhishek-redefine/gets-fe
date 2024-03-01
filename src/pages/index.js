@@ -24,6 +24,7 @@ const Home = () => {
           localStorage.setItem("token", token);
           localStorage.setItem("accessToken", accessToken);
           localStorage.setItem("userDetails", JSON.stringify({userId, name}));
+          localStorage.setItem("isSuperAdmin", (userId === 1).toString());
           getUserRole(userId);
         }
       } catch (e) {
@@ -43,7 +44,7 @@ const Home = () => {
       if (response?.data && Object.keys(response?.data)?.length ) {
         localStorage.setItem("userRoles", JSON.stringify(response.data));
       }
-      router.push(ADMIN_AUTH_URLS.ACCESS_CONTROL);
+      router.push(ADMIN_AUTH_URLS.DASHBOARD);
     } catch (e) {
       console.error(e);
     }

@@ -10,24 +10,25 @@ const TeamManagement = ({
 
     const headers = [
     {
-        key: "officeId",
-        display: "Office Id"
+        key: "officeIds",
+        display: "Office Id",
+        type: "arr"
     },
     {
         key: "name",
-        display: "Vendor Name"
+        display: "Team Name"
     },
     {
-        key: "gstNo",
-        display: "GST No"
+        key: "shiftType",
+        display: "Shift Type"
     },
     {
-        key: "contactPerson",
-        display: "Contact Person"
+        key: "sendNotification",
+        display: "Notification"
     },
     {
-        key: "mob",
-        display: "Mobile No"
+        key: "description",
+        display: "Description"
     },
     {
         key: "hamburgerMenu",
@@ -43,7 +44,7 @@ const TeamManagement = ({
     const [paginationData, setPaginationData] = useState();
     const [pagination, setPagination] = useState({
         pageNo: 0,
-        pageSize: DEFAULT_PAGE_SIZE,        
+        pageSize: DEFAULT_PAGE_SIZE,
     });
     const [employeeListing, setEmployeeListing] = useState();
     const [editEmployeeData, setEditEmployeeData] = useState({});

@@ -7,7 +7,7 @@ import OfficesListing from '@/components/offices/offices-listing';
 import OfficesMapping from '@/components/offices/offices-mapping';
 import OfficeService from '@/services/office.service';
 
-const Client = () => {
+const Offices = () => {
     
     const [currentState, setCurrentState] = useState(1);
 
@@ -52,4 +52,4 @@ const Client = () => {
     );
 }
 
-export default AdminSettings(Client);
+export default AdminSettings(Offices);
