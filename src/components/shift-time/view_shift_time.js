@@ -123,8 +123,8 @@ const ViewShiftTime = () => {
     const onMenuItemClick = async (key, clickedItem) => {
         console.log(key, clickedItem)
         if (key === "edit") {
-            setShowEditShiftTime(true)
             setValueEditShiftTime(clickedItem)
+            setShowEditShiftTime(true)
         } else if(key==="enable") {
             const response = await ShiftService.enableDisableShifts(clickedItem.id,true);
             console.log(response)

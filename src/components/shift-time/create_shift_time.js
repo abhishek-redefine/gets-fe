@@ -23,33 +23,37 @@ const CreateShiftTime = ({
     editEmployeeData,
     editValues
 }) => {
+    console.log('CreateShiftTime', editValues)
+
     const theme = useTheme();
-    console.log('CreateShiftTime1', dayjs().hour(0).minute(0))
+
     const getWeekDaysVisibility = (EditValues) => {
         console.log(EditValues)
         return "MON"
     }
     const [visibleOnCompanyHoliday, setVisibleOnCompanyHoliday] = useState(false);
-    const [days, setDays] = useState([]);
+    const [days, setDays] = useState(['Monday','Tuesday']);
     const [formValues, setFormValues] = useState({
-        "shiftTime": editValues?.length > 0 ? editValues.shiftTime : "20:00",
-        "shiftType": editValues?.length > 0 ? dayjs().hour(editValues.shiftType.slice(0, 2)).minute(editValues.shiftType.slice(2,)) : "LOGOUT",
-        "officeIds": editValues?.length > 0 ? editValues.officeId : "HCLND0001",
-        "transportTypes": editValues?.length > 0 ? editValues.transportType : "CAB",
-        "weekDaysVisibility": editValues?.length > 0 ? getWeekDaysVisibility(editValues) : "MON",
-        "isVisibleOnHoliday": editValues?.length > 0 ? editValues.isVisibleOnHoliday : false,
-        "shiftStartDate": editValues?.length > 0 ? editValues.shiftStartDate : "17-01-2024 12:30:40",
-        "shiftEndDate": editValues?.length > 0 ? editValues.shiftEndDate : "17-03-2024 12:30:40",
-        "routeTypes": editValues?.length > 0 ? editValues.routeType : "HOME",
-        "sundayShift": editValues?.length > 0 ? editValues.sundayShift : false,
-        "mondayShift": editValues?.length > 0 ? editValues.mondayShift : true,
-        "tuesdayShift": editValues?.length > 0 ? editValues.tuesdayShift : true,
-        "wednesdayShift": editValues?.length > 0 ? editValues.wednesdayShift : true,
-        "thursdayShift": editValues?.length > 0 ? editValues.thursdayShift : true,
-        "fridayShift": editValues?.length > 0 ? editValues.fridayShift : true,
-        "saturdayShift": editValues?.length > 0 ? editValues.saturdayShift : false,
-        "enabled": editValues?.length > 0 ? editValues.enabled : true,
-        "shiftCancelBookingAttribute": "{\"Monday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Tuesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Wednesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":10,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Thursday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Friday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Saturday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Sunday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0}}"
+        "shiftTime": editValues ? dayjs().hour(Number(editValues.shiftTime.slice(0, 2))).minute(Number(editValues.shiftTime.slice(3, 5))) : dayjs().hour(0).minute(0),
+        "shiftType": editValues ? editValues.shiftType : "LOGOUT",
+        "officeIds": editValues ? editValues.officeIds : "HCLND0001",
+        "transportTypes": editValues ? editValues.transportTypes : "CAB",
+        "weekDaysVisibility": editValues ? "MON" : "MON",
+        "isVisibleOnHoliday": editValues ? editValues.isVisibleOnHoliday : false,
+        "shiftStartDate": editValues ? editValues.shiftStartDate : "17-01-2024 12:30:40",
+        "shiftEndDate": editValues ? editValues.shiftEndDate : "17-03-2024 12:30:40",
+        "routeTypes": editValues ? editValues.routeTypes : "HOME",
+        "sundayShift": editValues ? editValues.sundayShift : false,
+        "mondayShift": editValues ? editValues.mondayShift : true,
+        "tuesdayShift": editValues ? editValues.tuesdayShift : true,
+        "wednesdayShift": editValues ? editValues.wednesdayShift : true,
+        "thursdayShift": editValues ? editValues.thursdayShift : true,
+        "fridayShift": editValues ? editValues.fridayShift : true,
+        "saturdayShift": editValues ? editValues.saturdayShift : false,
+        "enabled": editValues ? editValues.enabled : true,
+        "shiftCancelBookingAttribute": editValues ? editValues.shiftCancelBookingAttribute : "{\"Monday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Tuesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Wednesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":10,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Thursday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Friday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Saturday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Sunday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0}}",
+        "shiftCreateBookingAttribute": editValues ? editValues.shiftCreateBookingAttribute : "{\"Monday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Tuesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Wednesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":10,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Thursday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Friday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Saturday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Sunday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0}}",
+        "shiftNoShowBookingAttribute": editValues ? editValues.shiftNoShowBookingAttribute : "{\"Monday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Tuesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Wednesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":10,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Thursday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Friday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Saturday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Sunday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0}}",
     });
     const [shiftType, setShiftType] = useState([]);
     const [transportType, setTransportType] = useState([]);
@@ -221,7 +225,7 @@ const CreateShiftTime = ({
                             <DemoContainer components={['TimeField', 'TimeField', 'TimeField']}>
                                 <TimeField
                                     label="Shift Time"
-                                    defaultValue={dayjs().hour(0).minute(0)}
+                                    defaultValue={formValues.shiftTime}
                                     format="HH:mm"
                                     onChange={(e) => {
                                         var ShiftTime = e.$d.toLocaleTimeString('it-IT').slice(0, -3);
@@ -321,6 +325,7 @@ const CreateShiftTime = ({
                                 input={<OutlinedInput label="Shift Weekday Visibility" />}
                                 renderValue={(selected) => selected.join(', ')}
                                 MenuProps={MenuProps}
+                                defaultValue={'Monday'}
                             >
                                 {names.map((name) => (
                                     <MenuItem key={name} value={name}>
@@ -353,8 +358,9 @@ const CreateShiftTime = ({
                                     label="Start Date"
                                     value={startDate}
                                     onChange={(newValue) => {
+                                        console.log("Start Date", newValue)
                                         var ShiftStartDate = newValue.$d.toISOString().slice(0, 10).split("-").reverse().join("-");
-                                        ShiftStartDate += ' 12:30:40';
+                                        ShiftStartDate += ' ' + newValue.$H + ':' + newValue.$m + ':' + newValue.$s;
                                         setStartDate(newValue);
                                         setFormValues({ ...formValues, shiftStartDate: ShiftStartDate });
                                     }}
@@ -370,7 +376,7 @@ const CreateShiftTime = ({
                                     value={endDate}
                                     onChange={(newValue) => {
                                         var ShiftEndDate = newValue.$d.toISOString().slice(0, 10).split("-").reverse().join("-");
-                                        ShiftEndDate += ' 12:30:40';
+                                        ShiftEndDate += ' ' + newValue.$H + ':' + newValue.$m + ':' + newValue.$s;
                                         setEndDate(newValue);
                                         setFormValues({ ...formValues, shiftEndDate: ShiftEndDate });
                                     }}
