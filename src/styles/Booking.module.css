@@ -1,0 +1,64 @@
+.bookingForContainer {
+}
+.mainBookingContainer {
+    background-color: white;
+    border-radius: 5px;
+}
+.dateRangeContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0;
+}
+.dateRangeContainer .formControlInput {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.dateRangeInnerContainer {
+    display: flex;
+    width: 40%;
+    margin-left: 20px;
+}
+.dateRangeInnerContainer > div { 
+    margin-left: 20px;
+}
+.mainBookingDataContainer, .mainBookingDataContainerUser {
+    border-top: 10px solid #f9f9f9;
+}
+.mainBookingDataContainer > div {
+    display: flex;
+    flex-direction: column;
+}
+.dayAndDate:first-child {
+    margin-left: 20px;
+}
+.dayAndDate {
+    margin: 0 10px;
+    display: inline-block;
+    width: 80px;
+}
+.perDateContainer {
+    display: flex;
+    align-items: center;
+}
+.pickAndDropContainer {
+    flex-direction: row !important;
+}
+.userDetailsContainer {
+    display: flex;
+    margin: 15px;
+    width: 20%;
+    flex-direction: column;
+}
+.userDetailsContainer span {
+    color: #999;
+}
+.userDetailsContainer p {
+    margin-top: 7px;
+}
+.mainBookingDataContainerUser {
+    padding: 20px;
+    display: flex;
+    flex-wrap: wrap;
+}

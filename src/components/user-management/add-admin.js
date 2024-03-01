@@ -22,11 +22,10 @@ const AddAdmin = ({
         mobile: "",
         alternateMobile: "",
         gender: "",
-        primaryOfficeId: "",
-        secondaryOfficeId: "",
+        officeIds: [],
         address: "",
         email: "",
-        roles: ""
+        roles: []
     });
 
     useState(() => {
@@ -41,9 +40,6 @@ const AddAdmin = ({
         validationSchema: validationSchema,
         onSubmit: async (values) => {
             let allValues = {...values};
-            if (allValues.roles) {
-                allValues.roles = [allValues.roles];
-            }
             Object.keys(allValues).forEach((objKey) => {
                 if (allValues[objKey] === null || allValues[objKey] === "") {
                     delete allValues[objKey];
@@ -66,12 +62,12 @@ const AddAdmin = ({
         }
     });
 
-    const { errors, touched, values, handleChange, handleSubmit } = formik;
+    const { errors, touched, values, handleChange, handleSubmit, handleReset } = formik;
 
     const { Gender: gender, TransportType: transportType, WeekDay: weekdays } = useSelector((state) => state.master);
     const dispatch = useDispatch();
     const [roles, setRoles] = useState([]);
-    const [offices, setOffice] = useState([]);    
+    const [offices, setOffice] = useState([]);
 
     const fetchMasterData = async (type) => {
         try {
@@ -126,11 +122,10 @@ const AddAdmin = ({
             mobile: "",
             alternateMobile: "",
             gender: "",
-            primaryOfficeId: "",
-            secondaryOfficeId: "",
+            officeIds: [],
             address: "",
             email: "",
-            roles: ""
+            roles: []
         });        
     };
 
@@ -179,8 +174,10 @@ const AddAdmin = ({
                         <FormControl required fullWidth>
                             <InputLabel id="admin-role">Admin Role</InputLabel>
                             <Select
+                                style={{width: "250px"}}
                                 labelId="admin-role"
                                 id="roles"
+                                multiple
                                 value={values.roles}
                                 error={touched.roles && Boolean(errors.roles)}
                                 name="roles"
@@ -205,7 +202,7 @@ const AddAdmin = ({
                         required id="mobile" label="Mobile No" variant="outlined" />
                     </div>
                     <div className='form-control-input'>
-                        <TextField
+                        <TextField required
                         value={values.alternateMobile} onChange={handleChange}
                         error={touched.alternateMobile && Boolean(errors.alternateMobile)}
                         helperText={touched.alternateMobile && errors.alternateMobile}
@@ -215,42 +212,23 @@ const AddAdmin = ({
                         <FormControl required fullWidth>
                             <InputLabel id="primary-office-label">Primary Office</InputLabel>
                             <Select
+                                style={{width: "250px"}}                                
                                 labelId="primary-office-label"
-                                id="primaryOfficeId"
-                                value={values.primaryOfficeId}
-                                error={touched.primaryOfficeId && Boolean(errors.primaryOfficeId)}
-                                name="primaryOfficeId"
+                                id="officeIds"
+                                value={values.officeIds}
+                                error={touched.officeIds && Boolean(errors.officeIds)}
+                                name="officeIds"
                                 label="Primary Office"
+                                multiple
                                 onChange={handleChange}
                             >
                                 {!!offices?.length && offices.map((office, idx) => (
                                     <MenuItem key={idx} value={office.officeId}>{getFormattedLabel(office.officeId)}, {office.address}</MenuItem>
                                 ))}
                             </Select>
-                            {touched.primaryOfficeId && errors.primaryOfficeId && <FormHelperText className='errorHelperText'>{errors.primaryOfficeId}</FormHelperText>}
+                            {touched.officeIds && errors.officeIds && <FormHelperText className='errorHelperText'>{errors.officeIds}</FormHelperText>}
                         </FormControl>
                     </div>
-                    <div className='form-control-input'>
-                        <FormControl fullWidth>
-                            <InputLabel id="primary-office-label">Secondary Office</InputLabel>
-                            <Select
-                                labelId="primary-office-label"
-                                id="secondaryOfficeId"
-                                value={values.secondaryOfficeId}
-                                error={touched.secondaryOfficeId && Boolean(errors.secondaryOfficeId)}
-                                name="secondaryOfficeId"
-                                label="Primary Office"
-                                onChange={handleChange}
-                            >
-                                {!!offices?.length && offices.map((office, idx) => (
-                                    <MenuItem key={idx} value={office.officeId}>{getFormattedLabel(office.officeId)}, {office.address}</MenuItem>
-                                ))}
-                            </Select>
-                            {touched.secondaryOfficeId && errors.secondaryOfficeId && <FormHelperText className='errorHelperText'>{errors.secondaryOfficeId}</FormHelperText>}
-                        </FormControl>
-                    </div>
-                </div>
-                <div>                    
                     <div className='form-control-input'>
                         <TextField
                         value={values.address} onChange={handleChange}
@@ -261,7 +239,7 @@ const AddAdmin = ({
                 </div>
                 <div className='addBtnContainer'>
                     <div>
-                        <button className='btn btn-secondary'>Reset</button>
+                        <button onClick={handleReset} className='btn btn-secondary'>Reset</button>
                     </div>
                     <div>
                         <button onClick={onGoBack} className='btn btn-secondary'>Back</button>

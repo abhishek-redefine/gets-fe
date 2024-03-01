@@ -1,6 +1,6 @@
 import * as yup from "yup";
 export const validationSchema = yup.object({
-    officeId: yup.string("Enter Office ID").required("Enter Office ID"),
+    officeIds: yup.array().of(yup.string()).min(1, "Select at least one office").required("Select Office"),
     vendorId: yup.string("Enter Vendor ID").required("Enter Vendor ID"),
     name: yup.string("Enter Vendor Name").required("Enter Vendor Name"),
     address: yup.string("Enter Vendor Address").required("Enter Vendor Address"),

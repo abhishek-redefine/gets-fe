@@ -17,8 +17,9 @@ const EscortManagement = ({
         display: "Escort Name"
     },
     {
-        key: "primaryOfficeId",
-        display: "Office"
+        key: "officeIds",
+        display: "Office",
+        type: "arr"
     },
     {
         key: "email",
@@ -89,11 +90,16 @@ const EscortManagement = ({
       }
     };
 
+    const addEscort = () => {
+        setEditEmployeeData({});
+        setIsAddEdit(true);   
+    }
+
     return (
         <div className='internalSettingContainer'>
             {!isAddEdit && <div>
                 <div className='btnContainer'>
-                    <button onClick={() => setIsAddEdit(true)} className='btn btn-primary'>Add Escort</button>
+                    <button onClick={addEscort} className='btn btn-primary'>Add Escort</button>
                 </div>
                 <div className='gridContainer'>
                     <Grid onMenuItemClick={onMenuItemClick} handlePageChange={handlePageChange} pagination={paginationData} headers={headers} listing={employeeListing} />

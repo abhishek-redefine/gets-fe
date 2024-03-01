@@ -6,23 +6,18 @@ const initialState = { userDetails: {}, signupForm: {
   mobile: "",
 }, passwordRecoveryForm: {
   email: ''
-}, unsubscribedUserHistory: [] };
+}, unsubscribedUserHistory: [],
+allUserPermissions: {} };
 
 const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    signupFormData: (state, action) => {
-      state.signupForm = action.payload;
-    },
-    passwordRecoveryFormData: (state, action) => {
-      state.passwordRecoveryForm = action.payload;
-    },
-    setUserSubscribedHistory: (state, action) => {
-      state.unsubscribedUserHistory = action.payload.response;
-    },
+    setAllUserPermissions: (state, action) => {
+      state.allUserPermissions = action.payload.response;
+    }
   },
 });
 
-export const { signupFormData, passwordRecoveryFormData, setUserSubscribedHistory } = userSlice.actions;
+export const { setAllUserPermissions } = userSlice.actions;
 export default userSlice.reducer;

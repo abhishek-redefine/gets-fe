@@ -1,4 +1,4 @@
-import { MASTER_DATA_TYPES } from '@/constants/app.constants.';
+import { DATE_FORMAT, MASTER_DATA_TYPES } from '@/constants/app.constants.';
 import { setMasterData } from '@/redux/master.slice';
 import MasterDataService from '@/services/masterdata.service';
 import OfficeService from '@/services/office.service';
@@ -70,9 +70,6 @@ const AddEmployee = ({
             if (allValues.profileStatus) {
                 allValues.profileStatus = allValues.profileStatus === "1" ? 1 : 0;
             }
-            if (allValues.transportEligibilities) {
-                allValues.transportEligibilities = [allValues.transportEligibilities];
-            }
             Object.keys(allValues).forEach((objKey) => {
                 if (allValues[objKey] === null || allValues[objKey] === "") {
                     delete allValues[objKey];
@@ -94,12 +91,12 @@ const AddEmployee = ({
         }
     });
 
-    const { errors, touched, values, handleChange, handleSubmit } = formik;
+    const { errors, touched, values, handleChange, handleSubmit, handleReset } = formik;
 
     const { Gender: gender, TransportType: transportType, WeekDay: weekdays } = useSelector((state) => state.master);
     const dispatch = useDispatch();
     const [roles, setRoles] = useState([]);
-    const [offices, setOffice] = useState([]);    
+    const [offices, setOffice] = useState([]);
     const [searchedReportingManager, setSearchedReportingManager] = useState([]);
     const [searchedTeam, setSearchedTeam] = useState([]);
 
@@ -165,9 +162,13 @@ const AddEmployee = ({
 
     const searchForTeam = async (e) => {
         try {
-            const response = await OfficeService.searchTeam(e.target.value);
-            const { data } = response || {};
-            setSearchedTeam(data);
+            if (e.target.value) {
+                const response = await OfficeService.searchTeam(e.target.value);
+                const { data } = response || {};
+                setSearchedTeam(data);
+            } else {
+                setSearchedTeam([]);
+            }
         } catch (e) {
             console.error(e);
         }
@@ -175,9 +176,13 @@ const AddEmployee = ({
 
     const searchForRM = async (e) => {
         try {
-            const response = await OfficeService.searchRM(e.target.value);
-            const { data } = response || {};
-            setSearchedReportingManager(data);
+            if (e.target.value) {
+                const response = await OfficeService.searchRM(e.target.value);
+                const { data } = response || {};
+                setSearchedReportingManager(data);
+            } else {
+                setSearchedReportingManager([]);
+            }
         } catch (e) {
             console.error(e);
         }
@@ -188,7 +193,7 @@ const AddEmployee = ({
     };
   
     const handleDateChange = (date, name) => {
-        const selectedDate = moment(date).format("YYYY-MM-DD");
+        const selectedDate = moment(date).format(DATE_FORMAT);
         if (selectedDate !== "Invalid date") {
             formik.setFieldValue(name, selectedDate);
         }
@@ -414,9 +419,9 @@ const AddEmployee = ({
                                 onClose={() => {
                                     setOpenSearchTeam(false);
                                 }}
-                                onChange={(e, val) => onChangeHandler(val, "team", "key")}
-                                getOptionKey={(team) => team.key}
-                                getOptionLabel={(team) => team.name}
+                                onChange={(e, val) => onChangeHandler(val, "team", "teamId")}
+                                getOptionKey={(team) => team.teamId}
+                                getOptionLabel={(team) => team.teamName}
                                 freeSolo
                                 name="team"
                                 renderInput={(params) => <TextField {...params} label="Search Team"  onChange={searchForTeam} />}
@@ -437,9 +442,9 @@ const AddEmployee = ({
                                 onClose={() => {
                                     setOpenSearchRM(false);
                                 }}
-                                onChange={(e, val) => onChangeHandler(val, "reportingManager", "key")}
-                                getOptionKey={(rm) => rm.key}
-                                getOptionLabel={(rm) => rm.name}
+                                onChange={(e, val) => onChangeHandler(val, "reportingManager", "empId")}
+                                getOptionKey={(rm) => rm.empId}
+                                getOptionLabel={(rm) => `${rm.data}, ${rm.empId}`}
                                 freeSolo
                                 name="reportingManager"
                                 renderInput={(params) => <TextField {...params} label="Search Reporting Manager"  onChange={searchForRM} />}
@@ -458,13 +463,13 @@ const AddEmployee = ({
                     <div className='form-control-input'>
                         <InputLabel htmlFor="start-date">Start Date</InputLabel>
                         <LocalizationProvider dateAdapter={AdapterMoment}>
-                            <DatePicker name="startDate" value={moment(values.startDate)} onChange={(e) => handleDateChange(e, "startDate")} />
+                            <DatePicker name="startDate" format={DATE_FORMAT} value={values.startDate ? moment(values.startDate) : null} onChange={(e) => handleDateChange(e, "startDate")} />
                         </LocalizationProvider>
                     </div>
                     <div className='form-control-input'>
                         <InputLabel htmlFor="End-date">End Date</InputLabel>
                         <LocalizationProvider dateAdapter={AdapterMoment}>
-                            <DatePicker name="endDate" value={moment(values.endDate)} onChange={(e) => handleDateChange(e, "endDate")} />
+                            <DatePicker name="endDate" format={DATE_FORMAT} value={values.endDate ? moment(values.endDate) : null} onChange={(e) => handleDateChange(e, "endDate")} />
                         </LocalizationProvider>
                     </div>
                     <div className='form-control-input'>
@@ -513,7 +518,7 @@ const AddEmployee = ({
                 </div>
                 <div className='addBtnContainer'>
                     <div>
-                        <button className='btn btn-secondary'>Reset</button>
+                        <button onClick={handleReset} className='btn btn-secondary'>Reset</button>
                     </div>
                     <div>
                         <button onClick={onUserSuccess} className='btn btn-secondary'>Back</button>

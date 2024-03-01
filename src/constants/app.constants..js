@@ -1,4 +1,5 @@
 export const ACCESS_TOKEN = "accessToken";
+export const USER_ROLES = "userRoles";
 export const PERMISSIONS = {
     S: "Search",
     D: "Delete",
@@ -38,4 +39,19 @@ export const SHIFT_TYPES = {
     DRIVER: "USER_DRIVER"
 };
 
+export const TRANSPORT_TYPES = {
+    CAB: "CAB",
+    SHUTTLE: "SHUTTLE",
+    BUS: "BUS"
+};
+
+export const SHIFT_TYPE = {
+    LOGIN: "LOGIN",
+    LOGOUT: "LOGOUT"
+};
+
 export const DEFAULT_PAGE_SIZE = 10;
+
+export const DATE_FORMAT = "DD/MM/YYYY";
+
+export const DATE_FORMAT_API = "YYYY-MM-DDTHH:mm:ss.SSS[Z]";

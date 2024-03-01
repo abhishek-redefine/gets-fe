@@ -14,7 +14,7 @@ p, h1, h2, h3, h4, h5, h6, span, div {
   margin: 0;
 }
 
-body {
+body, .MuiDialog-container h2, .MuiDialog-container h1, .MuiDialog-container p, .MuiDialog-container span {
   font-family: 'DM Sans', sans-serif;
 }
 button, label {
@@ -136,7 +136,8 @@ header {
 .subs-container-selected p {
   color: #2C8DFE;
 }
-button:disabled {
+button:disabled, .btn:disabled:hover {
+  user-select: none;
   background-color: rgb(170, 170, 170);
   color: black !important;
 }
@@ -259,10 +260,10 @@ button:disabled {
   margin-left: 25px;
   cursor: pointer;
   border-radius: 50%;
-  padding: 14px 6px;
+  padding: 12px 15px;
   height: 45px;
   width: 45px;
-  font-size: 13px;
+  font-size: 17px;
   font-weight: bold;
   background-color: #F6CE47;
 }
@@ -430,4 +431,24 @@ button:disabled {
 .officeMappingContainer .formControlContainer {
   flex-grow: 1;
   display: flex;
+}
+.popupBtnContainer {
+  display: flex;
+  width: 50%;
+}
+.popupBtnContainer button {
+  margin: 0 10px;
+  padding: 7px 10px;
+}
+.MuiDialog-paper {
+  padding: 10px;
+}
+.filterContainer {
+  display: flex;
+  align-items: end;
+}
+.filterApplyBtn {
+    width: 100px;
+    margin: 0;
+    padding: 18px;
 }
