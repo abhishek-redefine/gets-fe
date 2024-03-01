@@ -8,8 +8,8 @@ const ViewShiftTime = () => {
     const [showEditShiftTime, setShowEditShiftTime] = useState(false)
     const [valueEditShiftTime, setValueEditShiftTime] = useState(false)
     const headers = [{
-        key: "officeId",
-        display: "Office ID"
+        key: "officeIds",
+        display: "Office IDs"
     },
     {
         key: "shiftType",
@@ -20,11 +20,11 @@ const ViewShiftTime = () => {
         display: "Shift Time"
     },
     {
-        key: "transportType",
+        key: "transportTypes",
         display: "Transport Type"
     },
     {
-        key: "routeType",
+        key: "routeTypes",
         display: "Route Type"
     },
     {
@@ -120,11 +120,17 @@ const ViewShiftTime = () => {
         }
     }
 
-    const onMenuItemClick = (key, clickedItem) => {
+    const onMenuItemClick = async (key, clickedItem) => {
         console.log(key, clickedItem)
         if (key === "edit") {
             setShowEditShiftTime(true)
             setValueEditShiftTime(clickedItem)
+        } else if(key==="enable") {
+            const response = await ShiftService.enableDisableShifts(clickedItem.id,true);
+            console.log(response)
+        } else if(key==="disable") {
+            const response = await ShiftService.enableDisableShifts(clickedItem.id,false);
+            console.log(response)
         }
     }
 

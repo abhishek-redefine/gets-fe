@@ -34,13 +34,13 @@ const CreateShiftTime = ({
     const [formValues, setFormValues] = useState({
         "shiftTime": editValues?.length > 0 ? editValues.shiftTime : "20:00",
         "shiftType": editValues?.length > 0 ? dayjs().hour(editValues.shiftType.slice(0, 2)).minute(editValues.shiftType.slice(2,)) : "LOGOUT",
-        "officeId": editValues?.length > 0 ? editValues.officeId : "HCLND0001",
-        "transportType": editValues?.length > 0 ? editValues.transportType : "CAB",
+        "officeIds": editValues?.length > 0 ? editValues.officeId : "HCLND0001",
+        "transportTypes": editValues?.length > 0 ? editValues.transportType : "CAB",
         "weekDaysVisibility": editValues?.length > 0 ? getWeekDaysVisibility(editValues) : "MON",
         "isVisibleOnHoliday": editValues?.length > 0 ? editValues.isVisibleOnHoliday : false,
-        "shiftStartDate": editValues?.length > 0 ? editValues.shiftStartDate : "17-01-2024 12:12:12",
-        "shiftEndDate": editValues?.length > 0 ? editValues.shiftEndDate : "17-03-2024 12:12:12",
-        "routeType": editValues?.length > 0 ? editValues.routeType : "HOME",
+        "shiftStartDate": editValues?.length > 0 ? editValues.shiftStartDate : "17-01-2024 12:30:40",
+        "shiftEndDate": editValues?.length > 0 ? editValues.shiftEndDate : "17-03-2024 12:30:40",
+        "routeTypes": editValues?.length > 0 ? editValues.routeType : "HOME",
         "sundayShift": editValues?.length > 0 ? editValues.sundayShift : false,
         "mondayShift": editValues?.length > 0 ? editValues.mondayShift : true,
         "tuesdayShift": editValues?.length > 0 ? editValues.tuesdayShift : true,
@@ -48,7 +48,8 @@ const CreateShiftTime = ({
         "thursdayShift": editValues?.length > 0 ? editValues.thursdayShift : true,
         "fridayShift": editValues?.length > 0 ? editValues.fridayShift : true,
         "saturdayShift": editValues?.length > 0 ? editValues.saturdayShift : false,
-        "enabled": editValues?.length > 0 ? editValues.enabled : true
+        "enabled": editValues?.length > 0 ? editValues.enabled : true,
+        "shiftCancelBookingAttribute": "{\"Monday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Tuesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Wednesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":10,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Thursday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Friday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Saturday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Sunday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0}}"
     });
     const [shiftType, setShiftType] = useState([]);
     const [transportType, setTransportType] = useState([]);
@@ -231,7 +232,7 @@ const CreateShiftTime = ({
                             </DemoContainer>
                         </LocalizationProvider>
                     </div>
-                    <div className='form-control-input'>
+                    {/* <div className='form-control-input'>
                         <FormControl sx={{ m: 1, width: 300 }}>
                             <InputLabel id="demo-multiple-name-label">Shift Type</InputLabel>
                             <Select
@@ -254,6 +255,23 @@ const CreateShiftTime = ({
                                 ))}
                             </Select>
                         </FormControl>
+                    </div> */}
+                    <div className='form-control-input'>
+                        <FormControl required fullWidth>
+                            <InputLabel id="admin-role">Shift Type</InputLabel>
+                            <Select
+                                labelId="admin-role"
+                                id="roles"
+                                value={formValues.shiftType}
+                                name="roles"
+                                label="Admin Role"
+                                onChange={(e) => setFormValues({ ...formValues, shiftType: e.target.value })}
+                            >
+                                {shiftType?.map((item, idx) => (
+                                    <MenuItem key={idx} value={item.value}>{item.displayName}</MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
                     </div>
                     <div className='form-control-input'>
                         <FormControl required fullWidth>
@@ -261,10 +279,10 @@ const CreateShiftTime = ({
                             <Select
                                 labelId="admin-role"
                                 id="roles"
-                                value={formValues.transportType}
+                                value={formValues.transportTypes}
                                 name="roles"
                                 label="Admin Role"
-                                onChange={(e) => setFormValues({ ...formValues, transportType: e.target.value })}
+                                onChange={(e) => setFormValues({ ...formValues, transportTypes: e.target.value })}
                             >
                                 {!!transportType?.length && transportType.map((item, idx) => (
                                     <MenuItem key={idx} value={item.value}>{item.displayName}</MenuItem>
@@ -280,10 +298,10 @@ const CreateShiftTime = ({
                             <Select
                                 labelId="primary-office-label"
                                 id="primaryOfficeId"
-                                value={formValues.officeId}
+                                value={formValues.officeIds}
                                 name="primaryOfficeId"
                                 label="Primary Office"
-                                onChange={(e) => setFormValues({ ...formValues, officeId: e.target.value })}
+                                onChange={(e) => setFormValues({ ...formValues, officeIds: e.target.value })}
                             >
                                 {!!offices?.length && offices.map((office, idx) => (
                                     <MenuItem key={idx} value={office.officeId}>{getFormattedLabel(office.officeId)}, {office.address}</MenuItem>
@@ -292,7 +310,7 @@ const CreateShiftTime = ({
                         </FormControl>
                     </div>
                     <div className='form-control-input'>
-                        <FormControl sx={{ m: 1, width: 300 }}>
+                        <FormControl sx={{ m: 1, width: 200 }}>
                             <InputLabel id="demo-multiple-checkbox-label">Shift Weekday Visibility</InputLabel>
                             <Select
                                 labelId="demo-multiple-checkbox-label"
@@ -327,7 +345,7 @@ const CreateShiftTime = ({
                         <FormControlLabel control={<Checkbox color="default" onChange={(e) => e.target.checked ? setFormValues({ ...formValues, isVisibleOnHoliday: true }) : setFormValues({ ...formValues, isVisibleOnHoliday: false })} />} label="Visible on company holidays" />
                     </div>
                 </div>
-                <div>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
                     <div className='form-control-input'>
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                             <DemoContainer components={['DatePicker', 'DatePicker']}>
@@ -335,8 +353,8 @@ const CreateShiftTime = ({
                                     label="Start Date"
                                     value={startDate}
                                     onChange={(newValue) => {
-                                        var ShiftStartDate = newValue.$d.toISOString().slice(0, 10);
-                                        ShiftStartDate += ' 12:12:12';
+                                        var ShiftStartDate = newValue.$d.toISOString().slice(0, 10).split("-").reverse().join("-");
+                                        ShiftStartDate += ' 12:30:40';
                                         setStartDate(newValue);
                                         setFormValues({ ...formValues, shiftStartDate: ShiftStartDate });
                                     }}
@@ -351,8 +369,8 @@ const CreateShiftTime = ({
                                     label="End Date"
                                     value={endDate}
                                     onChange={(newValue) => {
-                                        var ShiftEndDate = newValue.$d.toISOString().slice(0, 10);
-                                        ShiftEndDate += ' 12:12:12';
+                                        var ShiftEndDate = newValue.$d.toISOString().slice(0, 10).split("-").reverse().join("-");
+                                        ShiftEndDate += ' 12:30:40';
                                         setEndDate(newValue);
                                         setFormValues({ ...formValues, shiftEndDate: ShiftEndDate });
                                     }}
@@ -360,18 +378,16 @@ const CreateShiftTime = ({
                             </DemoContainer>
                         </LocalizationProvider>
                     </div>
-                </div>
-                <div>
                     <div className='form-control-input'>
                         <FormControl required fullWidth>
                             <InputLabel id="admin-role">Route Type</InputLabel>
                             <Select
                                 labelId="admin-role"
                                 id="roles"
-                                value={formValues.routeType}
+                                value={formValues.routeTypes}
                                 name="roles"
                                 label="Admin Role"
-                                onChange={(e) => setFormValues({ ...formValues, routeType: e.target.value })}
+                                onChange={(e) => setFormValues({ ...formValues, routeTypes: e.target.value })}
                             >
                                 {!!routeType?.length && routeType.map((item, idx) => (
                                     <MenuItem key={idx} value={item.value}>{item.displayName}</MenuItem>
@@ -379,7 +395,10 @@ const CreateShiftTime = ({
                             </Select>
                         </FormControl>
                     </div>
-                    {/* <div className='form-control-input'>
+                </div>
+                {/* <div> */}
+
+                {/* <div className='form-control-input'>
                     <FormControl required>
                         <RadioGroup
                             style={{ flexDirection: "row" }}
@@ -397,7 +416,7 @@ const CreateShiftTime = ({
                         value={values.address} onChange={handleChange}
                         name="address" required id="address" label="Ceiling Limit" variant="outlined" />
                 </div> */}
-                </div>
+                {/* </div> */}
             </div>
 
             <div className='addBtnContainer' style={{ justifyContent: 'right' }}>

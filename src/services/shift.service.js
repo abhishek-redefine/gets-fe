@@ -13,6 +13,12 @@ const createShift = (data) => {
     });
 };
 
+const updateShift = (data) => {
+    return axiosInstance.put(`${API_PATH.API_VERSION}${API_PATH.SHIFT_UPDATE}`, data).then((response) => {
+        return response;
+    });
+};
+
 const getAllShifts = (queryParams) => {
     let url = `${API_PATH.API_VERSION}${API_PATH.SHIFT_LISTING}`;
     // if (queryParams) {
@@ -33,11 +39,21 @@ const getAllShiftsWOPagination = (queryParams) => {
     });
 };
 
+const enableDisableShifts = (id,isEnable) => {
+    let url = `${API_PATH.API_VERSION}${API_PATH.SHIFT_ENABLE_DISABLE}/${id}/${isEnable}`;
+   
+    return axiosInstance.put(url).then((response) => {
+        return response;
+    });
+};
+
 const ShiftService = {
     getMasterData,
     createShift,
     getAllShifts,
-    getAllShiftsWOPagination
+    getAllShiftsWOPagination,
+    enableDisableShifts,
+    updateShift
 };
 
 export default ShiftService;

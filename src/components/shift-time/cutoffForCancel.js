@@ -1,131 +1,152 @@
-import { MASTER_DATA_TYPES } from '@/constants/app.constants.';
-import { setMasterData } from '@/redux/master.slice';
-import MasterDataService from '@/services/masterdata.service';
-import OfficeService from '@/services/office.service';
-import dayjs, { Dayjs } from 'dayjs';
-import RoleService from '@/services/role.service';
 import { getFormattedLabel } from '@/utils/utils';
-import { FormControl, FormControlLabel, RadioGroup, Radio, FormHelperText, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { Box, FormControl, FormControlLabel, RadioGroup, Radio, FormHelperText, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useFormik } from "formik";
-import { validationSchema } from './admin/validationSchema';
-import { toggleToast } from '@/redux/company.slice';
+import ShiftService from '@/services/shift.service';
 
 const CutoffForCancel = ({
-    roleType,
     onUserSuccess,
     editEmployeeData
 }) => {
-
-    const [initialValues, setInitialValues] = useState({
-        name: "",
-        mobile: "",
-        alternateMobile: "",
-        gender: "",
-        primaryOfficeId: "",
-        secondaryOfficeId: "",
-        address: "",
-        email: "",
-        roles: ""
+    const [formValues, setFormValues] = useState({
+        officeIds: '',
+        shiftType: '',
+        transportTypes: '',
+        shiftTime: ''
     });
-    const [shiftType, setShiftType] = useState([]);
-    const [transportType, setTransportType] = useState([]);
-
-    const formik = useFormik({
-        initialValues: initialValues,
-        validationSchema: validationSchema,
-        onSubmit: async (values) => {
-            let allValues = { ...values };
-            if (allValues.roles) {
-                allValues.roles = [allValues.roles];
-            }
-            Object.keys(allValues).forEach((objKey) => {
-                if (allValues[objKey] === null || allValues[objKey] === "") {
-                    delete allValues[objKey];
-                }
-            });
-            try {
-                if (initialValues?.id) {
-                    await OfficeService.updateAdmin({ adminUser: { ...initialValues, ...allValues } });
-                    dispatch(toggleToast({ message: 'Admin updated successfully!', type: 'success' }));
-                } else {
-                    await OfficeService.createAdmin({ adminUser: allValues });
-                    dispatch(toggleToast({ message: 'Admin added successfully!', type: 'success' }));
-                }
-                onUserSuccess(true);
-            } catch (e) {
-                console.error(e);
-                dispatch(toggleToast({ message: e?.response?.data?.message || 'Error adding admin, please try again later!', type: 'error' }));
-            }
+    const [formValuesList, setFormValuesList] = useState({
+        officeIds: [],
+        shiftType: [],
+        transportTypes: [],
+        shiftTime: []
+    });
+    const [finalSelectedData, setFinalSelectedData] = useState({})
+    const [listData, setListData] = useState([])
+    const [dayCutoffValues, setDayCutoffValues] = useState({
+        "Monday": {
+            "CutoffforEmployee": 0,
+            "CutoffforSpoc": 0,
+            "EmployeeAvailability": "No",
+            "SpocAvailability": "No"
+        },
+        "Tuesday": {
+            "CutoffforEmployee": 0,
+            "CutoffforSpoc": 0,
+            "EmployeeAvailability": "No",
+            "SpocAvailability": "No"
+        },
+        "Wednesday": {
+            "CutoffforEmployee": 0,
+            "CutoffforSpoc": 0,
+            "EmployeeAvailability": "No",
+            "SpocAvailability": "No"
+        },
+        "Thursday": {
+            "CutoffforEmployee": 0,
+            "CutoffforSpoc": 0,
+            "EmployeeAvailability": "No",
+            "SpocAvailability": "No"
+        },
+        "Friday": {
+            "CutoffforEmployee": 0,
+            "CutoffforSpoc": 0,
+            "EmployeeAvailability": "No",
+            "SpocAvailability": "No"
+        },
+        "Saturday": {
+            "CutoffforEmployee": 0,
+            "CutoffforSpoc": 0,
+            "EmployeeAvailability": "No",
+            "SpocAvailability": "No"
+        },
+        "Sunday": {
+            "CutoffforEmployee": 0,
+            "CutoffforSpoc": 0,
+            "EmployeeAvailability": "No",
+            "SpocAvailability": "No"
         }
     });
 
-    const { errors, touched, values, handleChange, handleSubmit } = formik;
+    const initializeFormValues = (data) => {
+        setDayCutoffValues(JSON.parse(data[0].shiftCancelBookingAttribute))
+        setFinalSelectedData(data[0])
+    }
 
-    console.log("err", errors);
+    const handleSubmit = async () => {
+        var apiData = finalSelectedData
+        apiData.shiftCancelBookingAttribute = JSON.stringify(dayCutoffValues)
+        const response = await ShiftService.updateShift({ "shift": apiData })
+        console.log(response)
+    }
 
-    const { Gender: gender, WeekDay: weekdays } = useSelector((state) => state.master);
-    const dispatch = useDispatch();
-    const [roles, setRoles] = useState([]);
-    const [offices, setOffice] = useState([]);
-    const [value, setValue] = useState(dayjs('2022-04-17'));
+    const setDropDownValues = (data) => {
+        var FormValuesList = {
+            officeIds: [],
+            shiftType: [],
+            transportTypes: [],
+            shiftTime: []
+        }
 
-    const fetchMasterData = async (type) => {
-        try {
-            const response = await MasterDataService.getMasterData(type);
-            const { data } = response || {};
-            if (data?.length) {
-                dispatch(setMasterData({ data, type }));
+        data.map((item, index) => {
+            if (FormValuesList.officeIds.indexOf(item.officeIds) === -1) {
+                FormValuesList.officeIds.push(item.officeIds)
             }
-        } catch (e) {
+            if (FormValuesList.shiftType.indexOf(item.shiftType) === -1) {
+                FormValuesList.shiftType.push(item.shiftType)
+            }
+            if (FormValuesList.transportTypes.indexOf(item.transportTypes) === -1) {
+                FormValuesList.transportTypes.push(item.transportTypes)
+            }
+            if (FormValuesList.shiftTime.indexOf(item.shiftTime) === -1) {
+                FormValuesList.shiftTime.push(item.shiftTime)
+            }
+        })
 
-        }
-    };
+        console.log('setDropDownValues', FormValuesList)
 
-    const getAllRolesByType = async () => {
-        try {
-            const response = await RoleService.getRolesByType(roleType);
-            const { data } = response || {};
-            setRoles(data);
-        } catch (e) {
-
-        }
-    };
-
-    const fetchAllOffices = async () => {
-        try {
-            const response = await OfficeService.getAllOffices();
-            const { data } = response || {};
-            const { clientOfficeDTO } = data || {};
-            setOffice(clientOfficeDTO);
-        } catch (e) {
-
-        }
-    };
+        setFormValuesList(FormValuesList)
+    }
 
     const initializer = async () => {
-        const response1 = await ShiftService.getMasterData('ShiftType');
-        setShiftType(response1.data)
-        const response2 = await ShiftService.getMasterData('TransportType');
-        setTransportType(response2.data)
+        const response = await ShiftService.getAllShiftsWOPagination();
+        console.log('initializer', response.data.data)
+        setDropDownValues(response.data.data)
+        setListData(response.data.data)
+    }
+
+    const dropDownValues = {
+        "Monday": [
+            { value: 'Yes' },
+            { value: 'No' }
+        ],
+        "Tuesday": [
+            { value: 'Yes' },
+            { value: 'No' }
+        ],
+        "Wednesday": [
+            { value: 'Yes' },
+            { value: 'No' }
+        ],
+        "Thursday": [
+            { value: 'Yes' },
+            { value: 'No' }
+        ],
+        "Friday": [
+            { value: 'Yes' },
+            { value: 'No' }
+        ],
+        "Saturday": [
+            { value: 'Yes' },
+            { value: 'No' }
+        ],
+        "Sunday": [
+            { value: 'Yes' },
+            { value: 'No' }
+        ]
     }
 
     useEffect(() => {
-        if (!gender?.length) {
-            fetchMasterData(MASTER_DATA_TYPES.GENDER);
-        }
-        if (!transportType?.length) {
-            fetchMasterData(MASTER_DATA_TYPES.TRANSPORT_TYPE);
-        }
-        if (!weekdays?.length) {
-            fetchMasterData(MASTER_DATA_TYPES.WEEKDAY);
-        }
-        getAllRolesByType();
-        fetchAllOffices();
-
-        initializer();
-    }, []);
+        initializer()
+    }, [])
 
     return (
         <div style={{ marginTop: '20px' }}>
@@ -147,21 +168,19 @@ const CutoffForCancel = ({
                     <div>
                         <div className='form-control-input'>
                             {<FormControl required fullWidth>
-                                <InputLabel id="gender-label">Office ID</InputLabel>
+                                <InputLabel id="gender-label">Office IDs</InputLabel>
                                 <Select
                                     labelId="gender-label"
                                     id="gender"
                                     name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
+                                    value={formValues.officeIds}
                                     label="Gender"
-                                    onChange={handleChange}
+                                    onChange={(e) => { setDropDownValues(listData.filter((item) => item.officeIds === e.target.value)); setListData(listData.filter((item) => item.officeIds === e.target.value)); setFormValues({ ...formValues, officeIds: e.target.value }); }}
                                 >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
+                                    {formValuesList.officeIds.map((item, idx) => (
+                                        <MenuItem key={idx} value={item}>{item}</MenuItem>
                                     ))}
                                 </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
                             </FormControl>}
                         </div>
                     </div>
@@ -172,17 +191,16 @@ const CutoffForCancel = ({
                                 <Select
                                     labelId="primary-office-label"
                                     id="primaryOfficeId"
-                                    value={values.primaryOfficeId}
-                                    error={touched.primaryOfficeId && Boolean(errors.primaryOfficeId)}
+                                    value={formValues.shiftType}
                                     name="primaryOfficeId"
                                     label="Primary Office"
-                                    onChange={handleChange}
+                                    onChange={(e) => { setDropDownValues(listData.filter((item) => item.shiftType === e.target.value)); setListData(listData.filter((item) => item.shiftType === e.target.value)); setFormValues({ ...formValues, shiftType: e.target.value }); }}
+                                    disabled={formValues.officeIds === ''}
                                 >
-                                    {!!offices?.length && offices.map((office, idx) => (
-                                        <MenuItem key={idx} value={office.officeId}>{getFormattedLabel(office.officeId)}, {office.address}</MenuItem>
+                                    {formValuesList.shiftType.map((item, idx) => (
+                                        <MenuItem key={idx} value={item}>{item}</MenuItem>
                                     ))}
                                 </Select>
-                                {touched.primaryOfficeId && errors.primaryOfficeId && <FormHelperText className='errorHelperText'>{errors.primaryOfficeId}</FormHelperText>}
                             </FormControl>
                         </div>
                     </div>
@@ -194,16 +212,15 @@ const CutoffForCancel = ({
                                     labelId="gender-label"
                                     id="gender"
                                     name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
+                                    value={formValues.transportTypes}
                                     label="Gender"
-                                    onChange={handleChange}
+                                    onChange={(e) => { setDropDownValues(listData.filter((item) => item.transportTypes === e.target.value)); setListData(listData.filter((item) => item.transportTypes === e.target.value)); setFormValues({ ...formValues, transportTypes: e.target.value }); }}
+                                    disabled={formValues.shiftType === ''}
                                 >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
+                                    {formValuesList.transportTypes.map((item, idx) => (
+                                        <MenuItem key={idx} value={item}>{item}</MenuItem>
                                     ))}
                                 </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
                             </FormControl>}
                         </div>
                     </div>
@@ -214,17 +231,16 @@ const CutoffForCancel = ({
                                 <Select
                                     labelId="primary-office-label"
                                     id="primaryOfficeId"
-                                    value={values.primaryOfficeId}
-                                    error={touched.primaryOfficeId && Boolean(errors.primaryOfficeId)}
+                                    value={formValues.shiftTime}
                                     name="primaryOfficeId"
                                     label="Primary Office"
-                                    onChange={handleChange}
+                                    onChange={(e) => { setFormValues({ ...formValues, shiftTime: e.target.value }); initializeFormValues(listData.filter((item) => item.shiftTime === e.target.value)); }}
+                                    disabled={formValues.transportTypes === ''}
                                 >
-                                    {!!offices?.length && offices.map((office, idx) => (
-                                        <MenuItem key={idx} value={office.officeId}>{getFormattedLabel(office.officeId)}, {office.address}</MenuItem>
+                                    {formValuesList.shiftTime.map((item, idx) => (
+                                        <MenuItem key={idx} value={item}>{item}</MenuItem>
                                     ))}
                                 </Select>
-                                {touched.primaryOfficeId && errors.primaryOfficeId && <FormHelperText className='errorHelperText'>{errors.primaryOfficeId}</FormHelperText>}
                             </FormControl>
                         </div>
                     </div>
@@ -258,36 +274,27 @@ const CutoffForCancel = ({
                                     labelId="gender-label"
                                     id="gender"
                                     name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
+                                    value={dayCutoffValues.Monday.EmployeeAvailability}
                                     label="Gender"
-                                    onChange={handleChange}
+                                    onChange={(event) => setDayCutoffValues({ ...dayCutoffValues, "Monday": { ...dayCutoffValues.Monday, "EmployeeAvailability": event.target.value } })}
+                                    disabled={formValues.shiftTime === ''}
                                 >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
+                                    {dropDownValues.Monday.map((item, idx) => (
+                                        <MenuItem key={idx} value={item.value}>{item.value}</MenuItem>
                                     ))}
                                 </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
                             </FormControl>
                         </div>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
-                            <FormControl required fullWidth>
-                                <InputLabel id="gender-label">Minutes</InputLabel>
-                                <Select
-                                    labelId="gender-label"
-                                    id="gender"
-                                    name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
-                                    label="Gender"
-                                    onChange={handleChange}
-                                >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
-                                    ))}
-                                </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
-                            </FormControl>
+                            <TextField
+                                id="outlined-controlled"
+                                label=""
+                                value={dayCutoffValues.Monday.CutoffforEmployee}
+                                onChange={(event) => {
+                                    setDayCutoffValues({ ...dayCutoffValues, "Monday": { ...dayCutoffValues.Monday, "CutoffforEmployee": event.target.value } })
+                                }}
+                                disabled={formValues.shiftTime === ''}
+                            />
                         </div>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
                             <FormControl required fullWidth>
@@ -296,38 +303,28 @@ const CutoffForCancel = ({
                                     labelId="gender-label"
                                     id="gender"
                                     name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
+                                    value={dayCutoffValues.Monday.SpocAvailability}
                                     label="Gender"
-                                    onChange={handleChange}
+                                    onChange={(event) => setDayCutoffValues({ ...dayCutoffValues, "Monday": { ...dayCutoffValues.Monday, "SpocAvailability": event.target.value } })}
+                                    disabled={formValues.shiftTime === ''}
                                 >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
+                                    {dropDownValues.Monday.map((item, idx) => (
+                                        <MenuItem key={idx} value={item.value}>{item.value}</MenuItem>
                                     ))}
                                 </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
                             </FormControl>
                         </div>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
-                            <FormControl required fullWidth>
-                                <InputLabel id="gender-label">Minutes</InputLabel>
-                                <Select
-                                    labelId="gender-label"
-                                    id="gender"
-                                    name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
-                                    label="Gender"
-                                    onChange={handleChange}
-                                >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
-                                    ))}
-                                </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
-                            </FormControl>
+                            <TextField
+                                id="outlined-controlled"
+                                label=""
+                                value={dayCutoffValues.Monday.CutoffforSpoc}
+                                onChange={(event) => {
+                                    setDayCutoffValues({ ...dayCutoffValues, "Monday": { ...dayCutoffValues.Monday, "CutoffforSpoc": event.target.value } })
+                                }}
+                                disabled={formValues.shiftTime === ''}
+                            />
                         </div>
-
                     </div>
                     <div className='addUpdateFormContainer' style={{ marginTop: '0px', display: 'flex', width: '100%', alignItems: 'center' }}>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
@@ -340,36 +337,27 @@ const CutoffForCancel = ({
                                     labelId="gender-label"
                                     id="gender"
                                     name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
+                                    value={dayCutoffValues.Tuesday.EmployeeAvailability}
                                     label="Gender"
-                                    onChange={handleChange}
+                                    onChange={(event) => setDayCutoffValues({ ...dayCutoffValues, "Tuesday": { ...dayCutoffValues.Tuesday, "EmployeeAvailability": event.target.value } })}
+                                    disabled={formValues.shiftTime === ''}
                                 >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
+                                    {dropDownValues.Tuesday.map((item, idx) => (
+                                        <MenuItem key={idx} value={item.value}>{item.value}</MenuItem>
                                     ))}
                                 </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
                             </FormControl>
                         </div>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
-                            <FormControl required fullWidth>
-                                <InputLabel id="gender-label">Minutes</InputLabel>
-                                <Select
-                                    labelId="gender-label"
-                                    id="gender"
-                                    name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
-                                    label="Gender"
-                                    onChange={handleChange}
-                                >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
-                                    ))}
-                                </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
-                            </FormControl>
+                            <TextField
+                                id="outlined-controlled"
+                                label=""
+                                value={dayCutoffValues.Tuesday.CutoffforEmployee}
+                                onChange={(event) => {
+                                    setDayCutoffValues({ ...dayCutoffValues, "Tuesday": { ...dayCutoffValues.Tuesday, "CutoffforEmployee": event.target.value } })
+                                }}
+                                disabled={formValues.shiftTime === ''}
+                            />
                         </div>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
                             <FormControl required fullWidth>
@@ -378,38 +366,28 @@ const CutoffForCancel = ({
                                     labelId="gender-label"
                                     id="gender"
                                     name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
+                                    value={dayCutoffValues.Tuesday.SpocAvailability}
                                     label="Gender"
-                                    onChange={handleChange}
+                                    onChange={(event) => setDayCutoffValues({ ...dayCutoffValues, "Tuesday": { ...dayCutoffValues.Tuesday, "SpocAvailability": event.target.value } })}
+                                    disabled={formValues.shiftTime === ''}
                                 >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
+                                    {dropDownValues.Tuesday.map((item, idx) => (
+                                        <MenuItem key={idx} value={item.value}>{item.value}</MenuItem>
                                     ))}
                                 </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
                             </FormControl>
                         </div>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
-                            <FormControl required fullWidth>
-                                <InputLabel id="gender-label">Minutes</InputLabel>
-                                <Select
-                                    labelId="gender-label"
-                                    id="gender"
-                                    name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
-                                    label="Gender"
-                                    onChange={handleChange}
-                                >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
-                                    ))}
-                                </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
-                            </FormControl>
+                            <TextField
+                                id="outlined-controlled"
+                                label=""
+                                value={dayCutoffValues.Tuesday.CutoffforSpoc}
+                                onChange={(event) => {
+                                    setDayCutoffValues({ ...dayCutoffValues, "Tuesday": { ...dayCutoffValues.Tuesday, "CutoffforSpoc": event.target.value } })
+                                }}
+                                disabled={formValues.shiftTime === ''}
+                            />
                         </div>
-
                     </div>
                     <div className='addUpdateFormContainer' style={{ marginTop: '0px', display: 'flex', width: '100%', alignItems: 'center' }}>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
@@ -422,36 +400,27 @@ const CutoffForCancel = ({
                                     labelId="gender-label"
                                     id="gender"
                                     name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
+                                    value={dayCutoffValues.Wednesday.EmployeeAvailability}
                                     label="Gender"
-                                    onChange={handleChange}
+                                    onChange={(event) => setDayCutoffValues({ ...dayCutoffValues, "Wednesday": { ...dayCutoffValues.Wednesday, "EmployeeAvailability": event.target.value } })}
+                                    disabled={formValues.shiftTime === ''}
                                 >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
+                                    {dropDownValues.Wednesday.map((item, idx) => (
+                                        <MenuItem key={idx} value={item.value}>{item.value}</MenuItem>
                                     ))}
                                 </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
                             </FormControl>
                         </div>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
-                            <FormControl required fullWidth>
-                                <InputLabel id="gender-label">Minutes</InputLabel>
-                                <Select
-                                    labelId="gender-label"
-                                    id="gender"
-                                    name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
-                                    label="Gender"
-                                    onChange={handleChange}
-                                >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
-                                    ))}
-                                </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
-                            </FormControl>
+                            <TextField
+                                id="outlined-controlled"
+                                label=""
+                                value={dayCutoffValues.Wednesday.CutoffforEmployee}
+                                onChange={(event) => {
+                                    setDayCutoffValues({ ...dayCutoffValues, "Wednesday": { ...dayCutoffValues.Wednesday, "CutoffforEmployee": event.target.value } })
+                                }}
+                                disabled={formValues.shiftTime === ''}
+                            />
                         </div>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
                             <FormControl required fullWidth>
@@ -460,38 +429,28 @@ const CutoffForCancel = ({
                                     labelId="gender-label"
                                     id="gender"
                                     name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
+                                    value={dayCutoffValues.Wednesday.SpocAvailability}
                                     label="Gender"
-                                    onChange={handleChange}
+                                    onChange={(event) => setDayCutoffValues({ ...dayCutoffValues, "Wednesday": { ...dayCutoffValues.Wednesday, "SpocAvailability": event.target.value } })}
+                                    disabled={formValues.shiftTime === ''}
                                 >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
+                                    {dropDownValues.Wednesday.map((item, idx) => (
+                                        <MenuItem key={idx} value={item.value}>{item.value}</MenuItem>
                                     ))}
                                 </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
                             </FormControl>
                         </div>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
-                            <FormControl required fullWidth>
-                                <InputLabel id="gender-label">Minutes</InputLabel>
-                                <Select
-                                    labelId="gender-label"
-                                    id="gender"
-                                    name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
-                                    label="Gender"
-                                    onChange={handleChange}
-                                >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
-                                    ))}
-                                </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
-                            </FormControl>
+                            <TextField
+                                id="outlined-controlled"
+                                label=""
+                                value={dayCutoffValues.Wednesday.CutoffforSpoc}
+                                onChange={(event) => {
+                                    setDayCutoffValues({ ...dayCutoffValues, "Wednesday": { ...dayCutoffValues.Wednesday, "CutoffforSpoc": event.target.value } })
+                                }}
+                                disabled={formValues.shiftTime === ''}
+                            />
                         </div>
-
                     </div>
                     <div className='addUpdateFormContainer' style={{ marginTop: '0px', display: 'flex', width: '100%', alignItems: 'center' }}>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
@@ -504,36 +463,27 @@ const CutoffForCancel = ({
                                     labelId="gender-label"
                                     id="gender"
                                     name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
+                                    value={dayCutoffValues.Thursday.EmployeeAvailability}
                                     label="Gender"
-                                    onChange={handleChange}
+                                    onChange={(event) => setDayCutoffValues({ ...dayCutoffValues, "Thursday": { ...dayCutoffValues.Thursday, "EmployeeAvailability": event.target.value } })}
+                                    disabled={formValues.shiftTime === ''}
                                 >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
+                                    {dropDownValues.Thursday.map((item, idx) => (
+                                        <MenuItem key={idx} value={item.value}>{item.value}</MenuItem>
                                     ))}
                                 </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
                             </FormControl>
                         </div>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
-                            <FormControl required fullWidth>
-                                <InputLabel id="gender-label">Minutes</InputLabel>
-                                <Select
-                                    labelId="gender-label"
-                                    id="gender"
-                                    name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
-                                    label="Gender"
-                                    onChange={handleChange}
-                                >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
-                                    ))}
-                                </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
-                            </FormControl>
+                            <TextField
+                                id="outlined-controlled"
+                                label=""
+                                value={dayCutoffValues.Thursday.CutoffforEmployee}
+                                onChange={(event) => {
+                                    setDayCutoffValues({ ...dayCutoffValues, "Thursday": { ...dayCutoffValues.Thursday, "CutoffforEmployee": event.target.value } })
+                                }}
+                                disabled={formValues.shiftTime === ''}
+                            />
                         </div>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
                             <FormControl required fullWidth>
@@ -542,38 +492,28 @@ const CutoffForCancel = ({
                                     labelId="gender-label"
                                     id="gender"
                                     name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
+                                    value={dayCutoffValues.Thursday.SpocAvailability}
                                     label="Gender"
-                                    onChange={handleChange}
+                                    onChange={(event) => setDayCutoffValues({ ...dayCutoffValues, "Thursday": { ...dayCutoffValues.Thursday, "SpocAvailability": event.target.value } })}
+                                    disabled={formValues.shiftTime === ''}
                                 >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
+                                    {dropDownValues.Thursday.map((item, idx) => (
+                                        <MenuItem key={idx} value={item.value}>{item.value}</MenuItem>
                                     ))}
                                 </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
                             </FormControl>
                         </div>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
-                            <FormControl required fullWidth>
-                                <InputLabel id="gender-label">Minutes</InputLabel>
-                                <Select
-                                    labelId="gender-label"
-                                    id="gender"
-                                    name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
-                                    label="Gender"
-                                    onChange={handleChange}
-                                >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
-                                    ))}
-                                </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
-                            </FormControl>
+                            <TextField
+                                id="outlined-controlled"
+                                label=""
+                                value={dayCutoffValues.Thursday.CutoffforSpoc}
+                                onChange={(event) => {
+                                    setDayCutoffValues({ ...dayCutoffValues, "Thursday": { ...dayCutoffValues.Thursday, "CutoffforSpoc": event.target.value } })
+                                }}
+                                disabled={formValues.shiftTime === ''}
+                            />
                         </div>
-
                     </div>
                     <div className='addUpdateFormContainer' style={{ marginTop: '0px', display: 'flex', width: '100%', alignItems: 'center' }}>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
@@ -586,36 +526,27 @@ const CutoffForCancel = ({
                                     labelId="gender-label"
                                     id="gender"
                                     name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
+                                    value={dayCutoffValues.Friday.EmployeeAvailability}
                                     label="Gender"
-                                    onChange={handleChange}
+                                    onChange={(event) => setDayCutoffValues({ ...dayCutoffValues, "Friday": { ...dayCutoffValues.Friday, "EmployeeAvailability": event.target.value } })}
+                                    disabled={formValues.shiftTime === ''}
                                 >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
+                                    {dropDownValues.Friday.map((item, idx) => (
+                                        <MenuItem key={idx} value={item.value}>{item.value}</MenuItem>
                                     ))}
                                 </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
                             </FormControl>
                         </div>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
-                            <FormControl required fullWidth>
-                                <InputLabel id="gender-label">Minutes</InputLabel>
-                                <Select
-                                    labelId="gender-label"
-                                    id="gender"
-                                    name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
-                                    label="Gender"
-                                    onChange={handleChange}
-                                >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
-                                    ))}
-                                </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
-                            </FormControl>
+                            <TextField
+                                id="outlined-controlled"
+                                label=""
+                                value={dayCutoffValues.Friday.CutoffforEmployee}
+                                onChange={(event) => {
+                                    setDayCutoffValues({ ...dayCutoffValues, "Friday": { ...dayCutoffValues.Friday, "CutoffforEmployee": event.target.value } })
+                                }}
+                                disabled={formValues.shiftTime === ''}
+                            />
                         </div>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
                             <FormControl required fullWidth>
@@ -624,38 +555,28 @@ const CutoffForCancel = ({
                                     labelId="gender-label"
                                     id="gender"
                                     name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
+                                    value={dayCutoffValues.Friday.SpocAvailability}
                                     label="Gender"
-                                    onChange={handleChange}
+                                    onChange={(event) => setDayCutoffValues({ ...dayCutoffValues, "Friday": { ...dayCutoffValues.Friday, "SpocAvailability": event.target.value } })}
+                                    disabled={formValues.shiftTime === ''}
                                 >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
+                                    {dropDownValues.Friday.map((item, idx) => (
+                                        <MenuItem key={idx} value={item.value}>{item.value}</MenuItem>
                                     ))}
                                 </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
                             </FormControl>
                         </div>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
-                            <FormControl required fullWidth>
-                                <InputLabel id="gender-label">Minutes</InputLabel>
-                                <Select
-                                    labelId="gender-label"
-                                    id="gender"
-                                    name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
-                                    label="Gender"
-                                    onChange={handleChange}
-                                >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
-                                    ))}
-                                </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
-                            </FormControl>
+                            <TextField
+                                id="outlined-controlled"
+                                label=""
+                                value={dayCutoffValues.Friday.CutoffforSpoc}
+                                onChange={(event) => {
+                                    setDayCutoffValues({ ...dayCutoffValues, "Friday": { ...dayCutoffValues.Friday, "CutoffforSpoc": event.target.value } })
+                                }}
+                                disabled={formValues.shiftTime === ''}
+                            />
                         </div>
-
                     </div>
                     <div className='addUpdateFormContainer' style={{ marginTop: '0px', display: 'flex', width: '100%', alignItems: 'center' }}>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
@@ -668,36 +589,27 @@ const CutoffForCancel = ({
                                     labelId="gender-label"
                                     id="gender"
                                     name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
+                                    value={dayCutoffValues.Saturday.EmployeeAvailability}
                                     label="Gender"
-                                    onChange={handleChange}
+                                    onChange={(event) => setDayCutoffValues({ ...dayCutoffValues, "Saturday": { ...dayCutoffValues.Saturday, "EmployeeAvailability": event.target.value } })}
+                                    disabled={formValues.shiftTime === ''}
                                 >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
+                                    {dropDownValues.Saturday.map((item, idx) => (
+                                        <MenuItem key={idx} value={item.value}>{item.value}</MenuItem>
                                     ))}
                                 </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
                             </FormControl>
                         </div>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
-                            <FormControl required fullWidth>
-                                <InputLabel id="gender-label">Minutes</InputLabel>
-                                <Select
-                                    labelId="gender-label"
-                                    id="gender"
-                                    name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
-                                    label="Gender"
-                                    onChange={handleChange}
-                                >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
-                                    ))}
-                                </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
-                            </FormControl>
+                            <TextField
+                                id="outlined-controlled"
+                                label=""
+                                value={dayCutoffValues.Saturday.CutoffforEmployee}
+                                onChange={(event) => {
+                                    setDayCutoffValues({ ...dayCutoffValues, "Saturday": { ...dayCutoffValues.Saturday, "CutoffforEmployee": event.target.value } })
+                                }}
+                                disabled={formValues.shiftTime === ''}
+                            />
                         </div>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
                             <FormControl required fullWidth>
@@ -706,38 +618,28 @@ const CutoffForCancel = ({
                                     labelId="gender-label"
                                     id="gender"
                                     name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
+                                    value={dayCutoffValues.Saturday.SpocAvailability}
                                     label="Gender"
-                                    onChange={handleChange}
+                                    onChange={(event) => setDayCutoffValues({ ...dayCutoffValues, "Saturday": { ...dayCutoffValues.Saturday, "SpocAvailability": event.target.value } })}
+                                    disabled={formValues.shiftTime === ''}
                                 >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
+                                    {dropDownValues.Saturday.map((item, idx) => (
+                                        <MenuItem key={idx} value={item.value}>{item.value}</MenuItem>
                                     ))}
                                 </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
                             </FormControl>
                         </div>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
-                            <FormControl required fullWidth>
-                                <InputLabel id="gender-label">Minutes</InputLabel>
-                                <Select
-                                    labelId="gender-label"
-                                    id="gender"
-                                    name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
-                                    label="Gender"
-                                    onChange={handleChange}
-                                >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
-                                    ))}
-                                </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
-                            </FormControl>
+                            <TextField
+                                id="outlined-controlled"
+                                label=""
+                                value={dayCutoffValues.Saturday.CutoffforSpoc}
+                                onChange={(event) => {
+                                    setDayCutoffValues({ ...dayCutoffValues, "Saturday": { ...dayCutoffValues.Saturday, "CutoffforSpoc": event.target.value } })
+                                }}
+                                disabled={formValues.shiftTime === ''}
+                            />
                         </div>
-
                     </div>
                     <div className='addUpdateFormContainer' style={{ marginTop: '0px', display: 'flex', width: '100%', alignItems: 'center' }}>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
@@ -750,36 +652,27 @@ const CutoffForCancel = ({
                                     labelId="gender-label"
                                     id="gender"
                                     name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
+                                    value={dayCutoffValues.Sunday.EmployeeAvailability}
                                     label="Gender"
-                                    onChange={handleChange}
+                                    onChange={(event) => setDayCutoffValues({ ...dayCutoffValues, "Sunday": { ...dayCutoffValues.Sunday, "EmployeeAvailability": event.target.value } })}
+                                    disabled={formValues.shiftTime === ''}
                                 >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
+                                    {dropDownValues.Sunday.map((item, idx) => (
+                                        <MenuItem key={idx} value={item.value}>{item.value}</MenuItem>
                                     ))}
                                 </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
                             </FormControl>
                         </div>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
-                            <FormControl required fullWidth>
-                                <InputLabel id="gender-label">Minutes</InputLabel>
-                                <Select
-                                    labelId="gender-label"
-                                    id="gender"
-                                    name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
-                                    label="Gender"
-                                    onChange={handleChange}
-                                >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
-                                    ))}
-                                </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
-                            </FormControl>
+                            <TextField
+                                id="outlined-controlled"
+                                label=""
+                                value={dayCutoffValues.Sunday.CutoffforEmployee}
+                                onChange={(event) => {
+                                    setDayCutoffValues({ ...dayCutoffValues, "Sunday": { ...dayCutoffValues.Sunday, "CutoffforEmployee": event.target.value } })
+                                }}
+                                disabled={formValues.shiftTime === ''}
+                            />
                         </div>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
                             <FormControl required fullWidth>
@@ -788,49 +681,34 @@ const CutoffForCancel = ({
                                     labelId="gender-label"
                                     id="gender"
                                     name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
+                                    value={dayCutoffValues.Sunday.SpocAvailability}
                                     label="Gender"
-                                    onChange={handleChange}
+                                    onChange={(event) => setDayCutoffValues({ ...dayCutoffValues, "Sunday": { ...dayCutoffValues.Sunday, "SpocAvailability": event.target.value } })}
+                                    disabled={formValues.shiftTime === ''}
                                 >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
+                                    {dropDownValues.Sunday.map((item, idx) => (
+                                        <MenuItem key={idx} value={item.value}>{item.value}</MenuItem>
                                     ))}
                                 </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
                             </FormControl>
                         </div>
                         <div style={{ fontWeight: '600', margin: '20px', width: '30%' }}>
-                            <FormControl required fullWidth>
-                                <InputLabel id="gender-label">Minutes</InputLabel>
-                                <Select
-                                    labelId="gender-label"
-                                    id="gender"
-                                    name="gender"
-                                    value={values.gender}
-                                    error={touched.gender && Boolean(errors.gender)}
-                                    label="Gender"
-                                    onChange={handleChange}
-                                >
-                                    {gender.map((g, idx) => (
-                                        <MenuItem key={idx} value={g.value}>{getFormattedLabel(g.value)}</MenuItem>
-                                    ))}
-                                </Select>
-                                {touched.gender && errors.gender && <FormHelperText className='errorHelperText'>{errors.gender}</FormHelperText>}
-                            </FormControl>
+                            <TextField
+                                id="outlined-controlled"
+                                label=""
+                                value={dayCutoffValues.Sunday.CutoffforSpoc}
+                                onChange={(event) => {
+                                    setDayCutoffValues({ ...dayCutoffValues, "Sunday": { ...dayCutoffValues.Sunday, "CutoffforSpoc": event.target.value } })
+                                }}
+                                disabled={formValues.shiftTime === ''}
+                            />
                         </div>
-
                     </div>
                 </div>
-
-
-
-
-
             </div>
             <div className='addBtnContainer' style={{ justifyContent: 'right' }}>
                 <div>
-                    <button onClick={onUserSuccess} className='btn btn-secondary'>Cancel</button>
+                    <button onClick={() => props.SetForEdit(false)} className='btn btn-secondary'>Cancel</button>
                     <button type='submit' onClick={handleSubmit} className='btn btn-primary'>{editEmployeeData?.id ? 'Create' : 'Update'} </button>
                 </div>
             </div>

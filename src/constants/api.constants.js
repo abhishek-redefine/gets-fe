@@ -30,5 +30,7 @@ export const API_PATH = {
     
     CREATE_SHIFT:'/shift/create',
     SHIFT_LISTING:'/shift/all',
-    SHIFT_LISTING_ALL:'/shift/searchByBean'
+    SHIFT_LISTING_ALL:'/shift/searchByBean',
+    SHIFT_ENABLE_DISABLE:'/shift/enable',
+    SHIFT_UPDATE:'/shift/update'
 };

@@ -13,7 +13,7 @@ const ShiftCutoff = ({
     const [forNoShow, setForNoShow] = useState(false);
     const [viewShiftTimeData, setViewShiftTimeData] = useState()
     const headers = [{
-        key: "officeId",
+        key: "officeIds",
         display: "Office ID"
     },
     {
@@ -25,11 +25,11 @@ const ShiftCutoff = ({
         display: "Shift Time"
     },
     {
-        key: "transportType",
+        key: "transportTypes",
         display: "Transport Type"
     },
     {
-        key: "routeType",
+        key: "routeTypes",
         display: "Route Type"
     },
     {
@@ -39,24 +39,6 @@ const ShiftCutoff = ({
     {
         key: "startDateEndDate",
         display: "Start Date/End Date"
-    },
-    {
-        key: "hamburgerMenu",
-        html: <><span className="material-symbols-outlined">more_vert</span></>,
-        navigation: true,
-        menuItems: [{
-            display: "Edit",
-            key: "edit"
-        },
-        {
-            display: "Enable",
-            key: "enable"
-        },
-        {
-            display: "Disable",
-            key: "disable"
-        }
-        ]
     }];
 
     const [pagination, setPagination] = useState({
