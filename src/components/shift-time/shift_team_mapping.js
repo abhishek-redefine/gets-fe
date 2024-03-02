@@ -6,7 +6,7 @@ import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { TimeField } from '@mui/x-date-pickers/TimeField';
-import { FormControl, FormControlLabel, RadioGroup, Radio, FormHelperText, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { Autocomplete, FormControl, FormControlLabel, RadioGroup, Radio, FormHelperText, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
 const ShiftTeamMapping = ({
@@ -33,10 +33,45 @@ const ShiftTeamMapping = ({
     const [shiftTypeDisabled, setShiftTypeDisabled] = useState(true)
     const [transportTypeDisabled, setTransportTypeDisabled] = useState(true)
     const [shiftTimeDisabled, setShiftTimeDisabled] = useState(true)
+    const [searchedTeam, setSearchedTeam] = useState([]);
+    const [openSearchTeam, setOpenSearchTeam] = useState(false);
+    const [openSearchRM, setOpenSearchRM] = useState(false);
 
     const handleFormSubmit = () => {
         console.log('handleFormSubmit', formValues)
-    }
+    };
+
+    const searchForRM = async (e) => {
+        try {
+            if (e.target.value) {
+                const response = await OfficeService.searchRM(e.target.value);
+                const { data } = response || {};
+                setSearchedReportingManager(data);
+            } else {
+                setSearchedReportingManager([]);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const searchForTeam = async (e) => {
+        try {
+            if (e.target.value) {
+                const response = await OfficeService.searchTeam(e.target.value);
+                const { data } = response || {};
+                setSearchedTeam(data);
+            } else {
+                setSearchedTeam([]);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const onChangeHandler = (newValue, name, key) => {
+        formik.setFieldValue(name, newValue?.[key] || "");
+    };
 
     const fetchAllOffices = async () => {
         try {
@@ -138,12 +173,16 @@ const ShiftTeamMapping = ({
                                         label="Shift Time"
                                         defaultValue={dayjs().hour(0).minute(0)}
                                         format="HH:mm"
-                                        onChange={(e) => { console.log(e); setFormValues({ ...formValues, shiftTime: {
-                                            "hour": e.$H,
-                                            "minute": e.$m,
-                                            "second": e.$s,
-                                            "nano": e.$ms
-                                        } }); }}
+                                        onChange={(e) => {
+                                            console.log(e); setFormValues({
+                                                ...formValues, shiftTime: {
+                                                    "hour": e.$H,
+                                                    "minute": e.$m,
+                                                    "second": e.$s,
+                                                    "nano": e.$ms
+                                                }
+                                            });
+                                        }}
                                         disabled={shiftTimeDisabled}
                                     />
                                 </DemoContainer>
@@ -154,20 +193,27 @@ const ShiftTeamMapping = ({
                 <div className='addUpdateFormContainer' style={{ width: '30%', marginTop: '0px' }}>
                     <div>
                         <div className='form-control-input'>
-                            {<FormControl required fullWidth>
-                                <InputLabel id="gender-label">Team Name</InputLabel>
-                                <Select
-                                    labelId="gender-label"
-                                    id="gender"
-                                    name="gender"
-                                    value={"CAB"}
-                                    label="Gender"
-                                >
-                                    {transportType.map((item, idx) => (
-                                        <MenuItem key={idx} value={item.value}>{item.displayName}</MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>}
+                            <FormControl variant="outlined">
+                                <Autocomplete
+                                    disablePortal
+                                    id="search-team"
+                                    options={searchedTeam}
+                                    autoComplete
+                                    open={openSearchTeam}
+                                    onOpen={() => {
+                                        setOpenSearchTeam(true);
+                                    }}
+                                    onClose={() => {
+                                        setOpenSearchTeam(false);
+                                    }}
+                                    onChange={(e, val) => onChangeHandler(val, "team", "teamId")}
+                                    getOptionKey={(team) => team.teamId}
+                                    getOptionLabel={(team) => team.teamName}
+                                    freeSolo
+                                    name="team"
+                                    renderInput={(params) => <TextField {...params} label="Search Team" onChange={searchForTeam} />}
+                                />
+                            </FormControl>
                         </div>
                     </div>
                     {/* <div>

@@ -39,10 +39,11 @@ const ViewShiftTime = () => {
         key: "hamburgerMenu",
         html: <><span className="material-symbols-outlined">more_vert</span></>,
         navigation: true,
-        menuItems: [{
-            display: "Edit",
-            key: "edit"
-        },
+        menuItems: [
+        //     {
+        //     display: "Edit",
+        //     key: "edit"
+        // },
         {
             display: "Enable",
             key: "enable"
