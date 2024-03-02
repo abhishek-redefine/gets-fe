@@ -41,6 +41,10 @@ const SearchBookings = () => {
         display: "Team Id"
     },
     {
+        key: "bookingType",
+        display: "Booking Type"
+    },
+    {
         key: "hamburgerMenu",
         html: <><span className="material-symbols-outlined">more_vert</span></>,
         navigation: true,
@@ -89,7 +93,16 @@ const SearchBookings = () => {
     const fetchAllBookings = async () => {
         try {
             const params = new URLSearchParams(pagination);
-            const response = await BookingService.getAllBookings(params.toString());
+            let allSearchValues = {...searchValues};
+            if (allSearchValues.bookingDate) {
+                allSearchValues.bookingDate = moment(allSearchValues.bookingDate).format("YYYY-MM-DD");
+            }
+            Object.keys(allSearchValues).forEach((objKey) => {
+                if (allSearchValues[objKey] === null || allSearchValues[objKey] === "") {
+                    delete allSearchValues[objKey];
+                }
+            });
+            const response = await BookingService.getAllBookings(params.toString(), allSearchValues);
             const { data } = response || {};
             const { data: paginatedResponse } = data || {};
             setBookingListing(paginatedResponse || []);
@@ -182,17 +195,13 @@ const SearchBookings = () => {
     };
 
     const searchBookings = () => {
-        let allSearchValues = {...searchValues};
-        if (allSearchValues.bookingDate) {
-            allSearchValues.bookingDate = moment(allSearchValues.bookingDate).format("YYYY-MM-DD");
+        let newPagination = {...pagination};
+        if (newPagination.page === 0) {
+            fetchAllBookings();
+        } else {
+            newPagination.page = 0;
+            setPagination(newPagination);
         }
-        Object.keys(allSearchValues).forEach((objKey) => {
-            if (allSearchValues[objKey] === null || allSearchValues[objKey] === "") {
-                delete allSearchValues[objKey];
-            }
-        });
-        let newPagination = {...pagination, ...allSearchValues};
-        setPagination(newPagination);
     };
 
     return (
@@ -200,7 +209,7 @@ const SearchBookings = () => {
             <div className='gridContainer'>
                 <div className='filterContainer'>
                     <div style={{minWidth: "180px"}} className='form-control-input'>
-                        <FormControl required fullWidth>
+                        <FormControl fullWidth>
                             <InputLabel id="primary-office-label">Primary Office</InputLabel>
                             <Select
                                 style={{width: "180px"}}                                    
@@ -224,7 +233,7 @@ const SearchBookings = () => {
                         </LocalizationProvider>
                     </div>
                     <div style={{minWidth: "160px"}} className='form-control-input'>
-                        {!!shiftTypes?.length && <FormControl required fullWidth>
+                        {!!shiftTypes?.length && <FormControl fullWidth>
                             <InputLabel id="shiftType-label">Shift Type</InputLabel>
                             <Select
                                 style={{width: "160px"}}
@@ -242,7 +251,7 @@ const SearchBookings = () => {
                         </FormControl>}
                     </div>
                     <div style={{minWidth: "170px"}} className='form-control-input'>
-                        {!!transportTypes?.length && <FormControl required fullWidth>
+                        {!!transportTypes?.length && <FormControl fullWidth>
                             <InputLabel id="transportType-label">Transport Type</InputLabel>
                             <Select
                                 style={{width: "170px"}}
@@ -260,7 +269,7 @@ const SearchBookings = () => {
                         </FormControl>}
                     </div>
                     {!!loginTimes?.length && <div style={{minWidth: "160px"}} className='form-control-input'>
-                        <FormControl required fullWidth>
+                        <FormControl fullWidth>
                             <InputLabel id="login-label">Login Time</InputLabel>
                             <Select
                                 style={{width: "160px"}}
@@ -278,7 +287,7 @@ const SearchBookings = () => {
                         </FormControl>
                     </div>}
                     {!!logoutTimes?.length && <div style={{minWidth: "160px"}} className='form-control-input'>
-                        <FormControl required fullWidth>
+                        <FormControl fullWidth>
                             <InputLabel id="logout-label">Logout Time</InputLabel>
                             <Select
                                 style={{width: "160px"}}

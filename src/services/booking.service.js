@@ -1,12 +1,12 @@
 import { API_PATH } from "@/constants/api.constants";
 import axiosInstance from "./../utils/axios";
 
-const getAllBookings = (queryParams) => {
+const getAllBookings = (queryParams, searchValues) => {
     let url = `${API_PATH.API_VERSION}${API_PATH.GET_BOOKINGS}`;
     if (queryParams) {
         url += `?${queryParams}`;
     }
-    return axiosInstance.get(url).then((response) => {
+    return axiosInstance.post(url, searchValues).then((response) => {
         return response;
     });
 };
