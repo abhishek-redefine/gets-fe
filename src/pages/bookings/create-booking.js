@@ -1,7 +1,7 @@
 import bookings from '@/layouts/bookings';
 import React, { useEffect, useState } from 'react';
 import styles from '@/styles/Booking.module.css';
-import { Autocomplete, Checkbox, FormControl, FormControlLabel, FormGroup, FormLabel, InputLabel, MenuItem, Radio, RadioGroup, Select, Switch, TextField } from '@mui/material';
+import { Autocomplete, Checkbox, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel, InputLabel, MenuItem, Radio, RadioGroup, Select, Switch, TextField } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { validationSchema } from '@/components/booking/validationSchema';
@@ -40,6 +40,7 @@ const CreateBooking = () => {
     });
     const [teamUserListing, setTeamUserListing] = useState([]);
     const [nodalPoints, setNodalPoints] = useState([]);
+    const [isSubmit, setIsSubmit] = useState(false);
     const { TransportType: transportType } = useSelector((state) => state.master);
     const [initialValues, setInitialValues] = useState({
         bookingFromDate: "",
@@ -54,6 +55,8 @@ const CreateBooking = () => {
         pickUpPoint: "",
         dropPoint: ""
     });
+
+    const [customizedScheduledBean, setCustomizedScheduledBean] = useState([]);
 
     const teamHeaders = [
         {
@@ -169,10 +172,13 @@ const CreateBooking = () => {
         setIsViewMore(false);
     };
 
+    let reValidationSchema = validationSchema;
+    const validationSchemaCopy = {...validationSchema};
     const formik = useFormik({
         initialValues: initialValues,
-        validationSchema: validationSchema,
+        validationSchema: reValidationSchema,
         onSubmit: async (values) => {
+            setIsSubmit(true);
             let allValues = {...values};
             if (allValues.bookingFromDate) {
                 allValues.bookingFromDate = moment(allValues.bookingFromDate).format("YYYY-MM-DD");
@@ -204,6 +210,7 @@ const CreateBooking = () => {
             }
         }
     });
+
 
     const fetchInOutTimes = async (isIn = false) => {
         try {
@@ -237,14 +244,30 @@ const CreateBooking = () => {
         return true;
     };
 
-    const renderSingleDay = (date) => {
+    const handleChangeMultiple = (e, idx) => {
+        const currentCustomizedSch = [...customizedScheduledBean];
+        const { target } = e;
+        const { value, name } = target || {};
+        if (currentCustomizedSch[idx]) {
+            currentCustomizedSch[idx][name] = value;
+        } else {
+            currentCustomizedSch[idx] = {};
+            currentCustomizedSch[idx][name] = value;
+        }
+        console.log("currentCustomizedSch", currentCustomizedSch);
+        setCustomizedScheduledBean(currentCustomizedSch);
+    };
+
+    console.log("errr", errors);
+
+    const renderSingleDay = (date, isMultiple = false, currentIdx) => {
         return (
             <div className={styles.perDateContainer}>
                 {date &&
                     <>
                         <span className={styles.dayAndDate}>{date.format('dddd')}</span>
                         <span className={styles.dayAndDate}>{date.format(DATE_FORMAT)}</span>
-                    </>                            
+                    </>
                 }
                 <div className='form-control-input'>
                     <FormControl required fullWidth>
@@ -252,17 +275,17 @@ const CreateBooking = () => {
                         <Select
                             labelId="primary-office-label"
                             id="officeId"
-                            value={values.officeId}
-                            error={touched.officeId && Boolean(errors.officeId)}
+                            value={isMultiple ? customizedScheduledBean[currentIdx]?.officeId : values.officeId}
+                            error={isMultiple ? !customizedScheduledBean[currentIdx]?.officeId && isSubmit : touched.officeId && Boolean(errors.officeId)}
                             name="officeId"
                             label="Primary Office"
-                            onChange={handleChange}
+                            onChange={(e) => handleChange(e)}
                         >
                             {!!offices?.length && offices.map((office, idx) => (
                                 <MenuItem key={idx} value={office.officeId}>{getFormattedLabel(office.officeId)}, {office.address}</MenuItem>
                             ))}
                         </Select>
-                        {touched.officeId && errors.officeId && <FormHelperText className='errorHelperText'>{errors.officeId}</FormHelperText>}
+                        {((!isMultiple && touched.officeId && errors.officeId) || (isMultiple && !customizedScheduledBean[currentIdx]?.officeId && isSubmit)) && <FormHelperText className='errorHelperText'>{errors.officeId}</FormHelperText>}
                     </FormControl>
                 </div>
                 <div className='form-control-input'>
@@ -324,18 +347,19 @@ const CreateBooking = () => {
         const endDate = formik.values.bookingToDate ? moment(formik.values.bookingToDate, DATE_FORMAT) : "";
         if (startDate && endDate && values.isCustomiseSchedule) {
             if (startDate.isSameOrAfter(endDate, 'day')) {
-                return renderSingleDay(startDate);
+                return renderSingleDay(null, false);
             }
             const dateRange = [];
             let currentDate = startDate.clone();
-        
+            let count = 0;        
             while (currentDate.isSameOrBefore(endDate, 'day')) {
-                dateRange.push(renderSingleDay(currentDate));
+                dateRange.push(renderSingleDay(currentDate, false, count));
                 currentDate.add(1, 'day');
+                count++;
             }
             return dateRange;
         } else {
-            return renderSingleDay();
+            return renderSingleDay(null, false);
         }
     };
 
