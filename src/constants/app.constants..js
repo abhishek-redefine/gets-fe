@@ -52,6 +52,6 @@ export const SHIFT_TYPE = {
 
 export const DEFAULT_PAGE_SIZE = 10;
 
-export const DATE_FORMAT = "DD/MM/YYYY";
+export const DATE_FORMAT = "YYYY-MM-DD";
 
 export const DATE_FORMAT_API = "YYYY-MM-DDTHH:mm:ss.SSS[Z]";

@@ -1,12 +1,46 @@
-import { getFormattedLabel } from '@/utils/utils';
-import { Box, FormControl, FormControlLabel, RadioGroup, Radio, FormHelperText, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import ShiftService from '@/services/shift.service';
+import { useDispatch } from 'react-redux';
+import { toggleToast } from '@/redux/company.slice';
 
 const CutoffForEdit = ({
-    onUserSuccess,
-    editEmployeeData
+    editEmployeeData,
+    SetForEdit
 }) => {
+    const dropDownValues = {
+        "Monday": [
+            { value: 'Yes' },
+            { value: 'No' }
+        ],
+        "Tuesday": [
+            { value: 'Yes' },
+            { value: 'No' }
+        ],
+        "Wednesday": [
+            { value: 'Yes' },
+            { value: 'No' }
+        ],
+        "Thursday": [
+            { value: 'Yes' },
+            { value: 'No' }
+        ],
+        "Friday": [
+            { value: 'Yes' },
+            { value: 'No' }
+        ],
+        "Saturday": [
+            { value: 'Yes' },
+            { value: 'No' }
+        ],
+        "Sunday": [
+            { value: 'Yes' },
+            { value: 'No' }
+        ]
+    };
+
+    const dispatch = useDispatch();
+
     const [formValues, setFormValues] = useState({
         officeIds: '',
         shiftType: '',
@@ -67,18 +101,72 @@ const CutoffForEdit = ({
     });
 
     const initializeFormValues = (data) => {
-        setDayCutoffValues(JSON.parse(data[0].shiftCreateBookingAttribute))
-        setFinalSelectedData(data[0])
+        setDayCutoffValues(JSON.parse(data[0].shiftCreateBookingAttribute));
+        setFinalSelectedData(data[0]);
     }
 
-    const handleSubmit = async () => {
+    const cutOffForEditFormSubmit = async () => {
         var apiData = finalSelectedData
         apiData.shiftCreateBookingAttribute = JSON.stringify(dayCutoffValues)
         const response = await ShiftService.updateShift({ "shift": apiData })
-        console.log(response)
+        if (response.data) {
+            dispatch(toggleToast({ message: 'Shift cut off for edit added successfully!', type: 'success' }));
+            initializer();
+            setFormValues({
+                officeIds: '',
+                shiftType: '',
+                transportTypes: '',
+                shiftTime: ''
+            });
+            setDayCutoffValues({
+                "Monday": {
+                    "CutoffforEmployee": 0,
+                    "CutoffforSpoc": 0,
+                    "EmployeeAvailability": "No",
+                    "SpocAvailability": "No"
+                },
+                "Tuesday": {
+                    "CutoffforEmployee": 0,
+                    "CutoffforSpoc": 0,
+                    "EmployeeAvailability": "No",
+                    "SpocAvailability": "No"
+                },
+                "Wednesday": {
+                    "CutoffforEmployee": 0,
+                    "CutoffforSpoc": 0,
+                    "EmployeeAvailability": "No",
+                    "SpocAvailability": "No"
+                },
+                "Thursday": {
+                    "CutoffforEmployee": 0,
+                    "CutoffforSpoc": 0,
+                    "EmployeeAvailability": "No",
+                    "SpocAvailability": "No"
+                },
+                "Friday": {
+                    "CutoffforEmployee": 0,
+                    "CutoffforSpoc": 0,
+                    "EmployeeAvailability": "No",
+                    "SpocAvailability": "No"
+                },
+                "Saturday": {
+                    "CutoffforEmployee": 0,
+                    "CutoffforSpoc": 0,
+                    "EmployeeAvailability": "No",
+                    "SpocAvailability": "No"
+                },
+                "Sunday": {
+                    "CutoffforEmployee": 0,
+                    "CutoffforSpoc": 0,
+                    "EmployeeAvailability": "No",
+                    "SpocAvailability": "No"
+                }
+            });
+        }
+
     }
 
-    const setDropDownValues = (data) => {
+    const dropDownListValuesSetFunction = (data) => {
         var FormValuesList = {
             officeIds: [],
             shiftType: [],
@@ -86,7 +174,7 @@ const CutoffForEdit = ({
             shiftTime: []
         }
 
-        data.map((item, index) => {
+        data.map((item) => {
             if (FormValuesList.officeIds.indexOf(item.officeIds) === -1) {
                 FormValuesList.officeIds.push(item.officeIds)
             }
@@ -100,48 +188,14 @@ const CutoffForEdit = ({
                 FormValuesList.shiftTime.push(item.shiftTime)
             }
         })
-
-        console.log('setDropDownValues', FormValuesList)
-
         setFormValuesList(FormValuesList)
     }
 
     const initializer = async () => {
         const response = await ShiftService.getAllShiftsWOPagination();
-        console.log('initializer', response.data.data)
-        setDropDownValues(response.data.data)
-        setListData(response.data.data)
-    }
-
-    const dropDownValues = {
-        "Monday": [
-            { value: 'Yes' },
-            { value: 'No' }
-        ],
-        "Tuesday": [
-            { value: 'Yes' },
-            { value: 'No' }
-        ],
-        "Wednesday": [
-            { value: 'Yes' },
-            { value: 'No' }
-        ],
-        "Thursday": [
-            { value: 'Yes' },
-            { value: 'No' }
-        ],
-        "Friday": [
-            { value: 'Yes' },
-            { value: 'No' }
-        ],
-        "Saturday": [
-            { value: 'Yes' },
-            { value: 'No' }
-        ],
-        "Sunday": [
-            { value: 'Yes' },
-            { value: 'No' }
-        ]
+        var data = response.data.data.filter((item) => item.enabled === true);
+        dropDownListValuesSetFunction(data);
+        setListData(data);
     }
 
     useEffect(() => {
@@ -175,7 +229,7 @@ const CutoffForEdit = ({
                                     name="gender"
                                     value={formValues.officeIds}
                                     label="Gender"
-                                    onChange={(e) => { setDropDownValues(listData.filter((item) => item.officeIds === e.target.value)); setListData(listData.filter((item) => item.officeIds === e.target.value)); setFormValues({ ...formValues, officeIds: e.target.value }); }}
+                                    onChange={(e) => { var data = listData.filter((item) => item.officeIds === e.target.value); dropDownListValuesSetFunction(data); setListData(data); setFormValues({ ...formValues, officeIds: e.target.value }); }}
                                 >
                                     {formValuesList.officeIds.map((item, idx) => (
                                         <MenuItem key={idx} value={item}>{item}</MenuItem>
@@ -194,7 +248,7 @@ const CutoffForEdit = ({
                                     value={formValues.shiftType}
                                     name="primaryOfficeId"
                                     label="Primary Office"
-                                    onChange={(e) => { setDropDownValues(listData.filter((item) => item.shiftType === e.target.value)); setListData(listData.filter((item) => item.shiftType === e.target.value)); setFormValues({ ...formValues, shiftType: e.target.value }); }}
+                                    onChange={(e) => { var data = listData.filter((item) => item.shiftType === e.target.value); dropDownListValuesSetFunction(data); setListData(data); setFormValues({ ...formValues, shiftType: e.target.value }); }}
                                     disabled={formValues.officeIds === ''}
                                 >
                                     {formValuesList.shiftType.map((item, idx) => (
@@ -214,7 +268,7 @@ const CutoffForEdit = ({
                                     name="gender"
                                     value={formValues.transportTypes}
                                     label="Gender"
-                                    onChange={(e) => { setDropDownValues(listData.filter((item) => item.transportTypes === e.target.value)); setListData(listData.filter((item) => item.transportTypes === e.target.value)); setFormValues({ ...formValues, transportTypes: e.target.value }); }}
+                                    onChange={(e) => { var data = listData.filter((item) => item.transportTypes === e.target.value); dropDownListValuesSetFunction(data); setListData(data); setFormValues({ ...formValues, transportTypes: e.target.value }); }}
                                     disabled={formValues.shiftType === ''}
                                 >
                                     {formValuesList.transportTypes.map((item, idx) => (
@@ -708,8 +762,12 @@ const CutoffForEdit = ({
             </div>
             <div className='addBtnContainer' style={{ justifyContent: 'right' }}>
                 <div>
-                    <button onClick={() => props.SetForEdit(false)} className='btn btn-secondary'>Cancel</button>
-                    <button type='submit' onClick={handleSubmit} className='btn btn-primary'>{editEmployeeData?.id ? 'Create' : 'Update'} </button>
+                    <button onClick={() => SetForEdit({
+                        forEdit: false,
+                        forCancel: false,
+                        forNoShow: false
+                    })} className='btn btn-secondary'>Cancel</button>
+                    <button type='submit' onClick={cutOffForEditFormSubmit} className='btn btn-primary'>{editEmployeeData?.id ? 'Create' : 'Update'} </button>
                 </div>
             </div>
         </div >

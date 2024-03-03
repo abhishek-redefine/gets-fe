@@ -26,6 +26,7 @@ export const API_PATH = {
     TEAM_LISTING: '/team/all',
     CREATE_TEAM: '/team/create',
     UPDATE_TEAM: '/team/update',
+    SHIFT_TEAM_MAPPING:'/shiftTeamZoneMapping',
     OFFICE_MAPPINGS: '/officeMapping',
     CREATE_SHIFT:'/shift/create',
     SHIFT_LISTING:'/shift/all',

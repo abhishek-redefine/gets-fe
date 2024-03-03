@@ -34,15 +34,21 @@ const getAllShiftsWOPagination = (queryParams) => {
     // if (queryParams) {
     //     url += `?${queryParams}`;
     // }
-    return axiosInstance.get(url).then((response) => {
+    return axiosInstance.post(url).then((response) => {
         return response;
     });
 };
 
-const enableDisableShifts = (id,isEnable) => {
+const enableDisableShifts = (id, isEnable) => {
     let url = `${API_PATH.API_VERSION}${API_PATH.SHIFT_ENABLE_DISABLE}/${id}/${isEnable}`;
-   
+
     return axiosInstance.put(url).then((response) => {
+        return response;
+    });
+};
+
+const shiftTeamZoneMapping = (data) => {
+    return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.CREATE_SHIFT}${API_PATH.SHIFT_TEAM_MAPPING}`, data).then((response) => {
         return response;
     });
 };
@@ -53,7 +59,8 @@ const ShiftService = {
     getAllShifts,
     getAllShiftsWOPagination,
     enableDisableShifts,
-    updateShift
+    updateShift,
+    shiftTeamZoneMapping
 };
 
 export default ShiftService;

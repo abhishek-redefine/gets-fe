@@ -2,11 +2,10 @@ import React, { useEffect, useState } from 'react';
 import Grid from '../grid';
 import CreateShiftTime from '@/components/shift-time/create_shift_time';
 import ShiftService from '@/services/shift.service';
+import { useDispatch } from 'react-redux';
+import { toggleToast } from '@/redux/company.slice';
 
 const ViewShiftTime = () => {
-    const [viewShiftTimeData, setViewShiftTimeData] = useState()
-    const [showEditShiftTime, setShowEditShiftTime] = useState(false)
-    const [valueEditShiftTime, setValueEditShiftTime] = useState(false)
     const headers = [{
         key: "officeIds",
         display: "Office IDs"
@@ -31,40 +30,44 @@ const ViewShiftTime = () => {
         key: "shiftWeekdayVisibility",
         display: "Shift Weekday Visibility"
     },
-    {
-        key: "startDateEndDate",
-        display: "Start Date/End Date"
-    },
+    // {
+    //     key: "startDateEndDate",
+    //     display: "Start Date/End Date"
+    // },
     {
         key: "hamburgerMenu",
         html: <><span className="material-symbols-outlined">more_vert</span></>,
         navigation: true,
         menuItems: [
-        //     {
-        //     display: "Edit",
-        //     key: "edit"
-        // },
-        {
-            display: "Enable",
-            key: "enable"
-        },
-        {
-            display: "Disable",
-            key: "disable"
-        }
+            {
+                display: "Edit",
+                key: "edit"
+            },
+            {
+                display: "Enable",
+                key: "enable"
+            },
+            {
+                display: "Disable",
+                key: "disable"
+            }
         ]
     }];
 
+    const dispatch = useDispatch();
+
+    const [viewShiftTimeData, setViewShiftTimeData] = useState();
+    const [showEditShiftTime, setShowEditShiftTime] = useState(false);
+    const [valueEditShiftTime, setValueEditShiftTime] = useState(false);
     const [pagination, setPagination] = useState({
         pageNo: 1,
-        pageSize: 10,
+        pageSize: 10
     });
 
     const initializer = async () => {
         try {
             const params = new URLSearchParams(pagination);
             const response = await ShiftService.getAllShiftsWOPagination(params.toString());
-
             response.data.data.map((item) => {
                 item.shiftWeekdayVisibility = "";
 
@@ -113,30 +116,34 @@ const ViewShiftTime = () => {
                         item.shiftWeekdayVisibility += "SUN";
                     }
                 }
-
-                item.startDateEndDate = item.shiftStartDate.slice(0, 10) + " - " + item.shiftEndDate.slice(0, 10);
+                // item.startDateEndDate = item.shiftStartDate.slice(0, 10) + " - " + item.shiftEndDate.slice(0, 10);
             })
-            setViewShiftTimeData(response.data.data)
+            setViewShiftTimeData(response.data.data);
         } catch (e) {
         }
-    }
+    };
 
     const onMenuItemClick = async (key, clickedItem) => {
-        console.log(key, clickedItem)
         if (key === "edit") {
             setValueEditShiftTime(clickedItem)
             setShowEditShiftTime(true)
-        } else if(key==="enable") {
-            const response = await ShiftService.enableDisableShifts(clickedItem.id,true);
-            console.log(response)
-        } else if(key==="disable") {
-            const response = await ShiftService.enableDisableShifts(clickedItem.id,false);
-            console.log(response)
+        } else if (key === "enable") {
+            const response = await ShiftService.enableDisableShifts(clickedItem.id, true);
+            if (response.status === 200) {
+                dispatch(toggleToast({ message: 'Shift enabled successfully!', type: 'success' }));
+                initializer();
+            }
+        } else if (key === "disable") {
+            const response = await ShiftService.enableDisableShifts(clickedItem.id, false);
+            if (response.status === 200) {
+                dispatch(toggleToast({ message: 'Shift disabled successfully!', type: 'success' }));
+                initializer();
+            }
         }
-    }
+    };
 
     useEffect(() => {
-        initializer()
+        initializer();
     }, []);
 
     return (
@@ -148,7 +155,7 @@ const ViewShiftTime = () => {
                     <div className='internalSettingContainer'>
                         <div>
                             <div className='gridContainer'>
-                                <Grid headers={headers} listing={viewShiftTimeData} onMenuItemClick={onMenuItemClick} />
+                                <Grid headers={headers} listing={viewShiftTimeData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} />
                             </div>
                         </div>
                     </div>

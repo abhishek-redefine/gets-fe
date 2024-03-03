@@ -5,13 +5,7 @@ import CutoffForCancel from './cutoffForCancel'
 import CutoffForNoShow from './cutoffForNoShow'
 import ShiftService from '@/services/shift.service';
 
-const ShiftCutoff = ({
-    onSuccess
-}) => {
-    const [forEdit, setForEdit] = useState(false);
-    const [forCancel, setForCancel] = useState(false);
-    const [forNoShow, setForNoShow] = useState(false);
-    const [viewShiftTimeData, setViewShiftTimeData] = useState()
+const ShiftCutoff = () => {
     const headers = [{
         key: "officeIds",
         display: "Office ID"
@@ -36,11 +30,17 @@ const ShiftCutoff = ({
         key: "shiftWeekdayVisibility",
         display: "Shift Weekday Visibility"
     },
-    {
-        key: "startDateEndDate",
-        display: "Start Date/End Date"
-    }];
-
+        // {
+        //     key: "startDateEndDate",
+        //     display: "Start Date/End Date"
+        // }
+    ];
+    const [cutOffState, setCutOffState] = useState({
+        forEdit: false,
+        forCancel: false,
+        forNoShow: false
+    })
+    const [viewShiftTimeData, setViewShiftTimeData] = useState()
     const [pagination, setPagination] = useState({
         pageNo: 1,
         pageSize: 10,
@@ -98,8 +98,7 @@ const ShiftCutoff = ({
                         item.shiftWeekdayVisibility += "SUN";
                     }
                 }
-
-                item.startDateEndDate = item.shiftStartDate.slice(0, 10) + " - " + item.shiftEndDate.slice(0, 10);
+                // item.startDateEndDate = item.shiftStartDate.slice(0, 10) + " - " + item.shiftEndDate.slice(0, 10);
             })
             setViewShiftTimeData(response.data.data)
         } catch (e) {
@@ -107,35 +106,35 @@ const ShiftCutoff = ({
     }
 
     useEffect(() => {
-        initializer()
+        initializer();
     }, []);
 
     return (
         <div className='internalSettingContainer'>
-            {!forEdit && !forCancel && !forNoShow && <div>
+            {!cutOffState.forEdit && !cutOffState.forCancel && !cutOffState.forNoShow && <div>
                 <div style={{ display: 'flex', justifyContent: 'end' }}>
                     <div className='btnContainer'>
-                        <button onClick={() => setForEdit(true)} className='btn btn-primary'>Cutoff for edit</button>
+                        <button onClick={() => setCutOffState({ ...cutOffState, forEdit: true })} className='btn btn-primary'>Cutoff for edit</button>
                     </div>
                     <div className='btnContainer' style={{ marginLeft: '10px', marginRight: '10px' }}>
-                        <button onClick={() => setForCancel(true)} className='btn btn-primary'>Cutoff for cancel</button>
+                        <button onClick={() => setCutOffState({ ...cutOffState, forCancel: true })} className='btn btn-primary'>Cutoff for cancel</button>
                     </div>
                     <div className='btnContainer'>
-                        <button onClick={() => setForNoShow(true)} className='btn btn-primary'>Cutoff for no show</button>
+                        <button onClick={() => setCutOffState({ ...cutOffState, forNoShow: true })} className='btn btn-primary'>Cutoff for no show</button>
                     </div>
                 </div>
                 <div className='gridContainer'>
-                    <Grid headers={headers} listing={viewShiftTimeData} />
+                    <Grid headers={headers} listing={viewShiftTimeData} enableDisableRow={true} />
                 </div>
             </div>}
-            {forEdit && <div>
-                <CutoffForEdit SetForEdit={setForEdit} />
+            {cutOffState.forEdit && <div>
+                <CutoffForEdit SetForEdit={setCutOffState} />
             </div>}
-            {forCancel && <div>
-                <CutoffForCancel SetForCancel={setForCancel} />
+            {cutOffState.forCancel && <div>
+                <CutoffForCancel SetForCancel={setCutOffState} />
             </div>}
-            {forNoShow && <div>
-                <CutoffForNoShow SetForNoShow={setForNoShow} />
+            {cutOffState.forNoShow && <div>
+                <CutoffForNoShow SetForNoShow={setCutOffState} />
             </div>}
         </div>
     );

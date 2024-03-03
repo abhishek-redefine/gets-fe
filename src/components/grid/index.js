@@ -1,9 +1,9 @@
 import { Checkbox, FormControlLabel, Menu, MenuItem, Pagination } from '@mui/material';
 import React, { useState } from 'react';
 
-const Grid = ({ headers, pagination, listing = [], handlePageChange, onMenuItemClick, onRadioClick, onCheckboxClick, pageNoText = 'pageNo' }) => {
+const Grid = ({ headers, pagination, listing = [], handlePageChange, onMenuItemClick, onRadioClick, onCheckboxClick, pageNoText = 'pageNo', enableDisableRow = false }) => {
 
-  const [isMenu, setIsMenu]= useState(false);
+  const [isMenu, setIsMenu] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [navigationItems, setNavigationItems] = useState([]);
   const [clickedItem, setClickedItem] = useState();
@@ -60,7 +60,7 @@ const Grid = ({ headers, pagination, listing = [], handlePageChange, onMenuItemC
   };
 
   const changeRadio = () => {
-    
+
   }
 
   return (
@@ -76,21 +76,21 @@ const Grid = ({ headers, pagination, listing = [], handlePageChange, onMenuItemC
         <tbody>
           {listing.map((listItem, idx) => (
             <tr key={`${idx}tr`}>
-                {headers.map((header, ix) => {
-                  let tdContent;
-                  if (!listItem[header.key] && header.html) {
-                    let additionalProps = {};
-                    if (header.radio) {
-                      additionalProps.checked = radioCheckedValue === idx;
-                    }
-                    tdContent = <td key={`${ix}td`} style={{cursor: "pointer"}} onClick={(e) => htmlClick(header, e, listItem, idx)}>
-                      {React.cloneElement(header.html, additionalProps)}
-                    </td>
-                  } else {
-                    tdContent = <td key={`${ix}td`}>{getText(header, listItem)}</td>;
+              {headers.map((header, ix) => {
+                let tdContent;
+                if (!listItem[header.key] && header.html) {
+                  let additionalProps = {};
+                  if (header.radio) {
+                    additionalProps.checked = radioCheckedValue === idx;
                   }
-                  return tdContent;
-                })}
+                  tdContent = <td key={`${ix}td`} style={{ cursor: "pointer" }} onClick={(e) => htmlClick(header, e, listItem, idx)}>
+                    {React.cloneElement(header.html, additionalProps)}
+                  </td>
+                } else {
+                  tdContent = <td key={`${ix}td`} style={{ color: enableDisableRow && listItem.enabled ?'#000':enableDisableRow && !listItem.enabled ?'#ccc':'#000' }}>{getText(header, listItem)}</td>;
+                }
+                return tdContent;
+              })}
             </tr>
           ))}
           {pagination && pagination?.totalPages > 1 && <tr>
