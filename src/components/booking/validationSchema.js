@@ -1,11 +1,13 @@
 import * as yup from "yup";
 export const validationSchema = yup.object({
-    bookingFromDate: yup.string("Select Booking Start Date"),
-    bookingToDate: yup.string("Select Booking End Date"),
-    officeId: yup.string("Select Primary Office").required("Select Primary Office"),
-    nextDayLogOut: yup.bool("Select Next Day Logout"),
-    isCustomiseSchedule: yup.bool("Select Next Day Logout"),
-    transportType: yup.string("Select Transport Type").required("Select Transport Type"),
-    pickUpPoint: yup.string("Enter Pickup Point"),
-    dropPoint: yup.string("Enter Drop Point")
+    bookingFromDate: yup.string().required("Select From Date"),
+    bookingToDate: yup.string().required("Select To Date"),
+    officeId: yup.string().nullable().required("Select Primary Office"),
+    nextDayLogOut: yup.bool(),
+    isCustomiseSchedule: yup.bool(),
+    transportType: yup.string().required("Select Transport Type"),
+    pickUpPoint: yup.string(),
+    dropPoint: yup.string(),
+    loginShift: yup.string().required("Select Login Shift"),
+    logoutShift: yup.string().required("Select Logout Shift")
 });

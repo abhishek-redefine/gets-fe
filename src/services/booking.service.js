@@ -12,7 +12,6 @@ const getAllBookings = (queryParams, searchValues) => {
 };
 
 const getLoginLogoutTimes = (officeId, isIn, transportType) => {
-    console.log("transportType", transportType);
     return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.SHIFT}/${officeId}/${transportType}/${isIn ? API_PATH.IN : API_PATH.OUT}`).then((response) => {
         return response;
     });
