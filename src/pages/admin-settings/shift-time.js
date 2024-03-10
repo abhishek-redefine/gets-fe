@@ -9,7 +9,7 @@ import { setMasterData } from '@/redux/master.slice';
 import { MASTER_DATA_TYPES, ROLE_TYPES, SHIFT_TYPES } from '@/constants/app.constants.';
 import CreateShiftTime from '@/components/shift-time/create_shift_time';
 
-const UserManagement = () => {
+const ShiftTime = () => {
     const [currentState, setCurrentState] = useState(SHIFT_TYPES.CREATE_SHIFT_TIME);
     const [selectedRoleType, setSelectedRoleType] = useState(ROLE_TYPES.EMPLOYEE);
 
@@ -69,4 +69,4 @@ const UserManagement = () => {
     );
 }
 
-export default AdminSettings(UserManagement);
+export default AdminSettings(ShiftTime);

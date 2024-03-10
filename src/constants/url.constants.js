@@ -5,5 +5,6 @@ export const ADMIN_AUTH_URLS = {
 
 export const MODULE_NAMES = {
     BOOKING: "B",
-    ADMIN_SETTINGS: "AS"
+    ADMIN_SETTINGS: "AS",
+    COMPLIANCE: "C"
 };

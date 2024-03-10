@@ -55,6 +55,7 @@ const SearchBookings = () => {
     }];
 
     const { ShiftType: shiftTypes, TransportType: transportTypes } = useSelector((state) => state.master);
+    
     const [bookingListing, setBookingListing] = useState([]);
     const [offices, setOffice] = useState([]);
     const [paginationData, setPaginationData] = useState();
@@ -122,7 +123,7 @@ const SearchBookings = () => {
                 dispatch(setMasterData({data, type}));
             }
         } catch (e) {
-
+            
         }
     };
 

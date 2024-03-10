@@ -21,7 +21,7 @@ const withAuthLayout = (WrappedComponent) => {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const isMenuOpen = Boolean(anchorEl);
     const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-    
+
     const handleMenuClick = (event) => {
       setAnchorEl(event.currentTarget);
     };
@@ -45,7 +45,7 @@ const withAuthLayout = (WrappedComponent) => {
       let routeName = router?.pathname?.split("/")
       routeName = routeName[1];
       if (routeName) {
-          setCurrentActiveState(routeName);
+        setCurrentActiveState(routeName);
       }
       if (userRoles?.roleName) {
         fetchUserRoleModules(userRoles.roleName);
@@ -86,7 +86,7 @@ const withAuthLayout = (WrappedComponent) => {
             userPermObj[element.name] = element;
           });
         }
-        dispatch(setAllUserPermissions({response: userPermObj}));
+        dispatch(setAllUserPermissions({ response: userPermObj }));
       } catch (e) {
         console.error(e);
       }
@@ -96,6 +96,7 @@ const withAuthLayout = (WrappedComponent) => {
       if (module === MODULE_NAMES.ADMIN_SETTINGS) {
         return isSuperAdmin;
       } else {
+        console.log('auth', Object.keys(allUserPermissions))
         return isSuperAdmin || Object.keys(allUserPermissions).includes(module);
       }
     };
@@ -121,12 +122,13 @@ const withAuthLayout = (WrappedComponent) => {
               <Link onClick={() => changeRoute('tracking')} className={currentActiveState === 'tracking' && 'selected' || ''} href='/tracking'>Tracking</Link>
               <Link onClick={() => changeRoute('billing')} className={currentActiveState === 'billing' && 'selected' || ''} href='/billing'>Billing</Link> */}
               {getModulePermissions(MODULE_NAMES.ADMIN_SETTINGS) && <Link onClick={() => changeRoute('admin-settings')} className={currentActiveState === 'admin-settings' && 'selected' || ''} href='/admin-settings/access-control'>Admin Settings</Link>}
+              {getModulePermissions(MODULE_NAMES.ADMIN_SETTINGS) && <Link onClick={() => changeRoute('compliance')} className={currentActiveState === 'compliance' && 'selected' || ''} href='/compliance/driver-profile'>Compliance</Link>}
               {/* <Link onClick={() => changeRoute('configurations')} className={currentActiveState === 'configurations' && 'selected' || ''} href='/configurations'>Configurations</Link> */}
             </nav>
           </div>
           <div className='headerBellContainer'>
             {/* <span className="material-symbols-outlined">notifications</span> */}
-            {userDetails && <p onClick={handleMenuClick} style={{textTransform: "uppercase"}}>{userDetails.name[0]}</p>}
+            {userDetails && <p onClick={handleMenuClick} style={{ textTransform: "uppercase" }}>{userDetails.name[0]}</p>}
             <Menu
               id="user-menu"
               anchorEl={anchorEl}
@@ -143,7 +145,7 @@ const withAuthLayout = (WrappedComponent) => {
         <main>
           <WrappedComponent {...props} />
         </main>
-        <Snackbar open={toast.message ? true : false} onClose={(e) => closeToast()} autoHideDuration={toastDuration}>
+        <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={toast.message ? true : false} onClose={(e) => closeToast()} autoHideDuration={toastDuration}>
           <Alert severity={toast.type}>{toast.message}</Alert>
         </Snackbar>
       </div>

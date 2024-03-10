@@ -1,39 +1,45 @@
+import compliance from '@/layouts/compliance';
 import React, { useEffect, useState } from 'react';
-import Grid from '../grid';
-import CreateShiftTime from '@/components/shift-time/create_shift_time';
+import Grid from '@/components/grid';
 import ShiftService from '@/services/shift.service';
-import { useDispatch } from 'react-redux';
-import { toggleToast } from '@/redux/company.slice';
 
-const ViewShiftTime = () => {
+const DriverCompliance = () => {
     const headers = [{
-        key: "officeIds",
-        display: "Office IDs"
+        key: "driverName",
+        display: "Driver Name"
     },
     {
-        key: "shiftType",
-        display: "Shift Type"
+        key: "vendorName",
+        display: "Vendor Name"
     },
     {
-        key: "shiftTime",
-        display: "Shift Time"
+        key: "complianceStatus",
+        display: "Compliance Status"
     },
     {
-        key: "transportTypes",
-        display: "Transport Type"
+        key: "officeId",
+        display: "Office ID"
     },
     {
-        key: "routeTypes",
-        display: "Route Type"
+        key: "licenseNo",
+        display: "License No."
     },
     {
-        key: "shiftWeekdayVisibility",
-        display: "Shift Weekday Visibility"
+        key: "licenseExpiryDate",
+        display: "License Expiry Date"
     },
-    // {
-    //     key: "startDateEndDate",
-    //     display: "Start Date/End Date"
-    // },
+    {
+        key: "age",
+        display: "Age"
+    },
+    {
+        key: "bGVStatus",
+        display: "BGV Status"
+    },
+    {
+        key: "bGVExpiry",
+        display: "BGV Expiry"
+    },
     {
         key: "hamburgerMenu",
         html: <><span className="material-symbols-outlined">more_vert</span></>,
@@ -44,25 +50,15 @@ const ViewShiftTime = () => {
                 key: "edit"
             },
             {
-                display: "Enable",
-                key: "enable"
-            },
-            {
-                display: "Disable",
-                key: "disable"
+                display: "Deactivate",
+                key: "deactivate"
             }
         ]
-    }
-];
-
-    const dispatch = useDispatch();
-
-    const [viewShiftTimeData, setViewShiftTimeData] = useState();
-    const [showEditShiftTime, setShowEditShiftTime] = useState(false);
-    const [valueEditShiftTime, setValueEditShiftTime] = useState(false);
+    }];
+    const [viewShiftTimeData, setViewShiftTimeData] = useState()
     const [pagination, setPagination] = useState({
         pageNo: 1,
-        pageSize: 10
+        pageSize: 10,
     });
 
     const initializer = async () => {
@@ -119,50 +115,25 @@ const ViewShiftTime = () => {
                 }
                 // item.startDateEndDate = item.shiftStartDate.slice(0, 10) + " - " + item.shiftEndDate.slice(0, 10);
             })
-            setViewShiftTimeData(response.data.data);
+            setViewShiftTimeData(response.data.data)
         } catch (e) {
         }
-    };
-
-    const onMenuItemClick = async (key, clickedItem) => {
-        if (key === "edit") {
-            setValueEditShiftTime(clickedItem)
-            setShowEditShiftTime(true)
-        } else if (key === "enable") {
-            const response = await ShiftService.enableDisableShifts(clickedItem.id, true);
-            if (response.status === 200) {
-                dispatch(toggleToast({ message: 'Shift enabled successfully!', type: 'success' }));
-                initializer();
-            }
-        } else if (key === "disable") {
-            const response = await ShiftService.enableDisableShifts(clickedItem.id, false);
-            if (response.status === 200) {
-                dispatch(toggleToast({ message: 'Shift disabled successfully!', type: 'success' }));
-                initializer();
-            }
-        }
-    };
+    }
 
     useEffect(() => {
         initializer();
     }, []);
 
     return (
-        <>
-            {
-                showEditShiftTime ?
-                    <CreateShiftTime editValues={valueEditShiftTime} />
-                    :
-                    <div className='internalSettingContainer'>
-                        <div>
-                            <div className='gridContainer'>
-                                <Grid headers={headers} listing={viewShiftTimeData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} />
-                            </div>
-                        </div>
-                    </div>
-            }
-        </>
+        <div className='internalSettingContainer'>
+            <div>
+                <div className='gridContainer'>
+                    <Grid headers={headers} listing={viewShiftTimeData} enableDisableRow={true} />
+                </div>
+            </div>
+
+        </div>
     );
 }
 
-export default ViewShiftTime;
+export default compliance(DriverCompliance);

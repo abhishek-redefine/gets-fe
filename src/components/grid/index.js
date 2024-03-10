@@ -15,11 +15,23 @@ const Grid = ({ headers, pagination, listing = [], handlePageChange, onMenuItemC
   };
 
   const htmlClick = (header, e, listItem, idx) => {
+    console.log('htmlClick', listItem, header.menuItems)
+
     if (header.navigation) {
       setClickedItem(listItem);
       setIsMenu(true);
       setNavigationItems(header.menuItems);
       handleClick(e);
+      if (listItem.enabled) {
+        setNavigationItems(header.menuItems.filter((item) =>
+          item.key !== 'activate'
+        ));
+      }
+      if (!listItem.enabled) {
+        setNavigationItems(header.menuItems.filter((item) =>
+          item.key !== 'deactivate'
+        ));
+      }
     } else if (header.radio) {
       setRadioCheckedValue(Number(idx));
       onRadioClick(listItem);
@@ -87,7 +99,7 @@ const Grid = ({ headers, pagination, listing = [], handlePageChange, onMenuItemC
                     {React.cloneElement(header.html, additionalProps)}
                   </td>
                 } else {
-                  tdContent = <td key={`${ix}td`} style={{ color: enableDisableRow && listItem.enabled ?'#000':enableDisableRow && !listItem.enabled ?'#ccc':'#000' }}>{getText(header, listItem)}</td>;
+                  tdContent = <td key={`${ix}td`} style={{ color: enableDisableRow && listItem.enabled ? '#000' : enableDisableRow && !listItem.enabled ? '#ccc' : '#000' }}>{getText(header, listItem)}</td>;
                 }
                 return tdContent;
               })}

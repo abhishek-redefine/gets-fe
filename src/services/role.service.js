@@ -37,6 +37,20 @@ const updateRolePermissions = (data) => {
     });
 };
 
+const uploadForm = (x) => {
+    return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.FILE_UPLOAD}`, x, {
+        headers: {
+            "Content-Type": "multipart/form-data"
+        }
+    }).then((response) => {
+        console.log(response)
+    });
+    // return axiosInstance.post(`${API_PATH.API_VERSION}/document/uploadCertificates/1/VEHICLE/FITNESS_CERTIFICATE`, x)
+    //     .then((response) => {
+    //         console.log(response)
+    //     });
+};
+
 
 const RoleService = {
     getAllRoles,
@@ -44,7 +58,8 @@ const RoleService = {
     getRolePermissions,
     saveRolePermissions,
     updateRolePermissions,
-    getRolesByType
+    getRolesByType,
+    uploadForm
 };
 
 export default RoleService;

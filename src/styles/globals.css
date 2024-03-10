@@ -55,6 +55,16 @@ header {
   color: black;
   background-color: #F6CE47;
 }
+.btn-download{
+  color: black;
+  margin-top: 5px;
+  background-color: #aaacac;
+}
+.btn-download:hover{
+  color: black;
+  margin-top: 5px;
+  background-color: rgb(210, 208, 208);
+}
 .btn-blk {
   color: white;
   background-color: #000000 !important;
@@ -411,6 +421,9 @@ button:disabled, .btn:disabled:hover {
 .errorHelperText {
   color: #d32f2f;
 }
+.labelHelperText {
+  color: #000;
+}
 .paginationContainer {
   display: flex;
   justify-content: right;
@@ -451,4 +464,8 @@ button:disabled, .btn:disabled:hover {
     width: 100px;
     margin: 0;
     padding: 18px;
+}
+
+.MuiFileInput-TextField {
+  width: 100px;
 }

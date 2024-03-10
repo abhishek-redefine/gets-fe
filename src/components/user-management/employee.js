@@ -3,6 +3,8 @@ import Grid from '../grid';
 import AddEmployee from './add-employee';
 import OfficeService from '@/services/office.service';
 import { DEFAULT_PAGE_SIZE } from '@/constants/app.constants.';
+import UploadButton from '../buttons/uploadButton';
+import RoleService from '@/services/role.service';
 
 const EmployeeManagement = ({
     roleType,
@@ -47,7 +49,7 @@ const EmployeeManagement = ({
     const [paginationData, setPaginationData] = useState();
     const [pagination, setPagination] = useState({
         pageNo: 0,
-        pageSize: DEFAULT_PAGE_SIZE,        
+        pageSize: DEFAULT_PAGE_SIZE,
     });
     const [employeeListing, setEmployeeListing] = useState();
     const [editEmployeeData, setEditEmployeeData] = useState({});
@@ -63,9 +65,9 @@ const EmployeeManagement = ({
             const params = new URLSearchParams(pagination);
             const response = await OfficeService.getAllEmployees(params.toString());
             const { data } = response || {};
-            const { paginatedResponse } = data || {};        
+            const { paginatedResponse } = data || {};
             setEmployeeListing(paginatedResponse?.content);
-            let localPaginationData = {...paginatedResponse};
+            let localPaginationData = { ...paginatedResponse };
             delete localPaginationData?.content;
             setPaginationData(localPaginationData);
         } catch (e) {
@@ -78,23 +80,30 @@ const EmployeeManagement = ({
     }, [pagination]);
 
     const handlePageChange = (page) => {
-        let updatedPagination = {...pagination};
+        let updatedPagination = { ...pagination };
         updatedPagination.pageNo = page;
         setPagination(updatedPagination);
     };
 
     const onMenuItemClick = (key, values) => {
-      if (key === "edit") {
-        setEditEmployeeData(values);
-        setIsAddEdit(true);
-      }
+        if (key === "edit") {
+            setEditEmployeeData(values);
+            setIsAddEdit(true);
+        }
     };
+
+    const uploadFunction=(item)=>{
+        RoleService.uploadForm(item);
+    }
 
     return (
         <div className='internalSettingContainer'>
             {!isAddEdit && <div>
-                <div className='btnContainer'>
-                    <button onClick={() => setIsAddEdit(true)} className='btn btn-primary'>Add Employee</button>
+                <div style={{ display: 'flex', justifyContent: 'end' }}>
+                    <UploadButton uploadFunction={uploadFunction}/>
+                    <div className='btnContainer'>
+                        <button onClick={() => setIsAddEdit(true)} className='btn btn-primary'>Add Employee</button>
+                    </div>
                 </div>
                 <div className='gridContainer'>
                     <Grid onMenuItemClick={onMenuItemClick} handlePageChange={handlePageChange} pagination={paginationData} headers={headers} listing={employeeListing} />

@@ -38,8 +38,8 @@ const adminSettings = (WrappedComponent) => {
                     <Link onClick={() => changeRoute('driver-app')} className={currentActiveState === 'driver-app' && styles.selected || ''} href='driver-app'>Driver App</Link><br />
                     <Link onClick={() => changeRoute('employee-app')} className={currentActiveState === 'employee-app' && styles.selected || ''} href='employee-app'>Employee App</Link><br /> */}
                     <Link onClick={() => changeRoute('access-control')} className={currentActiveState === 'access-control' && styles.selected || ''} href='access-control'>Access Control</Link><br />
-                    {/* <Link onClick={() => changeRoute('vendor-management')} className={currentActiveState === 'vendor-management' && styles.selected || ''} href='vendor-management'>Vendor Management</Link><br />
-                    <Link onClick={() => changeRoute('communication')} className={currentActiveState === 'communication' && styles.selected || ''} href='communication'>Communication</Link><br />
+                    <Link onClick={() => changeRoute('vendor-management')} className={currentActiveState === 'vendor-management' && styles.selected || ''} href='vendor-management'>Vendor Management</Link><br />
+                    {/*<Link onClick={() => changeRoute('communication')} className={currentActiveState === 'communication' && styles.selected || ''} href='communication'>Communication</Link><br />
                     <Link onClick={() => changeRoute('reports')} className={currentActiveState === 'reports' && styles.selected || ''} href='reports'>Reports</Link><br />
                     <Link onClick={() => changeRoute('security')} className={currentActiveState === 'security' && styles.selected || ''} href='security'>Security</Link><br />
                     <Link onClick={() => changeRoute('templates')} className={currentActiveState === 'templates' && styles.selected || ''} href='templates'>Templates</Link> */}
