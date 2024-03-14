@@ -23,7 +23,6 @@ const CreateShiftTime = ({
     editEmployeeData,
     editValues
 }) => {
-    console.log('CreateShiftTime', editValues)
     const MenuProps = {
         PaperProps: {
             style: {
@@ -181,7 +180,7 @@ const CreateShiftTime = ({
         try {
             console.log(formValues)
             formValues.id=editValues.id;
-            // const response = await ShiftService.updateShift({ "shift": formValues });
+            const response = await ShiftService.updateShift({ "shift": formValues }); 
             if (response.data === 'Shift has been created') {
                 setFormValues({
                     "shiftTime": '00:00',
