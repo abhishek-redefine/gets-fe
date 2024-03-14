@@ -16,6 +16,7 @@ import { setMasterData } from '@/redux/master.slice';
 import BookingService from '@/services/booking.service';
 import Grid from '@/components/grid';
 import { toggleToast } from '@/redux/company.slice';
+import { DATE_FORMAT_API } from '@/constants/app.constants.';
 
 const CreateBooking = () => {
 
@@ -42,10 +43,12 @@ const CreateBooking = () => {
     const [nodalPoints, setNodalPoints] = useState([]);
     const [isSubmit, setIsSubmit] = useState(false);
     const { TransportType: transportType } = useSelector((state) => state.master);
+    const [shiftType,setShiftType] = useState('');
     const [initialValues, setInitialValues] = useState({
         bookingFromDate: "",
         bookingToDate: "",
         officeId: "",
+        bookingType: "",
         loginShift: "",
         logoutShift: "",
         nextDayLogOut: false,
@@ -53,7 +56,15 @@ const CreateBooking = () => {
         customiseScheduleDTOList: [],
         transportType: TRANSPORT_TYPES.CAB,
         pickUpPoint: "",
-        dropPoint: ""
+        dropPoint: "",
+        source : "",
+        bookingDate : moment().format(DATE_FORMAT_API),
+        // isCancelled: false,
+        // isApproved: true,
+        // isRejected: true,
+        // approvedBy: 0,
+        // rejectedBy: 0,
+        // cancelledBy: 0,
     });
 
     const [customizedScheduledBean, setCustomizedScheduledBean] = useState([]);
@@ -290,54 +301,131 @@ const CreateBooking = () => {
                 </div>
                 <div className='form-control-input'>
                     <FormControl required fullWidth>
-                        <InputLabel id="login-label">Login Time</InputLabel>
+                        <InputLabel id='shift-type-label'>Booking Type</InputLabel>
                         <Select
-                            labelId="login-label"
-                            id="loginShift"
-                            value={values.loginShift}
-                            error={touched.loginShift && Boolean(errors.loginShift)}
-                            name="loginShift"
-                            label="Login Time"
-                            onChange={handleChange}
+                            labelId="booking-type-label"
+                            id="bookingType"
+                            value={values.bookingType}
+                            error={touched.bookingType && Boolean(errors.bookingType)}
+                            name="bookingType"
+                            label="Booking Type"
+                            onChange={(e)=>{handleChange(e);setShiftType(e.target.value)}}
                         >
-                            {!!loginTimes?.length && loginTimes.map((time, idx) => (
-                                <MenuItem key={idx} value={time}>{time}</MenuItem>
-                            ))}
+                            <MenuItem value={'Login'}>Login</MenuItem>
+                            <MenuItem value={'Logout'}>Logout</MenuItem>
+                            <MenuItem value={'Both'}>Both</MenuItem>
                         </Select>
-                        {touched.loginShift && errors.loginShift && <FormHelperText className='errorHelperText'>{errors.loginShift}</FormHelperText>}
+                        {touched.bookingType && errors.bookingType && <FormHelperText className='errorHelperText'>{errors.bookingType}</FormHelperText>}
                     </FormControl>
                 </div>
-                <div className='form-control-input'>
-                    <FormControl required fullWidth>
-                        <InputLabel id="logout-label">Logout Time</InputLabel>
-                        <Select
-                            labelId="logout-label"
-                            id="logoutShift"
-                            value={values.logoutShift}
-                            error={touched.logoutShift && Boolean(errors.logoutShift)}
-                            name="logoutShift"
-                            label="Logout Time"
-                            onChange={handleChange}
-                        >
-                            {!!logoutTimes?.length && logoutTimes.map((time, idx) => (
-                                <MenuItem key={idx} value={time}>{time}</MenuItem>
-                            ))}
-                        </Select>
-                        {touched.logoutShift && errors.logoutShift && <FormHelperText className='errorHelperText'>{errors.logoutShift}</FormHelperText>}
-                    </FormControl>
-                </div>
-                <div className='form-control-input'>
-                    <FormControl required>
-                            <FormGroup
-                            onChange={handleChange}
-                            value={values.nextDayLogOut}
-                            error={touched.nextDayLogOut && Boolean(errors.nextDayLogOut)}
-                            style={{flexDirection: "row"}}>
-                                <FormControlLabel name="nextDayLogOut" value={true} control={<Checkbox />} label="Next Day Logout" />
-                            </FormGroup>
-                            {touched.nextDayLogOut && errors.nextDayLogOut && <FormHelperText className='errorHelperText'>{errors.nextDayLogOut}</FormHelperText>}
-                    </FormControl>
-                </div>
+                {
+                    shiftType !== '' &&
+                    <>
+                        {
+                            shiftType === 'Login' ?
+                            <div className='form-control-input'>
+                                <FormControl required fullWidth>
+                                    <InputLabel id="login-label">Login Time</InputLabel>
+                                    <Select
+                                        labelId="login-label"
+                                        id="loginShift"
+                                        value={values.loginShift}
+                                        error={touched.loginShift && Boolean(errors.loginShift)}
+                                        name="loginShift"
+                                        label="Login Time"
+                                        onChange={handleChange}
+                                    >
+                                        {!!loginTimes?.length && loginTimes.map((time, idx) => (
+                                            <MenuItem key={idx} value={time}>{time}</MenuItem>
+                                        ))}
+                                    </Select>
+                                    {touched.loginShift && errors.loginShift && <FormHelperText className='errorHelperText'>{errors.loginShift}</FormHelperText>}
+                                </FormControl>
+                            </div>
+                            :
+                            (
+                                shiftType === 'Logout' ?
+                                <div className='form-control-input'>
+                                    <FormControl required fullWidth>
+                                        <InputLabel id="logout-label">Logout Time</InputLabel>
+                                        <Select
+                                            labelId="logout-label"
+                                            id="logoutShift"
+                                            value={values.logoutShift}
+                                            error={touched.logoutShift && Boolean(errors.logoutShift)}
+                                            name="logoutShift"
+                                            label="Logout Time"
+                                            onChange={handleChange}
+                                        >
+                                            {!!logoutTimes?.length && logoutTimes.map((time, idx) => (
+                                                <MenuItem key={idx} value={time}>{time}</MenuItem>
+                                            ))}
+                                        </Select>
+                                        {touched.logoutShift && errors.logoutShift && <FormHelperText className='errorHelperText'>{errors.logoutShift}</FormHelperText>}
+                                    </FormControl>
+                                </div>
+                                :
+                                (
+                                    <>
+                                        <div className='form-control-input'>
+                                            <FormControl required fullWidth>
+                                                <InputLabel id="login-label">Login Time</InputLabel>
+                                                <Select
+                                                    labelId="login-label"
+                                                    id="loginShift"
+                                                    value={values.loginShift}
+                                                    error={touched.loginShift && Boolean(errors.loginShift)}
+                                                    name="loginShift"
+                                                    label="Login Time"
+                                                    onChange={handleChange}
+                                                >
+                                                    {!!loginTimes?.length && loginTimes.map((time, idx) => (
+                                                        <MenuItem key={idx} value={time}>{time}</MenuItem>
+                                                    ))}
+                                                </Select>
+                                                {touched.loginShift && errors.loginShift && <FormHelperText className='errorHelperText'>{errors.loginShift}</FormHelperText>}
+                                            </FormControl>
+                                        </div>
+                                        <div className='form-control-input'>
+                                            <FormControl required fullWidth>
+                                                <InputLabel id="logout-label">Logout Time</InputLabel>
+                                                <Select
+                                                    labelId="logout-label"
+                                                    id="logoutShift"
+                                                    value={values.logoutShift}
+                                                    error={touched.logoutShift && Boolean(errors.logoutShift)}
+                                                    name="logoutShift"
+                                                    label="Logout Time"
+                                                    onChange={handleChange}
+                                                >
+                                                    {!!logoutTimes?.length && logoutTimes.map((time, idx) => (
+                                                        <MenuItem key={idx} value={time}>{time}</MenuItem>
+                                                    ))}
+                                                </Select>
+                                                {touched.logoutShift && errors.logoutShift && <FormHelperText className='errorHelperText'>{errors.logoutShift}</FormHelperText>}
+                                            </FormControl>
+                                        </div>
+                                        <div className='form-control-input'>
+                                            <FormControl required>
+                                                    <FormGroup
+                                                    onChange={handleChange}
+                                                    value={values.nextDayLogOut}
+                                                    error={touched.nextDayLogOut && Boolean(errors.nextDayLogOut)}
+                                                    style={{flexDirection: "row"}}>
+                                                        <FormControlLabel name="nextDayLogOut" value={true} control={<Checkbox />} label="Next Day Logout" />
+                                                    </FormGroup>
+                                                    {touched.nextDayLogOut && errors.nextDayLogOut && <FormHelperText className='errorHelperText'>{errors.nextDayLogOut}</FormHelperText>}
+                                            </FormControl>
+                                        </div>
+                                    </>
+                                )
+                            )
+                        }
+                        
+                        
+                        
+                    </>
+                }
             </div>
         );
     };
@@ -526,7 +614,7 @@ const CreateBooking = () => {
                                     onChange={handleChange}
                                 >
                                     {!!nodalPoints?.length && nodalPoints.map((point, idx) => (
-                                        <MenuItem key={idx} value={point.id}>{point.locationName}</MenuItem>
+                                        <MenuItem key={idx} value={point.locationName}>{point.locationName}</MenuItem>
                                     ))}
                                 </Select>
                                 {touched.pickUpPoint && errors.pickUpPoint && <FormHelperText className='errorHelperText'>{errors.pickUpPoint}</FormHelperText>}
@@ -545,7 +633,7 @@ const CreateBooking = () => {
                                     onChange={handleChange}
                                 >
                                     {!!nodalPoints?.length && nodalPoints.map((point, idx) => (
-                                        <MenuItem key={idx} value={point.id}>{point.locationName}</MenuItem>
+                                        <MenuItem key={idx} value={point.locationName}>{point.locationName}</MenuItem>
                                     ))}
                                 </Select>
                                 {touched.dropPoint && errors.dropPoint && <FormHelperText className='errorHelperText'>{errors.dropPoint}</FormHelperText>}

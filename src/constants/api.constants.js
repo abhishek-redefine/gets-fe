@@ -10,7 +10,7 @@ export const API_PATH = {
     MASTER_DATA: '/codes/key/',
     OFFICES: '/office',
     CREATE_EMPLOYEE: '/emp/create',
-    UPDATE_EMPLOYEE: '/emp',
+    UPDATE_EMPLOYEE: '/emp/update',
     EMPLOYEE_LISTING: '/emp/employees',
     SEARCH_TEAM: '/search/autoSuggestTeam/',
     SEARCH_RM: '/search/autoSuggestEmployee/',

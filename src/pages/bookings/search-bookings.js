@@ -20,13 +20,17 @@ const SearchBookings = () => {
         key: "id",
         display: "Booking ID"
     },
+    // {
+    //     key: "bookingFromDate",
+    //     display: "Booking From"
+    // },
+    // {
+    //     key: "bookingToDate",
+    //     display: "Booking To"
+    // },
     {
-        key: "bookingFromDate",
-        display: "Booking From"
-    },
-    {
-        key: "bookingToDate",
-        display: "Booking To"
+        key: "bookingDate",
+        display: "Booking Date"
     },
     {
         key: "employeeId",

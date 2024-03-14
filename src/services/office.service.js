@@ -20,12 +20,14 @@ const getOfficeMapping = (officeId) => {
 };
 
 const createEmployee = (data) => {
+    console.log("create employee",data);
     return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.CREATE_EMPLOYEE}`, data).then((response) => {
         return response;
     });
 };
 
 const updateEmployee = (data) => {
+    console.log("update employee",data);
     return axiosInstance.put(`${API_PATH.API_VERSION}${API_PATH.UPDATE_EMPLOYEE}`, data).then((response) => {
         return response;
     });

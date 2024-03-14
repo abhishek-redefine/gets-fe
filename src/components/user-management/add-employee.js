@@ -22,6 +22,8 @@ const AddEmployee = ({
 
     const [openSearchTeam, setOpenSearchTeam] = useState(false);
     const [openSearchRM, setOpenSearchRM] = useState(false);
+    const [smsCheckbox,setSmsCheckbox] = useState(false);
+    const [emailCheckbox,setEmailCheckbox] = useState(false);
     const [initialValues, setInitialValues] = useState({
         empId: "",
         name: "",
@@ -31,7 +33,7 @@ const AddEmployee = ({
         altMob: "",
         primaryOfficeId: "",
         role: "",
-        transportEligibilities: "",
+        transportEligibilities: [],
         address: "",
         geoCode: "",
         isAddHocBooking: null,
@@ -50,10 +52,34 @@ const AddEmployee = ({
 
     useState(() => {
         if (editEmployeeData?.id) {
+            console.log(editEmployeeData);
+            if(typeof editEmployeeData.transportEligibilities === 'string'){
+                const transportString = editEmployeeData.transportEligibilities.split(",");
+                editEmployeeData.transportEligibilities = transportString;
+            }
+            editEmployeeData.notificationTypes.map((val,index)=>{
+                if(val === "SMS"){
+                    setSmsCheckbox(true);
+                }
+                else if(val==="EMAIL"){
+                    setEmailCheckbox(true);
+                }
+            })
             let newEditInfo = Object.assign(initialValues, editEmployeeData);
             setInitialValues(newEditInfo);
         }
     }, [editEmployeeData]);
+
+    const handleResetField = () =>{
+        setEmailCheckbox(false);
+        setSmsCheckbox(false);
+        handleReset();
+        formik.setFieldValue('empId',"");
+        formik.setFieldValue('notificationTypes',[]);
+        formik.setFieldValue('transportEligibilities',[]);
+        formik.setFieldValue('weekOff',[]);
+        console.log(initialValues)
+    }
 
     const formik = useFormik({
         initialValues: initialValues,
@@ -76,11 +102,44 @@ const AddEmployee = ({
                 }
             });
             try {
+                var transportString = '';
+                allValues.transportEligibilities.map((item)=>{
+                    transportString += item+',';
+                })
+                const payload = {
+                    empId: allValues.empId,
+                    name: allValues.name,
+                    gender: allValues.gender,
+                    email: allValues.email,
+                    mob: allValues.mob,
+                    altMob: allValues.altMob,
+                    primaryOfficeId: allValues.primaryOfficeId,
+                    role: allValues.role,
+                    transportEligibilities: transportString.slice(0,-1),
+                    address: allValues.address,
+                    geoCode: allValues.geoCode,
+                    isAddHocBooking: allValues.isAddHocBooking,
+                    mobAppAccess: allValues.mobAppAccess,
+                    notificationTypes: allValues.notificationTypes,
+                    profileStatus: allValues.profileStatus,
+                    team: allValues.team,
+                    reportingManager: allValues.reportingManager,
+                    costCenter: allValues.costCenter,
+                    startDate: allValues.startDate,
+                    endDate: allValues.endDate,
+                    businessUnit: allValues.businessUnit,
+                    weekOff: allValues.weekOff,
+                    specialStatus: allValues.specialStatus,
+                    enabled: true
+                } 
+                //formik.setFieldValue('transportEligibilities',transportString.slice(0,-1));
+                console.log(transportString.slice(0,-1));
                 if (initialValues?.id) {
-                    await OfficeService.updateEmployee({employee: {...initialValues, ...allValues}});
+                    await OfficeService.updateEmployee({employee: {...initialValues, ...payload}});
                     dispatch(toggleToast({ message: 'Employee updated successfully!', type: 'success' }));
                 } else {
-                    await OfficeService.createEmployee({employee: allValues});
+                    console.log(allValues.transportEligibilities);
+                    await OfficeService.createEmployee({employee: payload});
                     dispatch(toggleToast({ message: 'Employee added successfully!', type: 'success' }));
                 }
                 onUserSuccess(true);
@@ -157,6 +216,7 @@ const AddEmployee = ({
         } else {
             currentFormikValues.push(value);
         }
+        console.log(currentFormikValues)
         formik.setFieldValue(name, currentFormikValues);
     };
 
@@ -301,7 +361,7 @@ const AddEmployee = ({
                     <div className='form-control-input'>
                         <FormControl required>
                             <FormLabel id="transport-eligibility">Transport Eligibility</FormLabel>
-                            <RadioGroup
+                            {/* <RadioGroup
                                 style={{flexDirection: "row"}}
                                 aria-labelledby="transport-eligibility"
                                 onChange={handleChange}
@@ -312,7 +372,15 @@ const AddEmployee = ({
                                 {!!transportType?.length && transportType.map((transport, idx) => (
                                     <FormControlLabel value={transport.value} onChange={handleChange} key={idx} control={<Radio />} label={transport.displayName} />
                                 ))}
-                            </RadioGroup>
+                            </RadioGroup> */}
+                            <FormGroup
+                            value={values.transportEligibilities}
+                            error={touched.transportEligibilities && Boolean(errors.transportEligibilities)}
+                            onChange={handleArrChange}
+                            style={{flexDirection: "row"}}>
+                                {!!transportType?.length && transportType.map((transport, idx) => 
+                                    (<FormControlLabel checked={values.transportEligibilities.includes(transport.value)} key={idx} name="transportEligibilities" value={transport.value} control={<Checkbox />} label={transport.displayName} />))}
+                            </FormGroup>
                             {touched.transportEligibilities && errors.transportEligibilities && <FormHelperText className='errorHelperText'>{errors.transportEligibilities}</FormHelperText>}
                         </FormControl>
                     </div>
@@ -378,8 +446,8 @@ const AddEmployee = ({
                             value={values.notificationTypes}
                             error={touched.notificationTypes && Boolean(errors.notificationTypes)}                            
                             style={{flexDirection: "row"}}>
-                                <FormControlLabel name="notificationTypes" value="EMAIL" control={<Checkbox />} label="Email" />
-                                <FormControlLabel name="notificationTypes" value="SMS" control={<Checkbox />} label="SMS" />
+                                <FormControlLabel name="notificationTypes" value="EMAIL" control={<Checkbox checked={emailCheckbox} onChange={()=>setEmailCheckbox(!emailCheckbox)}/>} label="Email" />
+                                <FormControlLabel name="notificationTypes" value="SMS" control={<Checkbox checked={smsCheckbox} onChange={()=>setSmsCheckbox(!smsCheckbox)}/>} label="SMS" />
                             </FormGroup>
                             {touched.notificationTypes && errors.notificationTypes && <FormHelperText className='errorHelperText'>{errors.notificationTypes}</FormHelperText>}
                         </FormControl>
@@ -518,7 +586,7 @@ const AddEmployee = ({
                 </div>
                 <div className='addBtnContainer'>
                     <div>
-                        <button onClick={handleReset} className='btn btn-secondary'>Reset</button>
+                        <button onClick={handleResetField} className='btn btn-secondary'>Reset</button>
                     </div>
                     <div>
                         <button onClick={onUserSuccess} className='btn btn-secondary'>Back</button>
