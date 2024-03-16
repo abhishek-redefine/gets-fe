@@ -51,6 +51,7 @@ const TeamManagement = ({
 
     const onUserSuccess = () => {
         setIsAddEdit(false);
+        setEditEmployeeData({});
         onSuccess();
         fetchAllTeams();
     };

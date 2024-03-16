@@ -74,7 +74,6 @@ const AddEmployee = ({
         setEmailCheckbox(false);
         setSmsCheckbox(false);
         handleReset();
-        formik.setFieldValue('empId',"");
         formik.setFieldValue('notificationTypes',[]);
         formik.setFieldValue('transportEligibilities',[]);
         formik.setFieldValue('weekOff',[]);

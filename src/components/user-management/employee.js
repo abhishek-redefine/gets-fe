@@ -56,6 +56,7 @@ const EmployeeManagement = ({
 
     const onUserSuccess = () => {
         setIsAddEdit(false);
+        setEditEmployeeData({})
         onSuccess();
         fetchAllEmployees();
     };

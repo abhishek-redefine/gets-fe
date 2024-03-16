@@ -18,7 +18,7 @@ const AddTeam = ({
     const [initialValues, setInitialValues] = useState({
         name: "",
         officeIds: [],
-        managerIds: "",
+        managerIds: [],
         shiftType: "",
         description: "",
         sendNotification: "",
@@ -36,20 +36,23 @@ const AddTeam = ({
         initialValues: initialValues,
         validationSchema: validationSchema,
         onSubmit: async (values) => {
+            console.log("Values",values)
             let allValues = {...values};
+            console.log("click")
             Object.keys(allValues).forEach((objKey) => {
                 if (allValues[objKey] === null || allValues[objKey] === "") {
                     delete allValues[objKey];
                 }
             });
-            if (allValues.managerIds) {
-                allValues.managerIds = [allValues.managerIds];
-            }
+            // if (allValues.managerIds) {
+            //     allValues.managerIds = [allValues.managerIds];
+            // }
             try {
                 if (initialValues?.id) {
                     await OfficeService.updateTeams({team: {...initialValues, ...allValues}});
                     dispatch(toggleToast({ message: 'Team updated successfully!', type: 'success' }));
                 } else {
+                    console.log(allValues);
                     await OfficeService.createTeams({team: allValues});
                     dispatch(toggleToast({ message: 'Team added successfully!', type: 'success' }));
                 }
@@ -114,7 +117,10 @@ const AddTeam = ({
     };    
 
     const onChangeHandler = (newValue, name, key) => {
-        formik.setFieldValue(name, newValue?.[key] || "");
+        
+        var teamManagerList = [newValue.map((val)=> {return val.data.toString()})]
+        console.log(teamManagerList,name);
+        formik.setFieldValue(name, teamManagerList[0] || "");
     };
 
     return (
@@ -174,6 +180,7 @@ const AddTeam = ({
                                 id="search-managerIds"
                                 options={searchedReportingManager}
                                 autoComplete
+                                multiple
                                 open={openSearchRM}
                                 onOpen={() => {
                                     setOpenSearchRM(true);
@@ -188,6 +195,7 @@ const AddTeam = ({
                                 name="managerIds"
                                 renderInput={(params) => <TextField {...params} label="Search Team Manager"  onChange={searchForRM} />}
                             />
+                            {touched.managerIds && errors.managerIds && <FormHelperText className='errorHelperText'>{errors.managerIds}</FormHelperText>}
                         </FormControl>
                     </div>
                 </div>
@@ -213,7 +221,9 @@ const AddTeam = ({
                     </div>
                     <div>
                         <button onClick={onUserSuccess} className='btn btn-secondary'>Back</button>
-                        <button type='submit' onClick={handleSubmit} className='btn btn-primary'>{editEmployeeData?.id ? 'Update' : 'Create'} Team</button>
+                        <button type='submit' onClick={handleSubmit} className='btn btn-primary'>
+                            {editEmployeeData?.id ? 'Update' : 'Create'} Team
+                        </button>
                     </div>
                 </div>
             </div>
