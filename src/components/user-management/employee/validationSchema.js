@@ -14,7 +14,7 @@ export const validationSchema = yup.object({
     geoCode: yup.string("Enter Employee Geocode"),
     isAddHocBooking: yup.bool().nullable(),
     mobAppAccess: yup.bool().nullable(),
-    notificationTypes: yup.array().of(yup.string()).min(1, "Select at least one notification type").required("Select Notification Type"),
+    notificationModes: yup.array().of(yup.string()).min(1, "Select at least one notification type").required("Select Notification Type"),
     profileStatus: yup.bool().nullable().required("Select Profile Status"),
     team: yup.string("Select Employee Team"),
     reportingManager: yup.string("Select Reporting Manager"),

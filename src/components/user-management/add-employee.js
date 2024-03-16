@@ -38,7 +38,7 @@ const AddEmployee = ({
         geoCode: "",
         isAddHocBooking: null,
         mobAppAccess: null,
-        notificationTypes: [],
+        notificationModes: [],
         profileStatus: null,
         team: "",
         reportingManager: "",
@@ -57,7 +57,7 @@ const AddEmployee = ({
                 const transportString = editEmployeeData.transportEligibilities.split(",");
                 editEmployeeData.transportEligibilities = transportString;
             }
-            editEmployeeData.notificationTypes.map((val,index)=>{
+            editEmployeeData.notificationModes.map((val,index)=>{
                 if(val === "SMS"){
                     setSmsCheckbox(true);
                 }
@@ -74,7 +74,7 @@ const AddEmployee = ({
         setEmailCheckbox(false);
         setSmsCheckbox(false);
         handleReset();
-        formik.setFieldValue('notificationTypes',[]);
+        formik.setFieldValue('notificationModes',[]);
         formik.setFieldValue('transportEligibilities',[]);
         formik.setFieldValue('weekOff',[]);
         console.log(initialValues)
@@ -119,7 +119,7 @@ const AddEmployee = ({
                     geoCode: allValues.geoCode,
                     isAddHocBooking: allValues.isAddHocBooking,
                     mobAppAccess: allValues.mobAppAccess,
-                    notificationTypes: allValues.notificationTypes,
+                    notificationModes: allValues.notificationModes,
                     profileStatus: allValues.profileStatus,
                     team: allValues.team,
                     reportingManager: allValues.reportingManager,
@@ -442,13 +442,13 @@ const AddEmployee = ({
                             <FormLabel id="notification-type">Notification Type</FormLabel>
                             <FormGroup
                             onChange={handleArrChange}
-                            value={values.notificationTypes}
-                            error={touched.notificationTypes && Boolean(errors.notificationTypes)}                            
+                            value={values.notificationModes}
+                            error={touched.notificationModes && Boolean(errors.notificationModes)}                            
                             style={{flexDirection: "row"}}>
-                                <FormControlLabel name="notificationTypes" value="EMAIL" control={<Checkbox checked={emailCheckbox} onChange={()=>setEmailCheckbox(!emailCheckbox)}/>} label="Email" />
-                                <FormControlLabel name="notificationTypes" value="SMS" control={<Checkbox checked={smsCheckbox} onChange={()=>setSmsCheckbox(!smsCheckbox)}/>} label="SMS" />
+                                <FormControlLabel name="notificationModes" value="EMAIL" control={<Checkbox checked={emailCheckbox} onChange={()=>setEmailCheckbox(!emailCheckbox)}/>} label="Email" />
+                                <FormControlLabel name="notificationModes" value="SMS" control={<Checkbox checked={smsCheckbox} onChange={()=>setSmsCheckbox(!smsCheckbox)}/>} label="SMS" />
                             </FormGroup>
-                            {touched.notificationTypes && errors.notificationTypes && <FormHelperText className='errorHelperText'>{errors.notificationTypes}</FormHelperText>}
+                            {touched.notificationModes && errors.notificationModes && <FormHelperText className='errorHelperText'>{errors.notificationModes}</FormHelperText>}
                         </FormControl>
                     </div>
                 </div>
