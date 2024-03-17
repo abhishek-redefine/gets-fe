@@ -31,9 +31,9 @@ const getAllShifts = (queryParams) => {
 
 const getAllShiftsWOPagination = (queryParams) => {
     let url = `${API_PATH.API_VERSION}${API_PATH.SHIFT_LISTING_ALL}`;
-    // if (queryParams) {
-    //     url += `?${queryParams}`;
-    // }
+    if (queryParams) {
+        url += `?${queryParams}`;
+    }
     return axiosInstance.post(url).then((response) => {
         return response;
     });
