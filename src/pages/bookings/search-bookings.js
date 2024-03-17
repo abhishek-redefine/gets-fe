@@ -106,8 +106,11 @@ const SearchBookings = () => {
             let allSearchValues = {...searchValues};
             role.roleName === 'ROLE_SUPER_ADMIN' ? allSearchValues.isAdmin = true : allSearchValues.isAdmin = false ;
             allSearchValues.empId = role.roleName != 'ROLE_SUPER_ADMIN' ? userDetails.name :"";
-            if (allSearchValues.bookingDate) {
+            if (allSearchValues.bookingDate && !resetFlag) {
                 allSearchValues.bookingDate = moment(allSearchValues.bookingDate).format("YYYY-MM-DD");
+            }
+            else{
+                allSearchValues.bookingDate = "";
             }
             Object.keys(allSearchValues).forEach((objKey) => {
                 if (allSearchValues[objKey] === null || allSearchValues[objKey] === "") {
@@ -116,7 +119,7 @@ const SearchBookings = () => {
             });
             
             console.log("role>>",role.roleName);
-            const response = resetFlag ? await BookingService.getAllBookings(params.toString(), {}) : await BookingService.getAllBookings(params.toString(), allSearchValues);
+            const response = resetFlag ? await BookingService.getAllBookings(params.toString(), allSearchValues) : await BookingService.getAllBookings(params.toString(), allSearchValues);
             //const response = await BookingService.getAllBookings(params.toString(), allSearchValues);
             const { data } = response || {};
             const { data: paginatedResponse } = data || {};
