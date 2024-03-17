@@ -13,6 +13,7 @@ import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useRouter } from 'next/router';
 
 const SearchBookings = () => {
 
@@ -20,14 +21,6 @@ const SearchBookings = () => {
         key: "id",
         display: "Booking ID"
     },
-    // {
-    //     key: "bookingFromDate",
-    //     display: "Booking From"
-    // },
-    // {
-    //     key: "bookingToDate",
-    //     display: "Booking To"
-    // },
     {
         key: "bookingDate",
         display: "Booking Date"
@@ -42,11 +35,15 @@ const SearchBookings = () => {
     },
     {
         key: "teamId",
-        display: "Team Id"
+        display: "Team Name"
     },
     {
         key: "bookingType",
-        display: "Booking Type"
+        display: "Shift Type"
+    },
+    {
+        key: "shiftTime" ,
+        display: "Shift Time"
     },
     {
         key: "hamburgerMenu",
@@ -55,11 +52,15 @@ const SearchBookings = () => {
         menuItems: [{
             display: "Cancel Booking",
             key: "cancel"
+        },{
+            display: "Edit Booking",
+            key: "edit"
         }]
     }];
 
     const { ShiftType: shiftTypes, TransportType: transportTypes } = useSelector((state) => state.master);
     
+    const router = useRouter();
     const [bookingListing, setBookingListing] = useState([]);
     const [offices, setOffice] = useState([]);
     const [paginationData, setPaginationData] = useState();
@@ -73,7 +74,9 @@ const SearchBookings = () => {
         shiftType: "",
         shiftTimeLogin: "",
         shiftTimeLogout: "",
-        transportType: ""
+        transportType: "",
+        isAdmin: "",
+        empId : "",
     });
     const dispatch = useDispatch();
     const [pagination, setPagination] = useState({
@@ -95,22 +98,43 @@ const SearchBookings = () => {
         }
     };
 
-    const fetchAllBookings = async () => {
+    const fetchAllBookings = async (resetFlag) => {
         try {
+            const role = JSON.parse(localStorage.getItem('userRoles'));
+            const userDetails = JSON.parse(localStorage.getItem('userDetails'));
             const params = new URLSearchParams(pagination);
             let allSearchValues = {...searchValues};
-            if (allSearchValues.bookingDate) {
+            role.roleName === 'ROLE_SUPER_ADMIN' ? allSearchValues.isAdmin = true : allSearchValues.isAdmin = false ;
+            allSearchValues.empId = role.roleName != 'ROLE_SUPER_ADMIN' ? userDetails.name :"";
+            if (allSearchValues.bookingDate && !resetFlag) {
                 allSearchValues.bookingDate = moment(allSearchValues.bookingDate).format("YYYY-MM-DD");
+            }
+            else{
+                allSearchValues.bookingDate = "";
             }
             Object.keys(allSearchValues).forEach((objKey) => {
                 if (allSearchValues[objKey] === null || allSearchValues[objKey] === "") {
                     delete allSearchValues[objKey];
                 }
             });
-            const response = await BookingService.getAllBookings(params.toString(), allSearchValues);
+            
+            console.log("role>>",role.roleName);
+            const response = resetFlag ? await BookingService.getAllBookings(params.toString(), allSearchValues) : await BookingService.getAllBookings(params.toString(), allSearchValues);
+            //const response = await BookingService.getAllBookings(params.toString(), allSearchValues);
             const { data } = response || {};
             const { data: paginatedResponse } = data || {};
-            setBookingListing(paginatedResponse || []);
+            console.log("bookings>>>",paginatedResponse)
+            const teams = await getAllTeams();
+            var modifiedPageinationResponse = [];
+            paginatedResponse.map((obj,index)=>{
+                const shiftKey = obj.loginShift ? 'loginShift' : 'logoutShift';
+                obj.shiftTime = obj[shiftKey];
+                delete obj[shiftKey];
+                const team = teams.find(val => obj.teamId === val.id);
+                obj.teamId = team ? team.name : '';
+                modifiedPageinationResponse.push(obj);
+            })
+            setBookingListing(modifiedPageinationResponse || []);
             let localPaginationData = {...data};
             delete localPaginationData?.data;
             setPaginationData(localPaginationData);
@@ -118,6 +142,20 @@ const SearchBookings = () => {
             console.error(e);
         }
     };
+
+    const getAllTeams = async() =>{
+        try{
+            const response = await OfficeService.getAllTeams();
+            const { data } = response || {}; 
+            const { content } = data.paginatedResponse || {};
+            //console.log("response>>>>",content);
+            return content;
+        }
+        catch(error){
+            console.log(error)
+        }
+        
+    }
 
     const fetchMasterData = async (type) => {
         try {
@@ -132,7 +170,7 @@ const SearchBookings = () => {
     };
 
     useEffect(() => {
-        fetchAllBookings();
+        fetchAllBookings(false);
     }, [pagination]);
 
     useEffect(() => {
@@ -153,6 +191,8 @@ const SearchBookings = () => {
 
     const onMenuItemClick = (key, values) => {
         if (key === "edit") {
+            localStorage.setItem('editBooking',JSON.stringify(values));
+            router.push('create-booking')
         //   editBooking(values);
         } else if (key === "cancel") {
             setCancelBookingData(values);
@@ -163,6 +203,7 @@ const SearchBookings = () => {
     const handleCancelDialogClose = () => {
         setIsRemoveDialogOpen(false);
         setCancelBookingData(null);
+        fetchAllBookings(false);
     };
 
     const handleCancelBooking = async () => {
@@ -202,11 +243,23 @@ const SearchBookings = () => {
     const searchBookings = () => {
         let newPagination = {...pagination};
         if (newPagination.page === 0) {
-            fetchAllBookings();
+            fetchAllBookings(false);
         } else {
             newPagination.page = 0;
             setPagination(newPagination);
         }
+    };
+
+    const resetFilter = () => {
+        setSearchValues({
+            officeId: "",
+            bookingDate: null,
+            shiftType: "",
+            shiftTimeLogin: "",
+            shiftTimeLogout: "",
+            transportType: ""
+        })
+        fetchAllBookings(true);
     };
 
     return (
@@ -309,11 +362,14 @@ const SearchBookings = () => {
                             </Select>
                         </FormControl>
                     </div>}
-                    <div className='form-control-input'>
+                    <div className='form-control-input' style={{minWidth: "70px"}}>
                         <button type='submit' onClick={searchBookings} className='btn btn-primary filterApplyBtn'>Apply</button>
                     </div>
+                    <div className='form-control-input' style={{minWidth: "70px"}}>
+                        <button type='submit' onClick={resetFilter} className='btn btn-primary filterApplyBtn'>Reset</button>
+                    </div>
                 </div>
-                <Grid pageNoText="pageNumber" onMenuItemClick={onMenuItemClick} headers={headers} handlePageChange={handlePageChange} pagination={paginationData} listing={bookingListing} />
+                <Grid pageNoText="pageNumber" onMenuItemClick={onMenuItemClick} headers={headers} handlePageChange={handlePageChange} pagination={paginationData} listing={bookingListing} bookingGrid={true} />
             </div>
             <Dialog open={isRemoveDialogOpen} onClose={handleCancelBooking}>
                 <DialogTitle id="alert-dialog-title">Cancel Booking</DialogTitle>

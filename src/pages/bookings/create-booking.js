@@ -16,11 +16,12 @@ import { setMasterData } from '@/redux/master.slice';
 import BookingService from '@/services/booking.service';
 import Grid from '@/components/grid';
 import { toggleToast } from '@/redux/company.slice';
-import { DATE_FORMAT_API } from '@/constants/app.constants.';
+import { useRouter } from 'next/router';
 
 const CreateBooking = () => {
 
     const dispatch = useDispatch();
+    const router = useRouter();
     const customiseSchRef = useRef();
     const [bookingFor, setBookingFor] = useState(1);
     const [selectedUsers, setSelectedUsers] = useState([]);
@@ -58,19 +59,15 @@ const CreateBooking = () => {
         transportType: TRANSPORT_TYPES.CAB,
         pickUpPoint: "",
         dropPoint: "",
-        source : "",
-        bookingDate : moment().format(DATE_FORMAT_API),
-        // isCancelled: false,
-        // isApproved: true,
-        // isRejected: true,
-        // approvedBy: 0,
-        // rejectedBy: 0,
-        // cancelledBy: 0,
+        source : "Web",
+        bookingFor: "self",
+        bookingType:""
     });
 
     const [customizedScheduledBean, setCustomizedScheduledBean] = useState([]);
     const [multiLoginTimes, setMultiLoginTimes] = useState([]);
     const [multiLogoutTimes, setMultiLogoutTimes] = useState([]);
+    const [editFlag,setEditFlag] = useState(false);
 
     const teamHeaders = [
         {
@@ -109,6 +106,32 @@ const CreateBooking = () => {
             key: "gender",
             display: "Gender"
     }];
+
+    useEffect(()=>{
+        var editBookingData = JSON.parse(localStorage.getItem('editBooking'))
+        console.log("edit booking",editBookingData);
+        if(editBookingData?.id){
+            setEditFlag(true);
+            console.log(editBookingData);
+            let newEditInfo = Object.assign(initialValues, editBookingData);
+            if(newEditInfo.bookingType === 'LOGIN'){
+                newEditInfo['loginShift'] = newEditInfo['shiftTime'];
+                delete newEditInfo['shiftTime'];
+                setShiftType('LOGIN')
+            }
+            else{
+                newEditInfo['logoutShift'] = newEditInfo['shiftTime'];
+                delete newEditInfo['shiftTime'];
+                setShiftType('LOGOUT')
+            }
+            setInitialValues(newEditInfo);
+        }
+    },[]);
+
+    const backHandler = () =>{
+        localStorage.removeItem('editBooking');
+        router.push('search-bookings');
+    }
 
     useEffect(() => {
         fetchAllOffices();
@@ -194,7 +217,8 @@ const CreateBooking = () => {
         enableReinitialize: true,
         validationSchema: ()=>{ 
             let reValidationSchema = validationSchema;
-            if(customiseSchRef.current.getAttribute("value") === "true") {
+            if(!editFlag && customiseSchRef.current.getAttribute("value") === "true") {
+              console.log('customize');
               reValidationSchema = reValidationSchema.omit(["officeId", "logoutShift", "loginShift"]);
             }
             return reValidationSchema;
@@ -213,21 +237,48 @@ const CreateBooking = () => {
                 if (bookingFor === 3) {
                     allValues.teamId = selectedTeamDetail.id;
                 }
-            } else {
+            } 
+            else 
+            {
                 allValues.bookingFor = "self";
-                const userDetails = JSON.parse(localStorage.getItem("userDetails") || "{}");
-                if (userDetails?.name) {
-                    allValues.bookingEmployeeIds = [userDetails.name];
+                if(allValues.bookingType === "LOGIN"){
+                    allValues.logoutShift= "";
+                }
+                else{
+                    allValues.loginShift="";
+                }
+                if(editFlag){
+                    allValues.bookingEmployeeIds = [allValues.employeeId];
+                }
+                else{
+                    const userDetails = JSON.parse(localStorage.getItem("userDetails") || "{}");
+                    if (userDetails?.name) {
+                        allValues.bookingEmployeeIds = [userDetails.name];
+                    }
                 }
             }
             if (allValues.isCustomiseSchedule) {
+                console.log(customizedScheduledBean);
                 allValues.customiseScheduleDTOList = customizedScheduledBean;
+                //TODO need to fix later
+                allValues.officeId = customizedScheduledBean[0].officeId;
             }
+            if(allValues.teamId === ""){
+                delete allValues.teamId
+            }
+            console.log(allValues);
             try {
-                await BookingService.createBooking({booking: allValues});
+                if(editFlag){
+                    await BookingService.updateBooking([allValues]);
+                }
+                else{
+                    await BookingService.createBooking({booking: allValues});
+                }
+                
                 dispatch(toggleToast({ message: 'Booking created successfully!', type: 'success' }));
-                clearData();
                 formik.handleReset();
+                clearData();
+                backHandler();
             } catch (e) {
                 console.error(e);
                 dispatch(toggleToast({ message: e?.response?.data?.message || 'Error creating booking, please try again later!', type: 'error' }));
@@ -290,6 +341,7 @@ const CreateBooking = () => {
         const currentCustomizedSch = [...customizedScheduledBean];
         const { target } = e;
         const { value, name } = target || {};
+        console.log(currentDate,">>>santosh");
         if (currentCustomizedSch[idx]) {
             if (name === "nextDayLogOutCustomize") {
                 currentCustomizedSch[idx][name] = !(value === "true");
@@ -309,7 +361,174 @@ const CreateBooking = () => {
             fetchMultiInOutTimes(true, idx, value);
             fetchMultiInOutTimes(false, idx, value);
         }
+        console.log(currentCustomizedSch);
         setCustomizedScheduledBean(currentCustomizedSch);
+    };
+
+    const renderMultipleDay = (date, currentIdx) => {
+        //console.log(date)
+        const bookingDate =date.format(DATE_FORMAT);
+        return (
+            <div key={`multiDiv${currentIdx}`} className={styles.perDateContainer}>
+                {date &&
+                    <>
+                        <span className={styles.dayAndDate}>{date.format('dddd')}</span>
+                        <span className={styles.dayAndDate}>{date.format(DATE_FORMAT)}</span>
+                    </>
+                }
+                <div className='form-control-input'>
+                    <FormControl required fullWidth>
+                        <InputLabel id="primary-office-label">Office ID</InputLabel>
+                        <Select
+                            labelId="primary-office-label"
+                            id="officeId"
+                            value={customizedScheduledBean?.[currentIdx]?.officeId || ""}
+                            error={isSubmit && !customizedScheduledBean?.[currentIdx]?.officeId}
+                            name="officeId"
+                            label="Primary Office"
+                            onChange={(e) => handleChangeMultiple(e, currentIdx, bookingDate)}
+                        >
+                            {!!offices?.length && offices.map((office, idx) => (
+                                <MenuItem key={idx} value={office.officeId}>{getFormattedLabel(office.officeId)}, {office.address}</MenuItem>
+                            ))}
+                        </Select>
+                        {isSubmit && !customizedScheduledBean?.[currentIdx]?.officeId && <FormHelperText className='errorHelperText'>Select Office</FormHelperText>}
+                    </FormControl>
+                </div>
+
+                <div className='form-control-input'>
+                    <FormControl required fullWidth>
+                        <InputLabel id='shift-type-label'>Booking Type</InputLabel>
+                        <Select
+                            labelId="booking-type-label"
+                            id="bookingType"
+                            value={customizedScheduledBean?.[currentIdx]?.bookingType || ""}
+                            error={isSubmit && !customizedScheduledBean?.[currentIdx]?.bookingType}
+                            //value={values.bookingType}
+                            //error={touched.bookingType && Boolean(errors.bookingType)}
+                            name="bookingType"
+                            label="Booking Type"
+                            onChange={(e) => handleChangeMultiple(e, currentIdx, date)}
+                        >
+                            <MenuItem  value={'LOGIN'}>Login</MenuItem>
+                            <MenuItem value={'LOGOUT'}>Logout</MenuItem>
+                            {!editFlag && <MenuItem value={'Both'}>Both</MenuItem>}
+                        </Select>
+                        {/* {touched.bookingType && errors.bookingType && <FormHelperText className='errorHelperText'>{errors.bookingType}</FormHelperText>} */}
+                    </FormControl>
+                </div>
+                {
+                    customizedScheduledBean[currentIdx]?.bookingType === 'LOGIN' &&
+                    <>
+                        <div className='form-control-input'>
+                            <FormControl required fullWidth>
+                                <InputLabel id="login-label">Login Time</InputLabel>
+                                <Select
+                                    labelId="login-label"
+                                    id="loginShift"
+                                    value={customizedScheduledBean?.[currentIdx]?.loginShift || ""}
+                                    error={isSubmit && !customizedScheduledBean?.[currentIdx]?.loginShift}
+                                    name="loginShift"
+                                    label="Login Time"
+                                    onChange={(e) => handleChangeMultiple(e, currentIdx, date)}
+                                >
+                                    {!!multiLoginTimes[currentIdx]?.length && multiLoginTimes[currentIdx].map((time, idx) => (
+                                        <MenuItem key={idx} value={time}>{time}</MenuItem>
+                                    ))}
+                                </Select>
+                                {isSubmit && !customizedScheduledBean?.[currentIdx]?.loginShift && <FormHelperText className='errorHelperText'>Select Login Time</FormHelperText>}
+                            </FormControl>
+                        </div>
+                        
+                        {/* <div className='form-control-input'>
+                            <FormControl required>
+                                    <FormGroup
+                                    onChange={(e) => handleChangeMultiple(e, currentIdx, date)}
+                                    value={customizedScheduledBean?.[currentIdx]?.nextDayLogOutCustomize || false}
+                                    style={{flexDirection: "row"}}>
+                                        <FormControlLabel name="nextDayLogOutCustomize" control={<Checkbox value={customizedScheduledBean?.[currentIdx]?.nextDayLogOutCustomize || false} checked={customizedScheduledBean?.[currentIdx]?.nextDayLogOutCustomize || false} />} label="Next Day Logout" />
+                                    </FormGroup>
+                            </FormControl>
+                        </div> */}
+                    </>}
+                { customizedScheduledBean[currentIdx]?.bookingType === 'LOGOUT' &&
+                    (
+                        <div className='form-control-input'>
+                            <FormControl required fullWidth>
+                                <InputLabel id="logout-label">Logout Time</InputLabel>
+                                <Select
+                                    labelId="logout-label"
+                                    id="logoutShift"
+                                    value={customizedScheduledBean?.[currentIdx]?.logoutShift || ""}
+                                    error={isSubmit && !customizedScheduledBean?.[currentIdx]?.logoutShift}
+                                    name="logoutShift"
+                                    label="Logout Time"
+                                    onChange={(e) => handleChangeMultiple(e, currentIdx, date)}
+                                >
+                                    {!!multiLogoutTimes[currentIdx]?.length && multiLogoutTimes[currentIdx].map((time, idx) => (
+                                        <MenuItem key={idx} value={time}>{time}</MenuItem>
+                                    ))}
+                                </Select>
+                                {isSubmit && !customizedScheduledBean?.[currentIdx]?.logoutShift && <FormHelperText className='errorHelperText'>Select Logout Time</FormHelperText>}
+                            </FormControl>
+                        </div>
+                    )
+                }
+                {
+                    customizedScheduledBean[currentIdx]?.bookingType === 'Both' &&
+                    <>
+                        <div className='form-control-input'>
+                            <FormControl required fullWidth>
+                                <InputLabel id="login-label">Login Time</InputLabel>
+                                <Select
+                                    labelId="login-label"
+                                    id="loginShift"
+                                    value={customizedScheduledBean?.[currentIdx]?.loginShift || ""}
+                                    error={isSubmit && !customizedScheduledBean?.[currentIdx]?.loginShift}
+                                    name="loginShift"
+                                    label="Login Time"
+                                    onChange={(e) => handleChangeMultiple(e, currentIdx, date)}
+                                >
+                                    {!!multiLoginTimes[currentIdx]?.length && multiLoginTimes[currentIdx].map((time, idx) => (
+                                        <MenuItem key={idx} value={time}>{time}</MenuItem>
+                                    ))}
+                                </Select>
+                                {isSubmit && !customizedScheduledBean?.[currentIdx]?.loginShift && <FormHelperText className='errorHelperText'>Select Login Time</FormHelperText>}
+                            </FormControl>
+                        </div>
+                        <div className='form-control-input'>
+                            <FormControl required fullWidth>
+                                <InputLabel id="logout-label">Logout Time</InputLabel>
+                                <Select
+                                    labelId="logout-label"
+                                    id="logoutShift"
+                                    value={customizedScheduledBean?.[currentIdx]?.logoutShift || ""}
+                                    error={isSubmit && !customizedScheduledBean?.[currentIdx]?.logoutShift}
+                                    name="logoutShift"
+                                    label="Logout Time"
+                                    onChange={(e) => handleChangeMultiple(e, currentIdx, date)}
+                                >
+                                    {!!multiLogoutTimes[currentIdx]?.length && multiLogoutTimes[currentIdx].map((time, idx) => (
+                                        <MenuItem key={idx} value={time}>{time}</MenuItem>
+                                    ))}
+                                </Select>
+                                {isSubmit && !customizedScheduledBean?.[currentIdx]?.logoutShift && <FormHelperText className='errorHelperText'>Select Logout Time</FormHelperText>}
+                            </FormControl>
+                        </div>
+                        <div className='form-control-input'>
+                            <FormControl required>
+                                    <FormGroup
+                                    onChange={(e) => handleChangeMultiple(e, currentIdx, date)}
+                                    value={customizedScheduledBean?.[currentIdx]?.nextDayLogOutCustomize || false}
+                                    style={{flexDirection: "row"}}>
+                                        <FormControlLabel name="nextDayLogOutCustomize" control={<Checkbox value={customizedScheduledBean?.[currentIdx]?.nextDayLogOutCustomize || false} checked={customizedScheduledBean?.[currentIdx]?.nextDayLogOutCustomize || false} />} label="Next Day Logout" />
+                                    </FormGroup>
+                            </FormControl>
+                        </div>
+                    </>
+                }
+            </div>
+        );
     };
 
     const renderSingleDay = () => {
@@ -346,18 +565,18 @@ const CreateBooking = () => {
                             label="Booking Type"
                             onChange={(e)=>{handleChange(e);setShiftType(e.target.value)}}
                         >
-                            <MenuItem value={'Login'}>Login</MenuItem>
-                            <MenuItem value={'Logout'}>Logout</MenuItem>
-                            <MenuItem value={'Both'}>Both</MenuItem>
+                            <MenuItem value={'LOGIN'}>Login</MenuItem>
+                            <MenuItem value={'LOGOUT'}>Logout</MenuItem>
+                            {!editFlag && <MenuItem value={'Both'}>Both</MenuItem>}
                         </Select>
-                        {touched.bookingType && errors.bookingType && <FormHelperText className='errorHelperText'>{errors.bookingType}</FormHelperText>}
+                        {/* {touched.bookingType && errors.bookingType && <FormHelperText className='errorHelperText'>{errors.bookingType}</FormHelperText>} */}
                     </FormControl>
                 </div>
                 {
                     shiftType !== '' &&
                     <>
                         {
-                            shiftType === 'Login' ?
+                            shiftType === 'LOGIN' ?
                             <div className='form-control-input'>
                                 <FormControl required fullWidth>
                                     <InputLabel id="login-label">Login Time</InputLabel>
@@ -379,7 +598,7 @@ const CreateBooking = () => {
                             </div>
                             :
                             (
-                                shiftType === 'Logout' ?
+                                shiftType === 'LOGOUT' ?
                                 <div className='form-control-input'>
                                     <FormControl required fullWidth>
                                         <InputLabel id="logout-label">Logout Time</InputLabel>
@@ -574,8 +793,9 @@ const CreateBooking = () => {
     };
 
     const onChangeHandler = (val) => {
+        console.log(val);
         if (val?.empId) {
-            setSelectedUsers([val.empId]);
+            setSelectedUsers([val.data]);
             getOtherUserDetails(val.empId);
         } else {
             setSelectedUsers([]);
@@ -607,7 +827,8 @@ const CreateBooking = () => {
     };
 
     const onTeamCheckboxClick = (teamUsers) => {
-        var idArray = teamUsers.map(item => item.empId);
+        var idArray = teamUsers.map(item => item.email);
+        console.log(idArray, 'ids');
         setSelectedUsers(idArray);
     };
 
@@ -630,13 +851,28 @@ const CreateBooking = () => {
 
     const handleMultiSubmit = () => {
         setIsSubmit(true);
+        console.log(customizedScheduledBean)
         let isInvalid = customizedScheduledBean.some(individualBean => {
-            if (!(individualBean.officeId && individualBean.loginShift && individualBean.logoutShift)) {
-                return true;
+            if (individualBean.officeId) {
+                if ((individualBean.bookingType === 'LOGIN' && individualBean.loginShift) ||
+                    (individualBean.bookingType === 'LOGOUT' && individualBean.logoutShift) ||
+                    (individualBean.bookingType === 'Both' && individualBean.logoutShift && individualBean.loginShift)) {
+                    console.log(false);
+                    return false;
+                }
             }
-            return false;
+            console.log(true);
+            return true;
         });
         if (!isInvalid) {
+            var modifiedCustomizeSchedule = [];
+            customizedScheduledBean.map((val)=>{
+                val.bookingType === 'LOGOUT' && val['loginShift'] && delete val['loginShift'];
+                val.bookingType === 'LOGIN' && val['logoutShift'] && delete val['logoutShift'];
+                modifiedCustomizeSchedule.push(val);
+            })
+            setCustomizedScheduledBean(modifiedCustomizeSchedule);
+            console.log(modifiedCustomizeSchedule,">>>>>>>santosh");
             handleSubmit();
         }
     };
@@ -649,18 +885,20 @@ const CreateBooking = () => {
         <div>
             <div className={styles.bookingForContainer}>
                 <div className='form-control-input'>
-                    <FormControl>
-                        <RadioGroup
-                            style={{flexDirection: "row"}}
-                            value={bookingFor}
-                            name="bookingFor"
-                            onChange={handleBookingForChange}
-                        >
-                            <FormControlLabel value={1} control={<Radio />} label={"Self"} />
-                            <FormControlLabel value={2} control={<Radio />} label={"Other User"} />
-                            <FormControlLabel value={3} control={<Radio />} label={"Team"} />
-                        </RadioGroup>
-                    </FormControl>
+                    {!editFlag &&
+                        <FormControl>
+                            <RadioGroup
+                                style={{flexDirection: "row"}}
+                                value={bookingFor}
+                                name="bookingFor"
+                                onChange={handleBookingForChange}
+                            >
+                                <FormControlLabel value={1} control={<Radio />} label={"Self"} />
+                                <FormControlLabel value={2} control={<Radio />} label={"Other User"} />
+                                <FormControlLabel value={3} control={<Radio />} label={"Team"} />
+                            </RadioGroup>
+                        </FormControl>
+                    }
                 </div>
             </div>
             {currentBookingFlow === 1 && <div className={styles.mainBookingContainer}>
@@ -670,11 +908,11 @@ const CreateBooking = () => {
                         <div className={styles.dateRangeInnerContainer}>
                             <LocalizationProvider dateAdapter={AdapterMoment}>
                                 <FormControl>
-                                    <DatePicker name="bookingFromDate" format={DATE_FORMAT} value={values.bookingFromDate ? moment(values.bookingFromDate) : null} onChange={(e) => handleDateChange(e, "bookingFromDate")} />
+                                    <DatePicker disabled={editFlag} name="bookingFromDate" format={DATE_FORMAT} value={values.bookingFromDate ? moment(values.bookingFromDate) : null} onChange={(e) => handleDateChange(e, "bookingFromDate")} />
                                     {touched.bookingFromDate && errors.bookingFromDate && <FormHelperText className='errorHelperText'>{errors.bookingFromDate}</FormHelperText>}
                                 </FormControl>
                                 <FormControl>
-                                    <DatePicker name="bookingToDate" format={DATE_FORMAT} value={values.bookingToDate ? moment(values.bookingToDate) : null} onChange={(e) => handleDateChange(e, "bookingToDate")} />
+                                    <DatePicker disabled={editFlag} name="bookingToDate" format={DATE_FORMAT} value={values.bookingToDate ? moment(values.bookingToDate) : null} onChange={(e) => handleDateChange(e, "bookingToDate")} />
                                     {touched.bookingToDate && errors.bookingToDate && <FormHelperText className='errorHelperText'>{errors.bookingToDate}</FormHelperText>}
                                 </FormControl>
                             </LocalizationProvider>
@@ -702,10 +940,12 @@ const CreateBooking = () => {
                             </FormControl>
                         </div>
                         <div className='form-control-input'>
-                            <FormGroup ref={customiseSchRef} value={values.isCustomiseSchedule} onChange={handleScheduleChange}>
-                                <InputLabel>Customize Schedule</InputLabel>
-                                <FormControlLabel disabled={isSelectedDate()} name="isCustomiseSchedule" control={<Switch checked={values.isCustomiseSchedule} />} label={values.isCustomiseSchedule ? "On" : "Off"} />
-                            </FormGroup>
+                            {!editFlag &&
+                                <FormGroup ref={customiseSchRef} value={values.isCustomiseSchedule} onChange={handleScheduleChange}>
+                                    <InputLabel>Customize Schedule</InputLabel>
+                                    <FormControlLabel disabled={isSelectedDate()} name="isCustomiseSchedule" control={<Switch checked={values.isCustomiseSchedule} />} label={values.isCustomiseSchedule ? "On" : "Off"} />
+                                </FormGroup>
+                            }
                         </div>
                     </div>
                     <div>
@@ -754,8 +994,9 @@ const CreateBooking = () => {
                     </div>}
                     <div className='addBtnContainer' style={{paddingBottom: "20px", flexDirection: "row-reverse"}}>
                         <div>
-                            {/* <button onClick={onUserSuccess} className='btn btn-secondary'>Back</button> */}
-                            <button type="submit" onClick={values.isCustomiseSchedule ? handleMultiSubmit : handleSubmit} className='btn btn-primary'>Create Booking</button>
+                            { editFlag && <button onClick={backHandler} className='btn btn-secondary'>Back</button>}
+
+                            <button type="submit" onClick={values.isCustomiseSchedule ? handleMultiSubmit : handleSubmit} className='btn btn-primary'>{editFlag ? 'Update': 'Create'} Booking</button>
                         </div>
                     </div>
                 </div>

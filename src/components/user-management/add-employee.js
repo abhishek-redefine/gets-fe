@@ -129,7 +129,8 @@ const AddEmployee = ({
                     businessUnit: allValues.businessUnit,
                     weekOff: allValues.weekOff,
                     specialStatus: allValues.specialStatus,
-                    enabled: true
+                    enabled: true,
+                    isManager : allValues.reportingManager ? false : true,
                 } 
                 //formik.setFieldValue('transportEligibilities',transportString.slice(0,-1));
                 console.log(transportString.slice(0,-1));
