@@ -1,121 +1,119 @@
 import compliance from '@/layouts/compliance';
 import React, { useEffect, useState } from 'react';
 import Grid from '@/components/grid';
-import ShiftService from '@/services/shift.service';
+import ComplianceService from '@/services/compliance.service';
+import xlsx from "json-as-xlsx";
+import { useDispatch } from 'react-redux';
+import AddDriverPendingApproval from '@/components/compliance/addVehiclePendingApproval';
 
 const DriverCompliance = () => {
-    const headers = [{
-        key: "driverName",
-        display: "Driver Name"
-    },
-    {
-        key: "vendorName",
-        display: "Vendor Name"
-    },
-    {
-        key: "complianceStatus",
-        display: "Compliance Status"
-    },
-    {
-        key: "officeId",
-        display: "Office ID"
-    },
-    {
-        key: "licenseNo",
-        display: "License No."
-    },
-    {
-        key: "licenseExpiryDate",
-        display: "License Expiry Date"
-    },
-    {
-        key: "age",
-        display: "Age"
-    },
-    {
-        key: "bGVStatus",
-        display: "BGV Status"
-    },
-    {
-        key: "bGVExpiry",
-        display: "BGV Expiry"
-    },
-    {
-        key: "hamburgerMenu",
-        html: <><span className="material-symbols-outlined">more_vert</span></>,
-        navigation: true,
-        menuItems: [
+    const headers = [
+        {
+            key: "name",
+            display: "Name"
+        },
+        {
+            key: "licenseNo",
+            display: "License No."
+        },
+        {
+            key: "vendorName",
+            display: "Vendor"
+        },
+        {
+            key: "mobile",
+            display: "Phone No."
+        },
+        {
+            key: "id",
+            display: "Driver ID"
+        },
+        {
+            key: "officeId",
+            display: "Office ID"
+        },
+        {
+            key: "gender",
+            display: "Gender"
+        },
+        {
+            key: "aadharId",
+            display: "Adhaar Id"
+        },
+        {
+            key: "complianceStatus",
+            display: "Compliance Status"
+        },
+        {
+            key: "hamburgerMenu",
+            html: <><span className="material-symbols-outlined">more_vert</span></>,
+            navigation: true,
+            menuItems: [
+                {
+                    display: "View Driver",
+                    key: "viewDriver"
+                }
+            ]
+        }];
+    const dispatch = useDispatch();
+
+    const [viewDriverOpen, setViewDriverOpen] = useState(false)
+    const [editDriverData, setEditDriverData] = useState(false)
+    const [driverData, setDriverData] = useState()
+
+    const downloadReport = () => {
+        var data = [
             {
-                display: "Edit",
-                key: "edit"
-            },
-            {
-                display: "Deactivate",
-                key: "deactivate"
+                sheet: "Driver Report",
+                columns: [
+                    { label: "Aadhar Id", value: "aadharId" },
+                    { label: "Address", value: "address" },
+                    { label: "Alt Mobile", value: "altMobile" },
+                    { label: "Badge Url", value: "badgeUrl" },
+                    { label: "BGV Url", value: "bgvUrl" },
+                    { label: "Driving Training Certificate Url", value: "driverTrainingCertUrl" },
+                    { label: "Email", value: "email" },
+                    { label: "Enabled", value: "enabled" },
+                    { label: "Gender", value: "gender" },
+                    { label: "ID", value: "id" },
+                    { label: "License No", value: "licenseNo" },
+                    { label: "License Url", value: "licenseUrl" },
+                    { label: "Medical Certificate Url", value: "medicalCertUrl" },
+                    { label: "Mobile", value: "mobile" },
+                    { label: "Name", value: "name" },
+                    { label: "Office ID", value: "officeId" },
+                    { label: "Pan No", value: "panNo" },
+                    { label: "Police Verification Url", value: "policeVerificationUrl" },
+                    { label: "Remarks", value: "remarks" },
+                    { label: "Undertaking Url", value: "undertakingUrl" },
+                    { label: "Vendor Name", value: "vendorName" },
+                ],
+                content: driverData,
             }
         ]
-    }];
-    const [viewShiftTimeData, setViewShiftTimeData] = useState()
-    const [pagination, setPagination] = useState({
-        pageNo: 1,
-        pageSize: 10,
-    });
+
+        var settings = {
+            fileName: "Driver Report",
+            extraLength: 20,
+            writeMode: "writeFile",
+            writeOptions: {},
+            RTL: false,
+        }
+
+        xlsx(data, settings)
+    }
+
+    const onMenuItemClick = async (key, clickedItem) => {
+        if (key === "viewDriver") {
+            setEditDriverData(clickedItem);
+            setViewDriverOpen(true);
+        }
+    };
 
     const initializer = async () => {
         try {
-            const params = new URLSearchParams(pagination);
-            const response = await ShiftService.getAllShiftsWOPagination(params.toString());
-            response.data.data.map((item) => {
-                item.shiftWeekdayVisibility = "";
-
-                if (item.mondayShift) {
-                    item.shiftWeekdayVisibility += "MON";
-                }
-                if (item.tuesdayShift) {
-                    if (item.shiftWeekdayVisibility) {
-                        item.shiftWeekdayVisibility += ", TUES";
-                    } else {
-                        item.shiftWeekdayVisibility += "TUES";
-                    }
-                }
-                if (item.wednesdayShift) {
-                    if (item.shiftWeekdayVisibility) {
-                        item.shiftWeekdayVisibility += ", WED";
-                    } else {
-                        item.shiftWeekdayVisibility += "WED";
-                    }
-                }
-                if (item.thursdayShift) {
-                    if (item.shiftWeekdayVisibility) {
-                        item.shiftWeekdayVisibility += ", THURS";
-                    } else {
-                        item.shiftWeekdayVisibility += "THURS";
-                    }
-                }
-                if (item.fridayShift) {
-                    if (item.shiftWeekdayVisibility) {
-                        item.shiftWeekdayVisibility += ", FRI";
-                    } else {
-                        item.shiftWeekdayVisibility += "FRI";
-                    }
-                }
-                if (item.saturdayShift) {
-                    if (item.shiftWeekdayVisibility) {
-                        item.shiftWeekdayVisibility += ", SAT";
-                    } else {
-                        item.shiftWeekdayVisibility += "SAT";
-                    }
-                }
-                if (item.sundayShift) {
-                    if (item.shiftWeekdayVisibility) {
-                        item.shiftWeekdayVisibility += ", SUN";
-                    } else {
-                        item.shiftWeekdayVisibility += "SUN";
-                    }
-                }
-                // item.startDateEndDate = item.shiftStartDate.slice(0, 10) + " - " + item.shiftEndDate.slice(0, 10);
-            })
-            setViewShiftTimeData(response.data.data)
+            const response = await ComplianceService.getAllDrivers();
+            setDriverData(response.data.data)
         } catch (e) {
         }
     }
@@ -126,14 +124,23 @@ const DriverCompliance = () => {
 
     return (
         <div className='internalSettingContainer'>
-            <div>
-                <div className='gridContainer'>
-                    <Grid headers={headers} listing={viewShiftTimeData} enableDisableRow={true} />
+            {!viewDriverOpen && <div>
+                <div style={{ display: 'flex', justifyContent: 'end' }}>
+                    <div className='btnContainer'>
+                        <button onClick={() => downloadReport()} className='btn btn-download'>Download File</button>
+                    </div>
                 </div>
-            </div>
-
+                <div className='gridContainer'>
+                    <Grid headers={headers} listing={driverData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} />
+                </div>
+            </div>}
+            {
+                viewDriverOpen && <AddDriverPendingApproval ViewDetailsData={editDriverData} />
+            }
         </div>
     );
 }
 
 export default compliance(DriverCompliance);
+
+

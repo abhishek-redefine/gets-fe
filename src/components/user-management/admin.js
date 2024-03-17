@@ -3,6 +3,7 @@ import Grid from '../grid';
 import OfficeService from '@/services/office.service';
 import { DEFAULT_PAGE_SIZE } from '@/constants/app.constants.';
 import AddAdmin from './add-admin';
+import UploadButton from '../buttons/uploadButton';
 
 const AdminManagement = ({
     roleType,
@@ -44,7 +45,7 @@ const AdminManagement = ({
     const [paginationData, setPaginationData] = useState();
     const [pagination, setPagination] = useState({
         pageNo: 0,
-        pageSize: DEFAULT_PAGE_SIZE,        
+        pageSize: DEFAULT_PAGE_SIZE,
     });
     const [employeeListing, setEmployeeListing] = useState();
     const [editEmployeeData, setEditEmployeeData] = useState({});
@@ -60,9 +61,9 @@ const AdminManagement = ({
             const params = new URLSearchParams(pagination);
             const response = await OfficeService.getAllAdmins(params.toString());
             const { data } = response || {};
-            const { paginatedResponse } = data || {};        
+            const { paginatedResponse } = data || {};
             setEmployeeListing(paginatedResponse?.content);
-            let localPaginationData = {...paginatedResponse};
+            let localPaginationData = { ...paginatedResponse };
             delete localPaginationData?.content;
             setPaginationData(localPaginationData);
         } catch (e) {
@@ -75,16 +76,23 @@ const AdminManagement = ({
     }, [pagination]);
 
     const handlePageChange = (page) => {
-        let updatedPagination = {...pagination};
+        let updatedPagination = { ...pagination };
         updatedPagination.pageNo = page;
         setPagination(updatedPagination);
     };
 
+    const uploadFunction = (item) => {
+        var form = new FormData();
+        form.append('model', '{"importJobDTO": {"importType": "IMPORT_TYPE_ESCORT","entityName": "ESCORT"}}');
+        form.append('file', item);
+        RoleService.uploadForm(form);
+    }
+
     const onMenuItemClick = (key, values) => {
-      if (key === "edit") {
-        setEditEmployeeData(values);
-        setIsAddEdit(true);
-      }
+        if (key === "edit") {
+            setEditEmployeeData(values);
+            setIsAddEdit(true);
+        }
     };
 
     const addAdmin = () => {
@@ -95,8 +103,11 @@ const AdminManagement = ({
     return (
         <div className='internalSettingContainer'>
             {!isAddEdit && <div>
-                <div className='btnContainer'>
-                    <button onClick={addAdmin} className='btn btn-primary'>Add Admin</button>
+                <div style={{ display: 'flex', justifyContent: 'end' }}>
+                    <UploadButton uploadFunction={uploadFunction} />
+                    <div className='btnContainer'>
+                        <button onClick={addAdmin} className='btn btn-primary'>Add Admin</button>
+                    </div>
                 </div>
                 <div className='gridContainer'>
                     <Grid onMenuItemClick={onMenuItemClick} handlePageChange={handlePageChange} pagination={paginationData} headers={headers} listing={employeeListing} />

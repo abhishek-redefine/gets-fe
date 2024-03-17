@@ -94,7 +94,10 @@ const EmployeeManagement = ({
     };
 
     const uploadFunction=(item)=>{
-        RoleService.uploadForm(item);
+        var form = new FormData();
+        form.append('model', '{"importJobDTO": {"importType": "IMPORT_TYPE_ESCORT","entityName": "ESCORT"}}');
+        form.append('file', item);
+        RoleService.uploadForm(form);
     }
 
     return (

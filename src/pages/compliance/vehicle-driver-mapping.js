@@ -1,110 +1,121 @@
 import compliance from '@/layouts/compliance';
 import React, { useEffect, useState } from 'react';
 import Grid from '@/components/grid';
-import ShiftService from '@/services/shift.service';
-import AddNewVehicle from '@/components/compliance/add_new_vehicle';
+import ComplianceService from '@/services/compliance.service';
+import { Autocomplete } from '@mui/material';
+import xlsx from "json-as-xlsx";
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import { toggleToast } from '@/redux/company.slice';
+import { useDispatch } from 'react-redux';
 
 const VehicleDriverMapping = () => {
-    const headers = [{
-        key: "checkinId",
-        display: "Checkin ID"
-    },
-    {
-        key: "vehicleRegistrationNo",
-        display: "Vehicle Registration No."
-    },
-    {
-        key: "vehicleId",
-        display: "Vehicle ID"
-    },
-    {
-        key: "seatingCapacity",
-        display: "Seating Capacity"
-    },
-    {
-        key: "driverName",
-        display: "Driver Name"
-    },
-    {
-        key: "drivingLicenseDetails",
-        display: "Driving License Details"
-    },
-    {
-        key: "driverStatus",
-        display: "Driver Status"
-    },
-    {
-        key: "hamburgerMenu",
-        html: <><span className="material-symbols-outlined">more_vert</span></>,
-        navigation: true,
-        menuItems: [
-            {
-                display: "Edit",
-                key: "edit"
+    const headers = [
+        {
+            key: "vehicleRegistrationNumber",
+            display: "Vehicle No."
+        },
+        {
+            key: "vehicleId",
+            display: "Vehicle Id"
+        },
+        {
+            key: "vendorName",
+            display: "Vendor"
+        },
+        {
+            key: "vehicleModel",
+            display: "Model"
+        },
+        {
+            key: "fuelType",
+            display: "Capacity"
+        },
+        {
+            key: "driverId",
+            display: "Driver ID"
+        },
+        {
+            key: "ehsStatus",
+            display: "EHS Status"
+        },
+        {
+            key: "hamburgerMenu",
+            html: <><span className="material-symbols-outlined">more_vert</span></>,
+            navigation: true,
+            menuItems: [
+                {
+                    display: "Change Driver",
+                    key: "changeDriver"
+                }
+            ]
+        }];
+
+    const [vehicleData, setVehicleData] = useState();
+    const [open, setOpen] = useState(false);
+    const [vehicleModel, setVehicleModel] = useState();
+    const [vehicleRegistrationNumber, setVehicleRegistrationNumber] = useState();
+    const [openSearchDriver, setOpenSearchDriver] = useState(false);
+    const [searchedDriver, setSearchedDriver] = useState([]);
+    const [mappedDriver, setMappedDriver] = useState();
+    const [vehicleId, setVehicleId] = useState();
+    const [selectedVehicle,setSelectedVehicle] = useState();
+
+    const dispatch = useDispatch();
+
+    const searchForDriver = async (e) => {
+        try {
+            if (e.target.value) {
+                console.log('searchForDriver', e.target.value)
+                const response = await ComplianceService.searchDriver(e.target.value);
+                console.log(response)
+                const { data } = response || {};
+                setSearchedDriver(data);
+            } else {
+                setSearchedDriver([]);
             }
-        ]
-    }];
-    const [viewShiftTimeData, setViewShiftTimeData] = useState()
-    const [pagination, setPagination] = useState({
-        pageNo: 1,
-        pageSize: 10,
-    });
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
+
+    const driverMapping = async () => {
+        selectedVehicle.driverId = mappedDriver;
+        const response = await ComplianceService.updateVehicle({ "vehicleDTO": selectedVehicle });
+        if(response.status===200) {
+            dispatch(toggleToast({ message: 'Vehicle Driver mapping successful!', type: 'success' }));
+        } else {
+            dispatch(toggleToast({ message: 'Vehicle Driver mapping unsuccessful.Please try again after some time!', type: 'error' }));
+        }
+    }
+
+    const onMenuItemClick = async (key, clickedItem) => {
+        if (key === "changeDriver") {
+            setVehicleModel(clickedItem.vehicleModel);
+            setVehicleRegistrationNumber(clickedItem.vehicleRegistrationNumber);
+            setVehicleId(clickedItem.vehicleId)
+            setSelectedVehicle(clickedItem);
+            handleClickOpen();
+        }
+    };
 
     const initializer = async () => {
         try {
-            const params = new URLSearchParams(pagination);
-            const response = await ShiftService.getAllShiftsWOPagination(params.toString());
-            response.data.data.map((item) => {
-                item.shiftWeekdayVisibility = "";
-
-                if (item.mondayShift) {
-                    item.shiftWeekdayVisibility += "MON";
-                }
-                if (item.tuesdayShift) {
-                    if (item.shiftWeekdayVisibility) {
-                        item.shiftWeekdayVisibility += ", TUES";
-                    } else {
-                        item.shiftWeekdayVisibility += "TUES";
-                    }
-                }
-                if (item.wednesdayShift) {
-                    if (item.shiftWeekdayVisibility) {
-                        item.shiftWeekdayVisibility += ", WED";
-                    } else {
-                        item.shiftWeekdayVisibility += "WED";
-                    }
-                }
-                if (item.thursdayShift) {
-                    if (item.shiftWeekdayVisibility) {
-                        item.shiftWeekdayVisibility += ", THURS";
-                    } else {
-                        item.shiftWeekdayVisibility += "THURS";
-                    }
-                }
-                if (item.fridayShift) {
-                    if (item.shiftWeekdayVisibility) {
-                        item.shiftWeekdayVisibility += ", FRI";
-                    } else {
-                        item.shiftWeekdayVisibility += "FRI";
-                    }
-                }
-                if (item.saturdayShift) {
-                    if (item.shiftWeekdayVisibility) {
-                        item.shiftWeekdayVisibility += ", SAT";
-                    } else {
-                        item.shiftWeekdayVisibility += "SAT";
-                    }
-                }
-                if (item.sundayShift) {
-                    if (item.shiftWeekdayVisibility) {
-                        item.shiftWeekdayVisibility += ", SUN";
-                    } else {
-                        item.shiftWeekdayVisibility += "SUN";
-                    }
-                }
-                // item.startDateEndDate = item.shiftStartDate.slice(0, 10) + " - " + item.shiftEndDate.slice(0, 10);
-            })
-            setViewShiftTimeData(response.data.data)
+            const response = await ComplianceService.getAllVehicles();
+            setVehicleData(response.data.data)
         } catch (e) {
         }
     }
@@ -117,9 +128,54 @@ const VehicleDriverMapping = () => {
         <div className='internalSettingContainer'>
             <div>
                 <div className='gridContainer'>
-                    <Grid headers={headers} listing={viewShiftTimeData} enableDisableRow={true} />
+                    <Grid headers={headers} listing={vehicleData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} />
                 </div>
             </div>
+            <Dialog
+                open={open}
+                onClose={handleClose}
+                PaperProps={{
+                    component: 'form',
+                    onSubmit: (event) => {
+                        event.preventDefault();
+                        const formData = new FormData(event.currentTarget);
+                        const formJson = Object.fromEntries(formData.entries());
+                        const email = formJson.email;
+                        console.log(email);
+                        handleClose();
+                    },
+                }}
+            >
+                <DialogTitle>{`Change Driver for ${vehicleModel}--${vehicleRegistrationNumber}`}</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Select new driver from drop down
+                    </DialogContentText>
+                    <Autocomplete
+                        disablePortal
+                        id="search-driver"
+                        options={searchedDriver}
+                        autoComplete
+                        open={openSearchDriver}
+                        onOpen={() => {
+                            setOpenSearchDriver(true);
+                        }}
+                        onClose={() => {
+                            setOpenSearchDriver(false);
+                        }}
+                        onChange={(e, val) => setMappedDriver(val.driverId)}
+                        getOptionKey={(driver) => driver.driverId}
+                        getOptionLabel={(driver) => driver.driverName}
+                        freeSolo
+                        name="driver"
+                        renderInput={(params) => <TextField {...params} label="Search Driver" onChange={searchForDriver} />}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleClose}>Cancel</Button>
+                    <Button type="submit" onClick={driverMapping}>Change Driver</Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 }

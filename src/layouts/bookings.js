@@ -27,7 +27,7 @@ const bookings = (WrappedComponent) => {
                 <div className='currentStateContainer'>
                     <button onClick={() => changeRoute('search-bookings')} className={`btn btn-secondary ${currentActiveState === 'search-bookings' ? 'btn-blk' : ''}`}>Search Bookings</button>
                     <button onClick={() => changeRoute('create-booking')} className={`btn btn-secondary ${currentActiveState === 'create-booking' ? 'btn-blk' : ''}`}>Create Booking</button>
-                    {/* <button onClick={() => changeRoute('upload-bookings')} className={`btn btn-secondary ${currentActiveState === 'upload-bookings' ? 'btn-blk' : ''}`}>Upload Bookings</button> */}
+                    <button onClick={() => changeRoute('upload-bookings')} className={`btn btn-secondary ${currentActiveState === 'upload-bookings' ? 'btn-blk' : ''}`}>Upload Bookings</button>
                     <button onClick={() => changeRoute('booking-change-logs')} className={`btn btn-secondary ${currentActiveState === 'booking-change-logs' ? 'btn-blk' : ''}`}>Booking Change Logs</button>
                     {/* <button onClick={() => changeRoute('booking-approvals')} className={`btn btn-secondary ${currentActiveState === 'booking-approvals' ? 'btn-blk' : ''}`}>Booking Approvals</button> */}
                 </div>

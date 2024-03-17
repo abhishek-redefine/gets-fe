@@ -101,13 +101,8 @@ const EscortManagement = ({
 
     const uploadFunction = async (item) => {
         var form = new FormData();
-        form.append('model', new Blob(['{"importJobDTO": {"importType": "IMPORT_TYPE_ESCORT","entityName": "ESCORT"}}'], {
-            contentType: "application/json"
-        }));
-        form.append('file', new Blob([item, {
-            contentType: "multipart/form-data"
-        }]));
-        console.log('uploadFunction', form)
+        form.append('model', '{"importJobDTO": {"importType": "IMPORT_TYPE_ESCORT","entityName": "ESCORT"}}');
+        form.append('file', item);
         RoleService.uploadForm(form);
     }
 
@@ -115,24 +110,7 @@ const EscortManagement = ({
         <div className='internalSettingContainer'>
             {!isAddEdit && <div>
                 <div style={{ display: 'flex', justifyContent: 'end' }}>
-                    <div className='btnContainer' style={{ width: '200px', marginRight: '10px' }}>
-                        <label htmlFor="upload-photo">
-                            <input
-                                style={{ display: 'none' }}
-                                id="upload-photo"
-                                name="upload-photo"
-                                type="file"
-                                onChange={(e) => {
-                                    uploadFunction(e.target.files[0])
-                                }}
-                            />
-                            <Button variant="outlined" className='btn btn-primary' style={{
-                                borderColor: "#F6CE47", color: '#000'
-                            }} component="span">
-                                Upload File
-                            </Button>
-                        </label>
-                    </div>
+                    <UploadButton uploadFunction={uploadFunction} />
                     <div className='btnContainer'>
                         <button onClick={addEscort} className='btn btn-primary'>Add Escort</button>
                     </div>

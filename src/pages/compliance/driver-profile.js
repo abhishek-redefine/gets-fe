@@ -5,6 +5,10 @@ import AddNewDriver from '@/components/compliance/add_new_driver';
 import UploadButton from '@/components/buttons/uploadButton';
 import ComplianceService from '@/services/compliance.service';
 import xlsx from "json-as-xlsx";
+import { toggleToast } from '@/redux/company.slice';
+import { useDispatch } from 'react-redux';
+import AddDriverPendingApproval from '@/components/compliance/addDriverPendingApproval';
+import EhsEntryDriver from '@/components/compliance/addEhsEntryDriver';
 
 const DriverProfile = () => {
     const headers = [
@@ -25,16 +29,8 @@ const DriverProfile = () => {
             display: "Phone No."
         },
         {
-            key: "driverId",
+            key: "id",
             display: "Driver ID"
-        },
-        {
-            key: "vehicleId",
-            display: "Vehicle ID"
-        },
-        {
-            key: "status",
-            display: "Status"
         },
         {
             key: "officeId",
@@ -45,16 +41,8 @@ const DriverProfile = () => {
             display: "Gender"
         },
         {
-            key: "age",
-            display: "Age"
-        },
-        {
             key: "aadharId",
             display: "Adhaar Id"
-        },
-        {
-            key: "createdAt",
-            display: "Created At"
         },
         {
             key: "hamburgerMenu",
@@ -76,11 +64,19 @@ const DriverProfile = () => {
                 {
                     display: "Add EHS Entry",
                     key: "addEHSEntry"
-                }
+                },
+                {
+                    display: "View Driver",
+                    key: "viewDriver"
+                },
+
             ]
         }];
+    const dispatch = useDispatch();
 
     const [addDriverOpen, setAddDriverOpen] = useState(false)
+    const [viewDriverOpen, setViewDriverOpen] = useState(false)
+    const [viewEhsDriverOpen, setViewEhsDriverOpen] = useState(false)
     const [editDriverData, setEditDriverData] = useState(false)
     const [driverData, setDriverData] = useState()
     const [pagination, setPagination] = useState({
@@ -132,14 +128,32 @@ const DriverProfile = () => {
 
     const onMenuItemClick = async (key, clickedItem) => {
         if (key === "edit") {
+            const response = await ComplianceService.getSingleDriver(clickedItem.id);
             setEditDriverData(clickedItem);
             setAddDriverOpen(true);
+            
         } else if (key === "deactivate") {
-            console.log(key, clickedItem);
+            const response = await ComplianceService.enableDisableDriver(clickedItem.id, false);
+            if (response.status === 200) {
+                dispatch(toggleToast({ message: 'Driver deactivated successfully!', type: 'success' }));
+                initializer();
+            } else {
+                dispatch(toggleToast({ message: 'Driver deactivation unsuccessful. Please try again later!', type: 'error' }));
+            }
         } else if (key === "activate") {
-            console.log(key, clickedItem);
+            const response = await ComplianceService.enableDisableDriver(clickedItem.id, true);
+            if (response.status === 200) {
+                dispatch(toggleToast({ message: 'Driver activated successfully!', type: 'success' }));
+                initializer();
+            } else {
+                dispatch(toggleToast({ message: 'Driver activation unsuccessful. Please try again later!', type: 'error' }));
+            }
+        } else if (key === "viewDriver") {
+            setEditDriverData(clickedItem);
+            setViewDriverOpen(true);
         } else if (key === "addEHSEntry") {
-            console.log(key, clickedItem);
+            setEditDriverData(clickedItem);
+            setViewEhsDriverOpen(true);
         }
     };
 
@@ -147,7 +161,6 @@ const DriverProfile = () => {
         try {
             const response = await ComplianceService.getAllDrivers();
             setDriverData(response.data.data)
-            console.log(response.data.data)
         } catch (e) {
         }
     }
@@ -158,7 +171,7 @@ const DriverProfile = () => {
 
     return (
         <div className='internalSettingContainer'>
-            {!addDriverOpen && <div>
+            {!addDriverOpen && !viewDriverOpen && !viewEhsDriverOpen && <div>
                 <div style={{ display: 'flex', justifyContent: 'end' }}>
                     <UploadButton />
                     <div className='btnContainer'>
@@ -176,6 +189,12 @@ const DriverProfile = () => {
             </div>}
             {
                 addDriverOpen && <AddNewDriver SetAddDriverOpen={setAddDriverOpen} EditDriverData={editDriverData} />
+            }
+            {
+                viewDriverOpen && <AddDriverPendingApproval ViewDetailsData={editDriverData} />
+            }
+            {
+                viewEhsDriverOpen && <EhsEntryDriver EhsDetailsData={editDriverData} />
             }
         </div>
     );

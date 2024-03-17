@@ -40,7 +40,7 @@ const updateRolePermissions = (data) => {
 const uploadForm = (x) => {
     return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.FILE_UPLOAD}`, x, {
         headers: {
-            "Content-Type": "multipart/form-data"
+            "Content-Type":"multipart/form-data"
         }
     }).then((response) => {
         console.log(response)

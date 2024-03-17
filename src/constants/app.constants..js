@@ -31,6 +31,16 @@ export const USER_TYPES = {
     TEAM: "TEAM"
 };
 
+export const COMPLIANCE_TYPES = {
+    EHS: "EHS",
+    PENALTY: "PENALTY"
+};
+
+export const PENDING_APPROVAL_TYPES = {
+    DRIVER: "DRIVER",
+    VEHICLE: "VEHICLE"
+};
+
 export const SHIFT_TYPES = {
     VIEW_SHIFT_TIME: "VIEW_SHIFT_TIME",
     SHIFT_TEAM_MAPPING: "SHIFT_TEAM_MAPPING",

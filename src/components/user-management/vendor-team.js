@@ -3,7 +3,7 @@ import Grid from '../grid';
 import OfficeService from '@/services/office.service';
 import { DEFAULT_PAGE_SIZE } from '@/constants/app.constants.';
 import AddVendor from './add-vendor';
-
+import UploadButton from '../buttons/uploadButton';
 
 const VendorTeamManagement = ({
     roleType,
@@ -49,7 +49,7 @@ const VendorTeamManagement = ({
     const [paginationData, setPaginationData] = useState();
     const [pagination, setPagination] = useState({
         pageNo: 0,
-        pageSize: DEFAULT_PAGE_SIZE,        
+        pageSize: DEFAULT_PAGE_SIZE,
     });
     const [employeeListing, setEmployeeListing] = useState();
     const [editEmployeeData, setEditEmployeeData] = useState({});
@@ -60,14 +60,21 @@ const VendorTeamManagement = ({
         fetchAllVendors();
     };
 
+    const uploadFunction = async (item) => {
+        var form = new FormData();
+        form.append('model', '{"importJobDTO": {"importType": "IMPORT_TYPE_ESCORT","entityName": "ESCORT"}}');
+        form.append('file', item);
+        RoleService.uploadForm(form);
+    }
+
     const fetchAllVendors = async () => {
         try {
             const params = new URLSearchParams(pagination);
             const response = await OfficeService.getAllVendors(params.toString());
             const { data } = response || {};
-            const { paginatedResponse } = data || {};        
+            const { paginatedResponse } = data || {};
             setEmployeeListing(paginatedResponse?.content);
-            let localPaginationData = {...paginatedResponse};
+            let localPaginationData = { ...paginatedResponse };
             delete localPaginationData?.content;
             setPaginationData(localPaginationData);
         } catch (e) {
@@ -80,16 +87,16 @@ const VendorTeamManagement = ({
     }, [pagination]);
 
     const handlePageChange = (page) => {
-        let updatedPagination = {...pagination};
+        let updatedPagination = { ...pagination };
         updatedPagination.pageNo = page;
         setPagination(updatedPagination);
     };
 
     const onMenuItemClick = (key, values) => {
-      if (key === "edit") {
-        setEditEmployeeData(values);
-        setIsAddEdit(true);
-      }
+        if (key === "edit") {
+            setEditEmployeeData(values);
+            setIsAddEdit(true);
+        }
     };
 
     const addVendor = () => {
@@ -100,8 +107,11 @@ const VendorTeamManagement = ({
     return (
         <div className='internalSettingContainer'>
             {!isAddEdit && <div>
-                <div className='btnContainer'>
-                    <button onClick={addVendor} className='btn btn-primary'>Add Vendor</button>
+                <div style={{ display: 'flex', justifyContent: 'end' }}>
+                    <UploadButton uploadFunction={uploadFunction} />
+                    <div className='btnContainer'>
+                        <button onClick={addVendor} className='btn btn-primary'>Add Vendor</button>
+                    </div>
                 </div>
                 <div className='gridContainer'>
                     <Grid onMenuItemClick={onMenuItemClick} handlePageChange={handlePageChange} pagination={paginationData} headers={headers} listing={employeeListing} />

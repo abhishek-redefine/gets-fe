@@ -21,6 +21,7 @@ const UserManagement = () => {
         try {
             const response = await MasterDataService.getMasterData(type);
             const { data } = response || {};
+            console.log('user-management', response)
             if (data?.length) {
                 dispatch(setMasterData({data, type}));
             }

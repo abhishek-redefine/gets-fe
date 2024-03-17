@@ -25,14 +25,16 @@ const MultiStepForm = ({ children, initialValues, onSubmit }) => {
 
     const handleSubmit = async (values, actions) => {
         if (step.props.onSubmit) {
-            await step.props.onSubmit(values);
+            var response = false;
+            response = await step.props.onSubmit(values);
         }
-
         if (isLastStep) {
             return onSubmit(values, actions);
         } else {
-            actions.setTouched({});
-            next(values);
+            if (response) {
+                actions.setTouched({});
+                next(values);
+            }
         }
     }
 
@@ -43,19 +45,19 @@ const MultiStepForm = ({ children, initialValues, onSubmit }) => {
                 onSubmit={handleSubmit}
                 validationSchema={step.props.validationSchema}
             >{(formik) => <Form onSubmit={formik.handleSubmit}>
-                <Stepper  activeStep={stepNumber} alternativeLabel>
+                <Stepper activeStep={stepNumber} alternativeLabel>
                     {steps.map(currentStep => {
                         const label = currentStep.props.stepName
 
-                        return <Step key={label}  sx={{
+                        return <Step key={label} sx={{
                             "& .MuiStepLabel-root .Mui-completed": {
                                 color: "black"
                             },
                             "& .MuiStepLabel-label.Mui-completed.MuiStepLabel-alternativeLabel": {
-                                color: "white"
+                                color: "black"
                             },
                             "& .MuiStepLabel-root .Mui-active": {
-                                color: "grey"
+                                color: "red"
                             },
                             "& .MuiStepLabel-label.Mui-active.MuiStepLabel-alternativeLabel": {
                                 color: "black"

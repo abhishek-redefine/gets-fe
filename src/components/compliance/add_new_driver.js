@@ -72,23 +72,66 @@ const validationSchemaStepNine = object({
     medicalCertUrl: string().required('Medical Certificate is required')
 });
 
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-
 const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
     const dispatch = useDispatch();
 
     const [genderList, setGenderList] = useState([]);
     const [officeList, setOfficeList] = useState([]);
     const [driverId, setDriverId] = useState(EditDriverData ? EditDriverData.id : '')
+    const [initialValues, setInitialValues] = useState({
+        "name": "",
+        "mobile": "",
+        "dob": "",
+        "gender": "",
+        "officeId": "",
+        "vendorName": "",
+        "licenseNo": "",
+        "licenseExpiry": "",
+        "altMobile": "",
+        "address": "",
+        "aadharId": "",
+        "panNo": "",
+        "email": "",
+        "remarks": "",
+        "licenseUrl": "",
+        "photoUrl": "",
+        "bgvUrl": "",
+        "policeVerificationUrl": "",
+        "badgeUrl": "",
+        "undertakingUrl": "",
+        "driverTrainingCertUrl": "",
+        "medicalCertUrl": "",
+        "role": "DRIVER",
+        "enabled": true,
+        "ehsDoneBy": "Sultan",
+        "ehsDoneAt": "2024-03-13",
+        "complianceStatus": "NON_COMPLIANT",
+        "ehsStatus": "true"
+    });
 
     const addNewDriverDetailsSubmit = async (values) => {
         try {
-            values.role = "DRIVER";
-            const response = await ComplianceService.createDriver({ "driver": values });
-            if (response.status === 200) {
-                setDriverId(response.data.driver.id);
-                dispatch(toggleToast({ message: 'Driver details added successfully!', type: 'success' }));
+            if (EditDriverData) {
+                values.id = driverId;
+                const response = await ComplianceService.updateDriver({ "driver": values });
+                if (response.status === 200) {
+                    setDriverId(response.data.driver.id);
+                    dispatch(toggleToast({ message: 'Driver details updated successfully!', type: 'success' }));
+                    return true;
+                } else if (response.status === 500) {
+                    dispatch(toggleToast({ message: 'Driver details not updated. Please try again after some time.', type: 'error' }));
+                    return false;
+                }
+            } else {
+                const response = await ComplianceService.createDriver({ "driver": values });
+                if (response.status === 200) {
+                    setDriverId(response.data.driver.id);
+                    dispatch(toggleToast({ message: 'Driver details added successfully!', type: 'success' }));
+                    return true;
+                } else if (response.status === 500) {
+                    dispatch(toggleToast({ message: 'Driver details not added. Please try again after some time.', type: 'error' }));
+                    return false;
+                }
             }
         } catch (e) {
         }
@@ -97,7 +140,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
     const completeNewDriverFormSubmit = async () => {
         try {
             dispatch(toggleToast({ message: EditDriverData ? 'Driver details edited successfully' : 'Driver details added successfully!', type: 'success' }));
-            SetAddDriverOpen(false)
+            SetAddDriverOpen(false);
         } catch (e) {
         }
     }
@@ -105,15 +148,16 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
     const uploadDocumentFormSubmit = async (id, role, documentToUpload, data) => {
         try {
             var formData = new FormData()
-            formData.append('file', new Blob([data, {
-                contentType: "multipart/form-data"
-            }]));
+            formData.append('file', data);
             const response = await ComplianceService.documentUpload(id, role, documentToUpload, formData);
             if (response.status === 200) {
                 dispatch(toggleToast({ message: 'Data uploaded successfully!', type: 'success' }));
+                return true;
+            } else if (response.status === 500) {
+                dispatch(toggleToast({ message: 'Data not uploaded. Please try again after some time!', type: 'error' }));
+                return false;
             }
         } catch (e) {
-
         }
     }
 
@@ -124,7 +168,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
         await Promise.allSettled([
             officeResponse = await OfficeService.getAllOffices(),
             genderResponse = await ComplianceService.getMasterData('Gender')
-        ])
+        ]);
 
         const { data } = officeResponse || {};
         const { clientOfficeDTO } = data || {};
@@ -144,34 +188,21 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
         initializer();
     }, []);
 
+    useState(() => {
+        if (EditDriverData?.id) {
+            let newEditInfo = Object.assign(initialValues, EditDriverData);
+            setInitialValues(newEditInfo);
+        }
+    }, [EditDriverData]);
+
     return (
         <div>
-            <MultiStepForm initialValues={{
-                "name": EditDriverData ? EditDriverData.name : "",
-                "mobile": EditDriverData ? EditDriverData.mobile : "",
-                "dob": EditDriverData ? "" : "",
-                "gender": EditDriverData ? EditDriverData.gender : "",
-                "officeId": EditDriverData ? EditDriverData.officeId : "",
-                "vendorName": EditDriverData ? EditDriverData.vendorName : "",
-                "licenseNo": EditDriverData ? EditDriverData.licenseNo : "",
-                "licenseExpiry": EditDriverData ? "" : "",
-                "altMobile": EditDriverData ? EditDriverData.altMobile : "",
-                "address": EditDriverData ? EditDriverData.address : "",
-                "aadharId": EditDriverData ? EditDriverData.aadharId : "",
-                "panNo": EditDriverData ? EditDriverData.panNo : "",
-                "email": EditDriverData ? EditDriverData.email : "",
-                "remarks": EditDriverData ? EditDriverData.remarks : "",
-                "licenseUrl": EditDriverData ? EditDriverData.licenseUrl : "",
-                "photoUrl": EditDriverData ? "" : "",
-                "bgvUrl": EditDriverData ? EditDriverData.bgvUrl : "",
-                "policeVerificationUrl": EditDriverData ? EditDriverData.policeVerificationUrl : "",
-                "badgeUrl": EditDriverData ? EditDriverData.badgeUrl : "",
-                "undertakingUrl": EditDriverData ? EditDriverData.undertakingUrl : "",
-                "driverTrainingCertUrl": EditDriverData ? EditDriverData.driverTrainingCertUrl : "",
-                "medicalCertUrl": EditDriverData ? EditDriverData.medicalCertUrl : ""
-            }}
-                onSubmit={values => {
-                    completeNewDriverFormSubmit(values);
+            <MultiStepForm initialValues={initialValues}
+                onSubmit={async (values) => {
+                    const response = await uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/DRIVER_MEDICAL_CERTIFICATE', values.medicalCertUrl);
+                    if (response) {
+                        completeNewDriverFormSubmit();
+                    }
                 }}
             >
                 <FormStep
@@ -243,7 +274,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                 </FormStep>
                 <FormStep
                     stepName="Driver Photo"
-                    onSubmit={(values) => uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/LICENSE_CERTIFICATE', values.photoUrl)}
+                    onSubmit={(values) => uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/DRIVER_PHOTO', values.photoUrl)}
                     validationSchema={validationSchemaStepThree}
                 >
                     <FileInputField
@@ -297,7 +328,6 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                 </FormStep>
                 <FormStep
                     stepName="Driver Medical Certificate"
-                    onSubmit={(values) => uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/DRIVER_MEDICAL_CERTIFICATE', values.medicalCertUrl)}
                     validationSchema={validationSchemaStepNine}
                 >
                     <FileInputField

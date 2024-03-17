@@ -32,7 +32,7 @@ const compliance = (WrappedComponent) => {
                     <button onClick={() => changeRoute('ehs')} className={`btn btn-secondary ${currentActiveState === 'ehs' ? 'btn-blk' : ''}`}>EHS</button>
                     <button onClick={() => changeRoute('vendor')} className={`btn btn-secondary ${currentActiveState === 'vendor' ? 'btn-blk' : ''}`}>Vendor</button>
                     <button onClick={() => changeRoute('vehicle-driver-mapping')} className={`btn btn-secondary ${currentActiveState === 'vehicle-driver-mapping' ? 'btn-blk' : ''}`}>Vehicle Driver Mapping</button>
-                    {/* <button onClick={() => changeRoute('pending-approvals')} className={`btn btn-secondary ${currentActiveState === 'pending-approvals' ? 'btn-blk' : ''}`}>Pending Approvals</button> */}
+                    <button onClick={() => changeRoute('pending-approvals')} className={`btn btn-secondary ${currentActiveState === 'pending-approvals' ? 'btn-blk' : ''}`}>Pending Approvals</button>
                 </div>
                 <div>
                     <WrappedComponent {...props} />

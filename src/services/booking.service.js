@@ -61,6 +61,22 @@ const getBookingHistory = (queryParams) =>{
     });
 }
 
+const uploadForm = (data) => {
+    return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.FILE_UPLOAD}`, data, {
+        headers: {
+            "Content-Type":"multipart/form-data"
+        }
+    }).then((response) => {
+        return response;
+    });
+};
+
+const listAllBookings = () => {
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.LIST_ALL_BOOKINGS}`).then((response) => {
+        return response;
+    });
+};
+
 const BookingService = {
     getAllBookings,
     getLoginLogoutTimes,
@@ -69,7 +85,9 @@ const BookingService = {
     createBooking,
     cancelBooking,
     updateBooking,
-    getBookingHistory
+    getBookingHistory,
+    uploadForm,
+    listAllBookings
 };
 
 export default BookingService;

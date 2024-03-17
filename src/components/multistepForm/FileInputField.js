@@ -21,8 +21,10 @@ const FileInputField = ({ label, ...props }) => {
                     },
                     endAdornment: <AttachFileIcon />
                 }}
-                onChange={(file)=>setFieldValue(field.name, file)}
+                onChange={(file) => setFieldValue(field.name, file)}
+                onError={meta.touched && Boolean(meta.error)}
             />
+            {meta.touched && meta.error && <FormHelperText className='errorHelperText'>{meta.error}</FormHelperText>}
         </div>
     )
 }
