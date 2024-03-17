@@ -1,7 +1,7 @@
 import { Checkbox, FormControlLabel, Menu, MenuItem, Pagination } from '@mui/material';
 import React, { useState } from 'react';
 
-const Grid = ({ headers, pagination, listing = [], handlePageChange, onMenuItemClick, onRadioClick, onCheckboxClick, pageNoText = 'pageNo', enableDisableRow = false }) => {
+const Grid = ({ headers, pagination, listing = [], handlePageChange, onMenuItemClick, onRadioClick, onCheckboxClick, pageNoText = 'pageNo', enableDisableRow = false,bookingGrid = false }) => {
 
   const [isMenu, setIsMenu] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -15,22 +15,26 @@ const Grid = ({ headers, pagination, listing = [], handlePageChange, onMenuItemC
   };
 
   const htmlClick = (header, e, listItem, idx) => {
-    console.log('htmlClick', listItem, header.menuItems)
-
+    console.log('htmlClick', listItem, header.menuItems);
     if (header.navigation) {
-      setClickedItem(listItem);
-      setIsMenu(true);
-      setNavigationItems(header.menuItems);
-      handleClick(e);
-      if (listItem.enabled) {
-        setNavigationItems(header.menuItems.filter((item) =>
-          item.key !== 'activate'
-        ));
+      if(bookingGrid && listItem.isCancelled){
+        console.log("Hello");
       }
-      if (!listItem.enabled) {
-        setNavigationItems(header.menuItems.filter((item) =>
-          item.key !== 'deactivate'
-        ));
+      else{
+        setClickedItem(listItem);
+        setIsMenu(true);
+        setNavigationItems(header.menuItems);
+        handleClick(e);
+        if (listItem.enabled) {
+          setNavigationItems(header.menuItems.filter((item) =>
+            item.key !== 'activate'
+          ));
+        }
+        if (!listItem.enabled) {
+          setNavigationItems(header.menuItems.filter((item) =>
+            item.key !== 'deactivate'
+          ));
+        }
       }
     } else if (header.radio) {
       setRadioCheckedValue(Number(idx));
@@ -87,7 +91,7 @@ const Grid = ({ headers, pagination, listing = [], handlePageChange, onMenuItemC
         </thead>
         <tbody>
           {listing.map((listItem, idx) => (
-            <tr key={`${idx}tr`}>
+            <tr key={`${idx}tr`} >
               {headers.map((header, ix) => {
                 let tdContent;
                 if (!listItem[header.key] && header.html) {
@@ -99,7 +103,7 @@ const Grid = ({ headers, pagination, listing = [], handlePageChange, onMenuItemC
                     {React.cloneElement(header.html, additionalProps)}
                   </td>
                 } else {
-                  tdContent = <td key={`${ix}td`} style={{ color: enableDisableRow && listItem.enabled ? '#000' : enableDisableRow && !listItem.enabled ? '#ccc' : '#000' }}>{getText(header, listItem)}</td>;
+                  tdContent = bookingGrid ? <td key={`${ix}td`} style={{ color: !listItem.isCancelled ? '#000' : listItem.isCancelled ? '#ccc' : '#000' }}>{getText(header, listItem)}</td> : <td key={`${ix}td`} style={{ color: enableDisableRow && listItem.enabled ? '#000' : enableDisableRow && !listItem.enabled ? '#ccc' : '#000' }}>{getText(header, listItem)}</td>;
                 }
                 return tdContent;
               })}

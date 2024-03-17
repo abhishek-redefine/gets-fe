@@ -9,6 +9,7 @@ const bookings = (WrappedComponent) => {
         const [currentActiveState, setCurrentActiveState] = useState('');
 
         const changeRoute = (routeName) => {
+            localStorage.removeItem('editBooking');
             router.push(routeName);
             setCurrentActiveState(routeName);
         };

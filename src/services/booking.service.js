@@ -45,13 +45,31 @@ const cancelBooking = (data) => {
     });
 };
 
+const updateBooking = (bookingData) =>{
+    return axiosInstance.put(`${API_PATH.API_VERSION}${API_PATH.UPDATE_BOOKING}/false`,bookingData).then((response) => {
+        return response;
+    });
+}
+
+const getBookingHistory = (queryParams) =>{
+    let url = `${API_PATH.API_VERSION}${API_PATH.BOOKING_HISTORY}`;
+    if (queryParams) {
+        url += `?${queryParams}`;
+    }
+    return axiosInstance.get(url).then((response) => {
+        return response;
+    });
+}
+
 const BookingService = {
     getAllBookings,
     getLoginLogoutTimes,
     getNodalLocations,
     getEmployeesByTeamId,
     createBooking,
-    cancelBooking
+    cancelBooking,
+    updateBooking,
+    getBookingHistory
 };
 
 export default BookingService;

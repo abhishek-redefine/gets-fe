@@ -45,6 +45,8 @@ export const API_PATH = {
     CREATE_BOOKING: '/booking/createBooking',
     EMP_BY_ID: '/emp/byEmpId',
     CANCEL_BOOKING: '/booking/cancel',
+    UPDATE_BOOKING: '/booking/update',
+    BOOKING_HISTORY: '/booking/bookingHistoryById',
     LOGOUT: '/unauthorised',
     FILE_UPLOAD: '/import/job',
     CREATE_DRIVER: '/driver/create',
