@@ -61,8 +61,8 @@ const ViewShiftTime = () => {
     const [showEditShiftTime, setShowEditShiftTime] = useState(false);
     const [valueEditShiftTime, setValueEditShiftTime] = useState(false);
     const [pagination, setPagination] = useState({
-        pageNo: 1,
-        pageSize: 10
+        page: 0,
+        size: 10
     });
 
     const initializer = async () => {

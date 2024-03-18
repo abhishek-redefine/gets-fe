@@ -42,6 +42,10 @@ const SearchBookings = () => {
         display: "Shift Type"
     },
     {
+        key: 'transportType',
+        display: 'Transportation'
+    },
+    {
         key: "shiftTime" ,
         display: "Shift Time"
     },
