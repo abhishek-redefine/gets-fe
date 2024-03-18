@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import Grid from '@/components/grid';
-import UploadButton from '@/components/buttons/uploadButton';
 import AddPenalty from '@/components/compliance/addPenalty';
 import compliance from '@/layouts/compliance';
 import AddVendor from '@/components/compliance/addVendor';
@@ -71,15 +70,10 @@ const Vendor = () => {
         }
     };
 
-    const uploadFunction = (item) => {
-        console.log('UploadFunction')
-    };
-
     return (
         <div className='internalSettingContainer'>
             {!isAddVendor && <div>
                 <div style={{ display: 'flex', justifyContent: 'end' }}>
-                    <UploadButton uploadFunction={uploadFunction} />
                     <div className='btnContainer'>
                         <button onClick={() => setIsAddVendor(true)} className='btn btn-primary'>Add Vendor</button>
                     </div>

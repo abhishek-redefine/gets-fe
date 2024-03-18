@@ -4,12 +4,14 @@ import OfficeService from '@/services/office.service';
 import { DEFAULT_PAGE_SIZE } from '@/constants/app.constants.';
 import AddAdmin from './add-admin';
 import UploadButton from '../buttons/uploadButton';
+import { toggleToast } from '@/redux/company.slice';
+import { useDispatch } from 'react-redux';
 
 const AdminManagement = ({
     roleType,
     onSuccess
 }) => {
-
+    const dispatch = useDispatch()
     const headers = [{
         key: "name",
         display: "Admin Name"
@@ -81,11 +83,23 @@ const AdminManagement = ({
         setPagination(updatedPagination);
     };
 
-    const uploadFunction = (item) => {
+    const uploadFunction = async (item) => {
         var form = new FormData();
-        form.append('model', '{"importJobDTO": {"importType": "IMPORT_TYPE_ESCORT","entityName": "ESCORT"}}');
+        form.append('model', '{"importJobDTO": {"importType": "IMPORT_TYPE_ADMIN_USER","entityName": "ADMIN USER"}}');
         form.append('file', item);
-        RoleService.uploadForm(form);
+        const response = await OfficeService.uploadForm(form);
+        console.log(response)
+        if (response?.data?.isSuccessFul) {
+            dispatch(toggleToast({ message: 'All Admin records uploaded successfully!', type: 'success' }));
+        } else {
+            console.log(response?.data?.successRecords, response?.data?.successRecords > 0)
+            if (response?.data?.successRecords > 0) {
+                dispatch(toggleToast({ message: `${response?.data?.successRecords} out of ${response?.data?.totalRecords} Admin records uploaded successfully!`, type: 'success' }));
+            } else {
+                dispatch(toggleToast({ message: `Admin records failed to upload. Please try again later.`, type: 'error' }));
+            }
+        }
+
     }
 
     const onMenuItemClick = (key, values) => {

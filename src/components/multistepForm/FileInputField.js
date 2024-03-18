@@ -17,7 +17,7 @@ const FileInputField = ({ label, ...props }) => {
                 variant="outlined"
                 InputProps={{
                     inputProps: {
-                        accept: '.pdf'
+                        accept: '.jpeg, .pdf'
                     },
                     endAdornment: <AttachFileIcon />
                 }}

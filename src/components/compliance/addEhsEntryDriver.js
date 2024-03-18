@@ -15,10 +15,6 @@ const validationSchemaStepOne = object({
     remarks: string().required('Vendor Name is required'),
 });
 
-const validationSchemaStepTwo = object({
-    file: string().required('File is required')
-});
-
 const AddEhsEntryDriver = ({ EditEhsEntryDriver, DriverId, UpdateId  }) => {
     const dispatch = useDispatch();
 
@@ -113,7 +109,6 @@ const AddEhsEntryDriver = ({ EditEhsEntryDriver, DriverId, UpdateId  }) => {
                 </FormStep>
                 <FormStep
                     stepName="Upload Files"
-                    validationSchema={validationSchemaStepTwo}
                 >
                     <FileInputField
                         name="file"

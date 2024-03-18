@@ -1,7 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import ComplianceService from '@/services/compliance.service';
-import { saveAs } from 'file-saver';
+import { toggleToast } from '@/redux/company.slice';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
 
 const AddVehiclePendingApproval = ({ ViewDetailsData }) => {
     const [initialValues, setInitialValues] = useState({
@@ -46,6 +53,8 @@ const AddVehiclePendingApproval = ({ ViewDetailsData }) => {
         "medicalCertificateUrl": "",
         "complianceStatus": "NON_COMPLIANT"
     });
+    const [open, setOpen] = useState(false);
+    const [msg, setMsg] = useState();
 
     const dispatch = useDispatch();
 
@@ -68,6 +77,18 @@ const AddVehiclePendingApproval = ({ ViewDetailsData }) => {
                 dispatch(toggleToast({ message: 'Vehicle rejected successfully!', type: 'success' }));
             }
         }
+    }
+    
+    const handleOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
+
+    const handleChange = (e) => {
+        setMsg(e.target.value)
     }
 
     useState(() => {
@@ -156,10 +177,47 @@ const AddVehiclePendingApproval = ({ ViewDetailsData }) => {
                     </div>
                 </div>
                 <div className='addBtnContainer' style={{ justifyContent: 'end' }}>
-                    <button className='btn btn-secondary' onClick={() => approveVehicle(false)}>Reject</button>
+                    <button className='btn btn-secondary' onClick={() => handleOpen()}>Reject</button>
                     <button className='btn btn-primary' onClick={() => approveVehicle(true)}>Approve</button>
                 </div>
             </div>
+            <Dialog
+                open={open}
+                onClose={handleClose}
+                PaperProps={{
+                    component: 'form',
+                    onSubmit: (event) => {
+                        event.preventDefault();
+                        const formData = new FormData(event.currentTarget);
+                        const formJson = Object.fromEntries(formData.entries());
+                        const email = formJson.email;
+                        console.log(email);
+                        handleClose();
+                    },
+                }}
+                fullWidth
+                maxWidth="lg"
+            >
+                <DialogTitle>Please mention the reason for rejection of vehicle</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Enter the reason
+                    </DialogContentText>
+                    <TextField
+                        onChange={handleChange}
+                        required
+                        id="rejectionMsg"
+                        name="rejectionMsg"
+                        value={msg}
+                        label="Rejection Message"
+                        variant="outlined"
+                        fullWidth />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleClose}>Cancel</Button>
+                    <Button type="submit" onClick={() => approveVehicle(false)}>Reject Vehicle</Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 }

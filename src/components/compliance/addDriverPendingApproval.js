@@ -2,8 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import ComplianceService from '@/services/compliance.service';
 import { toggleToast } from '@/redux/company.slice';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import { PDFDocument } from 'pdf-lib';
+import pako from 'pako';
 
-const AddDriverPendingApproval = ({ ViewDetailsData }) => {
+const AddDriverPendingApproval = ({ ViewDetailsData , SetAddDriverOpen }) => {
     const [initialValues, setInitialValues] = useState({
         "name": "",
         "mobile": "",
@@ -35,8 +44,39 @@ const AddDriverPendingApproval = ({ ViewDetailsData }) => {
         "ehsStatus": "true",
         "id": ""
     });
+    const [open, setOpen] = useState(false);
+    const [msg, setMsg] = useState();
 
     const dispatch = useDispatch();
+
+    const handleOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
+
+    async function uint8ArrayToPDF(uint8Array) {
+        // Load the existing PDF
+        console.log(uint8Array)
+        const pdfDoc = await PDFDocument.load(uint8Array);
+
+        // Create a new PDF
+        const newPdfDoc = await PDFDocument.create();
+
+        // Add pages from existing PDF to the new PDF
+        const pages = await newPdfDoc.copyPages(pdfDoc, pdfDoc.getPageIndices());
+        pages.forEach(page => newPdfDoc.addPage(page));
+
+        // Serialize the new PDF to a Uint8Array
+        const pdfBytes = await newPdfDoc.save();
+
+        // Return the Uint8Array representation of the new PDF
+        return pdfBytes;
+    }
+
+
 
     function base64ToArrayBuffer(base64) {
         // var binaryString = window.atob(base64);
@@ -50,8 +90,8 @@ const AddDriverPendingApproval = ({ ViewDetailsData }) => {
     }
 
     const convertToBinary = (base64) => {
-        var raw = window.btoa((encodeURIComponent(base64)));
-        
+        var raw = window.btoa((encodeURI(base64)));
+
         var rawLength = raw.length;
         var array = new Uint8Array(new ArrayBuffer(rawLength));
 
@@ -61,41 +101,33 @@ const AddDriverPendingApproval = ({ ViewDetailsData }) => {
         return array;
     }
 
-    const  base64ToPDF=(base64String, filename)=> {
-        // Decode base64 string to byte array
-        const byteCharacters = window.atob(encodeURIComponent(base64String));
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-    
-        // Use one of the methods described earlier to convert byteArray to PDF
-        // For example, you can use jsPDF:
-        const doc = new jsPDF();
-        doc.addPage();
-        doc.setFillColor(255, 255, 255);
-        doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
-        doc.addImage(byteArray, 0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height);
-        
-        // Save or download the PDF
-        if (typeof filename === 'string') {
-            doc.save(filename);
-        } else {
-            // If no filename provided, open the PDF in a new window
-            doc.output('dataurlnewwindow');
-        }
-    }
-    
+
     // Example usage:
-   
-    
+    async function decodeFlateToPDF(flateEncodedUint8Array) {
+        // Decompress the FlateDecode data
+        const inflated = pako.inflate(flateEncodedUint8Array);
+
+        // Load the decompressed data into a PDFDocument
+        const pdfDoc = await PDFDocument.load(inflated);
+
+        // Serialize the PDFDocument to a Uint8Array
+        const pdfBytes = await pdfDoc.save();
+
+        // Return the Uint8Array representation of the PDF
+        return pdfBytes;
+    }
+
+
     const downloadFile = async (name) => {
         const response = await ComplianceService.downloadAWSFile(name)
 
-        var data = convertToBinary(response.data)
-        // base64ToPDF(response.data,"ABC")
-        const blob = new Blob([data]);
+        // var data = convertToBinary(response.data)
+        // var x = pako.deflate(data)
+        // const pdfDoc = await PDFDocument.load(x);
+
+        // // Serialize the PDFDocument to a Uint8Array
+        //  await pdfDoc.save();
+        const blob = new Blob([response.data]);
         // window.open("data:application/pdf;base64," + window.base64topdf(data)
         // const linkSource = `data:application/pdf;base64,${data}`;
         const fileUrl = URL.createObjectURL(blob);
@@ -103,7 +135,7 @@ const AddDriverPendingApproval = ({ ViewDetailsData }) => {
         link.href = fileUrl;
         link.setAttribute('download', 'downloaded_report.pdf'); // Set desired filename
         link.click();
-        
+
     }
 
     const approveDriver = async (approveOrReject) => {
@@ -117,10 +149,13 @@ const AddDriverPendingApproval = ({ ViewDetailsData }) => {
         }
     }
 
+    const handleChange = (e) => {
+        setMsg(e.target.value)
+    }
+
     useState(() => {
         if (ViewDetailsData?.id) {
             let newEditInfo = Object.assign(initialValues, ViewDetailsData);
-            console.log('addDriverPendingApproval', newEditInfo)
             setInitialValues(newEditInfo);
         }
     }, [ViewDetailsData]);
@@ -203,10 +238,47 @@ const AddDriverPendingApproval = ({ ViewDetailsData }) => {
                     </div>
                 </div>
                 <div className='addBtnContainer' style={{ justifyContent: 'end' }}>
-                    <button className='btn btn-secondary' onClick={() => approveDriver(false)}>Reject</button>
+                    <button className='btn btn-secondary' onClick={() => handleOpen()}>Reject</button>
                     <button className='btn btn-primary' onClick={() => approveDriver(true)}>Approve</button>
                 </div>
             </div>
+            <Dialog
+                open={open}
+                onClose={handleClose}
+                PaperProps={{
+                    component: 'form',
+                    onSubmit: (event) => {
+                        event.preventDefault();
+                        const formData = new FormData(event.currentTarget);
+                        const formJson = Object.fromEntries(formData.entries());
+                        const email = formJson.email;
+                        console.log(email);
+                        handleClose();
+                    },
+                }}
+                fullWidth
+                maxWidth="lg"
+            >
+                <DialogTitle>Please mention the reason for rejection of driver</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Enter the reason
+                    </DialogContentText>
+                    <TextField
+                        onChange={handleChange}
+                        required
+                        id="rejectionMsg"
+                        name="rejectionMsg"
+                        value={msg}
+                        label="Rejection Message"
+                        variant="outlined"
+                        fullWidth />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleClose}>Cancel</Button>
+                    <Button type="submit" onClick={()=>approveDriver(false)}>Reject Driver</Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 }

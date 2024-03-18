@@ -4,12 +4,13 @@ import React, { useEffect, useState } from 'react';
 import { toggleToast } from '@/redux/company.slice';
 import { useDispatch } from 'react-redux';
 import ComplianceService from '@/services/compliance.service';
-import { object, string } from 'yup';
+import { object, string, date, tra } from 'yup';
 import TextInputField from '@/components/multistepForm/TextInputField';
 import MultiStepForm, { FormStep } from '@/components/multistepForm/MultiStepForm';
 import SelectInputField from '../multistepForm/SelectInputField';
 import FileInputField from '../multistepForm/FileInputField';
 import DateInputField from '../multistepForm/DateInputField';
+import { Button } from '@mui/material';
 
 const validationSchemaStepOne = object({
     name: string().required('Driver Name is required'),
@@ -17,7 +18,34 @@ const validationSchemaStepOne = object({
         .matches(/^[0-9]+$/, "Driver Mobile Number must be numeric")
         .min(10, 'Driver Mobile Number must be exactly 10 numbers')
         .max(10, 'Driver Mobile Number must be exactly 10 numbers'),
-    dob: string().required('Date is required'),
+    dob: string()
+        .required()
+        .transform((currentValue, originalValue) => {
+            console.log(currentValue, originalValue)
+            if (originalValue) {
+                const today = new Date();
+                const birthDate = new Date(originalValue);
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                console.log('validationSchemaStepOne', age)
+                return age;
+            } else {
+                const today = new Date();
+                const birthDate = new Date(currentValue);
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                console.log('validationSchemaStepOne', age)
+                return age;
+            }
+        })
+        .min(18, 'You must be at least 18 years old') 
+        .max(120, 'Age cannot be greater than 120'),
     gender: string().required('Gender is required'),
     officeId: string().required('Office ID is required'),
     vendorName: string().required('Vendor Name is required'),
@@ -110,6 +138,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
     });
 
     const addNewDriverDetailsSubmit = async (values) => {
+        console.log('addNewDriverDetailsSubmit', values)
         try {
             if (EditDriverData) {
                 values.id = driverId;
@@ -200,7 +229,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
             <MultiStepForm initialValues={initialValues}
                 onSubmit={async (values) => {
                     const response = await uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/DRIVER_MEDICAL_CERTIFICATE', values.medicalCertUrl);
-                    if (response) {
+                    if (response.status === 200) {
                         completeNewDriverFormSubmit();
                     }
                 }}
@@ -271,6 +300,42 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                     <FileInputField
                         name="licenseUrl"
                         label="License" />
+                    {/* <Button variant="contained" style={{ marginTop: '15px' }}>Upload</Button>
+                        <FileInputField
+                            name="photoUrl"
+                            label="Photo" />
+                        <Button variant="contained" style={{ marginTop: '15px' }}>Upload</Button> */}
+
+                    {/* <div>
+                        <FileInputField
+                            name="bgvUrl"
+                            label="BGV" />
+                        <Button variant="contained" style={{ marginTop: '15px' }}>Upload</Button>
+                        <FileInputField
+                            name="policeVerificationUrl"
+                            label="Police Verification" />
+                        <Button variant="contained" style={{ marginTop: '15px' }}>Upload</Button>
+                    </div>
+                    <div>
+                        <FileInputField
+                            name="badgeUrl"
+                            label="Badge" />
+                        <Button variant="contained" style={{ marginTop: '15px' }}>Upload</Button>
+                        <FileInputField
+                            name="undertakingUrl"
+                            label="Undertaking" />
+                        <Button variant="contained" style={{ marginTop: '15px' }}>Upload</Button>
+                    </div>
+                    <div>
+                        <FileInputField
+                            name="driverTrainingCertUrl"
+                            label="Driver Training Certificate" />
+                        <Button variant="contained" style={{ marginTop: '15px' }}>Upload</Button>
+                        <FileInputField
+                            name="medicalCertUrl"
+                            label="Medical Certificate" />
+                        <Button variant="contained" style={{ marginTop: '15px' }}>Upload</Button>
+                    </div> */}
                 </FormStep>
                 <FormStep
                     stepName="Driver Photo"

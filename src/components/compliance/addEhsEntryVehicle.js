@@ -15,12 +15,7 @@ const validationSchemaStepOne = object({
     remarks: string().required('Vendor Name is required'),
 });
 
-const validationSchemaStepTwo = object({
-    file: string().required('File is required')
-});
-
 const AddEhsEntryVehicle = ({ EditEhsEntryVehicle, VehicleId, UpdateId }) => {
-    console.log(UpdateId,EditEhsEntryVehicle )
     const dispatch = useDispatch();
 
     const [initialValues, setInitialValues] = useState({
@@ -112,7 +107,6 @@ const AddEhsEntryVehicle = ({ EditEhsEntryVehicle, VehicleId, UpdateId }) => {
                 </FormStep>
                 <FormStep
                     stepName="Upload Files"
-                    validationSchema={validationSchemaStepTwo}
                 >
                     <FileInputField
                         name="file"

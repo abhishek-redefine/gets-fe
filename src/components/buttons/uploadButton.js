@@ -4,7 +4,6 @@ import { TextField } from '@mui/material';
 import { Button } from '@mui/material';
 
 const UploadButton = ({ uploadFunction }) => {
-    console.log('UploadButton', uploadFunction)
     return (
         <div className='btnContainer' style={{ width: '200px', marginRight: '10px', padding: '10px 20px', borderColor: "#F6CE47", color: '#000' }}>
             <label htmlFor="upload-photo">

@@ -18,7 +18,7 @@ export const validationSchema = yup.object({
     ehsAppliedOn: yup.string("Enter EHS Applied On").required("Enter EHS Applied On"),
 });
 
-const AddEHS = ({ EditEhsData }) => {
+const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
     const [initialValues, setInitialValues] = useState({
         officeIds: "",
         ehsTitle: "",
@@ -51,8 +51,10 @@ const AddEHS = ({ EditEhsData }) => {
                 const response = await ComplianceService.updateEHS({ "ehs": values })
                 if (response.status === 200) {
                     dispatch(toggleToast({ message: 'EHS details updated successfully!', type: 'success' }));
+                    SetIsAddEhs(false);
                 } else if (response.status === 500) {
                     dispatch(toggleToast({ message: 'EHS details not updated. Please try again later!', type: 'error' }));
+                    SetIsAddEhs(false);
                 }
             } else {
                 values.ehsAppliedOn === "Driver" ? values.ehsAppliedOnDriver = true : values.ehsAppliedOnDriver = false;
@@ -60,8 +62,10 @@ const AddEHS = ({ EditEhsData }) => {
                 const response = await ComplianceService.createEHS({ "ehs": values })
                 if (response.status === 201) {
                     dispatch(toggleToast({ message: 'EHS details added successfully!', type: 'success' }));
+                    SetIsAddEhs(false);
                 } else if (response.status === 500) {
                     dispatch(toggleToast({ message: 'EHS details not added. Please try again later!', type: 'error' }));
+                    SetIsAddEhs(false);
                 }
             }
         }

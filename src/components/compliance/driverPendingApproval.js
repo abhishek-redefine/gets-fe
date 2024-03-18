@@ -112,7 +112,10 @@ const DriverPendingApproval = () => {
     const initializer = async () => {
         try {
             const response = await ComplianceService.getAllDrivers();
-            setDriverData(response.data.data)
+            var filteredData = response.data.data.filter((item) => {
+                return item.complianceStatus !== "COMPLIANT"
+            })
+            setDriverData(filteredData)
         } catch (e) {
         }
     }

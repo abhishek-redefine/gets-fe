@@ -87,7 +87,7 @@ const EhsDriverProfile = () => {
                 </div>
             </div>}
             {
-                ehsDriverOpen && <EhsEntryDriver EhsDriverData={ehsDriverData} />
+                ehsDriverOpen && <EhsEntryDriver EhsDriverData={ehsDriverData} SetEhsDriverOpen={setEhsDriverOpen}/>
             }
         </div>
     );

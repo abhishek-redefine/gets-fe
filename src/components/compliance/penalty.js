@@ -64,16 +64,11 @@ const Penalty = () => {
         }
     };
 
-    const uploadFunction = (item) => {
-        console.log('UploadFunction')
-    };
-
     return (
         <div className='internalSettingContainer'>
             {
                 !isAddPenalty && <div>
                     <div style={{ display: 'flex', justifyContent: 'end' }}>
-                        <UploadButton uploadFunction={uploadFunction} />
                         <div className='btnContainer'>
                             <button onClick={() => setIsAddPenalty(true)} className='btn btn-primary'>Add Penalty</button>
                         </div>

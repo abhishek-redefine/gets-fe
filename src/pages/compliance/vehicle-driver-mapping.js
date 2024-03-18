@@ -64,7 +64,7 @@ const VehicleDriverMapping = () => {
     const [searchedDriver, setSearchedDriver] = useState([]);
     const [mappedDriver, setMappedDriver] = useState();
     const [vehicleId, setVehicleId] = useState();
-    const [selectedVehicle,setSelectedVehicle] = useState();
+    const [selectedVehicle, setSelectedVehicle] = useState();
 
     const dispatch = useDispatch();
 
@@ -95,7 +95,7 @@ const VehicleDriverMapping = () => {
     const driverMapping = async () => {
         selectedVehicle.driverId = mappedDriver;
         const response = await ComplianceService.updateVehicle({ "vehicleDTO": selectedVehicle });
-        if(response.status===200) {
+        if (response.status === 200) {
             dispatch(toggleToast({ message: 'Vehicle Driver mapping successful!', type: 'success' }));
         } else {
             dispatch(toggleToast({ message: 'Vehicle Driver mapping unsuccessful.Please try again after some time!', type: 'error' }));
@@ -145,6 +145,8 @@ const VehicleDriverMapping = () => {
                         handleClose();
                     },
                 }}
+                fullWidth
+                maxWidth="lg"
             >
                 <DialogTitle>{`Change Driver for ${vehicleModel}--${vehicleRegistrationNumber}`}</DialogTitle>
                 <DialogContent>

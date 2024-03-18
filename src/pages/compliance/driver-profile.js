@@ -191,10 +191,10 @@ const DriverProfile = () => {
                 addDriverOpen && <AddNewDriver SetAddDriverOpen={setAddDriverOpen} EditDriverData={editDriverData} />
             }
             {
-                viewDriverOpen && <AddDriverPendingApproval ViewDetailsData={editDriverData} />
+                viewDriverOpen && <AddDriverPendingApproval SetAddDriverOpen={setAddDriverOpen} ViewDetailsData={editDriverData} />
             }
             {
-                viewEhsDriverOpen && <EhsEntryDriver EhsDetailsData={editDriverData} />
+                viewEhsDriverOpen && <EhsEntryDriver SetAddDriverOpen={setAddDriverOpen} EhsDetailsData={editDriverData} />
             }
         </div>
     );

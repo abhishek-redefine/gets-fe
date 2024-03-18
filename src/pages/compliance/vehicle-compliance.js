@@ -156,7 +156,10 @@ const VehicleCompliance = () => {
     const initializer = async () => {
         try {
             const response = await ComplianceService.getAllVehicles();
-            setVehicleData(response.data.data)
+            var filteredData = response.data.data.filter((item) => {
+                return item.complianceStatus === "COMPLIANT"
+            })
+            setVehicleData(filteredData)
         } catch (e) {
         }
     }

@@ -4,7 +4,7 @@ import Grid from '@/components/grid';
 import ComplianceService from '@/services/compliance.service';
 import xlsx from "json-as-xlsx";
 import { useDispatch } from 'react-redux';
-import AddDriverPendingApproval from '@/components/compliance/addVehiclePendingApproval';
+import AddDriverPendingApproval from '@/components/compliance/addDriverPendingApproval';
 
 const DriverCompliance = () => {
     const headers = [
@@ -113,7 +113,10 @@ const DriverCompliance = () => {
     const initializer = async () => {
         try {
             const response = await ComplianceService.getAllDrivers();
-            setDriverData(response.data.data)
+            var filteredData = response.data.data.filter((item) => {
+                return item.complianceStatus === "COMPLIANT"
+            })
+            setDriverData(filteredData)
         } catch (e) {
         }
     }

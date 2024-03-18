@@ -9,6 +9,7 @@ import TextInputField from '@/components/multistepForm/TextInputField';
 import MultiStepForm, { FormStep } from '@/components/multistepForm/MultiStepForm';
 import SelectInputField from '../multistepForm/SelectInputField';
 import FileInputField from '../multistepForm/FileInputField';
+import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
 
 const validationSchemaStepOneA = object({
@@ -295,6 +296,36 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
         setEscalationNumber(escalationNumber + 1)
     }
 
+    const reduceEscalations = () => {
+        if (escalationNumber - 1 === 1) {
+            setInitialValues({
+                vendorOfficeId: "",
+                name: "",
+                address: "",
+                gst: "",
+                pan: "",
+                contactPersonName: "",
+                contactPersonMobile: "",
+                contactPersonEmail: "",
+                businessNotificationMobile: "",
+                businessNotificationEmail: "",
+                complianceNotificationMobile: "",
+                complianceNotificationEmail: "",
+                escalationMatrixL1Name: "",
+                escalationMatrixL1Designation: "",
+                escalationMatrixL1Email: "",
+                escalationMatrixL1MobileNo: "",
+                gstFilePath: "",
+                panFilePath: ""
+            });
+        }
+        if (escalationNumber - 1 === 2) {
+            setInitialValues(initialValuesB);
+        }
+
+        setEscalationNumber(escalationNumber - 1)
+    }
+
     const uploadDocumentFormSubmit = async (id, role, documentToUpload, data) => {
         try {
             var formData = new FormData()
@@ -485,6 +516,7 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
                                 <TextInputField
                                     name="escalationMatrixL1MobileNo"
                                     label="Mobile No" />
+                                <p style={{ fontWeight: '700', margin: '5px 20px', border: 'solid 1px #000', alignItems: 'center', justifyContent: 'center', borderRadius: '5px' }} onClick={reduceEscalations}><RemoveIcon /></p>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center' }}>
                                 <p style={{ fontWeight: '700', margin: '5px 20px' }}>L2</p>
@@ -521,6 +553,7 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
                                 <TextInputField
                                     name="escalationMatrixL1MobileNo"
                                     label="Mobile No" />
+                                <p style={{ fontWeight: '700', margin: '5px 20px', border: 'solid 1px #000', alignItems: 'center', justifyContent: 'center', borderRadius: '5px' }} onClick={reduceEscalations}><RemoveIcon /></p>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center' }}>
                                 <p style={{ fontWeight: '700', margin: '5px 20px' }}>L2</p>
