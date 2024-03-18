@@ -1,5 +1,6 @@
 import { API_PATH } from "@/constants/api.constants";
 import axiosInstance from "../utils/axios";
+import { headers } from "../../next.config";
 
 const createDriver = (data) => {
     return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.CREATE_DRIVER}`, data).then((response) => {
@@ -152,8 +153,8 @@ const getAllVendorCompany = () => {
 
 const downloadAWSFile = (name) => {
     return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.AWS_BUCKET}${API_PATH.AWS_BUCKET_NAME}${API_PATH.AWS_DOWNLOAD}${name}`).then((response) => {
-        return response;
-    });
+            return response;
+        });
 };
 
 const vehicleDriverMapping = (data) => {

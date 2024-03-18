@@ -7,11 +7,13 @@ import UploadButton from '../buttons/uploadButton';
 import RoleService from '@/services/role.service';
 import { Button } from '@mui/material';
 import FormData from 'form-data';
+import { toggleToast } from '@/redux/company.slice';
+import { useDispatch } from 'react-redux';
 
 const EscortManagement = ({
     onSuccess
 }) => {
-
+    const dispatch = useDispatch();
     const headers = [{
         key: "escortId",
         display: "Escort ID"
@@ -101,9 +103,21 @@ const EscortManagement = ({
 
     const uploadFunction = async (item) => {
         var form = new FormData();
-        form.append('model', '{"importJobDTO": {"importType": "IMPORT_TYPE_ESCORT","entityName": "ESCORT"}}');
+        form.append('model', '{"importJobDTO": {"importType": "IMPORT_TYPE_ESCORT","entityName": "ESCORT"}}'); 
         form.append('file', item);
-        RoleService.uploadForm(form);
+        const response = await OfficeService.uploadForm(form);
+        console.log(response)
+        if (response?.data?.isSuccessFul) {
+            dispatch(toggleToast({ message: 'All Escort records uploaded successfully!', type: 'success' }));
+        } else {
+            console.log(response?.data?.successRecords, response?.data?.successRecords > 0)
+            if (response?.data?.successRecords > 0) {
+                dispatch(toggleToast({ message: `${response?.data?.successRecords} out of ${response?.data?.totalRecords} Escort records uploaded successfully!`, type: 'success' }));
+            } else {
+                dispatch(toggleToast({ message: `Escort records failed to upload. Please try again later.`, type: 'error' }));
+            }
+        }
+
     }
 
     return (

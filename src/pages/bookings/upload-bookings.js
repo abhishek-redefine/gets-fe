@@ -57,6 +57,7 @@ const UploadBooking = ({ }) => {
         console.log(response)
         if (response?.data?.isSuccessFul) {
             dispatch(toggleToast({ message: 'All Booking records uploaded successfully!', type: 'success' }));
+            fetchAllUploadBookings();
         } else {
             console.log(response?.data?.successRecords, response?.data?.successRecords > 0)
             if (response?.data?.successRecords > 0) {
@@ -64,6 +65,7 @@ const UploadBooking = ({ }) => {
             } else {
                 dispatch(toggleToast({ message: `Booking records failed to upload. Please try again later.`, type: 'error' }));
             }
+            fetchAllUploadBookings();
         }
     }
 

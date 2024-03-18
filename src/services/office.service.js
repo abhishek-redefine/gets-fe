@@ -33,6 +33,16 @@ const updateEmployee = (data) => {
     });
 };
 
+const uploadForm = (data) => {
+    return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.FILE_UPLOAD}`, data, {
+        headers: {
+            "Content-Type":"multipart/form-data"
+        }
+    }).then((response) => {
+        return response;
+    });
+};
+
 const getAllEmployees = (queryParams) => {
     let url = `${API_PATH.API_VERSION}${API_PATH.EMPLOYEE_LISTING}`;
     if (queryParams) {
@@ -191,7 +201,8 @@ const OfficeService = {
     getAllHolidays,
     addHoliday,
     removeHoliday,
-    getEmployeeDetails
+    getEmployeeDetails,
+    uploadForm
 };
 
 export default OfficeService;

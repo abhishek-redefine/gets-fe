@@ -37,18 +37,14 @@ const updateRolePermissions = (data) => {
     });
 };
 
-const uploadForm = (x) => {
-    return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.FILE_UPLOAD}`, x, {
+const uploadForm = (data) => {
+    return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.FILE_UPLOAD}`, data, {
         headers: {
             "Content-Type":"multipart/form-data"
         }
     }).then((response) => {
-        console.log(response)
+        return response;
     });
-    // return axiosInstance.post(`${API_PATH.API_VERSION}/document/uploadCertificates/1/VEHICLE/FITNESS_CERTIFICATE`, x)
-    //     .then((response) => {
-    //         console.log(response)
-    //     });
 };
 
 
