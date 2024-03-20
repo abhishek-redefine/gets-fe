@@ -19,10 +19,10 @@ const TeamManagement = ({
             key: "name",
             display: "Team Name"
         },
-        {
-            key: "shiftType",
-            display: "Shift Type"
-        },
+        // {
+        //     key: "shiftType",
+        //     display: "Shift Type"
+        // },
         {
             key: "sendNotification",
             display: "Notification"
