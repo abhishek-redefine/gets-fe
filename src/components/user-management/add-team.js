@@ -3,7 +3,7 @@ import { setMasterData } from '@/redux/master.slice';
 import MasterDataService from '@/services/masterdata.service';
 import OfficeService from '@/services/office.service';
 import { getFormattedLabel } from '@/utils/utils';
-import { Autocomplete, FormControl, FormHelperText, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { Autocomplete, FormControl, FormHelperText, InputLabel, MenuItem, Select, TextField, Checkbox, ListItemText } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from "formik";
@@ -138,12 +138,17 @@ const AddTeam = ({
                                 multiple
                                 value={values.officeIds}
                                 error={touched.officeIds && Boolean(errors.officeIds)}
+                                renderValue={(selected) => selected.join(', ')}
                                 name="officeIds"
                                 label="Office Id"
                                 onChange={handleChange}
                             >
                                 {!!offices?.length && offices.map((office, idx) => (
-                                    <MenuItem key={idx} value={office.officeId}>{getFormattedLabel(office.officeId)}, {office.address}</MenuItem>
+                                    <MenuItem key={idx} value={office.officeId}>
+                                        <Checkbox checked={values.officeIds.indexOf(office.officeId) > -1} />
+                                        <ListItemText primary={`${getFormattedLabel(office.officeId)}, ${office.address}`} />
+                                    </MenuItem>
+                                    //<MenuItem key={idx} value={office.officeId}>{getFormattedLabel(office.officeId)}, {office.address}</MenuItem>
                                 ))}
                             </Select>
                             {touched.officeIds && errors.officeIds && <FormHelperText className='errorHelperText'>{errors.officeIds}</FormHelperText>}
@@ -154,7 +159,7 @@ const AddTeam = ({
                             helperText={touched.name && errors.name} required id="name" name="name"
                             label="Team Name" variant="outlined"  value={values.name} />
                     </div>
-                    <div className='form-control-input'>
+                    {/* <div className='form-control-input'>
                         {!!shiftTypes?.length && <FormControl required fullWidth>
                             <InputLabel id="shiftType-label">Shift Type</InputLabel>
                             <Select
@@ -172,7 +177,7 @@ const AddTeam = ({
                             </Select>
                             {touched.shiftType && errors.shiftType && <FormHelperText className='errorHelperText'>{errors.shiftType}</FormHelperText>}
                         </FormControl>}
-                    </div>
+                    </div> */}
                     <div className='form-control-input'>
                         <FormControl variant="outlined">
                             <Autocomplete
