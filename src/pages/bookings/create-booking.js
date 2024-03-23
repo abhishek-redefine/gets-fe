@@ -217,14 +217,14 @@ const CreateBooking = () => {
     const formik = useFormik({
         initialValues: initialValues,
         enableReinitialize: true,
-        // validationSchema: ()=>{ 
-        //     let reValidationSchema = validationSchema;
-        //     if(!editFlag && customiseSchRef.current.getAttribute("value") === "true") {
-        //       console.log('customize');
-        //       reValidationSchema = reValidationSchema.omit(["officeId", "logoutShift", "loginShift","pickUpPoint","dropPoint"]);
-        //     }
-        //     return reValidationSchema;
-        // },
+        validationSchema: ()=>{ 
+            let reValidationSchema = validationSchema;
+            if(!editFlag && customiseSchRef.current.getAttribute("value") === "true") {
+              console.log('customize');
+              reValidationSchema = reValidationSchema.omit(["officeId", "logoutShift", "loginShift","pickUpPoint","dropPoint"]);
+            }
+            return reValidationSchema;
+        },
         onSubmit: async (values) => {
             let allValues = {...values};
             if (allValues.bookingFromDate) {
@@ -273,16 +273,16 @@ const CreateBooking = () => {
             console.log(allValues);
             try {
                 if(editFlag){
-                    //await BookingService.updateBooking([allValues]);
+                    await BookingService.updateBooking([allValues]);
                 }
                 else{
-                    //await BookingService.createBooking({booking: allValues});
+                    await BookingService.createBooking({booking: allValues});
                 }
                 
                 dispatch(toggleToast({ message: 'Booking created successfully!', type: 'success' }));
-                //formik.handleReset();
-                //clearData();
-                //backHandler();
+                formik.handleReset();
+                clearData();
+                backHandler();
             } catch (e) {
                 console.error(e);
                 dispatch(toggleToast({ message: e?.response?.data?.message || 'Error creating booking, please try again later!', type: 'error' }));
