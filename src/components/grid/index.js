@@ -84,7 +84,6 @@ const Grid = ({ headers, pagination, listing = [], handlePageChange, onMenuItemC
   const changeRadio = () => {
 
   }
-  console.log(headers);
 
   return (
     <div>
