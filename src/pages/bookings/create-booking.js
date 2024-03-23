@@ -54,6 +54,7 @@ const CreateBooking = () => {
         loginShift: "",
         logoutShift: "",
         nextDayLogOut: false,
+        bookingOnWorkingDay: false,
         isCustomiseSchedule: false,
         customiseScheduleDTOList: [],
         transportType: TRANSPORT_TYPES.CAB,
@@ -61,7 +62,8 @@ const CreateBooking = () => {
         dropPoint: "",
         source : "Web",
         bookingFor: "self",
-        bookingType:""
+        bookingType:"",
+        shiftId:""
     });
 
     const [customizedScheduledBean, setCustomizedScheduledBean] = useState([]);
@@ -215,14 +217,14 @@ const CreateBooking = () => {
     const formik = useFormik({
         initialValues: initialValues,
         enableReinitialize: true,
-        validationSchema: ()=>{ 
-            let reValidationSchema = validationSchema;
-            if(!editFlag && customiseSchRef.current.getAttribute("value") === "true") {
-              console.log('customize');
-              reValidationSchema = reValidationSchema.omit(["officeId", "logoutShift", "loginShift","pickUpPoint","dropPoint"]);
-            }
-            return reValidationSchema;
-        },
+        // validationSchema: ()=>{ 
+        //     let reValidationSchema = validationSchema;
+        //     if(!editFlag && customiseSchRef.current.getAttribute("value") === "true") {
+        //       console.log('customize');
+        //       reValidationSchema = reValidationSchema.omit(["officeId", "logoutShift", "loginShift","pickUpPoint","dropPoint"]);
+        //     }
+        //     return reValidationSchema;
+        // },
         onSubmit: async (values) => {
             let allValues = {...values};
             if (allValues.bookingFromDate) {
@@ -271,16 +273,16 @@ const CreateBooking = () => {
             console.log(allValues);
             try {
                 if(editFlag){
-                    await BookingService.updateBooking([allValues]);
+                    //await BookingService.updateBooking([allValues]);
                 }
                 else{
-                    await BookingService.createBooking({booking: allValues});
+                    //await BookingService.createBooking({booking: allValues});
                 }
                 
                 dispatch(toggleToast({ message: 'Booking created successfully!', type: 'success' }));
-                formik.handleReset();
-                clearData();
-                backHandler();
+                //formik.handleReset();
+                //clearData();
+                //backHandler();
             } catch (e) {
                 console.error(e);
                 dispatch(toggleToast({ message: e?.response?.data?.message || 'Error creating booking, please try again later!', type: 'error' }));
@@ -303,6 +305,20 @@ const CreateBooking = () => {
         }
     };
 
+    const fetchInOutTeamsTime = async(isIn = false) =>{
+        try {
+            const response = await BookingService.getTeamLoginLogoutTimes(values.officeId, isIn, values.transportType);
+            const { data } = response || {};
+            if (isIn) {
+                setLoginTimes(data);
+            } else {
+                setLogoutTimes(data);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
     const fetchMultiInOutTimes = async (isIn, idxToSet, officeId) => {
         try {
             const response = await BookingService.getLoginLogoutTimes(officeId, isIn, values.transportType);
@@ -320,6 +336,24 @@ const CreateBooking = () => {
             console.error(e);
         }
     };
+
+    const fetchMultiInOutTeamsTimes = async (isIn, idxToSet, officeId) =>{
+        try {
+            const response = await BookingService.getTeamLoginLogoutTimes(officeId, isIn, values.transportType);
+            const { data } = response || {};
+            if (isIn) {
+                const allInIdxs = [...multiLoginTimes];
+                allInIdxs[idxToSet] = data;
+                setMultiLoginTimes(allInIdxs);
+            } else {
+                const allInIdxs = [...multiLogoutTimes];
+                allInIdxs[idxToSet] = data;
+                setMultiLogoutTimes(allInIdxs);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
 
     const handleDateChange = (date, name) => {
         formik.setFieldValue(name, date);
@@ -361,8 +395,15 @@ const CreateBooking = () => {
             }
         }
         if (name === "officeId") {
-            fetchMultiInOutTimes(true, idx, value);
-            fetchMultiInOutTimes(false, idx, value);
+            if(bookingFor === 3){
+                fetchMultiInOutTeamsTimes(true, idx, value);
+                fetchMultiInOutTeamsTimes(false, idx, value);
+            }
+            else{
+                fetchMultiInOutTimes(true, idx, value);
+                fetchMultiInOutTimes(false, idx, value);
+            }
+            
             fetchMultiNodalPoints(value);
         }
         console.log(currentCustomizedSch,"setting custom array");
@@ -701,8 +742,14 @@ const CreateBooking = () => {
 
     useEffect(() => {
         if (values.officeId && values.transportType) {
-            fetchInOutTimes(true);  
-            fetchInOutTimes();
+            if(bookingFor === 3){
+                fetchInOutTeamsTime(true);
+                fetchInOutTeamsTime();
+            }
+            else{
+                fetchInOutTimes(true);  
+                fetchInOutTimes();
+            }
         }
         if (values.transportType !== TRANSPORT_TYPES.CAB && !nodalPoints?.length && values.officeId) {
             fetchNodalPoints();
@@ -901,22 +948,59 @@ const CreateBooking = () => {
             {currentBookingFlow === 1 && <div className={styles.mainBookingContainer}>
                 <div className={styles.dateRangeContainer}>
                     <div className={`form-control-input ${styles.formControlInput}`}>
-                        <InputLabel>Select Date Range</InputLabel>
-                        <div className={styles.dateRangeInnerContainer}>
-                            <LocalizationProvider dateAdapter={AdapterMoment}>
-                                <FormControl>
-                                    <DatePicker disabled={editFlag || values.isCustomiseSchedule} name="bookingFromDate" format={'DD-MM-YYYY'} value={values.bookingFromDate ? moment(values.bookingFromDate) : null} onChange={(e) => handleDateChange(e, "bookingFromDate")} />
-                                    {touched.bookingFromDate && errors.bookingFromDate && <FormHelperText className='errorHelperText'>{errors.bookingFromDate}</FormHelperText>}
-                                </FormControl>
-                                <FormControl>
-                                    <DatePicker disabled={editFlag || values.isCustomiseSchedule} name="bookingToDate" format={'DD-MM-YYYY'} value={values.bookingToDate ? moment(values.bookingToDate) : null} onChange={(e) => handleDateChange(e, "bookingToDate")} />
-                                    {touched.bookingToDate && errors.bookingToDate && <FormHelperText className='errorHelperText'>{errors.bookingToDate}</FormHelperText>}
-                                </FormControl>
-                            </LocalizationProvider>
-                        </div>
+                        {
+                            editFlag ?
+                            <>
+                                <InputLabel>Booking Date</InputLabel>
+                                <div className={styles.dateRangeInnerContainer}>
+                                    <LocalizationProvider dateAdapter={AdapterMoment}>
+                                        <DatePicker 
+                                            disabled={editFlag || values.isCustomiseSchedule} 
+                                            name="bookingDate" format={'DD-MM-YYYY'} 
+                                            value={values.bookingDate ? moment(values.bookingDate) : null} 
+                                        />
+                                    </LocalizationProvider>
+                                </div>
+                            </>
+                            :
+                            <>
+                                <InputLabel>Select Date Range</InputLabel>
+                                <div className={styles.dateRangeInnerContainer}>
+                                    <LocalizationProvider dateAdapter={AdapterMoment}>
+                                        <FormControl>
+                                            <DatePicker disabled={editFlag || values.isCustomiseSchedule} name="bookingFromDate" format={'DD-MM-YYYY'} value={values.bookingFromDate ? moment(values.bookingFromDate) : null} onChange={(e) => handleDateChange(e, "bookingFromDate")} />
+                                            {touched.bookingFromDate && errors.bookingFromDate && <FormHelperText className='errorHelperText'>{errors.bookingFromDate}</FormHelperText>}
+                                        </FormControl>
+                                        <FormControl>
+                                            <DatePicker disabled={editFlag || values.isCustomiseSchedule} name="bookingToDate" format={'DD-MM-YYYY'} value={values.bookingToDate ? moment(values.bookingToDate) : null} onChange={(e) => handleDateChange(e, "bookingToDate")} />
+                                            {touched.bookingToDate && errors.bookingToDate && <FormHelperText className='errorHelperText'>{errors.bookingToDate}</FormHelperText>}
+                                        </FormControl>
+                                    </LocalizationProvider>
+                                    <div className={`form-control-input`} style={{margin: '5px 0 0 20px'}}>
+                                        <FormControl required>
+                                            <FormGroup
+                                                onChange={handleChange}
+                                                value={values.bookingOnWorkingDay}
+                                                style={{flexDirection: "row"}}>
+                                                  <FormControlLabel name="bookingOnWorkingDay" value={true} control={<Checkbox />} label="Booking on week offs" />
+                                            </FormGroup>
+                                        </FormControl>
+                                    </div>
+                                </div>
+                                
+                            </>
+                        }
                     </div>
                 </div>
-                <div className={styles.mainBookingDataContainer}>
+                {
+                    bookingFor === 3 &&
+                    <div className={styles.userCountContainer}>
+                        <div className={`form-control-input ${styles.formControlInput}`}>
+                            <InputLabel>Selected User Count : {selectedUsers.length}</InputLabel>
+                        </div>
+                    </div>
+                }
+                <div className={`${styles.mainBookingDataContainer} pt-2`}>
                     <div>
                         <div className='form-control-input'>
                             <FormControl required>

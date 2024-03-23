@@ -17,6 +17,12 @@ const getLoginLogoutTimes = (officeId, isIn, transportType) => {
     });
 };
 
+const getTeamLoginLogoutTimes = (officeId, isIn, transportType) => {
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.SHIFT}${API_PATH.TEAM}/${officeId}/${transportType}/${isIn ? API_PATH.IN : API_PATH.OUT}`).then((response) => {
+        return response;
+    });
+};
+
 const getNodalLocations = (officeId) => {
     return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.NODAL_LOCATIONS}/${officeId}`).then((response) => {
         return response;
@@ -87,7 +93,8 @@ const BookingService = {
     updateBooking,
     getBookingHistory,
     uploadForm,
-    listAllBookings
+    listAllBookings,
+    getTeamLoginLogoutTimes
 };
 
 export default BookingService;

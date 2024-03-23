@@ -14,6 +14,12 @@ const Grid = ({ headers, pagination, listing = [], handlePageChange, onMenuItemC
     handlePageChange(page - 1);
   };
 
+  const selectAllHandler = () =>{
+    console.log("select all>>",listing);
+    const idx = listing?.length;
+
+  }
+
   const htmlClick = (header, e, listItem, idx) => {
     console.log('htmlClick', listItem, header.menuItems);
     if (header.navigation) {
@@ -78,15 +84,27 @@ const Grid = ({ headers, pagination, listing = [], handlePageChange, onMenuItemC
   const changeRadio = () => {
 
   }
+  console.log(headers);
 
   return (
     <div>
       <table className='commonTable'>
         <thead>
           <tr>
-            {headers.map((header, idx) => (
-              <td key={`${idx}tdfirst`}>{header.display}</td>
-            ))}
+            {headers.map((header, idx) => {
+              let tdHeader;
+              let additionalProps = {};
+              additionalProps.checked = false === idx;
+              if(header.key === 'radioBox' && header?.checkbox === true){
+                tdHeader = <td key={`${idx}td`} style={{ cursor: "pointer" }} onClick={selectAllHandler}>
+                              {React.cloneElement(header.html, additionalProps.checked.valueOf(true))}
+                            </td>
+              }
+              else{
+                tdHeader = <td key={`${idx}tdfirst`}>{header.display}</td>
+              }
+              return tdHeader;
+              })}
           </tr>
         </thead>
         <tbody>

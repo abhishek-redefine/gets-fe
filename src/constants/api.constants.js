@@ -41,6 +41,7 @@ export const API_PATH = {
     SHIFT: "/shift",
     IN: "/in",
     OUT: "/out",
+    TEAM: "/team",
     NODAL_LOCATIONS: '/location/nodal',
     EMPLOYEES_BY_TEAM: '/emp/employeesByTeamId',
     CREATE_BOOKING: '/booking/createBooking',
