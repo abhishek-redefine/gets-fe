@@ -39,6 +39,16 @@ const getAllShiftsWOPagination = (queryParams) => {
     });
 };
 
+const getAllShiftSearchByBean = (queryParams,data) =>{
+    let url = `${API_PATH.API_VERSION}${API_PATH.SHIFT_LISTING_ALL}`;
+    if (queryParams) {
+        url += `?${queryParams}`;
+    }
+    return axiosInstance.post(url,data).then((response) => {
+        return response;
+    });
+}
+
 const enableDisableShifts = (id, isEnable) => {
     let url = `${API_PATH.API_VERSION}${API_PATH.SHIFT_ENABLE_DISABLE}/${id}/${isEnable}`;
 
@@ -60,7 +70,8 @@ const ShiftService = {
     getAllShiftsWOPagination,
     enableDisableShifts,
     updateShift,
-    shiftTeamZoneMapping
+    shiftTeamZoneMapping,
+    getAllShiftSearchByBean
 };
 
 export default ShiftService;
