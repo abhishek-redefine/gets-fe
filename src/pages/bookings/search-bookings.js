@@ -50,6 +50,10 @@ const SearchBookings = () => {
         display: "Shift Time"
     },
     {
+        key: "status",
+        display: "Status"
+    },
+    {
         key: "hamburgerMenu",
         html: <><span className="material-symbols-outlined">more_vert</span></>,
         navigation: true,

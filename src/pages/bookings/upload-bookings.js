@@ -5,6 +5,7 @@ import UploadButton from '@/components/buttons/uploadButton';
 import BookingService from '@/services/booking.service';
 import { toggleToast } from '@/redux/company.slice';
 import { useDispatch } from 'react-redux';
+import Button from '@mui/material/Button';
 
 const UploadBooking = ({ }) => {
     const headers = [{
@@ -34,7 +35,17 @@ const UploadBooking = ({ }) => {
     {
         key: "failRecords",
         display: "Fail Records"
-    }];
+    },
+    {
+        key: "hamburgerMenu",
+        html: <><span className="material-symbols-outlined">more_vert</span></>,
+        navigation: true,
+        menuItems: [{
+            display: "Download Failed Booking List",
+            key: "download"
+        }]
+    }
+];
 
     const dispatch = useDispatch();
 
@@ -69,6 +80,24 @@ const UploadBooking = ({ }) => {
         }
     }
 
+    const onMenuItemClick = (key, values) => {
+        if (key === "download") {
+            const s3Link = values.errorFilePath.replace('gets-dev.','');
+            // Split the URL by '/'
+            const parts = s3Link.split('/');
+
+            // Get the last part which should be the filename
+            const filename = parts.pop();
+            console.log(filename);
+            const downloadLink = document.createElement('a');
+            downloadLink.href = s3Link;
+            downloadLink.setAttribute('download', filename);
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
+    };
+
     useEffect(() => {
         fetchAllUploadBookings();
     }, []);
@@ -79,7 +108,7 @@ const UploadBooking = ({ }) => {
                 <UploadButton uploadFunction={uploadFunction} />
             </div>
             <div className='gridContainer'>
-                <Grid headers={headers} listing={bookingListing} />
+                <Grid headers={headers} listing={bookingListing} onMenuItemClick={onMenuItemClick}/>
             </div>
         </div>
     );
