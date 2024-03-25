@@ -1046,7 +1046,7 @@ const CreateBooking = () => {
                 val.bookingType === 'LOGOUT' && val['loginShift'] && delete val['loginShift'];
                 val.bookingType === 'LOGIN' && val['logoutShift'] && delete val['logoutShift'];
                 //this is for only login or logout if in future the booking is created for both need to update the logic
-                val['shiftId'] = [customizedShiftIdBean[index].shiftId];
+                val['shiftId'] = customizedShiftIdBean[index].shiftId;
                 modifiedCustomizeSchedule.push(val);
             })
             setCustomizedScheduledBean(modifiedCustomizeSchedule);
