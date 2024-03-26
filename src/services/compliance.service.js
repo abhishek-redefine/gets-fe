@@ -201,6 +201,18 @@ const addEhsEntryVehicle = (data) => {
     });
 };
 
+const searchVendor = (text) =>{
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.SEARCH_VENDOR}${text}/0/15`).then((response) => {
+        return response;
+    });
+}
+
+const getVendorCompanyById = (id) =>{
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.VENDOR_COMPANY}/${id}`).then((response) => {
+        return response;
+    });
+}
+
 
 const ComplianceService = {
     createDriver,
@@ -233,7 +245,9 @@ const ComplianceService = {
     addEhsEntryDriver,
     addEhsEntryVehicle,
     getSelectedVehicleEHS,
-    getSelectedDriverEHS
+    getSelectedDriverEHS,
+    searchVendor,
+    getVendorCompanyById
 };
 
 export default ComplianceService;

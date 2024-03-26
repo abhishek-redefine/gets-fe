@@ -35,6 +35,14 @@
 .dateRangeInnerContainer > div { 
     margin-left: 20px;
 }
+.bookingDateRangeInnerContainer{
+    display: flex;
+    width: 40%;
+    margin-left: 20px;
+}
+.bookingDateRangeInnerContainer > div {
+    margin-left: 20px;
+}
 .mainBookingDataContainer, .mainBookingDataContainerUser {
     border-top: 10px solid #f9f9f9;
 }

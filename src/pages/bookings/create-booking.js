@@ -117,7 +117,7 @@ const CreateBooking = () => {
         console.log("edit booking",editBookingData);
         if(editBookingData?.id){
             setEditFlag(true);
-            console.log(editBookingData);
+            console.log(moment(editBookingData.bookingDate).format("YYYY-MMM-DD"));
             let newEditInfo = Object.assign(initialValues, editBookingData);
             if(newEditInfo.bookingType === 'LOGIN'){
                 newEditInfo['loginShift'] = newEditInfo['shiftTime'];
@@ -1086,7 +1086,7 @@ const CreateBooking = () => {
                             editFlag ?
                             <>
                                 <InputLabel>Booking Date</InputLabel>
-                                <div className={styles.dateRangeInnerContainer}>
+                                <div className={styles.bookingDateRangeInnerContainer}>
                                     <LocalizationProvider dateAdapter={AdapterMoment}>
                                         <DatePicker 
                                             disabled={editFlag || values.isCustomiseSchedule} 

@@ -6,6 +6,7 @@ import { FormHelperText } from '@mui/material';
 
 const FileInputField = ({ label, ...props }) => {
     const [field, meta] = useField(props);
+    console.log(props);
     const { setFieldValue } = useFormikContext();
     return (
         <div className='form-control-input'>
@@ -21,9 +22,23 @@ const FileInputField = ({ label, ...props }) => {
                     },
                     endAdornment: <AttachFileIcon />
                 }}
-                onChange={(file) => setFieldValue(field.name, file)}
+                onChange={(file) => {
+                    console.log(file);
+                    
+                    // Check if file size is greater than 2MB
+                    if (file.size > 2 * 1024 * 1024) {
+                        // Display error or handle as needed
+                        alert("File size exceeds 2MB limit.");
+                        setFieldValue(field.name, null);
+                    } else {
+                        // File size is within limit, proceed with setting field value
+                        setFieldValue(field.name, file);
+                    }
+                }}
+                // onChange={(file) => setFieldValue(field.name, file)}
                 onError={meta.touched && Boolean(meta.error)}
             />
+            <FormHelperText className='errorHelperText'>File size should be less than 2 MB</FormHelperText>
             {meta.touched && meta.error && <FormHelperText className='errorHelperText'>{meta.error}</FormHelperText>}
         </div>
     )

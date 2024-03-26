@@ -3,9 +3,10 @@ import { Form, Formik } from 'formik';
 import FormNavigation from './FormNavigation';
 import { Step, StepLabel, Stepper, StepIndicator } from '@mui/material';
 
-const MultiStepForm = ({ children, initialValues, onSubmit }) => {
+const MultiStepForm = ({ children, initialValues, onSubmit,isValidate,cancelBtn }) => {
     const [stepNumber, setStepNumber] = useState(0);
     const steps = React.Children.toArray(children);
+    console.log(steps);
 
     const [snapshot, setSnapshot] = useState(initialValues);
 
@@ -14,6 +15,7 @@ const MultiStepForm = ({ children, initialValues, onSubmit }) => {
     const isLastStep = stepNumber === totalSteps - 1;
 
     const next = (values) => {
+        console.log("Next btn clicked")
         setSnapshot(values);
         setStepNumber(stepNumber + 1);
     }
@@ -24,13 +26,17 @@ const MultiStepForm = ({ children, initialValues, onSubmit }) => {
     }
 
     const handleSubmit = async (values, actions) => {
+        var response = false;
         if (step.props.onSubmit) {
-            var response = false;
+            console.log("handleSubmit>>>>>>", values, actions);
             response = await step.props.onSubmit(values);
+            console.log(response);
         }
         if (isLastStep) {
+            console.log("Last step")
             return onSubmit(values, actions);
         } else {
+            console.log("entered in else state");
             if (response) {
                 actions.setTouched({});
                 next(values);
@@ -75,7 +81,10 @@ const MultiStepForm = ({ children, initialValues, onSubmit }) => {
                 <FormNavigation
                     isLastStep={isLastStep}
                     hasPrevious={stepNumber > 0}
-                    onBackClick={() => previous(formik.values)} />
+                    onBackClick={() => previous(formik.values)}
+                    isValidate={isValidate}
+                    cancelBtn={cancelBtn}
+                    />
             </Form>}
             </Formik>
         </div>
