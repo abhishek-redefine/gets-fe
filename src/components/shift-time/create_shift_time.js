@@ -59,7 +59,7 @@ const CreateShiftTime = ({
         "transportTypes": editValues ? editValues.transportTypes : "",
         "weekDaysVisibility": editValues ? "" : "",
         "isVisibleOnHoliday": editValues ? editValues.isVisibleOnHoliday : false,
-        "shiftStartDate": editValues ? startDate : "",
+        "shiftStartDate": editValues ? startDate : startDate.format('DD-MM-YYYY HH:mm:ss'),
         "shiftEndDate": editValues ? "" : "",
         "routeTypes": editValues ? editValues.routeTypes : "",
         "sundayShift": editValues ? editValues.sundayShift : false,
@@ -266,15 +266,17 @@ const CreateShiftTime = ({
         initializer();
         if(editValues?.id){
             //console.log(editValues.shiftStartDate,"Edit values");
-            var existingStartDate = "";
-            var stringList = editValues.shiftStartDate.slice(0,10).split("-");
-            stringList.reverse().map((item,index)=> index < 2 ? existingStartDate += `${item}-` : existingStartDate += `${item}`);
-            console.log(moment(existingStartDate).isValid())
-            if(moment(existingStartDate).isValid()){
-                console.log("entered>>>>>>>>>",existingStartDate)
-                //editValues.shiftStartDate = existingStartDate;
-                setStartDate(dayjs(existingStartDate));
-                console.log(existingStartDate,"Start Date");
+            if(editValues?.shiftStartDate){
+                var existingStartDate = "";
+                var stringList = editValues.shiftStartDate.slice(0,10).split("-");
+                stringList.reverse().map((item,index)=> index < 2 ? existingStartDate += `${item}-` : existingStartDate += `${item}`);
+                console.log(moment(existingStartDate).isValid())
+                if(moment(existingStartDate).isValid()){
+                    console.log("entered>>>>>>>>>",existingStartDate)
+                    //editValues.shiftStartDate = existingStartDate;
+                    setStartDate(dayjs(existingStartDate));
+                    console.log(existingStartDate,"Start Date");
+                }
             }
             setFormValues(editValues);
         }
