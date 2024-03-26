@@ -41,13 +41,14 @@ const ShiftTime = () => {
 
 
     const changeState = (newState) => {
-        console.log("newState", newState);
+        console.log("newState", newState.defaultValue);
         setCurrentState(newState.value);
         setSelectedRoleType(newState.defaultValue);
     }
 
     const onSuccess = () => {
-
+        setCurrentState('VIEW_SHIFT_TIME');
+        //setSelectedRoleType(newState.defaultValue);
     };
 
     return (
