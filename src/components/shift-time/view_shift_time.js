@@ -83,6 +83,7 @@ const ViewShiftTime = () => {
     const [showEditShiftTime, setShowEditShiftTime] = useState(false);
     const [valueEditShiftTime, setValueEditShiftTime] = useState(false);
     const [paginationData, setPaginationData] = useState();
+    const [updateCount,setUpdateCount] = useState(0);
     const [pagination, setPagination] = useState({
         page: 0,
         size: 10
@@ -241,19 +242,24 @@ const ViewShiftTime = () => {
         }
     }
 
+    const onSuccess=()=>{
+        setShowEditShiftTime(false);
+        setUpdateCount(updateCount + 1);
+    }
+
     useEffect(() => {
         fetchMasterData();
     }, []);
 
     useEffect(()=>{
         fetchAllShift(false);
-    },[pagination])
+    },[pagination,updateCount])
 
     return (
         <>
             {
                 showEditShiftTime ?
-                    <CreateShiftTime editValues={valueEditShiftTime} />
+                    <CreateShiftTime editValues={valueEditShiftTime} onSuccess={onSuccess}/>
                     :
                     <div className='internalSettingContainer'>
                         <div className='filterContainer'>
