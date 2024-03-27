@@ -1,4 +1,5 @@
 import { Checkbox, FormControlLabel, Menu, MenuItem, Pagination } from '@mui/material';
+import moment from 'moment';
 import React, { useState } from 'react';
 
 const Grid = ({ headers, pagination, listing = [], handlePageChange, onMenuItemClick, onRadioClick, onCheckboxClick, pageNoText = 'pageNo', enableDisableRow = false,bookingGrid = false }) => {
@@ -77,6 +78,9 @@ const Grid = ({ headers, pagination, listing = [], handlePageChange, onMenuItemC
   const getText = (header, listItem) => {
     if (header.type === "arr") {
       return listItem[header.key].join(", ");
+    }
+    else if(header.key === "bookingDate"){
+      return moment(listItem.bookingDate).format("DD-MM-YYYY")
     }
     return listItem[header.key]
   };

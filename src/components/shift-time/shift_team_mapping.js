@@ -27,6 +27,10 @@ const ShiftTeamMapping = ({ onUserSuccess, editEmployeeData }) => {
     shiftType: "",
     transportType: "",
   });
+  const [pagination, setPagination] = useState({
+    page: 0,
+    size: 100,        
+});
 
   const formik = useFormik({
     initialValues: formValues,
@@ -157,7 +161,8 @@ const ShiftTeamMapping = ({ onUserSuccess, editEmployeeData }) => {
   };
 
   const initializer = async () => {
-    const response = await ShiftService.getAllShiftsWOPagination();
+    const params = new URLSearchParams(pagination);
+    const response = await ShiftService.getAllShiftsWOPagination(params);
     var data = response.data.data.filter((item) => item.enabled === true);
     console.log("response>>>>>", data);
     dropDownListValuesSetFunction(data);

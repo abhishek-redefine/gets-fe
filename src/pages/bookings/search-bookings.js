@@ -140,6 +140,7 @@ const SearchBookings = () => {
                 delete obj[shiftKey];
                 const team = teams.find(val => obj.teamId === val.id);
                 obj.teamId = team ? team.name : '';
+                //obj.bookingDate =  moment(obj.bookingDate).format("DD-MM-YYYY");
                 modifiedPageinationResponse.push(obj);
             })
             setBookingListing(modifiedPageinationResponse || []);
