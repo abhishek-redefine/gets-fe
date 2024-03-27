@@ -568,25 +568,38 @@ const CreateBooking = () => {
                     </>}
                 { customizedScheduledBean[currentIdx]?.bookingType === 'LOGOUT' &&
                     (
-                        <div className='form-control-input'>
-                            <FormControl required fullWidth>
-                                <InputLabel id="logout-label">Logout Time</InputLabel>
-                                <Select
-                                    labelId="logout-label"
-                                    id="logoutShift"
-                                    value={customizedScheduledBean?.[currentIdx]?.logoutShift || ""}
-                                    error={isSubmit && !customizedScheduledBean?.[currentIdx]?.logoutShift}
-                                    name="logoutShift"
-                                    label="Logout Time"
-                                    onChange={(e) => handleChangeMultiple(e, currentIdx, bookingDate)}
-                                >
-                                    {!!multiLogoutTimes[currentIdx]?.length && multiLogoutTimes[currentIdx].map((time, idx) => (
-                                        <MenuItem key={idx} value={time.shiftTime}>{time.shiftTime}</MenuItem>
-                                    ))}
-                                </Select>
-                                {isSubmit && !customizedScheduledBean?.[currentIdx]?.logoutShift && <FormHelperText className='errorHelperText'>Select Logout Time</FormHelperText>}
-                            </FormControl>
-                        </div>
+                        <>
+                            <div className='form-control-input'>
+                                <FormControl required fullWidth>
+                                    <InputLabel id="logout-label">Logout Time</InputLabel>
+                                    <Select
+                                        labelId="logout-label"
+                                        id="logoutShift"
+                                        value={customizedScheduledBean?.[currentIdx]?.logoutShift || ""}
+                                        error={isSubmit && !customizedScheduledBean?.[currentIdx]?.logoutShift}
+                                        name="logoutShift"
+                                        label="Logout Time"
+                                        onChange={(e) => handleChangeMultiple(e, currentIdx, bookingDate)}
+                                    >
+                                        {!!multiLogoutTimes[currentIdx]?.length && multiLogoutTimes[currentIdx].map((time, idx) => (
+                                            <MenuItem key={idx} value={time.shiftTime}>{time.shiftTime}</MenuItem>
+                                        ))}
+                                    </Select>
+                                    {isSubmit && !customizedScheduledBean?.[currentIdx]?.logoutShift && <FormHelperText className='errorHelperText'>Select Logout Time</FormHelperText>}
+                                </FormControl>
+                            </div>
+                            <div className='form-control-input'>
+                                <FormControl required>
+                                        <FormGroup
+                                        onChange={(e) => handleChangeMultiple(e, currentIdx, date)}
+                                        value={customizedScheduledBean?.[currentIdx]?.nextDayLogOutCustomize || false}
+                                        style={{flexDirection: "row"}}>
+                                            <FormControlLabel name="nextDayLogOutCustomize" control={<Checkbox value={customizedScheduledBean?.[currentIdx]?.nextDayLogOutCustomize || false} checked={customizedScheduledBean?.[currentIdx]?.nextDayLogOutCustomize || false} />} label="Next Day Logout" />
+                                        </FormGroup>
+                                </FormControl>
+                            </div>
+                        </>
+                        
                     )
                 }
                 {/* {
@@ -752,25 +765,39 @@ const CreateBooking = () => {
                             :
                             (
                                 shiftType === 'LOGOUT' ?
-                                <div className='form-control-input'>
-                                    <FormControl required fullWidth>
-                                        <InputLabel id="logout-label">Logout Time</InputLabel>
-                                        <Select
-                                            labelId="logout-label"
-                                            id="logoutShift"
-                                            value={values.logoutShift}
-                                            error={touched.logoutShift && Boolean(errors.logoutShift)}
-                                            name="logoutShift"
-                                            label="Logout Time"
-                                            onChange={(e)=>{handleShiftChange(e);handleChange(e)}}
-                                        >
-                                            {!!logoutTimes?.length && logoutTimes.map((time, idx) => (
-                                                <MenuItem key={idx} value={time.shiftTime}>{time.shiftTime}</MenuItem>
-                                            ))}
-                                        </Select>
-                                        {touched.logoutShift && errors.logoutShift && <FormHelperText className='errorHelperText'>{errors.logoutShift}</FormHelperText>}
-                                    </FormControl>
-                                </div>
+                                <>
+                                    <div className='form-control-input'>
+                                        <FormControl required fullWidth>
+                                            <InputLabel id="logout-label">Logout Time</InputLabel>
+                                            <Select
+                                                labelId="logout-label"
+                                                id="logoutShift"
+                                                value={values.logoutShift}
+                                                error={touched.logoutShift && Boolean(errors.logoutShift)}
+                                                name="logoutShift"
+                                                label="Logout Time"
+                                                onChange={(e)=>{handleShiftChange(e);handleChange(e)}}
+                                            >
+                                                {!!logoutTimes?.length && logoutTimes.map((time, idx) => (
+                                                    <MenuItem key={idx} value={time.shiftTime}>{time.shiftTime}</MenuItem>
+                                                ))}
+                                            </Select>
+                                            {touched.logoutShift && errors.logoutShift && <FormHelperText className='errorHelperText'>{errors.logoutShift}</FormHelperText>}
+                                        </FormControl>
+                                    </div>
+                                    <div className='form-control-input'>
+                                        <FormControl required>
+                                                <FormGroup
+                                                onChange={handleChange}
+                                                value={values.nextDayLogOut}
+                                                error={touched.nextDayLogOut && Boolean(errors.nextDayLogOut)}
+                                                style={{flexDirection: "row"}}>
+                                                    <FormControlLabel name="nextDayLogOut" value={true} control={<Checkbox />} label="Next Day Logout" />
+                                                </FormGroup>
+                                                {touched.nextDayLogOut && errors.nextDayLogOut && <FormHelperText className='errorHelperText'>{errors.nextDayLogOut}</FormHelperText>}
+                                        </FormControl>
+                                    </div>
+                                </>
                                 :
                                 (
                                     <>
