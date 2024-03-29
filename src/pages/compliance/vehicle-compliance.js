@@ -166,7 +166,11 @@ const VehicleCompliance = () => {
 
     useEffect(() => {
         initializer();
-    }, []);
+    }, [viewVehicleOpen]);
+
+    const onSuccess = () =>{
+        setViewVehicleOpen(false);
+    }
 
     return (
         <div className='internalSettingContainer'>
@@ -182,7 +186,7 @@ const VehicleCompliance = () => {
                 </div>
             </div>}
             {
-                viewVehicleOpen && <AddVehiclePendingApproval ViewDetailsData={editVehicleData} />
+                viewVehicleOpen && <AddVehiclePendingApproval ViewDetailsData={editVehicleData} viewVehicleOpen={onSuccess}/>
              }
         </div>
     );

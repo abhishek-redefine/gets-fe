@@ -4,6 +4,7 @@ import ComplianceService from '@/services/compliance.service';
 import xlsx from "json-as-xlsx";
 import { useDispatch } from 'react-redux';
 import AddDriverPendingApproval from '@/components/compliance/addDriverPendingApproval';
+import { DEFAULT_PAGE_SIZE } from '@/constants/app.constants.';
 
 const DriverPendingApproval = () => {
     const headers = [
@@ -58,7 +59,22 @@ const DriverPendingApproval = () => {
 
     const [viewDriverOpen, setViewDriverOpen] = useState(false)
     const [editDriverData, setEditDriverData] = useState(false)
-    const [driverData, setDriverData] = useState()
+    const [driverData, setDriverData] = useState();
+
+    //////////////////////////////////////////////////
+    const [pagination, setPagination] = useState({
+        page: 0,
+        size: DEFAULT_PAGE_SIZE,
+    });
+    const [paginationData, setPaginationData] = useState();
+
+    const handlePageChange = (page) => {
+        let updatedPagination = {...pagination};
+        updatedPagination.page = page;
+        setPagination(updatedPagination);
+    };
+
+    //////////////////////////////////////////////////
 
     const downloadReport = () => {
         var data = [
@@ -111,18 +127,27 @@ const DriverPendingApproval = () => {
 
     const initializer = async () => {
         try {
-            const response = await ComplianceService.getAllDrivers();
-            var filteredData = response.data.data.filter((item) => {
-                return item.complianceStatus !== "COMPLIANT"
-            })
-            setDriverData(filteredData)
+            var filter = { complianceStatus : "PENDING"}
+            let params = new URLSearchParams(pagination);
+            const response = await ComplianceService.getAllDrivers(params.toString(),filter);
+            const { data } = response || {};
+            const { data: paginatedResponse } = data || {};
+            setDriverData(paginatedResponse);
+            let localPaginationData = {...data};
+            delete localPaginationData?.data;
+            setPaginationData(localPaginationData);
         } catch (e) {
+            console.log(e);
         }
+    }
+
+    const onSuccess = () =>{
+        setViewDriverOpen(false);
     }
 
     useEffect(() => {
         initializer();
-    }, []);
+    }, [pagination,viewDriverOpen]);
 
     return (
         <div className='internalSettingContainer'>
@@ -133,11 +158,11 @@ const DriverPendingApproval = () => {
                     </div>
                 </div>
                 <div className='gridContainer'>
-                    <Grid headers={headers} listing={driverData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} />
+                    <Grid headers={headers} listing={driverData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} handlePageChange={handlePageChange} pagination={paginationData}/>
                 </div>
             </div>}
             {
-                viewDriverOpen && <AddDriverPendingApproval ViewDetailsData={editDriverData} />
+                viewDriverOpen && <AddDriverPendingApproval ViewDetailsData={editDriverData} SetAddDriverOpen={onSuccess}/>
             }
         </div>
     );

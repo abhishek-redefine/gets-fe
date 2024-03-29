@@ -13,11 +13,25 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { toggleToast } from '@/redux/company.slice';
 import { useDispatch } from 'react-redux';
+import { DEFAULT_PAGE_SIZE } from '@/constants/app.constants.';
+import Modal from '@mui/material/Modal';
+import Box from '@mui/material/Box';
+
+const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 500,
+    bgcolor: 'background.paper',
+    height: 190,
+    p:4
+  };
 
 const VehicleDriverMapping = () => {
     const headers = [
         {
-            key: "vehicleRegistrationNumber",
+            key: "vehicleNumber",
             display: "Vehicle No."
         },
         {
@@ -25,24 +39,28 @@ const VehicleDriverMapping = () => {
             display: "Vehicle Id"
         },
         {
+            key: "driverName",
+            display: "Driver Name"
+        },
+        {
             key: "vendorName",
             display: "Vendor"
         },
         {
-            key: "vehicleModel",
-            display: "Model"
+            key: "licenseNo",
+            display: "License Number"
         },
         {
-            key: "fuelType",
-            display: "Capacity"
+            key: "officeId",
+            display: "Office Id"
         },
         {
-            key: "driverId",
-            display: "Driver ID"
+            key: "createdAt",
+            display: "Created at"
         },
         {
-            key: "ehsStatus",
-            display: "EHS Status"
+            key: "createdBy",
+            display: "Created by"
         },
         {
             key: "hamburgerMenu",
@@ -65,6 +83,20 @@ const VehicleDriverMapping = () => {
     const [mappedDriver, setMappedDriver] = useState();
     const [vehicleId, setVehicleId] = useState();
     const [selectedVehicle, setSelectedVehicle] = useState();
+    const [vendorName,setVendorName] = useState("");
+    const [pagination,setPagination] = useState({
+        page: 0,
+        size : DEFAULT_PAGE_SIZE
+    })
+
+    //////////////////////////////////////////////////
+    const [openModal,setOpenModal] = useState(false);
+    const handleModalOpen = () => {
+        setOpen(false);
+        setOpenModal(true);
+    }
+    const handleModalClose = () => setOpenModal(false);
+    //////////////////////////////////////////////////
 
     const dispatch = useDispatch();
 
@@ -72,7 +104,7 @@ const VehicleDriverMapping = () => {
         try {
             if (e.target.value) {
                 console.log('searchForDriver', e.target.value)
-                const response = await ComplianceService.searchDriver(e.target.value);
+                const response = await ComplianceService.searchDriverWithVendor(e.target.value,vendorName);
                 console.log(response)
                 const { data } = response || {};
                 setSearchedDriver(data);
@@ -93,20 +125,27 @@ const VehicleDriverMapping = () => {
     };
 
     const driverMapping = async () => {
-        selectedVehicle.driverId = mappedDriver;
-        const response = await ComplianceService.updateVehicle({ "vehicleDTO": selectedVehicle });
-        if (response.status === 200) {
-            dispatch(toggleToast({ message: 'Vehicle Driver mapping successful!', type: 'success' }));
-        } else {
-            dispatch(toggleToast({ message: 'Vehicle Driver mapping unsuccessful.Please try again after some time!', type: 'error' }));
+        //selectedVehicle.driverId = mappedDriver;
+        try{
+            const response = await  ComplianceService.forceMappingVehicle(mappedDriver,{vehicleDriverMappingDTO: selectedVehicle})
+            //const response = await ComplianceService.updateVehicle({ "vehicleDTO": selectedVehicle });
+            if (response.status === 200) {
+                dispatch(toggleToast({ message: 'Vehicle Driver mapping successful!', type: 'success' }));
+            } else {
+                dispatch(toggleToast({ message: 'Vehicle Driver mapping unsuccessful.Please try again after some time!', type: 'error' }));
+            }    
+        }catch(err){
+            console.log(err);
         }
+        
     }
 
     const onMenuItemClick = async (key, clickedItem) => {
         if (key === "changeDriver") {
-            setVehicleModel(clickedItem.vehicleModel);
-            setVehicleRegistrationNumber(clickedItem.vehicleRegistrationNumber);
+            setVehicleModel(clickedItem.vehicleId);
+            setVehicleRegistrationNumber(clickedItem.vehicleNumber);
             setVehicleId(clickedItem.vehicleId)
+            setVendorName(clickedItem.vendorName);
             setSelectedVehicle(clickedItem);
             handleClickOpen();
         }
@@ -114,7 +153,8 @@ const VehicleDriverMapping = () => {
 
     const initializer = async () => {
         try {
-            const response = await ComplianceService.getAllVehicles();
+            let params = new URLSearchParams(pagination);
+            const response = await ComplianceService.getAllVehiclesMapping(params.toString(),{});
             setVehicleData(response.data.data)
         } catch (e) {
         }
@@ -126,9 +166,12 @@ const VehicleDriverMapping = () => {
 
     return (
         <div className='internalSettingContainer'>
+            <div className='filter'>
+                
+            </div>
             <div>
                 <div className='gridContainer'>
-                    <Grid headers={headers} listing={vehicleData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} />
+                    <Grid headers={headers} listing={vehicleData} onMenuItemClick={onMenuItemClick} />
                 </div>
             </div>
             <Dialog
@@ -148,7 +191,7 @@ const VehicleDriverMapping = () => {
                 fullWidth
                 maxWidth="lg"
             >
-                <DialogTitle>{`Change Driver for ${vehicleModel}--${vehicleRegistrationNumber}`}</DialogTitle>
+                <DialogTitle>{`Change Driver for ${vehicleModel}-${vehicleRegistrationNumber}`}</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
                         Select new driver from drop down
@@ -175,9 +218,27 @@ const VehicleDriverMapping = () => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>Cancel</Button>
-                    <Button type="submit" onClick={driverMapping}>Change Driver</Button>
+                    <Button type="submit" onClick={handleModalOpen}>Change Driver</Button>
                 </DialogActions>
             </Dialog>
+            <Modal
+                open={openModal}
+                onClose={handleModalClose}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+            >
+                <Box sx={style}>
+                    <div>
+                        <h4 style={{paddingLeft:15}}>
+                        Are you sure ?
+                        </h4>
+                    </div>
+                    <div style={{display:'flex',justifyContent:'space-evenly',paddingTop:20}}>
+                        <button className='btn btn-secondary' style={{margin: '10px 10px'}} onClick={handleModalClose}>No</button>
+                        <button className='btn btn-primary' style={{margin: '10px 10px'}} onClick={driverMapping}>Yes</button>
+                    </div>
+                </Box>
+            </Modal>
         </div>
     );
 }

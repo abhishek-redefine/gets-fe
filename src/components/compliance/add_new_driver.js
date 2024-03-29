@@ -10,7 +10,10 @@ import MultiStepForm, { FormStep } from '@/components/multistepForm/MultiStepFor
 import SelectInputField from '../multistepForm/SelectInputField';
 import FileInputField from '../multistepForm/FileInputField';
 import DateInputField from '../multistepForm/DateInputField';
-import { Button } from '@mui/material';
+import { Button,FormControl,Autocomplete,TextField } from '@mui/material';
+import IframeComponent from '../iframe/Iframe';
+import Modal from '@mui/material/Modal';
+import Box from '@mui/material/Box';
 
 const validationSchemaStepOne = object({
     name: string().required('Driver Name is required'),
@@ -18,37 +21,33 @@ const validationSchemaStepOne = object({
         .matches(/^[0-9]+$/, "Driver Mobile Number must be numeric")
         .min(10, 'Driver Mobile Number must be exactly 10 numbers')
         .max(10, 'Driver Mobile Number must be exactly 10 numbers'),
-    dob: string()
+        dob: string()
         .required()
-        .transform((currentValue, originalValue) => {
-            console.log(currentValue, originalValue)
-            if (originalValue) {
-                const today = new Date();
-                const birthDate = new Date(originalValue);
-                let age = today.getFullYear() - birthDate.getFullYear();
-                const monthDiff = today.getMonth() - birthDate.getMonth();
-                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                    age--;
-                }
-                console.log('validationSchemaStepOne', age)
-                return age;
-            } else {
-                const today = new Date();
-                const birthDate = new Date(currentValue);
-                let age = today.getFullYear() - birthDate.getFullYear();
-                const monthDiff = today.getMonth() - birthDate.getMonth();
-                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                    age--;
-                }
-                console.log('validationSchemaStepOne', age)
-                return age;
+        .test('is-over-18', 'You must be at least 18 years old', value => {
+            if (!value) return false; // If value is not provided, return false
+            const today = new Date();
+            const birthDate = new Date(value);
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
             }
+            return age >= 18;
         })
-        .min(18, 'You must be at least 18 years old') 
-        .max(120, 'Age cannot be greater than 120'),
+        .test('is-under-120', 'Age cannot be greater than 120', value => {
+            if (!value) return false; // If value is not provided, return false
+            const today = new Date();
+            const birthDate = new Date(value);
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age <= 120;
+        }),
     gender: string().required('Gender is required'),
     officeId: string().required('Office ID is required'),
-    vendorName: string().required('Vendor Name is required'),
+    // vendorName: string().required('Vendor Name is required'),
     licenseNo: string().required('License No is required')
         .min(16, 'License No must be exactly 16 alphanumeric including space')
         .max(16, 'License No must be exactly 16 alphanumeric including space'),
@@ -62,14 +61,15 @@ const validationSchemaStepOne = object({
         .matches(/^[0-9]+$/, "Aadhar ID must be numeric")
         .min(12, 'Aadhar ID must be exactly 12 numbers')
         .max(12, 'Aadhar ID must be exactly 12 numbers'),
-    panNo: string().required('Pan No is required')
-        .min(10, 'Pan No must be exactly 10 alphanumeric')
-        .max(10, 'Pan No must be exactly 10 alphanumeric'),
+    // panNo: string().required('Pan No is required')
+    //     .min(10, 'Pan No must be exactly 10 alphanumeric')
+    //     .max(10, 'Pan No must be exactly 10 alphanumeric'),
     email: string().required('Email is required').email('Email is not in correct format')
 });
 
 const validationSchemaStepTwo = object({
-    licenseUrl: string().required('License is required')
+    licenseUrl: string().required('License is required'),
+    photoUrl: string().required('Photo is required')
 });
 
 const validationSchemaStepThree = object({
@@ -100,12 +100,54 @@ const validationSchemaStepNine = object({
     medicalCertUrl: string().required('Medical Certificate is required')
 });
 
+const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 800,
+    bgcolor: 'background.paper',
+    height: 600
+  };
+
 const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
     const dispatch = useDispatch();
 
     const [genderList, setGenderList] = useState([]);
     const [officeList, setOfficeList] = useState([]);
     const [driverId, setDriverId] = useState(EditDriverData ? EditDriverData.id : '')
+    const [searchVendor,setSearchVendor] = useState([]);
+    const [openSearchVendor, setOpenSearchVendor] = useState(false);
+    const [vendorName,setVendorName] = useState("");
+
+    const [documentUrl,setDocumentUrl] = useState();
+    const [documentTitle,setDocumentTitle] = useState();
+    const [uploadDocumentValidation,setUploadDocumentValidation] = useState(false);
+    const [uploadCount,setUploadCount] = useState(0);
+    const [open, setOpen] = useState(false);
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
+
+    const [dlFieldName,setDlFieldName] = useState();
+    const [dlFileName,setDlFileName] = useState("");
+    const [photoFieldName,setPhotoFieldName] = useState();
+    const [photoFileName,setPhotoFileName] = useState("");
+
+    const [undertakingFieldName,setUndertakingFieldName] = useState();
+    const [undertakingFileName,setUndertakingFileName] = useState("");
+    const [badgeFieldName,setBadgeFieldName] = useState();
+    const [badgeFileName,setBadgeFileName] = useState("");
+
+    const [bgvFieldName,setBgvFieldName] = useState();
+    const [bgvFileName,setBgvFileName] = useState("");
+    const [dtcFieldName,setDtcFieldName] = useState();
+    const [dtcFileName,setDtcFileName] = useState("");
+
+    const [pvFieldName,setPvFieldName] = useState();
+    const [pvFileName,setPvFileName] = useState("");
+    const [medicalFieldName,setMedicalFieldName] = useState();
+    const [medicalFileName,setMedicalPhotoFileName] = useState("");
+
     const [initialValues, setInitialValues] = useState({
         "name": "",
         "mobile": "",
@@ -131,17 +173,27 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
         "medicalCertUrl": "",
         "role": "DRIVER",
         "enabled": true,
-        "ehsDoneBy": "Sultan",
-        "ehsDoneAt": "2024-03-13",
-        "complianceStatus": "NON_COMPLIANT",
-        "ehsStatus": "true"
+        // "ehsDoneBy": "Sultan",
+        // "ehsDoneAt": "2024-03-13",
+        "complianceStatus": "NEW",
+        "ehsStatus": "PENDING",
+        "medicalFitnessDate" : "",
+        "policeVerificationDate" : "",
+        "bgvDate" : "",
+        "ddTrainingDate" : ""
     });
 
     const addNewDriverDetailsSubmit = async (values) => {
         console.log('addNewDriverDetailsSubmit', values)
+        console.log("Hello>>>>>>", vendorName)
         try {
-            if (EditDriverData) {
+            if (EditDriverData?.id) {
                 values.id = driverId;
+                values.vendorName = vendorName;
+                if(vendorName === ""){
+                    alert("please enter vendor");
+                    return;
+                }
                 const response = await ComplianceService.updateDriver({ "driver": values });
                 if (response.status === 200) {
                     setDriverId(response.data.driver.id);
@@ -152,6 +204,11 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                     return false;
                 }
             } else {
+                if(vendorName === ""){
+                    alert("Please select a Vendor");
+                    return ;
+                }
+                values.vendorName = vendorName;
                 const response = await ComplianceService.createDriver({ "driver": values });
                 if (response.status === 200) {
                     setDriverId(response.data.driver.id);
@@ -174,12 +231,63 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
         }
     }
 
+    const searchForVendor = async(e) =>{
+        try {
+            if (e.target.value) {
+                const response = await ComplianceService.searchVendor(e.target.value);
+                const { data } = response || {};
+                setSearchVendor(data);
+            } else {
+                setSearchVendor([]);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    const onChangeHandler = (newValue, name, key) => {
+        console.log("on change handler", newValue);
+        var allValues = {...initialValues}
+        console.log(allValues);
+        allValues.vendorName = newValue?.vendorName;
+        console.log(allValues);
+        setInitialValues(allValues);
+        console.log(initialValues);
+        setVendorName(newValue?.vendorName);
+    };
+
     const uploadDocumentFormSubmit = async (id, role, documentToUpload, data) => {
         try {
             var formData = new FormData()
             formData.append('file', data);
             const response = await ComplianceService.documentUpload(id, role, documentToUpload, formData);
             if (response.status === 200) {
+                if(documentToUpload === "/LICENSE_CERTIFICATE"){
+                    setUploadCount(uploadCount + 1);
+                    EditDriverData.licenseUrl = response.data.driver.licenseUrl;
+                }
+                else if(documentToUpload === "/DRIVER_PHOTO"){
+                    setUploadCount(uploadCount + 1);
+                    EditDriverData.photoUrl = response.data.driver.photoUrl;
+                }
+                else if(documentToUpload === "/BGV_CERTIFICATE"){
+                    EditDriverData.bgvUrl = response.data.driver.bgvUrl;
+                }
+                else if(documentToUpload === "/POLICE_VERIFICATION_CERTIFICATE"){
+                    EditDriverData.policeVerificationUrl = response.data.driver.policeVerificationUrl;
+                }
+                else if(documentToUpload === "/BADGE_CERTIFICATE"){
+                    EditDriverData.badgeUrl = response.data.driver.badgeUrl;
+                }
+                else if(documentToUpload === "/UNDERTAKING_CERTIFICATE"){
+                    EditDriverData.undertakingUrl = response.data.driver.undertakingUrl;
+                }
+                else if(documentToUpload === "/TRAINING_CERTIFICATE"){
+                    EditDriverData.driverTrainingCertUrl = response.data.driver.driverTrainingCertUrl;
+                }
+                else if(documentToUpload === "/DRIVER_MEDICAL_CERTIFICATE"){
+                    EditDriverData.medicalCertUrl = response.data.driver.medicalCertUrl;
+                }
                 dispatch(toggleToast({ message: 'Data uploaded successfully!', type: 'success' }));
                 return true;
             } else if (response.status === 500) {
@@ -213,9 +321,31 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
         setGenderList(genderResponse.data);
     };
 
+    const cancelHandler = () =>{
+        dispatch(toggleToast({ message: 'Process is cancelled', type: 'error' }));
+        SetAddDriverOpen(false);
+    }
+
     useEffect(() => {
         initializer();
+        if(EditDriverData?.id){
+            var documentCount = 0;
+            if(EditDriverData?.licenseUrl != ""){
+                documentCount++;
+            }
+            if(EditDriverData.photoUrl != ""){
+                documentCount++;
+            }
+            setUploadCount(documentCount);
+        }
     }, []);
+
+    useEffect(()=>{
+        console.log(uploadCount);
+        if(uploadCount >= 2){
+            setUploadDocumentValidation(true);
+        }
+    },[uploadCount])
 
     useState(() => {
         if (EditDriverData?.id) {
@@ -226,17 +356,22 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
 
     return (
         <div>
-            <MultiStepForm initialValues={initialValues}
-                onSubmit={async (values) => {
-                    const response = await uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/DRIVER_MEDICAL_CERTIFICATE', values.medicalCertUrl);
+            <MultiStepForm 
+                initialValues={initialValues}
+                onSubmit={async () => {
+                    const response = await ComplianceService.changeStatusDriver(driverId);
                     if (response.status === 200) {
                         completeNewDriverFormSubmit();
                     }
                 }}
+                isValidate={uploadDocumentValidation}
+                cancelBtn={cancelHandler}
             >
                 <FormStep
                     stepName="Driver Details"
-                    onSubmit={(values) => addNewDriverDetailsSubmit(values)}
+                    onSubmit={(values) => {
+                        return addNewDriverDetailsSubmit(values);
+                    }}
                     validationSchema={validationSchemaStepOne}
                 >
                     <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -259,9 +394,29 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                             name="officeId"
                             label="Office ID"
                             genderList={officeList} />
-                        <TextInputField
-                            name="vendorName"
-                            label="Vendor Name" />
+                        <div className='form-control-input'>
+                            <FormControl variant="outlined">
+                                <Autocomplete
+                                    disablePortal
+                                    id="search-vendor"
+                                    options={searchVendor}
+                                    autoComplete
+                                    open={openSearchVendor}
+                                    onOpen={() => {
+                                        setOpenSearchVendor(true);
+                                    }}
+                                    onClose={() => {
+                                        setOpenSearchVendor(false);
+                                    }}
+                                    onChange={(e, val) => onChangeHandler(val, "Vendor", "vendorId")}
+                                    getOptionKey={(vendor) => vendor.vendorId}
+                                    getOptionLabel={(vendor) => vendor.vendorName}
+                                    freeSolo
+                                    name="Vendor"
+                                    renderInput={(params) => <TextField {...params} label="Search Vendor Name" onChange={searchForVendor} />}
+                                />
+                            </FormControl>
+                        </div>
                         <TextInputField
                             name="licenseNo"
                             label="License No" />
@@ -290,116 +445,355 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                         <TextInputField
                             name="remarks"
                             label="Remarks" />
+                        <DateInputField
+                            name="medicalFitnessDate"
+                            label="Medical Fitness Date" />
+                        <DateInputField
+                            name="policeVerificationDate"
+                            label="Police Verification Date" />
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <DateInputField
+                            name="bgvDate"
+                            label="BGV Date" />
+                        <DateInputField
+                            name="ddTrainingDate"
+                            label="Driving Training Date" />
                     </div>
                 </FormStep>
                 <FormStep
-                    stepName="Driver License"
-                    onSubmit={(values) => uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/LICENSE_CERTIFICATE', values.licenseUrl)}
+                    stepName="Upload Documents"
                     validationSchema={validationSchemaStepTwo}
                 >
-                    <FileInputField
-                        name="licenseUrl"
-                        label="License" />
-                    {/* <Button variant="contained" style={{ marginTop: '15px' }}>Upload</Button>
-                        <FileInputField
-                            name="photoUrl"
-                            label="Photo" />
-                        <Button variant="contained" style={{ marginTop: '15px' }}>Upload</Button> */}
-
-                    {/* <div>
-                        <FileInputField
-                            name="bgvUrl"
-                            label="BGV" />
-                        <Button variant="contained" style={{ marginTop: '15px' }}>Upload</Button>
-                        <FileInputField
-                            name="policeVerificationUrl"
-                            label="Police Verification" />
-                        <Button variant="contained" style={{ marginTop: '15px' }}>Upload</Button>
-                    </div>
-                    <div>
-                        <FileInputField
-                            name="badgeUrl"
-                            label="Badge" />
-                        <Button variant="contained" style={{ marginTop: '15px' }}>Upload</Button>
-                        <FileInputField
-                            name="undertakingUrl"
-                            label="Undertaking" />
-                        <Button variant="contained" style={{ marginTop: '15px' }}>Upload</Button>
-                    </div>
-                    <div>
-                        <FileInputField
-                            name="driverTrainingCertUrl"
-                            label="Driver Training Certificate" />
-                        <Button variant="contained" style={{ marginTop: '15px' }}>Upload</Button>
-                        <FileInputField
-                            name="medicalCertUrl"
-                            label="Medical Certificate" />
-                        <Button variant="contained" style={{ marginTop: '15px' }}>Upload</Button>
-                    </div> */}
+                    <div style={{display: 'grid',gridTemplateColumns: '1fr 1fr',gap:'20px'}}>
+                        <div className='column'>
+                            <div>
+                                <div style={{display: 'flex',alignItems: 'center',justifyContent: 'start'}}>
+                                    <FileInputField
+                                        name="licenseUrl"
+                                        label="License (required)"
+                                        filledValue={setDlFieldName}
+                                        fileName={dlFileName} 
+                                    />
+                                    <button 
+                                        type='button'
+                                        disabled={dlFieldName?  false : true}
+                                        onClick={()=>uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/LICENSE_CERTIFICATE', dlFieldName)} 
+                                        style={{width: '20%',marginRight: 0,marginLeft:0}} 
+                                        className='btn btn-primary'
+                                    >
+                                        Upload
+                                    </button>
+                                    {
+                                        EditDriverData?.licenseUrl !== "" &&
+                                        <button
+                                            type='button'
+                                            onClick={()=>{
+                                                setDocumentUrl(EditDriverData.licenseUrl.replace("gets-dev.",""));
+                                                handleOpen();
+                                            }}
+                                            style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
+                                            className='btn btn-secondary    '
+                                        >
+                                            View
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                            <div>
+                                <div style={{display: 'flex',alignItems: 'center',justifyContent: 'start'}}>
+                                    <FileInputField
+                                        name="undertakingUrl"
+                                        label="Undertaking (optional)" 
+                                        filledValue={setUndertakingFieldName}
+                                        fileName={undertakingFileName}
+                                    />
+                                    <button 
+                                        type='button'
+                                        disabled={undertakingFieldName?  false : true}
+                                        onClick={()=>uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/UNDERTAKING_CERTIFICATE', undertakingFieldName)} 
+                                        style={{width: '20%',marginRight: 0,marginLeft:0}} 
+                                        className='btn btn-primary'
+                                    >
+                                        Upload
+                                    </button>
+                                    {
+                                        EditDriverData?.undertakingUrl !== "" &&
+                                        <button
+                                            type='button'
+                                            onClick={()=>{
+                                                setDocumentUrl(EditDriverData?.undertakingUrl.replace("gets-dev.",""));
+                                                handleOpen();
+                                            }}
+                                            style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
+                                            className='btn btn-secondary    '
+                                        >
+                                            View
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                            <div>
+                                <div style={{display: 'flex',alignItems: 'center',justifyContent: 'start'}}>
+                                    <FileInputField
+                                        name="bgvUrl"
+                                        label="BGV (optional)" 
+                                        filledValue={setBgvFieldName}
+                                        fileName={bgvFileName}
+                                        />
+                                    <button 
+                                        type='button'
+                                        disabled={bgvFieldName?  false : true}
+                                        onClick={()=>uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/BGV_CERTIFICATE', bgvFieldName)} 
+                                        style={{width: '20%',marginRight: 0,marginLeft:0}} 
+                                        className='btn btn-primary'
+                                    >
+                                        Upload
+                                    </button>
+                                    {
+                                        EditDriverData?.bgvUrl !== "" &&
+                                        <button
+                                            type='button'
+                                            onClick={()=>{
+                                                setDocumentUrl(EditDriverData?.bgvUrl.replace("gets-dev.",""));
+                                                handleOpen();
+                                            }}
+                                            style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
+                                            className='btn btn-secondary    '
+                                        >
+                                            View
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                            <div>
+                                <div style={{display: 'flex',alignItems: 'center',justifyContent: 'start'}}>
+                                    <FileInputField
+                                        name="policeVerificationUrl"
+                                        label="Police Verification (optional)" 
+                                        filledValue={setPvFieldName}
+                                        fileName={pvFileName}
+                                        />
+                                    <button 
+                                        type='button'
+                                        disabled={pvFieldName?  false : true}
+                                        onClick={()=>uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/POLICE_VERIFICATION_CERTIFICATE', pvFieldName)} 
+                                        style={{width: '20%',marginRight: 0,marginLeft:0}} 
+                                        className='btn btn-primary'
+                                    >
+                                        Upload
+                                    </button>
+                                    {
+                                        EditDriverData?.policeVerificationUrl !== "" &&
+                                        <button
+                                            type='button'
+                                            onClick={()=>{
+                                                setDocumentUrl(EditDriverData?.policeVerificationUrl.replace("gets-dev.",""));
+                                                handleOpen();
+                                            }}
+                                            style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
+                                            className='btn btn-secondary    '
+                                        >
+                                            View
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div className='column'>
+                            <div>
+                                <div style={{display: 'flex',alignItems: 'center',justifyContent: 'start'}}>
+                                    <FileInputField
+                                        name="photoUrl"
+                                        label="Photo (required)" 
+                                        filledValue={setPhotoFieldName}
+                                        fileName={photoFileName}
+                                        />
+                                    <button 
+                                        type='button'
+                                        disabled={photoFieldName?  false : true}
+                                        onClick={()=>uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/DRIVER_PHOTO', photoFieldName)} 
+                                        style={{width: '20%',marginRight: 0,marginLeft:0}} 
+                                        className='btn btn-primary'
+                                    >
+                                        Upload
+                                    </button>
+                                    {
+                                        EditDriverData?.photoUrl !== "" &&
+                                        <button
+                                            type='button'
+                                            onClick={()=>{
+                                                setDocumentUrl(EditDriverData?.photoUrl.replace("gets-dev.",""));
+                                                handleOpen();
+                                            }}
+                                            style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
+                                            className='btn btn-secondary    '
+                                        >
+                                            View
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                            <div>
+                                <div style={{display: 'flex',alignItems: 'center',justifyContent: 'start'}}>
+                                    <FileInputField
+                                        name="badgeUrl"
+                                        label="Badge (optional)" 
+                                        filledValue={setBadgeFieldName}
+                                        fileName={badgeFileName}
+                                        />
+                                    <button 
+                                        type='button'
+                                        disabled={badgeFieldName?  false : true}
+                                        onClick={()=>uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/BADGE_CERTIFICATE', badgeFieldName)} 
+                                        style={{width: '20%',marginRight: 0,marginLeft:0}} 
+                                        className='btn btn-primary'
+                                    >
+                                        Upload
+                                    </button>
+                                    {
+                                        EditDriverData?.badgeUrl !== "" &&
+                                        <button
+                                            type='button'
+                                            onClick={()=>{
+                                                setDocumentUrl(EditDriverData?.badgeUrl.replace("gets-dev.",""));
+                                                handleOpen();
+                                            }}
+                                            style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
+                                            className='btn btn-secondary    '
+                                        >
+                                            View
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                            <div>
+                                <div style={{display: 'flex',alignItems: 'center',justifyContent: 'start'}}>
+                                    <FileInputField
+                                        name="driverTrainingCertUrl"
+                                        label="Driver Training Certificate (optional)" 
+                                        filledValue={setDtcFieldName}
+                                        fileName={dtcFileName}
+                                        />
+                                    <button 
+                                        type='button'
+                                        disabled={dtcFieldName?  false : true}
+                                        onClick={(values)=>uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/TRAINING_CERTIFICATE', dtcFieldName)} 
+                                        style={{width: '20%',marginRight: 0,marginLeft:0}} 
+                                        className='btn btn-primary'
+                                    >
+                                        Upload
+                                    </button>
+                                    {
+                                        EditDriverData?.driverTrainingCertUrl !== "" &&
+                                        <button
+                                            type='button'
+                                            onClick={()=>{
+                                                setDocumentUrl(EditDriverData?.driverTrainingCertUrl.replace("gets-dev.",""));
+                                                handleOpen();
+                                            }}
+                                            style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
+                                            className='btn btn-secondary    '
+                                        >
+                                            View
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                            <div>
+                                <div style={{display: 'flex',alignItems: 'center',justifyContent: 'start'}}>
+                                    <FileInputField
+                                        name="medicalCertUrl"
+                                        label="Medical Certificate (optional)" 
+                                        filledValue={setMedicalFieldName}
+                                        fileName={medicalFileName}
+                                        />
+                                    <button 
+                                        type='button'
+                                        disabled={medicalFieldName?  false : true}
+                                        onClick={()=>uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/DRIVER_MEDICAL_CERTIFICATE', medicalFieldName)} 
+                                        style={{width: '20%',marginRight: 0,marginLeft:0}} 
+                                        className='btn btn-primary'
+                                    >
+                                        Upload
+                                    </button>
+                                    {
+                                        EditDriverData?.medicalCertUrl !== "" &&
+                                        <button
+                                            type='button'
+                                            onClick={()=>{
+                                                setDocumentUrl(EditDriverData?.medicalCertUrl.replace("gets-dev.",""));
+                                                handleOpen();
+                                            }}
+                                            style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
+                                            className='btn btn-secondary    '
+                                        >
+                                            View
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>    
                 </FormStep>
-                <FormStep
+                {/* <FormStep
                     stepName="Driver Photo"
                     onSubmit={(values) => uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/DRIVER_PHOTO', values.photoUrl)}
                     validationSchema={validationSchemaStepThree}
                 >
-                    <FileInputField
-                        name="photoUrl"
-                        label="Photo" />
+                    
                 </FormStep>
                 <FormStep
                     stepName="Driver BGV"
                     onSubmit={(values) => uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/BGV_CERTIFICATE', values.bgvUrl)}
                     validationSchema={validationSchemaStepFour}
                 >
-                    <FileInputField
-                        name="bgvUrl"
-                        label="BGV" />
+                    
                 </FormStep>
                 <FormStep
                     stepName="Driver Police Verification"
                     onSubmit={(values) => uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/POLICE_VERIFICATION_CERTIFICATE', values.policeVerificationUrl)}
                     validationSchema={validationSchemaStepFive}
                 >
-                    <FileInputField
-                        name="policeVerificationUrl"
-                        label="Police Verification" />
+                    
                 </FormStep>
                 <FormStep
                     stepName="Driver Badge"
                     onSubmit={(values) => uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/BADGE_CERTIFICATE', values.badgeUrl)}
                     validationSchema={validationSchemaStepSix}
                 >
-                    <FileInputField
-                        name="badgeUrl"
-                        label="Badge" />
                 </FormStep>
                 <FormStep
                     stepName="Driver Undertaking"
                     onSubmit={(values) => uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/UNDERTAKING_CERTIFICATE', values.undertakingUrl)}
                     validationSchema={validationSchemaStepSeven}
                 >
-                    <FileInputField
-                        name="undertakingUrl"
-                        label="Undertaking" />
+                    
                 </FormStep>
                 <FormStep
                     stepName="Driver Training Certificate"
                     onSubmit={(values) => uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/TRAINING_CERTIFICATE', values.driverTrainingCertUrl)}
                     validationSchema={validationSchemaStepEight}
                 >
-                    <FileInputField
-                        name="driverTrainingCertUrl"
-                        label="Driver Training Certificate" />
+                    
                 </FormStep>
                 <FormStep
                     stepName="Driver Medical Certificate"
                     validationSchema={validationSchemaStepNine}
                 >
-                    <FileInputField
-                        name="medicalCertUrl"
-                        label="Medical Certificate" />
-                </FormStep>
+                    
+                </FormStep> */}
             </MultiStepForm>
+            <Modal
+                open={open}
+                onClose={handleClose}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+            >
+                <Box sx={style}>
+                    <IframeComponent url={documentUrl} title={documentTitle} />
+                </Box>
+            </Modal>
         </div >
     )
 }

@@ -6,6 +6,7 @@ import AddNewVehicle from '@/components/compliance/add_new_vehicle';
 import xlsx from "json-as-xlsx";
 import UploadButton from '@/components/buttons/uploadButton';
 import AddVehiclePendingApproval from '@/components/compliance/addVehiclePendingApproval';
+import { DEFAULT_PAGE_SIZE } from '@/constants/app.constants.';
 
 const VehiclePendingApproval = () => {
     const headers = [
@@ -81,10 +82,6 @@ const VehiclePendingApproval = () => {
     const [viewVehicleOpen, setViewVehicleOpen] = useState(false)
     const [editVehicleData, setEditVehicleData] = useState(false)
     const [vehicleData, setVehicleData] = useState()
-    const [pagination, setPagination] = useState({
-        pageNo: 1,
-        pageSize: 10,
-    });
 
     const onMenuItemClick = async (key, clickedItem) => {
         if (key === "viewVehicle") {
@@ -92,6 +89,20 @@ const VehiclePendingApproval = () => {
             setViewVehicleOpen(true);
         }
     };
+
+    ////////////////////////////////////////////
+    const [pagination, setPagination] = useState({
+        page: 0,
+        size: DEFAULT_PAGE_SIZE,
+    });
+    const [paginationData, setPaginationData] = useState();
+
+    const handlePageChange = (page) => {
+        let updatedPagination = {...pagination};
+        updatedPagination.page = page;
+        setPagination(updatedPagination);
+    };
+    ////////////////////////////////////////////
 
     const downloadReport = () => {
         var data = [
@@ -155,18 +166,26 @@ const VehiclePendingApproval = () => {
 
     const initializer = async () => {
         try {
-            const response = await ComplianceService.getAllVehicles();
-            var filteredData = response.data.data.filter((item) => {
-                return item.complianceStatus !== "COMPLIANT"
-            })
-            setVehicleData(filteredData)
+            var filter = { complianceStatus : "PENDING"}
+            let params = new URLSearchParams(pagination);
+            const response = await ComplianceService.getAllVehicles(params.toString(),filter);
+            const { data } = response || {};
+            const { data: paginatedResponse } = data || {};
+            setVehicleData(paginatedResponse);
+            let localPaginationData = {...data};
+            delete localPaginationData?.data;
+            setPaginationData(localPaginationData);
         } catch (e) {
         }
     }
 
+    const onSuccess = () =>{
+        setViewVehicleOpen(false);
+    }
+
     useEffect(() => {
         initializer();
-    }, []);
+    }, [pagination,viewVehicleOpen]);
 
     return (
         <div className='internalSettingContainer'>
@@ -178,11 +197,11 @@ const VehiclePendingApproval = () => {
                     </div>
                 </div>
                 <div className='gridContainer'>
-                    <Grid headers={headers} listing={vehicleData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} />
+                    <Grid headers={headers} listing={vehicleData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} handlePageChange={handlePageChange} pagination={paginationData}/>
                 </div>
             </div>}
             {
-                viewVehicleOpen && <AddVehiclePendingApproval ViewDetailsData={editVehicleData} />
+                viewVehicleOpen && <AddVehiclePendingApproval ViewDetailsData={editVehicleData} viewVehicleOpen={onSuccess}/>
             }
         </div>
     );

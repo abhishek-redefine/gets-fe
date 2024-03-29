@@ -121,9 +121,13 @@ const DriverCompliance = () => {
         }
     }
 
+    const onSuccess = () =>{
+        setViewDriverOpen(false);
+    }
+
     useEffect(() => {
         initializer();
-    }, []);
+    }, [viewDriverOpen]);
 
     return (
         <div className='internalSettingContainer'>
@@ -138,7 +142,7 @@ const DriverCompliance = () => {
                 </div>
             </div>}
             {
-                viewDriverOpen && <AddDriverPendingApproval ViewDetailsData={editDriverData} />
+                viewDriverOpen && <AddDriverPendingApproval ViewDetailsData={editDriverData} SetAddDriverOpen={onSuccess}/>
             }
         </div>
     );
