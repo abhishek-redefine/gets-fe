@@ -129,7 +129,9 @@ const DriverProfile = () => {
     const [searchBean,setSearchBean] = useState({
         officeId : "",
         complianceStatus : "",
-        vendorName : ""
+        vendorName : "",
+        ehsStatus: "",
+        driverState: ""
     });
     const [open, setOpen] = useState(false);
     const handleOpen = (id,isEnable) => {
