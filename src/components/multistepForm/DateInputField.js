@@ -21,7 +21,8 @@ const DateInputField = ({ label, ...props }) => {
                         label={label}
                         {...field}
                         {...props}
-                        value={meta.value ? dayjs(meta.value) : dayjs(new Date())}
+                        format='DD-MM-YYYY'
+                        value={meta.value ? dayjs(meta.value) : null}
                         onChange={newValue => {
                             setFieldValue(field.name, moment(newValue)._i.format(DATE_FORMAT));
                         }}
@@ -29,7 +30,7 @@ const DateInputField = ({ label, ...props }) => {
                     />
                 </DemoContainer>
             </LocalizationProvider>
-            {meta.touched && meta.error && <FormHelperText className='errorHelperText'>{meta.error}</FormHelperText>}
+            {meta.touched && meta.error && <FormHelperText className='errorHelperText Mui-error'>{meta.error}</FormHelperText>}
         </div>
     )
 }

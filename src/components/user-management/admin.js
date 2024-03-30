@@ -84,22 +84,27 @@ const AdminManagement = ({
     };
 
     const uploadFunction = async (item) => {
-        var form = new FormData();
-        form.append('model', '{"importJobDTO": {"importType": "IMPORT_TYPE_ADMIN_USER","entityName": "ADMIN USER"}}');
-        form.append('file', item);
-        const response = await OfficeService.uploadForm(form);
-        console.log(response)
-        if (response?.data?.isSuccessFul) {
-            dispatch(toggleToast({ message: 'All Admin records uploaded successfully!', type: 'success' }));
-        } else {
-            console.log(response?.data?.successRecords, response?.data?.successRecords > 0)
-            if (response?.data?.successRecords > 0) {
-                dispatch(toggleToast({ message: `${response?.data?.successRecords} out of ${response?.data?.totalRecords} Admin records uploaded successfully!`, type: 'success' }));
+        try{
+            var form = new FormData();
+            form.append('model', '{"importJobDTO": {"importType": "IMPORT_TYPE_ADMIN_USER","entityName": "ADMIN USER"}}');
+            form.append('file', item);
+            const response = await OfficeService.uploadForm(form);
+            console.log(response)
+            if (response?.data?.isSuccessFul) {
+                dispatch(toggleToast({ message: 'All Admin records uploaded successfully!', type: 'success' }));
             } else {
-                dispatch(toggleToast({ message: `Admin records failed to upload. Please try again later.`, type: 'error' }));
+                console.log(response?.data?.successRecords, response?.data?.successRecords > 0)
+                if (response?.data?.successRecords > 0) {
+                    dispatch(toggleToast({ message: `${response?.data?.successRecords} out of ${response?.data?.totalRecords} Admin records uploaded successfully!`, type: 'success' }));
+                } else {
+                    dispatch(toggleToast({ message: `Admin records failed to upload. Please try again later.`, type: 'error' }));
+                }
             }
+            fetchAllAdmins();
         }
-
+        catch(err){
+            console.log(err);
+        }
     }
 
     const onMenuItemClick = (key, values) => {

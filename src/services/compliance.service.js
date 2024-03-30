@@ -221,6 +221,12 @@ const searchVendor = (text) =>{
     });
 }
 
+const searchVehicle = (text) =>{
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.SEARCH_VEHICLE}${text}/0/15`).then((response) => {
+        return response;
+    });
+}
+
 const getVendorCompanyById = (id) =>{
     return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.VENDOR_COMPANY}/${id}`).then((response) => {
         return response;
@@ -257,6 +263,18 @@ const getAllVehiclesMapping = (queryParams,searchValues) =>{
 
 const forceMappingVehicle = (id,value) =>{
     return axiosInstance.put(`${API_PATH.API_VERSION}${API_PATH.VEHICLE_DRIVER_FORCE_MAPPING}${id}`,value).then((response)=>{
+        return response;
+    })
+}
+
+const getDriverById = (id) =>{
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.SINGLE_DRIVER}/${id}`).then((response)=>{
+        return response;
+    })
+}
+
+const getVehicleById = (id) =>{
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.SINGLE_VEHICLE}/${id}`).then((response)=>{
         return response;
     })
 }
@@ -301,7 +319,10 @@ const ComplianceService = {
     changeStatusVehicle,
     searchDriverWithVendor,
     getAllVehiclesMapping,
-    forceMappingVehicle
+    forceMappingVehicle,
+    getDriverById,
+    getVehicleById,
+    searchVehicle
 };
 
 export default ComplianceService;

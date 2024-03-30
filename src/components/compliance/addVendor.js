@@ -98,6 +98,16 @@ const style = {
     bgcolor: 'background.paper',
     height: 600
   };
+const styleForErrorMessage={
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    height: 100,
+    p: 3
+}
 
 // const validationSchemaStepThree = object({
 //     panFilePath: string().required('Pan Card Document is required')
@@ -196,6 +206,11 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
+
+    const [message,setMessage] = useState("");
+    const [uniqueModal,setUniqueModal] = useState(false);
+    const handleShow = () => setUniqueModal(true);
+    const handleHide = () => setUniqueModal(false);
 
     const addNewVendorDetailsSubmit = async (values) => {
         try {
@@ -296,8 +311,11 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
                     }]
                 }
                 const response = await ComplianceService.createVendorCompany({ "vendorCompany": values });
+                console.log(response.status)
                 if (response.status === 201) {
                     setVendorId(response.data.vendorCompany.id);
+                    EditVendorData.gstFilePath = "";
+                    EditVendorData.panFilePath = "";
                     dispatch(toggleToast({ message: 'Vendor details added successfully!', type: 'success' }));
                     return true;
                 } else if (response.status === 500) {
@@ -306,6 +324,21 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
                 }
             }
         } catch (e) {
+            console.log("Error: ", e);
+            if(e.response.status === 409){
+                var message = e.response.data.message;
+                if(message.search('gst') != -1){
+                    setMessage("This GST number is already in use.");
+                }
+                else if(message.search('pan') != -1){
+                    setMessage("The PAN number is already in use.")
+                }
+                else if(message.search('contact_person_mobile') != -1){
+                    setMessage("The Contact person number is already in use.")
+                }
+                console.log(e.response.data.message)
+                handleShow();
+            }
         }
     }
 
@@ -322,7 +355,7 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
             dispatch(toggleToast({ message: 'Process is cancelled', type: 'error' }));
             SetAddVendorOpen(false);
         }catch(e){
-
+            console.log(e);
         }
     }
 
@@ -733,7 +766,7 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
                                 Upload
                             </button>
                             {
-                                EditVendorData?.gstFilePath !== "" &&
+                                EditVendorData?.gstFilePath != "" &&
                                 <button
                                     type='button'
                                     onClick={()=>{
@@ -741,7 +774,7 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
                                         handleOpen();
                                     }}
                                     style={{width: '100%',marginRight: 0,marginLeft:20,padding:'15px'}} 
-                                    className='btn btn-secondary    '
+                                    className='btn btn-secondary'
                                 >
                                     View
                                 </button>
@@ -765,7 +798,7 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
                                 Upload
                             </button>
                             {
-                                EditVendorData?.panFilePath !== "" &&
+                                EditVendorData && EditVendorData?.panFilePath != "" &&
                                 <button
                                     type='button'
                                     onClick={()=>{
@@ -799,7 +832,19 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
                     <IframeComponent url={documentUrl} title={documentTitle} />
                 </Box>
             </Modal>
-            
+            <Modal
+            open={uniqueModal}
+            onClose={handleHide}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+            >
+                <Box sx={styleForErrorMessage}>
+                    <div style={{height: '100%'}}>
+                        <p style={{fontWeight: 600,marginBottom:5}}>Form Submit Error:</p>
+                        <p>{message}</p>
+                    </div>
+                </Box>
+            </Modal>
         </div >
     )
 }

@@ -21,7 +21,7 @@ const validationSchemaStepOne = object({
         .matches(/^[0-9]+$/, "Driver Mobile Number must be numeric")
         .min(10, 'Driver Mobile Number must be exactly 10 numbers')
         .max(10, 'Driver Mobile Number must be exactly 10 numbers'),
-        dob: string()
+    dob: string()
         .required()
         .test('is-over-18', 'You must be at least 18 years old', value => {
             if (!value) return false; // If value is not provided, return false
@@ -61,10 +61,14 @@ const validationSchemaStepOne = object({
         .matches(/^[0-9]+$/, "Aadhar ID must be numeric")
         .min(12, 'Aadhar ID must be exactly 12 numbers')
         .max(12, 'Aadhar ID must be exactly 12 numbers'),
-    // panNo: string().required('Pan No is required')
-    //     .min(10, 'Pan No must be exactly 10 alphanumeric')
-    //     .max(10, 'Pan No must be exactly 10 alphanumeric'),
-    email: string().required('Email is required').email('Email is not in correct format')
+    panNo: string().required('Pan No is required')
+        .min(10, 'Pan No must be exactly 10 alphanumeric')
+        .max(10, 'Pan No must be exactly 10 alphanumeric'),
+    email: string().required('Email is required').email('Email is not in correct format'),
+    medicalFitnessDate : string().required("enter a valid date"),
+    policeVerificationDate : string().required("enter a valid date"),
+    bgvDate : string().required("enter a valid date"),
+    ddTrainingDate : string().required("enter a valid date"),
 });
 
 const validationSchemaStepTwo = object({
@@ -108,14 +112,25 @@ const style = {
     width: 800,
     bgcolor: 'background.paper',
     height: 600
-  };
+};
+const styleForErrorMessage={
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    height: 100,
+    p: 3
+}
 
 const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
     const dispatch = useDispatch();
 
     const [genderList, setGenderList] = useState([]);
     const [officeList, setOfficeList] = useState([]);
-    const [driverId, setDriverId] = useState(EditDriverData ? EditDriverData.id : '')
+    const [driverId, setDriverId] = useState(EditDriverData ? EditDriverData.id : null)
+    const [uploadFlag,setUploadFlag] = useState(false);
     const [searchVendor,setSearchVendor] = useState([]);
     const [openSearchVendor, setOpenSearchVendor] = useState(false);
     const [vendorName,setVendorName] = useState("");
@@ -127,6 +142,11 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
+
+    const [message,setMessage] = useState("");
+    const [uniqueModal,setUniqueModal] = useState(false);
+    const handleShow = () => setUniqueModal(true);
+    const handleHide = () => setUniqueModal(false);
 
     const [dlFieldName,setDlFieldName] = useState();
     const [dlFileName,setDlFileName] = useState("");
@@ -212,6 +232,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                 const response = await ComplianceService.createDriver({ "driver": values });
                 if (response.status === 200) {
                     setDriverId(response.data.driver.id);
+                    setUploadFlag(true);
                     dispatch(toggleToast({ message: 'Driver details added successfully!', type: 'success' }));
                     return true;
                 } else if (response.status === 500) {
@@ -220,7 +241,35 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                 }
             }
         } catch (e) {
+            if(e.response.status ===  409){
+                var message = e.response.data.message;
+                if(checkUniqueConstraint(message,"username")){
+                    setMessage('This license is already in use');
+                    handleShow();
+                }
+                else if(checkUniqueConstraint(message,"email")){
+                    setMessage('This email is already in use');
+                    handleShow();
+                }
+                else if(checkUniqueConstraint(message,"'mobile'")){
+                    setMessage('This mobile is already in use');
+                    handleShow();
+                }
+                else if(checkUniqueConstraint(message,"aadhar_id")){
+                    setMessage('This adhaar is already in use');
+                    handleShow();
+                }
+                else if(checkUniqueConstraint(message,"'alt_mobile'")){
+                    setMessage('This alternate mobile is already in use');
+                    handleShow();
+                }
+            }
         }
+    }
+
+    function checkUniqueConstraint (message,key){
+        var result = message.search(key);
+        return result != -1 ? true : false;
     }
 
     const completeNewDriverFormSubmit = async () => {
@@ -326,8 +375,22 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
         SetAddDriverOpen(false);
     }
 
+    useEffect(()=>{
+        if(driverId && uploadFlag){
+            EditDriverData.licenseUrl = "";
+            EditDriverData.photoUrl = "";
+            EditDriverData.bgvUrl = "";
+            EditDriverData.policeVerificationUrl = "";
+            EditDriverData.badgeUrl = "";
+            EditDriverData.undertakingUrl = "";
+            EditDriverData.driverTrainingCertUrl = "";
+            EditDriverData.medicalCertUrl = "";
+        }
+    },[driverId])
+
     useEffect(() => {
-        initializer();
+        if(SetAddDriverOpen) initializer();
+        console.log("condition check>>>>>>>>>>",EditDriverData?.licenseUrl && EditDriverData.licenseUrl != "" )        
         if(EditDriverData?.id){
             var documentCount = 0;
             if(EditDriverData?.licenseUrl != ""){
@@ -485,7 +548,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                                         Upload
                                     </button>
                                     {
-                                        EditDriverData?.licenseUrl !== "" &&
+                                        EditDriverData?.licenseUrl && EditDriverData.licenseUrl !== "" &&
                                         <button
                                             type='button'
                                             onClick={()=>{
@@ -518,7 +581,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                                         Upload
                                     </button>
                                     {
-                                        EditDriverData?.undertakingUrl !== "" &&
+                                        EditDriverData?.undertakingUrl && EditDriverData.undertakingUrl !== "" &&
                                         <button
                                             type='button'
                                             onClick={()=>{
@@ -551,7 +614,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                                         Upload
                                     </button>
                                     {
-                                        EditDriverData?.bgvUrl !== "" &&
+                                        EditDriverData?.bgvUrl && EditDriverData.bgvUrl !== "" &&
                                         <button
                                             type='button'
                                             onClick={()=>{
@@ -584,7 +647,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                                         Upload
                                     </button>
                                     {
-                                        EditDriverData?.policeVerificationUrl !== "" &&
+                                        EditDriverData?.policeVerificationUrl && EditDriverData.policeVerificationUrl !== "" &&
                                         <button
                                             type='button'
                                             onClick={()=>{
@@ -619,7 +682,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                                         Upload
                                     </button>
                                     {
-                                        EditDriverData?.photoUrl !== "" &&
+                                        EditDriverData?.photoUrl && EditDriverData.photoUrl !== "" &&
                                         <button
                                             type='button'
                                             onClick={()=>{
@@ -652,7 +715,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                                         Upload
                                     </button>
                                     {
-                                        EditDriverData?.badgeUrl !== "" &&
+                                        EditDriverData?.badgeUrl && EditDriverData.badgeUrl !== "" &&
                                         <button
                                             type='button'
                                             onClick={()=>{
@@ -685,7 +748,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                                         Upload
                                     </button>
                                     {
-                                        EditDriverData?.driverTrainingCertUrl !== "" &&
+                                        EditDriverData?.driverTrainingCertUrl && EditDriverData.driverTrainingCertUrl !== "" &&
                                         <button
                                             type='button'
                                             onClick={()=>{
@@ -718,7 +781,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                                         Upload
                                     </button>
                                     {
-                                        EditDriverData?.medicalCertUrl !== "" &&
+                                        EditDriverData?.medicalCertUrl && EditDriverData.medicalCertUrl !== "" &&
                                         <button
                                             type='button'
                                             onClick={()=>{
@@ -736,53 +799,6 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                         </div>
                     </div>    
                 </FormStep>
-                {/* <FormStep
-                    stepName="Driver Photo"
-                    onSubmit={(values) => uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/DRIVER_PHOTO', values.photoUrl)}
-                    validationSchema={validationSchemaStepThree}
-                >
-                    
-                </FormStep>
-                <FormStep
-                    stepName="Driver BGV"
-                    onSubmit={(values) => uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/BGV_CERTIFICATE', values.bgvUrl)}
-                    validationSchema={validationSchemaStepFour}
-                >
-                    
-                </FormStep>
-                <FormStep
-                    stepName="Driver Police Verification"
-                    onSubmit={(values) => uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/POLICE_VERIFICATION_CERTIFICATE', values.policeVerificationUrl)}
-                    validationSchema={validationSchemaStepFive}
-                >
-                    
-                </FormStep>
-                <FormStep
-                    stepName="Driver Badge"
-                    onSubmit={(values) => uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/BADGE_CERTIFICATE', values.badgeUrl)}
-                    validationSchema={validationSchemaStepSix}
-                >
-                </FormStep>
-                <FormStep
-                    stepName="Driver Undertaking"
-                    onSubmit={(values) => uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/UNDERTAKING_CERTIFICATE', values.undertakingUrl)}
-                    validationSchema={validationSchemaStepSeven}
-                >
-                    
-                </FormStep>
-                <FormStep
-                    stepName="Driver Training Certificate"
-                    onSubmit={(values) => uploadDocumentFormSubmit('/' + driverId, '/DRIVER', '/TRAINING_CERTIFICATE', values.driverTrainingCertUrl)}
-                    validationSchema={validationSchemaStepEight}
-                >
-                    
-                </FormStep>
-                <FormStep
-                    stepName="Driver Medical Certificate"
-                    validationSchema={validationSchemaStepNine}
-                >
-                    
-                </FormStep> */}
             </MultiStepForm>
             <Modal
                 open={open}
@@ -792,6 +808,19 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
             >
                 <Box sx={style}>
                     <IframeComponent url={documentUrl} title={documentTitle} />
+                </Box>
+            </Modal>
+            <Modal
+                open={uniqueModal}
+                onClose={handleHide}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+            >
+                <Box sx={styleForErrorMessage}>
+                    <div style={{height: '100%'}}>
+                        <p style={{fontWeight: 600,marginBottom:5}}>Form Submit Error:</p>
+                        <p>{message}</p>
+                    </div>
                 </Box>
             </Modal>
         </div >

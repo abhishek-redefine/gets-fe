@@ -105,7 +105,6 @@ const VehicleDriverMapping = () => {
             if (e.target.value) {
                 console.log('searchForDriver', e.target.value)
                 const response = await ComplianceService.searchDriverWithVendor(e.target.value,vendorName);
-                console.log(response)
                 const { data } = response || {};
                 setSearchedDriver(data);
             } else {
@@ -129,11 +128,13 @@ const VehicleDriverMapping = () => {
         try{
             const response = await  ComplianceService.forceMappingVehicle(mappedDriver,{vehicleDriverMappingDTO: selectedVehicle})
             //const response = await ComplianceService.updateVehicle({ "vehicleDTO": selectedVehicle });
-            if (response.status === 200) {
+            if (response.status === 201) {
                 dispatch(toggleToast({ message: 'Vehicle Driver mapping successful!', type: 'success' }));
+                setOpenModal(close);
             } else {
                 dispatch(toggleToast({ message: 'Vehicle Driver mapping unsuccessful.Please try again after some time!', type: 'error' }));
-            }    
+            } 
+            initializer();
         }catch(err){
             console.log(err);
         }
@@ -218,7 +219,7 @@ const VehicleDriverMapping = () => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>Cancel</Button>
-                    <Button type="submit" onClick={handleModalOpen}>Change Driver</Button>
+                    <Button type="button" onClick={handleModalOpen}>Change Driver</Button>
                 </DialogActions>
             </Dialog>
             <Modal

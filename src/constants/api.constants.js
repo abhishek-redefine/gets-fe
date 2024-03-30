@@ -16,6 +16,7 @@ export const API_PATH = {
     SEARCH_DRIVER: '/search/autoSuggestDriver/',
     SEARCH_RM: '/search/autoSuggestEmployee/',
     SEARCH_VENDOR: '/search/autoSuggestVendor/',
+    SEARCH_VEHICLE: '/search/autoSuggestVehicle/',
     ESCORT_LISTING: '/escort/all',
     CREATE_ESCORT: '/escort/create',
     UPDATE_ESCORT: '/escort/update',

@@ -15,6 +15,7 @@ import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import RemarkModal from '@/components/modal/remarkModal';
 import { DEFAULT_PAGE_SIZE } from '@/constants/app.constants.';
+import BookingService from '@/services/booking.service';
 
 const style = {
     position: 'absolute',
@@ -325,7 +326,9 @@ const VehicleProfile = () => {
     const resetFilter = () =>{
         setVendorName("");
         setOfficeId("");
-        setStatus("");
+        setComplianceStatus("");
+        setEhsStatus("");
+        setVehicleState("");
         setSearchBean({});
         handlePageChange(0);
     }
@@ -371,6 +374,29 @@ const VehicleProfile = () => {
              else {
                 dispatch(toggleToast({ message: 'Driver deactivation unsuccessful. Please try again later!', type: 'error' }));
             }
+        }
+        catch(err){
+            console.log(err);
+        }
+    }
+    const uploadFunction = async (item) => {
+        try{
+            var form = new FormData();
+            form.append('model', '{"importJobDTO": {"importType": "IMPORT_TYPE_VEHICLE","entityName": "VEHICLE"}}');
+            form.append('file', item);
+            const response = await BookingService.uploadForm(form);
+            console.log(response)
+            if (response?.data?.isSuccessFul) {
+                dispatch(toggleToast({ message: 'All Vehicle records uploaded successfully!', type: 'success' }));
+            } else {
+                console.log(response?.data?.successRecords, response?.data?.successRecords > 0)
+                if (response?.data?.successRecords > 0) {
+                    dispatch(toggleToast({ message: `${response?.data?.successRecords} out of ${response?.data?.totalRecords} Booking records uploaded successfully!`, type: 'success' }));
+                } else {
+                    dispatch(toggleToast({ message: `Vehicle records failed to upload. Please try again later.`, type: 'error' }));
+                }
+            }
+            initializer(false);
         }
         catch(err){
             console.log(err);
@@ -484,7 +510,7 @@ const VehicleProfile = () => {
                     </div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'end' }}>
-                    <UploadButton />
+                    <UploadButton uploadFunction={uploadFunction}/>
                     <div className='btnContainer'>
                         <button onClick={() => setAddVehicleOpen(true)} className='btn btn-primary' style={{ width: '137.94px' }}>Add Vehicle</button>
                     </div>

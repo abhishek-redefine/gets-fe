@@ -5,6 +5,10 @@ import ComplianceService from '@/services/compliance.service';
 import AddVehiclePendingApproval from '@/components/compliance/addVehiclePendingApproval';
 import EhsEntryDriver from './ehsEntryDriver';
 import EhsEntryVehicle from './ehsEntryVehicle';
+import { Button,FormControl,Autocomplete,TextField,Select,InputLabel,MenuItem } from '@mui/material';
+import OfficeService from '@/services/office.service';
+import { getFormattedLabel } from '@/utils/utils';
+import { DEFAULT_PAGE_SIZE } from '@/constants/app.constants.';
 
 const EhsVehicleProfile = () => {
     const headers = [
@@ -78,7 +82,79 @@ const EhsVehicleProfile = () => {
 
     const [ehsVehicleOpen, setEhsVehicleOpen] = useState(false)
     const [ehsVehicleData, setEhsVehicleData] = useState(false)
-    const [vehicleData, setVehicleData] = useState()
+    const [vehicleData, setVehicleData] = useState();
+    const [openSearchVehicle, setOpenSearchVehicle] = useState(false);
+    const [searchedVehicle, setSearchedvehicle] = useState([]);
+    const [vehicleId,setVehicleId] = useState("");
+    const [officeList,setOfficeList] = useState([]);
+    const [officeId,setOfficeId] = useState("");
+    const [ehsStatusList,setEhsStatusList] = useState([]);
+    const [ehsStatus,setEhsStatus] = useState("");
+
+    const [pagination, setPagination] = useState({
+        page: 0,
+        size: DEFAULT_PAGE_SIZE,
+    });
+    const [paginationData, setPaginationData] = useState();
+    const [searchBean,setSearchBean] = useState({
+        officeId : "",
+        complianceStatus : "COMPLIANT",
+        ehsStatus: "",
+    });
+    const handlePageChange = (page) => {
+        let updatedPagination = {...pagination};
+        updatedPagination.page = page;
+        setPagination(updatedPagination);
+    };
+    const searchByBean = () =>{
+        var allSearchValues = {...searchBean};
+        allSearchValues.officeId = officeId;
+        allSearchValues.ehsStatus = ehsStatus;
+        initializer(false,allSearchValues);
+    }
+
+    const onChangeVehicleHandler = (newValue, name, key) => {
+        console.log("on change handler", newValue);
+        setVehicleId(newValue?.vehicleId);
+    };
+    const searchForVehicle = async (e) => {
+        try {
+            if (e.target.value) {
+                console.log('searchForVehicle', e.target.value)
+                const response = await ComplianceService.searchVehicle(e.target.value);
+                console.log(response)
+                const { data } = response || {};
+                setSearchedvehicle(data);
+            } else {
+                setSearchedvehicle([]);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const fetchAllOffice = async() =>{
+        try{
+            const response = await OfficeService.getAllOffices();
+            const { data } = response || {};
+            const { clientOfficeDTO } = data || {};
+            console.log(clientOfficeDTO,"Client office Dto")
+            setOfficeList(clientOfficeDTO);
+        }catch(err){
+            console.log(err);
+        }
+    }
+
+    const fetchEhsStatus = async() =>{
+        try{
+            const response = await ComplianceService.getMasterData('EhsStatus');
+            console.log(response.data);
+            setEhsStatusList(response.data);
+
+        }catch(err){
+            console.log(err);
+        }
+    }
 
     const onMenuItemClick = async (key, clickedItem) => {
         if (key === "addEhsEntry") {
@@ -87,21 +163,131 @@ const EhsVehicleProfile = () => {
         }
     };
 
-    const initializer = async () => {
+    const initializer = async (resetFlag=false,filter={complianceStatus : "COMPLIANT"}) => {
         try {
-            const response = await ComplianceService.getAllVehicles();
+            console.log(filter);
+            var allValuesSearch = {...filter};
+            Object.keys(allValuesSearch).forEach((objKey) => {
+                if (allValuesSearch[objKey] === null || allValuesSearch[objKey] === "") {
+                    delete allValuesSearch[objKey];
+                }
+            });
+            let params;
+            if(resetFlag){
+                params = new URLSearchParams({
+                    pageNo: 0,
+                    pageSize: DEFAULT_PAGE_SIZE,
+                });
+            }
+            params = new URLSearchParams(pagination);
+            const response = await ComplianceService.getAllVehicles(params.toString(),allValuesSearch);
             setVehicleData(response.data.data)
         } catch (e) {
         }
     }
 
     useEffect(() => {
+        fetchAllOffice();
+        fetchEhsStatus();
         initializer();
     }, []);
+
+    const searchVehicleById = async() =>{
+        try{
+            if(vehicleId && vehicleId != ""){
+                const response = await ComplianceService.getVehicleById(vehicleId);
+                console.log(response.data);
+                let list = [response.data.vehicleDTO];
+                setVehicleData(list);
+            }
+        }
+        catch(err){
+            console.log(err);
+        }
+    }
 
     return (
         <div className='internalSettingContainer'>
             {!ehsVehicleOpen && <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    {/* <div style={{ display: 'flex', justifyContent: 'start' }}>
+                    <div className='form-control-input'>
+                        <FormControl variant="outlined">
+                            <Autocomplete
+                                disablePortal
+                                id="search-vehicle"
+                                options={searchedVehicle}
+                                autoComplete
+                                open={openSearchVehicle}
+                                onOpen={() => {
+                                    setOpenSearchVehicle(true);
+                                }}
+                                onClose={() => {
+                                    setOpenSearchVehicle(false);
+                                }}
+                                onChange={(e, val) => onChangeVehicleHandler(val, "vehicle", "vehicleId")}
+                                getOptionKey={(vehicle) => vehicle.vehicleId}
+                                getOptionLabel={(vehicle) => vehicle.vehicleRegistrationNumber}
+                                freeSolo
+                                name="vehicle"
+                                renderInput={(params) => <TextField {...params} label="Search Vehicle" onChange={searchForVehicle} />}
+                            />
+                        </FormControl>
+                    </div>
+                    <div className='form-control-input' style={{minWidth: "70px"}}>
+                        <button type='button' onClick={searchVehicleById} className='btn btn-primary filterApplyBtn'>Search</button>
+                    </div>
+                    </div> */}
+                    <div style={{ display: 'flex' }}>
+                        <div style={{minWidth: "180px"}} className='form-control-input'>
+                            <FormControl fullWidth>
+                                <InputLabel id="primary-office-label">Primary Office</InputLabel>
+                                <Select
+                                    style={{width: "180px"}}                                    
+                                    labelId="primary-office-label"
+                                    id="officeId"
+                                    value={officeId}
+                                    name="officeId"
+                                    label="Office ID"
+                                    onChange={(e)=>setOfficeId(e.target.value)}
+                                >
+                                    {!!officeList?.length && officeList.map((office, idx) => (
+                                        <MenuItem key={idx} value={office.officeId}>{getFormattedLabel(office.officeId)}, {office.address}</MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </div>
+                        <div style={{minWidth: "180px"}} className='form-control-input'>
+                            <FormControl fullWidth>
+                                <InputLabel id="ehs-status-label">EHS Status</InputLabel>
+                                <Select
+                                    style={{width: "180px"}}                                    
+                                    labelId="ehs-status-label"
+                                    id="ehsStatusId"
+                                    value={ehsStatus}
+                                    name="ehsStatusId"
+                                    label="EHS Status"
+                                    onChange={(e)=>setEhsStatus(e.target.value)}
+                                >
+                                    {!!ehsStatusList?.length && ehsStatusList.map((status, idx) => (
+                                        <MenuItem key={idx} value={status.value}>{status.displayName}</MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </div>
+                        <div className='form-control-input' style={{minWidth: "70px"}}>
+                            <button type='button' onClick={searchByBean} className='btn btn-primary filterApplyBtn'>Apply</button>
+                        </div>
+                        <div className='form-control-input' style={{minWidth: "70px"}}>
+                            <button type='button' onClick={()=>initializer(true)} className='btn btn-primary filterApplyBtn'>Reset</button>
+                        </div>
+                    </div>
+                    <div style={{ display: 'flex' }}>
+                        <div className='form-control-input' style={{minWidth: "70px"}}>
+                            <button type='button' className='btn btn-primary filterApplyBtn'>Add EHS Entry</button>
+                        </div>
+                    </div>
+                </div>
                 <div className='gridContainer'>
                     <Grid headers={headers} listing={vehicleData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} />
                 </div>

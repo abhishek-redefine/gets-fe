@@ -16,6 +16,7 @@ import { DEFAULT_PAGE_SIZE } from '@/constants/app.constants.';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import RemarkModal from '@/components/modal/remarkModal';
+import BookingService from '@/services/booking.service';
 
 const style = {
     position: 'absolute',
@@ -303,11 +304,14 @@ const DriverProfile = () => {
     }
 
     const applyFilter = async() =>{
+        console.log(ehsStatus,driverState);
         let newPagination = {...pagination};
         let allSearchValues = {...searchBean};
         allSearchValues.officeId = officeId || "";
         allSearchValues.complianceStatus = status || "";
         allSearchValues.vendorName = vendorName || "";
+        allSearchValues.ehsStatus = ehsStatus || "";
+        allSearchValues.driverState = driverState || "";
         console.log("all search values",allSearchValues);
         setSearchBean(allSearchValues);
         if (newPagination.page === 0) {
@@ -323,6 +327,8 @@ const DriverProfile = () => {
         setVendorName("");
         setOfficeId("");
         setStatus("");
+        setDriverState("");
+        setEhsStatus("");
         setSearchBean({});
         handlePageChange(0);
     }
@@ -367,6 +373,30 @@ const DriverProfile = () => {
         catch(err){
             console.log(err);
         }
+    }
+    const uploadFunction = async (item) => {
+        try{
+            var form = new FormData();
+            form.append('model', '{"importJobDTO": {"importType": "IMPORT_TYPE_DRIVER","entityName": "DRIVER"}}');
+            form.append('file', item);
+            const response = await BookingService.uploadForm(form);
+            console.log(response)
+            if (response?.data?.isSuccessFul) {
+                dispatch(toggleToast({ message: 'All Driver records uploaded successfully!', type: 'success' }));
+            } else {
+                console.log(response?.data?.successRecords, response?.data?.successRecords > 0)
+                if (response?.data?.successRecords > 0) {
+                    dispatch(toggleToast({ message: `${response?.data?.successRecords} out of ${response?.data?.totalRecords} Booking records uploaded successfully!`, type: 'success' }));
+                } else {
+                    dispatch(toggleToast({ message: `Driver records failed to upload. Please try again later.`, type: 'error' }));
+                }
+            }
+            initializer(false);
+        }
+        catch(err){
+            console.log(err);
+        }
+        
     }
 
     return (
@@ -476,7 +506,7 @@ const DriverProfile = () => {
                     </div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'end' }}>
-                    <UploadButton uploadFunction={()=>console.log()}/>
+                    <UploadButton uploadFunction={uploadFunction}/>
                     <div className='btnContainer'>
                         <button onClick={() => setAddDriverOpen(true)} className='btn btn-primary' style={{ width: '137.94px' }}>Add Driver</button>
                     </div>

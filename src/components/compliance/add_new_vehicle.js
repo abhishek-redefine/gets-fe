@@ -11,10 +11,11 @@ import SelectInputField from '../multistepForm/SelectInputField';
 import FileInputField from '../multistepForm/FileInputField';
 import DateInputField from '../multistepForm/DateInputField';
 import ComplianceService from '@/services/compliance.service';
-import { Button,FormControl,Autocomplete,TextField,Select } from '@mui/material';
+import { Button,FormControl,Autocomplete,TextField,Select,InputLabel,MenuItem } from '@mui/material';
 import IframeComponent from '../iframe/Iframe';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
+import MasterDataService from '@/services/masterdata.service';
 
 const style = {
     position: 'absolute',
@@ -25,6 +26,16 @@ const style = {
     bgcolor: 'background.paper',
     height: 600
   };
+  const styleForErrorMessage={
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    height: 100,
+    p: 3
+}
 
 const validationSchemaStepOne = object({
     vehicleId: string().required('Vehicle ID is required'),
@@ -125,15 +136,15 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
         insuranceUrl: "",
         registrationCertificateUrl: "",
         driverId: "",
-        ehsDoneBy: "Sultan",
-        ehsDoneAt: "2024-03-13",
+        // ehsDoneBy: "Sultan",
+        // ehsDoneAt: "2024-03-13",
         pollutionCertificateUrl: "",
         roadTaxCertificateUrl: "",
         fitnessCertificateUrl: "",
         statePermitUrl: "",
         nationalPermitUrl: "",
         medicalCertificateUrl: "",
-        complianceStatus: "NON_COMPLIANT"
+        // complianceStatus: "NON_COMPLIANT"
     });
 
     const [officeList, setOfficeList] = useState([]);
@@ -147,6 +158,11 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
+
+    const [message,setMessage] = useState("");
+    const [uniqueModal,setUniqueModal] = useState(false);
+    const handleShow = () => setUniqueModal(true);
+    const handleHide = () => setUniqueModal(false);
 
     const [rcField,setRcField] = useState();
     const [rcFilename,setRcFilename] = useState("");
@@ -168,7 +184,13 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
     const [vendorName,setVendorName] = useState("");
     const [openSearchDriver, setOpenSearchDriver] = useState(false);
     const [searchedDriver, setSearchedDriver] = useState([]);
-    const [driverId,setDriverId] = useState();
+    const [driverId,setDriverId] = useState("");
+    const [transportTypes,setTransportTypes] = useState([]);
+    const [ehsTypes,setEhsTypes] = useState([]);
+    const [rfidStatus,setRfidStatus] = useState([]);
+    const [acTypes,setAcTypes] = useState([]);
+    const [fuelType,setFuelTypes] = useState([]);
+    const [gpsTypes,setGpsTypes] = useState([]);
 
     const onChangeDriverHandler = (newValue, name, key) => {
         console.log("on change handler", newValue);
@@ -187,6 +209,20 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
         console.log(initialValues);
         setVendorName(newValue?.vendorName);
     };
+    const onChangeHandlerDropdown = (newValue) =>{
+        const {target} = newValue;
+        const {name,value} = target; 
+        console.log("on change handler", name);
+        var allValues = {...initialValues};
+        if(name === 'vehicleType') allValues.vehicleType = newValue.target.value;
+        else if(name === 'ehsStatus') allValues.ehsStatus = newValue.target.value;
+        else if(name === 'acStatus') allValues.acStatus = newValue.target.value;
+        else if(name === 'rfidStatus') allValues.rfidStatus = newValue.target.value;
+        else if(name === 'fuelType') allValues.fuelType = newValue.target.value;
+        else if(name === 'gpsStatus') allValues.gpsStatus = newValue.target.value;
+        setInitialValues(allValues);
+        console.log(initialValues);
+    }
     const searchForVendor = async(e) =>{
         try {
             if (e.target.value) {
@@ -242,11 +278,12 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                     alert("Enter vendor name");
                     return;
                 }
+                apiData.driver = driverId;
                 apiData.vendorName = vendorName;
-                apiData.rfidStatus = "ACTIVE";
-                apiData.gpsStatus = "ACTIVE";
-                apiData.acStatus = "AVAILABLE";
-                apiData.fuelType = "DIESEL";
+                // apiData.rfidStatus = "ACTIVE";
+                // apiData.gpsStatus = "ACTIVE";
+                // apiData.acStatus = "AVAILABLE";
+                // apiData.fuelType = "DIESEL";
                 const response = await ComplianceService.createVehicle({ "vehicleDTO": apiData })
                 console.log(response);
                 if (response.status === 201) {
@@ -259,7 +296,34 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                 }
             }
         } catch (e) {
+            if(e.response.status ===  409){
+                var message = e.response.data.message;
+                if(checkUniqueConstraint(message,"vehicle_registration_number")){
+                    setMessage('This registered vehicle number is already in use');
+                    handleShow();
+                }
+                else if(checkUniqueConstraint(message,"email")){
+                    setMessage('This email is already in use');
+                    handleShow();
+                }
+                else if(checkUniqueConstraint(message,"'mobile'")){
+                    setMessage('This mobile is already in use');
+                    handleShow();
+                }
+                else if(checkUniqueConstraint(message,"aadhar_id")){
+                    setMessage('This adhaar is already in use');
+                    handleShow();
+                }
+                else if(checkUniqueConstraint(message,"'alt_mobile'")){
+                    setMessage('This alternate mobile is already in use');
+                    handleShow();
+                }
+            }
         }
+    }
+    function checkUniqueConstraint (message,key){
+        var result = message.search(key);
+        return result != -1 ? true : false;
     }
     const initializer = async () => {
         var officeResponse;
@@ -333,8 +397,39 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
         SetAddVehicleOpen(false);
     }
 
+    const fetchMasterData = async() => {
+        const list = ['TransportType','EhsStatus','ACStatus','RfidStatus','FuelType','GPSStatus'];
+        try {
+            list.map(async (val)=>{
+                const response = await MasterDataService.getMasterData(val);
+                const { data } = response || {};
+                if (data?.length) {
+                    if(val === 'EhsStatus'){
+                        var newData = data.find((val)=> val.value === "PENDING");
+                    }
+                    switch(val){
+                        case ('TransportType'): setTransportTypes(data); break;
+                        case ('EhsStatus'): setEhsTypes([newData]); break;
+                        case ('ACStatus'): setAcTypes(data); break;
+                        case ('RfidStatus'): setRfidStatus(data); break;
+                        case ('FuelType'): setFuelTypes(data); break;
+                        case ('GPSStatus') : setGpsTypes(data); break;
+                    }
+
+                }
+            })
+
+            return [];
+        } catch (e) {
+            console.log(e)
+        }
+    };
+
     useEffect(() => {
-        initializer();
+        if(SetAddVehicleOpen){
+            initializer();
+            fetchMasterData();
+        }
         if(EditVehicleData?.id){
             var documentCount = 0;
             if(EditVehicleData?.registrationCertificateUrl != ""){
@@ -379,7 +474,8 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
     return (
         <div>
             {/* End waali cheez update */}
-            <MultiStepForm initialValues={initialValues}
+            <MultiStepForm 
+                initialValues={initialValues}
                 onSubmit={async () => {
                     const response = await ComplianceService.changeStatusVehicle(vehicleId);
                     if (response) {
@@ -404,9 +500,13 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                         <TextInputField
                             name="stickerNumber"
                             label="Sticker Number" />
-                        <TextInputField
+                        {/* <TextInputField
                             name="vehicleType"
-                            label="Vehicle Type" />
+                            label="Vehicle Type" /> */}
+                        <SelectInputField
+                            name="vehicleType"
+                            label="Vehicle Type"
+                            genderList={transportTypes} />
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                         <TextInputField
@@ -423,9 +523,10 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                             label="Vehicle Model" />
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <TextInputField
+                        <SelectInputField
                             name="fuelType"
-                            label="Fuel Type" />
+                            label="Fuel Type"
+                            genderList={fuelType} />
                         <div className='form-control-input'>
                             <FormControl variant="outlined">
                                 <Autocomplete
@@ -492,23 +593,27 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                         <TextInputField
                             name="garageLocation"
                             label="Garage Location" />
-                        <TextInputField
+                        <SelectInputField
                             name="ehsStatus"
-                            label="EHS Status" />
+                            label="EHS Status"
+                            genderList={ehsTypes} />
                         <TextInputField
                             name="garageGeoCode"
                             label="Garage Geocodes" />
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <TextInputField
+                        <SelectInputField
                             name="rfidStatus"
-                            label="RFID Status" />
-                        <TextInputField
+                            label="RFID Status"
+                            genderList={rfidStatus} />
+                        <SelectInputField
                             name="acStatus"
-                            label="AC Status" />
-                        <TextInputField
+                            label="AC Status"
+                            genderList={acTypes} />
+                        <SelectInputField
                             name="gpsStatus"
-                            label="GPS Status" />
+                            label="GPS Status"
+                            genderList={gpsTypes} />
                         <TextInputField
                             name="vehicleRemarks"
                             label="Vehicle Remarks" />
@@ -548,28 +653,28 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                             <div style={{display: 'flex',alignItems: 'center',justifyContent: 'start'}}>
                                 <FileInputField
                                     name="registrationCertificateUrl"
-                                    label="Registration Certificate" 
+                                    label="Registration Certificate"
                                     filledValue={setRcField}
-                                    fileName={rcFilename}    
+                                    fileName={rcFilename}
                                 />
-                                <button 
+                                <button
                                     type='button'
                                     disabled={rcField?  false : true}
-                                    onClick={()=>uploadDocumentFormSubmit('/' + vehicleId, '/VEHICLE', '/REGISTRATION_CERTIFICATE', rcField)} 
-                                    style={{width: '20%',marginRight: 0,marginLeft:0}} 
+                                    onClick={()=>uploadDocumentFormSubmit('/' + vehicleId, '/VEHICLE', '/REGISTRATION_CERTIFICATE', rcField)}
+                                    style={{width: '20%',marginRight: 0,marginLeft:0}}
                                     className='btn btn-primary'
                                 >
                                     Upload
                                 </button>
                                 {
-                                    EditVehicleData?.registrationCertificateUrl !== "" &&
+                                    EditVehicleData?.registrationCertificateUrl && EditVehicleData.registrationCertificateUrl !== "" &&
                                     <button
                                         type='button'
                                         onClick={()=>{
                                             setDocumentUrl(EditVehicleData.registrationCertificateUrl.replace("gets-dev.",""));
                                             handleOpen();
                                         }}
-                                        style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
+                                        style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}}
                                         className='btn btn-secondary    '
                                     >
                                         View
@@ -579,57 +684,57 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                             <div style={{display: 'flex',alignItems: 'center',justifyContent: 'start'}}>
                                 <FileInputField
                                     name="insuranceUrl"
-                                    label="Insurance Certificate" 
+                                    label="Insurance Certificate"
                                     filledValue={setIcField}
                                     fileName={icFilename}/>
-                                <button 
+                                <button
                                     type='button'
                                     disabled={icField?  false : true}
-                                    onClick={()=>uploadDocumentFormSubmit('/' + vehicleId, '/VEHICLE', '/INSURANCE', icField)} 
-                                    style={{width: '20%',marginRight: 0,marginLeft:0}} 
+                                    onClick={()=>uploadDocumentFormSubmit('/' + vehicleId, '/VEHICLE', '/INSURANCE', icField)}
+                                    style={{width: '20%',marginRight: 0,marginLeft:0}}
                                     className='btn btn-primary'
                                 >
                                     Upload
-                                </button>   
+                                </button>
                                 {
-                                    EditVehicleData?.insuranceUrl !== "" &&
+                                    EditVehicleData?.insuranceUrl && EditVehicleData.insuranceUrl !== "" &&
                                     <button
                                         type='button'
                                         onClick={()=>{
                                             setDocumentUrl(EditVehicleData.insuranceUrl.replace("gets-dev.",""));
                                             handleOpen();
                                         }}
-                                        style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
+                                        style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}}
                                         className='btn btn-secondary    '
                                     >
                                         View
                                     </button>
-                                } 
+                                }
                             </div>
                             <div style={{display: 'flex',alignItems: 'center',justifyContent: 'start'}}>
                                 <FileInputField
                                 name="pollutionCertificateUrl"
-                                label="Pollution Certificate" 
+                                label="Pollution Certificate"
                                 filledValue={setPcField}
                                 fileName={pcFilename}/>
-                                <button 
+                                <button
                                     type='button'
                                     disabled={pcField?  false : true}
-                                    onClick={()=>uploadDocumentFormSubmit('/' + vehicleId, '/VEHICLE', '/POLLUTION', pcField)} 
-                                    style={{width: '20%',marginRight: 0,marginLeft:0}} 
+                                    onClick={()=>uploadDocumentFormSubmit('/' + vehicleId, '/VEHICLE', '/POLLUTION', pcField)}
+                                    style={{width: '20%',marginRight: 0,marginLeft:0}}
                                     className='btn btn-primary'
                                 >
                                     Upload
                                 </button>
                                 {
-                                    EditVehicleData?.pollutionCertificateUrl !== "" &&
+                                    EditVehicleData?.pollutionCertificateUrl && EditVehicleData.pollutionCertificateUrl !== "" &&
                                     <button
                                         type='button'
                                         onClick={()=>{
                                             setDocumentUrl(EditVehicleData.pollutionCertificateUrl.replace("gets-dev.",""));
                                             handleOpen();
                                         }}
-                                        style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
+                                        style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}}
                                         className='btn btn-secondary    '
                                     >
                                         View
@@ -639,27 +744,27 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                             <div style={{display: 'flex',alignItems: 'center',justifyContent: 'start'}}>
                                 <FileInputField
                                     name="roadTaxCertificateUrl"
-                                    label="Road Tax Certificate" 
+                                    label="Road Tax Certificate"
                                     filledValue={setRtcField}
                                     fileName={rtcFilename}/>
-                                <button 
+                                <button
                                     type='button'
                                     disabled={rtcField?  false : true}
-                                    onClick={()=>uploadDocumentFormSubmit('/' + vehicleId, '/VEHICLE', '/ROAD_TAX', rtcField)} 
-                                    style={{width: '20%',marginRight: 0,marginLeft:0}} 
+                                    onClick={()=>uploadDocumentFormSubmit('/' + vehicleId, '/VEHICLE', '/ROAD_TAX', rtcField)}
+                                    style={{width: '20%',marginRight: 0,marginLeft:0}}
                                     className='btn btn-primary'
                                 >
                                     Upload
                                 </button>
                                 {
-                                    EditVehicleData?.roadTaxCertificateUrl !== "" &&
+                                    EditVehicleData?.roadTaxCertificateUrl && EditVehicleData.roadTaxCertificateUrl !== "" &&
                                     <button
                                         type='button'
                                         onClick={()=>{
                                             setDocumentUrl(EditVehicleData.roadTaxCertificateUrl.replace("gets-dev.",""));
                                             handleOpen();
                                         }}
-                                        style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
+                                        style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}}
                                         className='btn btn-secondary    '
                                     >
                                         View
@@ -671,27 +776,27 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                             <div style={{display: 'flex',alignItems: 'center',justifyContent: 'start'}}>
                                 <FileInputField
                                     name="fitnessCertificateUrl"
-                                    label="Fitness Certificate" 
+                                    label="Fitness Certificate"
                                     filledValue={setFcField}
                                     fileName={fcFilename}/>
-                                <button 
+                                <button
                                     type='button'
                                     disabled={fcField?  false : true}
-                                    onClick={()=>uploadDocumentFormSubmit('/' + vehicleId, '/VEHICLE', '/FITNESS_CERTIFICATE', fcField)} 
-                                    style={{width: '20%',marginRight: 0,marginLeft:0}} 
+                                    onClick={()=>uploadDocumentFormSubmit('/' + vehicleId, '/VEHICLE', '/FITNESS_CERTIFICATE', fcField)}
+                                    style={{width: '20%',marginRight: 0,marginLeft:0}}
                                     className='btn btn-primary'
                                 >
                                     Upload
                                 </button>
                                 {
-                                    EditVehicleData?.fitnessCertificateUrl !== "" &&
+                                    EditVehicleData?.fitnessCertificateUrl && EditVehicleData.fitnessCertificateUrl !== "" &&
                                     <button
                                         type='button'
                                         onClick={()=>{
                                             setDocumentUrl(EditVehicleData.fitnessCertificateUrl.replace("gets-dev.",""));
                                             handleOpen();
                                         }}
-                                        style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
+                                        style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}}
                                         className='btn btn-secondary    '
                                     >
                                         View
@@ -701,27 +806,27 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                             <div style={{display: 'flex',alignItems: 'center',justifyContent: 'start'}}>
                                 <FileInputField
                                     name="statePermitUrl"
-                                    label="State Permit Certificate" 
+                                    label="State Permit Certificate"
                                     filledValue={setSpcField}
                                     fileName={spcFilename}/>
-                                <button 
+                                <button
                                     type='button'
                                     disabled={spcField?  false : true}
                                     onClick={()=>uploadDocumentFormSubmit('/' + vehicleId, '/VEHICLE', '/STATE_PERMIT', spcField)}
-                                    style={{width: '20%',marginRight: 0,marginLeft:0}} 
+                                    style={{width: '20%',marginRight: 0,marginLeft:0}}
                                     className='btn btn-primary'
                                 >
                                     Upload
                                 </button>
                                 {
-                                    EditVehicleData?.statePermitUrl !== "" &&
+                                    EditVehicleData?.statePermitUrl && EditVehicleData.statePermitUrl !== "" &&
                                     <button
                                         type='button'
                                         onClick={()=>{
                                             setDocumentUrl(EditVehicleData.statePermitUrl.replace("gets-dev.",""));
                                             handleOpen();
                                         }}
-                                        style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
+                                        style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}}
                                         className='btn btn-secondary    '
                                     >
                                         View
@@ -731,27 +836,27 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                             <div style={{display: 'flex',alignItems: 'center',justifyContent: 'start'}}>
                                 <FileInputField
                                     name="nationalPermitUrl"
-                                    label="National Permit Certificate" 
+                                    label="National Permit Certificate"
                                     filledValue={setNpcField}
                                     fileName={npcFilename}/>
-                                <button 
+                                <button
                                     type='button'
                                     disabled={npcField?  false : true}
                                     onClick={()=>uploadDocumentFormSubmit('/' + vehicleId, '/VEHICLE', '/NATIONAL_PERMIT', npcField)}
-                                    style={{width: '20%',marginRight: 0,marginLeft:0}} 
+                                    style={{width: '20%',marginRight: 0,marginLeft:0}}
                                     className='btn btn-primary'
                                 >
                                     Upload
                                 </button>
                                 {
-                                    EditVehicleData?.nationalPermitUrl !== "" &&
+                                    EditVehicleData?.nationalPermitUrl && EditVehicleData.nationalPermitUrl !== "" &&
                                     <button
                                         type='button'
                                         onClick={()=>{
                                             setDocumentUrl(EditVehicleData.nationalPermitUrl.replace("gets-dev.",""));
                                             handleOpen();
                                         }}
-                                        style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
+                                        style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}}
                                         className='btn btn-secondary    '
                                     >
                                         View
@@ -761,63 +866,6 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                         </div>
                     </div>
                 </FormStep>
-
-
-
-                {/* <FormStep
-                    stepName="Insurance Certificate"
-                    onSubmit={(values) => uploadDocumentFormSubmit('/' + vehicleId, '/VEHICLE', '/INSURANCE', values.insuranceUrl)}
-                    validationSchema={validationSchemaStepThree}
-                >
-                    <FileInputField
-                        name="insuranceUrl"
-                        label="Insurance Certificate" />
-                </FormStep>
-                <FormStep
-                    stepName="Pollution Certificate"
-                    onSubmit={(values) => uploadDocumentFormSubmit('/' + vehicleId, '/VEHICLE', '/POLLUTION', values.pollutionCertificateUrl)}
-                    validationSchema={validationSchemaStepFour}
-                >
-                    <FileInputField
-                        name="pollutionCertificateUrl"
-                        label="Pollution Certificate" />
-                </FormStep>
-                <FormStep
-                    stepName="Road Tax Certificate"
-                    onSubmit={(values) => uploadDocumentFormSubmit('/' + vehicleId, '/VEHICLE', '/ROAD_TAX', values.roadTaxCertificateUrl)}
-                    validationSchema={validationSchemaStepFive}
-                >
-                    <FileInputField
-                        name="roadTaxCertificateUrl"
-                        label="Road Tax Certificate" />
-                </FormStep>
-                <FormStep
-                    stepName="Fitness Certificate"
-                    onSubmit={(values) => uploadDocumentFormSubmit('/' + vehicleId, '/VEHICLE', '/FITNESS_CERTIFICATE', values.fitnessCertificateUrl)}
-                    validationSchema={validationSchemaStepSix}
-                >
-                    <FileInputField
-                        name="fitnessCertificateUrl"
-                        label="Fitness Certificate" />
-                </FormStep>
-                <FormStep
-                    stepName="State Permit Certificate"
-                    onSubmit={(values) => uploadDocumentFormSubmit('/' + vehicleId, '/VEHICLE', '/STATE_PERMIT', values.statePermitUrl)}
-                    validationSchema={validationSchemaStepSeven}
-                >
-                    <FileInputField
-                        name="statePermitUrl"
-                        label="State Permit Certificate" />
-                </FormStep>
-                <FormStep
-                    stepName="National Permit Certificate"
-                    onSubmit={(values) => uploadDocumentFormSubmit('/' + vehicleId, '/VEHICLE', '/NATIONAL_PERMIT', values.nationalPermitUrl)}
-                    validationSchema={validationSchemaStepEight}
-                >
-                    <FileInputField
-                        name="nationalPermitUrl"
-                        label="National Permit Certificate" />
-                </FormStep> */}
             </MultiStepForm>
             <Modal
                 open={open}
@@ -827,6 +875,19 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
             >
                 <Box sx={style}>
                     <IframeComponent url={documentUrl} title={documentTitle} />
+                </Box>
+            </Modal>
+            <Modal
+                open={uniqueModal}
+                onClose={handleHide}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+            >
+                <Box sx={styleForErrorMessage}>
+                    <div style={{height: '100%'}}>
+                        <p style={{fontWeight: 600,marginBottom:5}}>Form Submit Error:</p>
+                        <p>{message}</p>
+                    </div>
                 </Box>
             </Modal>
         </div >
