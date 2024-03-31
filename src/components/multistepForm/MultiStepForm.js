@@ -6,7 +6,6 @@ import { Step, StepLabel, Stepper, StepIndicator } from '@mui/material';
 const MultiStepForm = ({ children, initialValues, onSubmit,isValidate,cancelBtn }) => {
     const [stepNumber, setStepNumber] = useState(0);
     const steps = React.Children.toArray(children);
-    console.log(steps);
 
     const [snapshot, setSnapshot] = useState(initialValues);
 
@@ -28,7 +27,6 @@ const MultiStepForm = ({ children, initialValues, onSubmit,isValidate,cancelBtn 
     const handleSubmit = async (values, actions) => {
         var response = false;
         if (step.props.onSubmit) {
-            console.log("handleSubmit>>>>>>", values, actions);
             response = await step.props.onSubmit(values);
             console.log(response);
         }

@@ -3,6 +3,7 @@ import Grid from '../grid';
 import UploadButton from '../buttons/uploadButton';
 import AddEHS from './addEHS';
 import ComplianceService from '@/services/compliance.service';
+import { display } from '@mui/system';
 
 const EHS = () => {
     const headers = [
@@ -19,12 +20,16 @@ const EHS = () => {
             display: "EHS Mandate"
         },
         {
-            key: "ehsFrequencyType",
-            display: "EHS Frequency Type"
-        },
-        {
             key: "ehsFrequency",
             display: "EHS Frequency"
+        },
+        {
+            key: "createdAt",
+            display: "Created At"
+        },
+        {
+            key: 'updatedAt',
+            display:'Updated At'
         },
         {
             key: "vehicleType",
@@ -59,7 +64,7 @@ const EHS = () => {
 
     useEffect(() => {
         fetchAllEHS();
-    }, []);
+    }, [isAddEHS]);
 
     const onMenuItemClick = (key, values) => {
         if (key === "edit") {

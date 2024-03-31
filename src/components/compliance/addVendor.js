@@ -11,7 +11,9 @@ import SelectInputField from '../multistepForm/SelectInputField';
 import FileInputField from '../multistepForm/FileInputField';
 import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
-import { Autocomplete, Checkbox, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel, InputLabel, MenuItem, Radio, RadioGroup, Select, Switch, TextField } from '@mui/material';
+import IframeComponent from '../iframe/Iframe';
+import Modal from '@mui/material/Modal';
+import Box from '@mui/material/Box';
 
 const validationSchemaStepOneA = object({
     vendorOfficeId: string().required('Vendor Office Id is required'),
@@ -87,6 +89,26 @@ const validationSchemaStepTwo = object({
     panFilePath: string().required('Pan Card Document is required')
 });
 
+const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 800,
+    bgcolor: 'background.paper',
+    height: 600
+  };
+const styleForErrorMessage={
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    height: 100,
+    p: 3
+}
+
 // const validationSchemaStepThree = object({
 //     panFilePath: string().required('Pan Card Document is required')
 // });
@@ -116,7 +138,8 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
         escalationMatrixL1Email: "",
         escalationMatrixL1MobileNo: "",
         gstFilePath: "",
-        panFilePath: ""
+        panFilePath: "",
+        enabled: true,
     });
     const [initialValuesB, setInitialValuesB] = useState({
         vendorOfficeId: "",
@@ -140,7 +163,8 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
         escalationMatrixL2Email: "",
         escalationMatrixL2MobileNo: "",
         gstFilePath: "",
-        panFilePath: ""
+        panFilePath: "",
+        enabled: true,
     });
     const [initialValuesC, setInitialValuesC] = useState({
         vendorOfficeId: "",
@@ -168,10 +192,25 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
         escalationMatrixL3Email: "",
         escalationMatrixL3MobileNo: "",
         gstFilePath: "",
-        panFilePath: ""
+        panFilePath: "",
+        enabled: true,
     });
     const [uploadDocumentValidation,setUploadDocumentValidation] = useState(false);
     const [uploadCount,setUploadCount] = useState(0);
+    const [gstFieldValue,setGstFieldValue] = useState();
+    const [panFieldValue,setPanFieldValue] = useState();
+    const [documentUrl,setDocumentUrl] = useState();
+    const [documentTitle,setDocumentTitle] = useState();
+    const [gstFileName,setGstFileName] = useState("");
+    const [panFileName,setPanFileName] = useState("");
+    const [open, setOpen] = useState(false);
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
+
+    const [message,setMessage] = useState("");
+    const [uniqueModal,setUniqueModal] = useState(false);
+    const handleShow = () => setUniqueModal(true);
+    const handleHide = () => setUniqueModal(false);
 
     const addNewVendorDetailsSubmit = async (values) => {
         try {
@@ -272,8 +311,11 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
                     }]
                 }
                 const response = await ComplianceService.createVendorCompany({ "vendorCompany": values });
+                console.log(response.status)
                 if (response.status === 201) {
                     setVendorId(response.data.vendorCompany.id);
+                    EditVendorData.gstFilePath = "";
+                    EditVendorData.panFilePath = "";
                     dispatch(toggleToast({ message: 'Vendor details added successfully!', type: 'success' }));
                     return true;
                 } else if (response.status === 500) {
@@ -282,6 +324,21 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
                 }
             }
         } catch (e) {
+            console.log("Error: ", e);
+            if(e.response.status === 409){
+                var message = e.response.data.message;
+                if(message.search('gst') != -1){
+                    setMessage("This GST number is already in use.");
+                }
+                else if(message.search('pan') != -1){
+                    setMessage("The PAN number is already in use.")
+                }
+                else if(message.search('contact_person_mobile') != -1){
+                    setMessage("The Contact person number is already in use.")
+                }
+                console.log(e.response.data.message)
+                handleShow();
+            }
         }
     }
 
@@ -298,7 +355,7 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
             dispatch(toggleToast({ message: 'Process is cancelled', type: 'error' }));
             SetAddVendorOpen(false);
         }catch(e){
-
+            console.log(e);
         }
     }
 
@@ -346,13 +403,22 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
     const uploadDocumentFormSubmit = async (id, role, documentToUpload, data) => {
         try {
             var formData = new FormData()
-            formData.append('file', new Blob([data, {
-                contentType: "multipart/form-data"
-            }]));
+            // formData.append('file', new Blob([data, {
+            //     contentType: "multipart/form-data"
+            // }]));
+            formData.append('file',data);
             await ComplianceService.documentUpload(id, role, documentToUpload, formData)
             .then((response)=>{
                 if(response.status === 200){
                     setUploadCount(uploadCount + 1);
+                    if(documentToUpload === "/GST_CERTIFICATE"){
+                        console.log("change file of gst")
+                        EditVendorData.gstFilePath = response.data.vendorCompany.gstFilePath;
+                    }
+                    if(documentToUpload === "/PAN_CERTIFICATE"){
+                        console.log("change file of pan")
+                        EditVendorData.panFilePath = response.data.vendorCompany.panFilePath;
+                    }
                     dispatch(toggleToast({ message: 'Data uploaded successfully!', type: 'success' }));
                 }
                 else if(response.status ===500){
@@ -451,11 +517,29 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
     useEffect(() => {
         initializer();
         console.log("condition check>>>>>>>>>>",EditVendorData)
+        if(EditVendorData?.id){
+            var documentCount = 0;
+            if(EditVendorData.gstFilePath != ""){
+                var strList = EditVendorData.gstFilePath.split("/");
+                let fileName = strList[strList.length - 1];
+                console.log("string list",fileName);
+                setGstFileName(fileName);
+                documentCount++;
+            } 
+            if(EditVendorData.panFilePath != ""){
+                var strList = EditVendorData.panFilePath.split("/");
+                let fileName = strList[strList.length - 1];
+                console.log("string list",fileName);
+                setPanFileName(fileName);
+                documentCount++;
+            }
+            setUploadCount(documentCount);
+        }
     }, []);
 
     useEffect(()=>{
         console.log(uploadCount);
-        if(uploadCount === 2){
+        if(uploadCount >= 2){
             setUploadDocumentValidation(true);
         }
     },[uploadCount])
@@ -464,11 +548,7 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
         <div>
             <MultiStepForm
                 initialValues={initialValues}
-                onSubmit={async (values) => {
-                    // const response = await uploadDocumentFormSubmit('/' + vendorId, '/VENDOR', '/PAN_CERTIFICATE', values.panFilePath)
-                    // if (response.status === 200) {
-                    //     completeNewVendorFormSubmit();
-                    // }
+                onSubmit={() => {
                     console.log("Last step in add vendor");
                     completeNewVendorFormSubmit();
                 }}
@@ -668,34 +748,70 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
                     //onSubmit={(values) => uploadDocumentFormSubmit('/' + vendorId, '/VENDOR', '/GST_CERTIFICATE', values.gstFilePath)}
                     validationSchema={validationSchemaStepTwo}
                 >
-                    <div>
+                    <div style={{display: 'flex', justifyContent: 'space-evenly'}}>
                         <div style={{display: 'flex',alignItems: 'center',justifyContent: 'start'}}>
                             <FileInputField
-                            name="gstFilePath"
-                            label="GST Document"
-                            //value={EditVendorData?.gstFilePath}
+                                name="gstFilePath"
+                                label="GST Document"
+                                filledValue={setGstFieldValue}
+                                fileName={gstFileName}
                             />
                             <button 
-                                onClick={(values)=>{uploadDocumentFormSubmit('/' + vendorId, '/VENDOR', '/GST_CERTIFICATE', values.gstFilePath)}} 
-                                style={{width: '10%',marginRight: 0,marginLeft:0}} 
+                                type='button'
+                                disabled={gstFieldValue?  false : true}
+                                onClick={()=>{uploadDocumentFormSubmit('/' + vendorId, '/VENDOR', '/GST_CERTIFICATE', gstFieldValue)}} 
+                                style={{width: '100%',marginRight: 0,marginLeft:0,padding:'15px'}} 
                                 className='btn btn-primary'
                             >
                                 Upload
                             </button>
+                            {
+                                EditVendorData?.gstFilePath != "" &&
+                                <button
+                                    type='button'
+                                    onClick={()=>{
+                                        setDocumentUrl(EditVendorData.gstFilePath.replace("gets-dev.",""));
+                                        handleOpen();
+                                    }}
+                                    style={{width: '100%',marginRight: 0,marginLeft:20,padding:'15px'}} 
+                                    className='btn btn-secondary'
+                                >
+                                    View
+                                </button>
+                            }
+                            
                         </div>
-                    </div>
-                    <div>
                         <div style={{display: 'flex',alignItems: 'center',justifyContent: 'start'}}>
                             <FileInputField
-                            name="panFilePath"
-                            label="Pan Card Document" />
+                                name="panFilePath"
+                                label="Pan Card Document" 
+                                filledValue={setPanFieldValue}
+                                fileName={panFileName}
+                            />
                             <button 
-                                onClick={(values)=>{uploadDocumentFormSubmit('/' + vendorId, '/VENDOR', '/PAN_CERTIFICATE', values.panFilePath)}} 
-                                style={{width: '10%',marginRight: 0,marginLeft:0}} 
+                                disabled={panFieldValue?  false : true}
+                                type='button'
+                                onClick={()=>{uploadDocumentFormSubmit('/' + vendorId, '/VENDOR', '/PAN_CERTIFICATE', panFieldValue)}} 
+                                style={{width: '100%',marginRight: 0,marginLeft:0,padding:'15px'}} 
                                 className='btn btn-primary'
                             >
                                 Upload
                             </button>
+                            {
+                                EditVendorData && EditVendorData?.panFilePath != "" &&
+                                <button
+                                    type='button'
+                                    onClick={()=>{
+                                        setDocumentUrl(EditVendorData.panFilePath.replace("gets-dev.",""));
+                                        handleOpen();
+                                    }}
+                                    style={{width: '100%',marginRight: 0,marginLeft:20,padding:'15px'}} 
+                                    className='btn btn-secondary'
+                                >
+                                    View
+                                </button>
+                            }
+                            
                         </div>
                     </div>
                 </FormStep>
@@ -706,6 +822,29 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
                     
                 </FormStep> */}
             </MultiStepForm>
+            <Modal
+                open={open}
+                onClose={handleClose}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+            >
+                <Box sx={style}>
+                    <IframeComponent url={documentUrl} title={documentTitle} />
+                </Box>
+            </Modal>
+            <Modal
+            open={uniqueModal}
+            onClose={handleHide}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+            >
+                <Box sx={styleForErrorMessage}>
+                    <div style={{height: '100%'}}>
+                        <p style={{fontWeight: 600,marginBottom:5}}>Form Submit Error:</p>
+                        <p>{message}</p>
+                    </div>
+                </Box>
+            </Modal>
         </div >
     )
 }

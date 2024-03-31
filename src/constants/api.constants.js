@@ -16,6 +16,7 @@ export const API_PATH = {
     SEARCH_DRIVER: '/search/autoSuggestDriver/',
     SEARCH_RM: '/search/autoSuggestEmployee/',
     SEARCH_VENDOR: '/search/autoSuggestVendor/',
+    SEARCH_VEHICLE: '/search/autoSuggestVehicle/',
     ESCORT_LISTING: '/escort/all',
     CREATE_ESCORT: '/escort/create',
     UPDATE_ESCORT: '/escort/update',
@@ -101,5 +102,8 @@ export const API_PATH = {
     ADD_EHS_ENTRY_DRIVER:'/ehs/inspection/driver/addEhs',
     ADD_EHS_ENTRY_VEHICLE:'/ehs/inspection/vehicle/addEhs',
     SELECTED_VEHICLE_EHS:'/ehs/inspection/vehicle/',
-    SELECTED_DRIVER_EHS:'/ehs/inspection/driver/'
+    SELECTED_DRIVER_EHS:'/ehs/inspection/driver/',
+    CHANGE_STATUS:'/changeStatus/',
+    VEHICLE_DRIVER_MAPPING_BEAN: '/vehicleDriverMapping/searchByBean/',
+    VEHICLE_DRIVER_FORCE_MAPPING: '/vehicleDriverMapping/forceMapping/'
 };

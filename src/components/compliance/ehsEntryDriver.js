@@ -25,10 +25,10 @@ const EhsEntryDriver = ({ EhsDriverData }) => {
             display: "EHS Status"
 
         },
-        {
-            key: "ehsDueDate",
-            display: "EHS Due Date"
-        },
+        // {
+        //     key: "ehsDueDate",
+        //     display: "EHS Due Date"
+        // },
         {
             key: "remarks",
             display: "Remarks"

@@ -5,6 +5,7 @@ import OfficeService from '@/services/office.service';
 import { DEFAULT_PAGE_SIZE } from '@/constants/app.constants.';
 import UploadButton from '../buttons/uploadButton';
 import RoleService from '@/services/role.service';
+import BookingService from '@/services/booking.service';
 
 const EmployeeManagement = ({
     roleType,
@@ -93,18 +94,36 @@ const EmployeeManagement = ({
         }
     };
 
-    const uploadFunction=(item)=>{
-        var form = new FormData();
-        form.append('model', '{"importJobDTO": {"importType": "IMPORT_TYPE_ESCORT","entityName": "ESCORT"}}');
-        form.append('file', item);
-        RoleService.uploadForm(form);
+    const uploadFunction = async (item) => {
+        try{
+            console.log("entered")
+            var form = new FormData();
+            form.append('model', '{"importJobDTO": {"importType": "IMPORT_TYPE_EMPLOYEE","entityName": "EMPLOYEE"}}');
+            form.append('file', item);
+            const response = await BookingService.uploadForm(form);
+            console.log(response)
+            if (response?.data?.isSuccessFul) {
+                dispatch(toggleToast({ message: 'All Booking records uploaded successfully!', type: 'success' }));
+            } else {
+                console.log(response?.data?.successRecords, response?.data?.successRecords > 0)
+                if (response?.data?.successRecords > 0) {
+                    dispatch(toggleToast({ message: `${response?.data?.successRecords} out of ${response?.data?.totalRecords} Booking records uploaded successfully!`, type: 'success' }));
+                } else {
+                    dispatch(toggleToast({ message: `Booking records failed to upload. Please try again later.`, type: 'error' }));
+                }
+            }
+            fetchAllEmployees();
+        }
+        catch(err){
+            console.log(err);
+        }
     }
 
     return (
         <div className='internalSettingContainer'>
             {!isAddEdit && <div>
                 <div style={{ display: 'flex', justifyContent: 'end' }}>
-                    <UploadButton uploadFunction={uploadFunction}/>
+                    <UploadButton uploadFunction={(e)=>uploadFunction(e)}/>
                     <div className='btnContainer'>
                         <button onClick={() => setIsAddEdit(true)} className='btn btn-primary'>Add Employee</button>
                     </div>

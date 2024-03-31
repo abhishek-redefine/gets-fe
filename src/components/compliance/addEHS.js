@@ -13,7 +13,7 @@ export const validationSchema = yup.object({
     ehsTitle: yup.string("Enter EHS Title").required("Enter EHS Title"),
     ehsCategory: yup.string("Enter EHS Category").required("Enter EHS Category"),
     ehsMandate: yup.string("Enter EHS Mandate").required("Enter EHS Mandate"),
-    ehsFrequencyType: yup.string("Enter EHS Frequency Type").required("Enter EHS Frequency Type"),
+    //ehsFrequencyType: yup.string("Enter EHS Frequency Type").required("Enter EHS Frequency Type"),
     ehsFrequency: yup.string("Enter EHS Frequency").required("Enter EHS Frequency"),
     ehsAppliedOn: yup.string("Enter EHS Applied On").required("Enter EHS Applied On"),
 });
@@ -24,7 +24,7 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
         ehsTitle: "",
         ehsCategory: "",
         ehsMandate: "",
-        ehsFrequencyType: "",
+        // ehsFrequencyType: "",
         ehsFrequency: "",
         ehsAppliedOn: "",
         vehicleType: ""
@@ -74,6 +74,9 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
     const { errors, touched, values, handleChange, handleSubmit, handleReset } = formik;
 
     const [offices, setOffice] = useState([]);
+    const [ehsCategoryList, setEhsCategoryList] = useState([]);
+    const [ehsMandate, setEhsMandate] = useState([]);
+    const [ehsFrequency, setEhsFrequency] = useState([]);
     const dispatch = useDispatch();
 
     const fetchAllOffices = async () => {
@@ -87,8 +90,24 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
         }
     };
 
+    const fetchAllMasterData = async() =>{
+        try{
+            const EhsCategoryResponse = await ComplianceService.getMasterData('EhsCategory');
+            const EhsFrequencyResponse = await ComplianceService.getMasterData('EhsFrequency');
+            const EhsMandateResponse = await ComplianceService.getMasterData('EhsMandate');
+
+            setEhsCategoryList(EhsCategoryResponse.data);
+            setEhsFrequency(EhsFrequencyResponse.data);
+            setEhsMandate(EhsMandateResponse.data);
+        }
+        catch(err){
+            console.log(err);
+        }
+    }
+
     useEffect(() => {
         fetchAllOffices();
+        fetchAllMasterData();
     }, []);
 
     return (
@@ -116,22 +135,73 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
                         </FormControl>
                     </div>
                     <div className='form-control-input'>
-                        <TextField
+                        <FormControl required fullWidth>
+                            <InputLabel id="ehsCategoryLabel">Ehs Category</InputLabel>
+                            <Select
+                                labelId="ehsCategoryLabel"
+                                id="ehsCategory"
+                                value={values.ehsCategory}
+                                error={touched.ehsCategory && Boolean(errors.ehsCategory)}
+                                name="ehsCategory"
+                                label="Ehs Category"
+                                onChange={handleChange}
+                            >
+                                {!!ehsCategoryList?.length && ehsCategoryList.map((category, idx) => (
+                                    <MenuItem key={idx} value={category.displayName}>{category.displayName}</MenuItem>
+                                ))}
+                            </Select>
+                            {touched.ehsCategory && errors.ehsCategory && <FormHelperText className='errorHelperText'>{errors.ehsCategory}</FormHelperText>}
+                        </FormControl>
+                        {/* <TextField
                             error={touched.ehsCategory && Boolean(errors.ehsCategory)}
                             helperText={touched.ehsCategory && errors.ehsCategory} onChange={handleChange}
-                            required id="ehsCategory" name="ehsCategory" value={values.ehsCategory} label="EHS Category" variant="outlined" />
+                            required id="ehsCategory" name="ehsCategory" value={values.ehsCategory} label="EHS Category" variant="outlined" /> */}
                     </div>
                     <div className='form-control-input'>
-                        <TextField
+                        <FormControl required fullWidth>
+                            <InputLabel id="ehsMandateLabel">Ehs Mandate</InputLabel>
+                            <Select
+                                labelId="ehsMandateLabel"
+                                id="ehsMandate"
+                                value={values.ehsMandate}
+                                error={touched.ehsMandate && Boolean(errors.ehsMandate)}
+                                name="ehsMandate"
+                                label="Ehs Mandate"
+                                onChange={handleChange}
+                            >
+                                {!!ehsMandate?.length && ehsMandate.map((category, idx) => (
+                                    <MenuItem key={idx} value={category.displayName}>{category.displayName}</MenuItem>
+                                ))}
+                            </Select>
+                            {touched.ehsMandate && errors.ehsMandate && <FormHelperText className='errorHelperText'>{errors.ehsMandate}</FormHelperText>}
+                        </FormControl>
+                        {/* <TextField
                             error={touched.ehsMandate && Boolean(errors.ehsMandate)}
                             helperText={touched.ehsMandate && errors.ehsMandate} onChange={handleChange}
-                            required id="ehsMandate" name="ehsMandate" value={values.ehsMandate} label="EHS Mandate" variant="outlined" />
+                            required id="ehsMandate" name="ehsMandate" value={values.ehsMandate} label="EHS Mandate" variant="outlined" /> */}
                     </div>
                     <div className='form-control-input'>
-                        <TextField
+                        <FormControl required fullWidth>
+                            <InputLabel id="ehsFrequencyLabel">EHS Frequency</InputLabel>
+                            <Select
+                                labelId="ehsFrequencyLabel"
+                                id="ehsFrequency"
+                                value={values.ehsFrequency}
+                                error={touched.ehsFrequency && Boolean(errors.ehsFrequencyType)}
+                                name="ehsFrequency"
+                                label="Ehs Frequency"
+                                onChange={handleChange}
+                            >
+                                {!!ehsFrequency?.length && ehsFrequency.map((category, idx) => (
+                                    <MenuItem key={idx} value={category.displayName}>{category.displayName}</MenuItem>
+                                ))}
+                            </Select>
+                            {touched.ehsFrequency && errors.ehsFrequency && <FormHelperText className='errorHelperText'>{errors.ehsFrequency}</FormHelperText>}
+                        </FormControl>
+                        {/* <TextField
                             error={touched.ehsFrequencyType && Boolean(errors.ehsFrequencyType)}
                             helperText={touched.ehsFrequencyType && errors.ehsFrequencyType} onChange={handleChange}
-                            required id="ehsFrequencyType" name="ehsFrequencyType" value={values.ehsFrequencyType} label="EHS Frequency Type" variant="outlined" />
+                            required id="ehsFrequencyType" name="ehsFrequencyType" value={values.ehsFrequencyType} label="EHS Frequency Type" variant="outlined" /> */}
                     </div>
                     <div className='form-control-input'>
                         <TextField
@@ -139,12 +209,12 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
                             helperText={touched.ehsTitle && errors.ehsTitle} onChange={handleChange}
                             required id="ehsTitle" name="ehsTitle" value={values.ehsTitle} label="EHS Title" variant="outlined" />
                     </div>
-                    <div className='form-control-input'>
+                    {/* <div className='form-control-input'>
                         <TextField
                             error={touched.ehsFrequency && Boolean(errors.ehsFrequency)}
                             helperText={touched.ehsFrequency && errors.ehsFrequency} onChange={handleChange}
                             required id="ehsFrequency" name="ehsFrequency" value={values.ehsFrequency} label="EHS Frequency" variant="outlined" />
-                    </div>
+                    </div> */}
                 </div>
                 <div>
                     <div className='form-control-input'>

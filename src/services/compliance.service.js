@@ -32,14 +32,22 @@ const getSingleVehicle = (id) => {
     });
 };
 
-const getAllDrivers = () => {
-    return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.DRIVER_LISTING_ALL}`).then((response) => {
+const getAllDrivers = (queryParams, searchValues) => {
+    let url = `${API_PATH.API_VERSION}${API_PATH.DRIVER_LISTING_ALL}`;
+    if (queryParams) {
+        url += `?${queryParams}`;
+    }
+    return axiosInstance.post(url, searchValues).then((response) => {
         return response;
     });
 };
 
-const getAllVehicles = () => {
-    return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.VEHICLE_LISTING_ALL}`).then((response) => {
+const getAllVehicles = (queryParams, searchValues) => {
+    let url = `${API_PATH.API_VERSION}${API_PATH.VEHICLE_LISTING_ALL}`;
+    if (queryParams) {
+        url += `?${queryParams}`;
+    }
+    return axiosInstance.post(url, searchValues).then((response) => {
         return response;
     });
 };
@@ -121,6 +129,12 @@ const searchDriver = (text) => {
     });
 };
 
+const searchDriverWithVendor = (text,vendorName) =>{
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.SEARCH_DRIVER}${vendorName}/${text}/0/15`).then((response) => {
+        return response;
+    });
+}
+
 const updateVendorCompany = (data) => {
     return axiosInstance.put(`${API_PATH.API_VERSION}${API_PATH.UPDATE_VENDOR_COMPANY}`, data).then((response) => {
         return response;
@@ -133,14 +147,14 @@ const updatePenalty = (data) => {
     });
 };
 
-const enableDisableDriver = (id, isEnable) => {
-    return axiosInstance.put(`${API_PATH.API_VERSION}${API_PATH.ENABLE_DISABLE_DRIVER}/${id}/${isEnable}`).then((response) => {
+const enableDisableDriver = (id, isEnable,remark) => {
+    return axiosInstance.put(`${API_PATH.API_VERSION}${API_PATH.ENABLE_DISABLE_DRIVER}/${id}/${isEnable}/${remark}`).then((response) => {
         return response;
     });
 };
 
-const enableDisableVehicle = (id, isEnable) => {
-    return axiosInstance.put(`${API_PATH.API_VERSION}${API_PATH.ENABLE_DISABLE_VEHICLE}/${id}/${isEnable}`).then((response) => {
+const enableDisableVehicle = (id, isEnable,remark) => {
+    return axiosInstance.put(`${API_PATH.API_VERSION}${API_PATH.ENABLE_DISABLE_VEHICLE}/${id}/${isEnable}/${remark}`).then((response) => {
         return response;
     });
 };
@@ -163,8 +177,8 @@ const vehicleDriverMapping = (data) => {
     });
 };
 
-const approveDriver = (id, approval) => {
-    return axiosInstance.put(`${API_PATH.API_VERSION}${API_PATH.APPROVE_COMPLIANCE}/${id}/${approval}`).then((response) => {
+const approveDriver = (id, approval,remarks) => {
+    return axiosInstance.put(`${API_PATH.API_VERSION}${API_PATH.APPROVE_COMPLIANCE}/${id}/${approval}/${remarks}`).then((response) => {
         return response;
     });
 };
@@ -175,8 +189,8 @@ const enableDisableVendor = (id, enableOrDisable) => {
     });
 };
 
-const approveVehicle = (id, approval) => {
-    return axiosInstance.put(`${API_PATH.API_VERSION}${API_PATH.APPROVE_COMPLIANCE_VEHICLE}/${id}/${approval}`).then((response) => {
+const approveVehicle = (id, approval,remarks) => {
+    return axiosInstance.put(`${API_PATH.API_VERSION}${API_PATH.APPROVE_COMPLIANCE_VEHICLE}/${id}/${approval}/${remarks}`).then((response) => {
         return response;
     });
 };
@@ -207,10 +221,62 @@ const searchVendor = (text) =>{
     });
 }
 
+const searchVehicle = (text) =>{
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.SEARCH_VEHICLE}${text}/0/15`).then((response) => {
+        return response;
+    });
+}
+
 const getVendorCompanyById = (id) =>{
     return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.VENDOR_COMPANY}/${id}`).then((response) => {
         return response;
     });
+}
+
+const enableDisableVendorCompany = (id, isEnable,remarks) =>{
+    return axiosInstance.put(`${API_PATH.API_VERSION}${API_PATH.VENDOR_COMPANY}/enable/${id}/${isEnable}/${remarks}`).then((response)=>{
+        return response;
+    })
+}
+
+const changeStatusDriver = (id) =>{
+    return axiosInstance.put(`${API_PATH.API_VERSION}${API_PATH.SINGLE_DRIVER}${API_PATH.CHANGE_STATUS}${id}`).then((response)=>{
+        return response;
+    })
+}
+
+const changeStatusVehicle = (id) =>{
+    return axiosInstance.put(`${API_PATH.API_VERSION}${API_PATH.SINGLE_VEHICLE}${API_PATH.CHANGE_STATUS}${id}`).then((response)=>{
+        return response;
+    })
+}
+
+const getAllVehiclesMapping = (queryParams,searchValues) =>{
+    let url = `${API_PATH.API_VERSION}${API_PATH.VEHICLE_DRIVER_MAPPING_BEAN}`;
+    if (queryParams) {
+        url += `?${queryParams}`;
+    }
+    return axiosInstance.post(url, searchValues).then((response) => {
+        return response;
+    })
+}
+
+const forceMappingVehicle = (id,value) =>{
+    return axiosInstance.put(`${API_PATH.API_VERSION}${API_PATH.VEHICLE_DRIVER_FORCE_MAPPING}${id}`,value).then((response)=>{
+        return response;
+    })
+}
+
+const getDriverById = (id) =>{
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.SINGLE_DRIVER}/${id}`).then((response)=>{
+        return response;
+    })
+}
+
+const getVehicleById = (id) =>{
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.SINGLE_VEHICLE}/${id}`).then((response)=>{
+        return response;
+    })
 }
 
 
@@ -247,7 +313,16 @@ const ComplianceService = {
     getSelectedVehicleEHS,
     getSelectedDriverEHS,
     searchVendor,
-    getVendorCompanyById
+    getVendorCompanyById,
+    enableDisableVendorCompany,
+    changeStatusDriver,
+    changeStatusVehicle,
+    searchDriverWithVendor,
+    getAllVehiclesMapping,
+    forceMappingVehicle,
+    getDriverById,
+    getVehicleById,
+    searchVehicle
 };
 
 export default ComplianceService;

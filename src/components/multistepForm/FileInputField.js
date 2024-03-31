@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useField, useFormikContext } from 'formik';
 import { MuiFileInput } from 'mui-file-input'
 import AttachFileIcon from '@mui/icons-material/AttachFile'
@@ -6,8 +6,13 @@ import { FormHelperText } from '@mui/material';
 
 const FileInputField = ({ label, ...props }) => {
     const [field, meta] = useField(props);
-    console.log(props);
     const { setFieldValue } = useFormikContext();
+    useEffect(()=>{
+        if(props.fileName){
+            console.log(props.fileName);
+            setFieldValue(field.name, props.fileName);
+        }
+    },[])
     return (
         <div className='form-control-input'>
             <FormHelperText className='labelHelperText'>{label}</FormHelperText>
@@ -24,15 +29,18 @@ const FileInputField = ({ label, ...props }) => {
                 }}
                 onChange={(file) => {
                     console.log(file);
-                    
-                    // Check if file size is greater than 2MB
-                    if (file.size > 2 * 1024 * 1024) {
-                        // Display error or handle as needed
-                        alert("File size exceeds 2MB limit.");
-                        setFieldValue(field.name, null);
-                    } else {
-                        // File size is within limit, proceed with setting field value
-                        setFieldValue(field.name, file);
+                    if(file){
+                        // Check if file size is greater than 2MB
+                        if (file.size > 2 * 1024 * 1024) {
+                            // Display error or handle as needed
+                            alert("File size exceeds 2MB limit.");
+                            setFieldValue(field.name, null);
+                            props.filledValue(field.name, null);
+                        } else {
+                            // File size is within limit, proceed with setting field value
+                            setFieldValue(field.name, file);
+                            props.filledValue(file);
+                        }
                     }
                 }}
                 // onChange={(file) => setFieldValue(field.name, file)}
