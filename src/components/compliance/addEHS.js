@@ -13,7 +13,7 @@ export const validationSchema = yup.object({
     ehsTitle: yup.string("Enter EHS Title").required("Enter EHS Title"),
     ehsCategory: yup.string("Enter EHS Category").required("Enter EHS Category"),
     ehsMandate: yup.string("Enter EHS Mandate").required("Enter EHS Mandate"),
-    //ehsFrequencyType: yup.string("Enter EHS Frequency Type").required("Enter EHS Frequency Type"),
+    days: yup.number("Enter no of days").required("Enter no of days"),
     ehsFrequency: yup.string("Enter EHS Frequency").required("Enter EHS Frequency"),
     ehsAppliedOn: yup.string("Enter EHS Applied On").required("Enter EHS Applied On"),
 });
@@ -24,7 +24,7 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
         ehsTitle: "",
         ehsCategory: "",
         ehsMandate: "",
-        // ehsFrequencyType: "",
+        days: "",
         ehsFrequency: "",
         ehsAppliedOn: "",
         vehicleType: ""
@@ -77,6 +77,7 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
     const [ehsCategoryList, setEhsCategoryList] = useState([]);
     const [ehsMandate, setEhsMandate] = useState([]);
     const [ehsFrequency, setEhsFrequency] = useState([]);
+    const [transportTypes,setTransportTypes] = useState([]);
     const dispatch = useDispatch();
 
     const fetchAllOffices = async () => {
@@ -95,10 +96,11 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
             const EhsCategoryResponse = await ComplianceService.getMasterData('EhsCategory');
             const EhsFrequencyResponse = await ComplianceService.getMasterData('EhsFrequency');
             const EhsMandateResponse = await ComplianceService.getMasterData('EhsMandate');
-
+            const TransportTypeResponse = await ComplianceService.getMasterData("TransportType");
             setEhsCategoryList(EhsCategoryResponse.data);
             setEhsFrequency(EhsFrequencyResponse.data);
             setEhsMandate(EhsMandateResponse.data);
+            setTransportTypes(TransportTypeResponse.data);
         }
         catch(err){
             console.log(err);
@@ -182,14 +184,14 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
                     </div>
                     <div className='form-control-input'>
                         <FormControl required fullWidth>
-                            <InputLabel id="ehsFrequencyLabel">EHS Frequency</InputLabel>
+                            <InputLabel id="ehsFrequencyLabel">EHS Frequency Type</InputLabel>
                             <Select
                                 labelId="ehsFrequencyLabel"
                                 id="ehsFrequency"
                                 value={values.ehsFrequency}
                                 error={touched.ehsFrequency && Boolean(errors.ehsFrequencyType)}
                                 name="ehsFrequency"
-                                label="Ehs Frequency"
+                                label="Ehs Frequency Type"
                                 onChange={handleChange}
                             >
                                 {!!ehsFrequency?.length && ehsFrequency.map((category, idx) => (
@@ -209,12 +211,12 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
                             helperText={touched.ehsTitle && errors.ehsTitle} onChange={handleChange}
                             required id="ehsTitle" name="ehsTitle" value={values.ehsTitle} label="EHS Title" variant="outlined" />
                     </div>
-                    {/* <div className='form-control-input'>
+                    <div className='form-control-input'>
                         <TextField
-                            error={touched.ehsFrequency && Boolean(errors.ehsFrequency)}
-                            helperText={touched.ehsFrequency && errors.ehsFrequency} onChange={handleChange}
-                            required id="ehsFrequency" name="ehsFrequency" value={values.ehsFrequency} label="EHS Frequency" variant="outlined" />
-                    </div> */}
+                            error={touched.days && Boolean(errors.days)}
+                            helperText={touched.days && errors.days} onChange={handleChange}  type="number"
+                            required id="days" name="days" value={values.days} label="EHS Frequency" variant="outlined" />
+                    </div>
                 </div>
                 <div>
                     <div className='form-control-input'>
@@ -238,10 +240,29 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
                     values.ehsAppliedOn === 'Vehicle' &&
                     <div>
                         <div className='form-control-input'>
-                        <TextField
+                        <FormControl required fullWidth>
+                            <InputLabel id="vehicleType-label">Vehicle Type</InputLabel>
+                            <Select
+                                labelId="vehicleType-label"
+                                id="vehicleType"
+                                name="vehicleType"
+                                value={values.ehsStatus}
+                                label="vehicleType"
+                                error={touched.vehicleType && Boolean(errors.vehicleType)}
+                                helperText={touched.vehicleType && errors.vehicleType}
+                                onChange={handleChange}
+                                >
+                                {transportTypes.map((g, idx) => (
+                                    <MenuItem key={idx} value={g.value}>
+                                        {g.value}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        {/* <TextField
                             error={touched.vehicleType && Boolean(errors.vehicleType)}
                             helperText={touched.vehicleType && errors.vehicleType} onChange={handleChange}
-                            required id="vehicleType" name="vehicleType" value={values.vehicleType} label="Vehicle Type" variant="outlined" />
+                            required id="vehicleType" name="vehicleType" value={values.vehicleType} label="Vehicle Type" variant="outlined" /> */}
                         </div>
                     </div>
                 }
@@ -250,7 +271,7 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
                         <button onClick={handleReset} className='btn btn-secondary'>Reset</button>
                     </div>
                     <div>
-                        <button className='btn btn-secondary'>Back</button>
+                        <button onClick={()=>SetIsAddEhs(false)} className='btn btn-secondary'>Back</button>
                         <button type="submit" onClick={handleSubmit} className='btn btn-primary'>{EditEhsData?.id ? 'Update' : 'Create'} EHS</button>
                     </div>
                 </div>

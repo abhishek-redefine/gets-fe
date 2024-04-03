@@ -69,8 +69,12 @@ const getMasterData = (type) => {
     });
 };
 
-const getAllEHS = () => {
-    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.EHS_LISTING_ALL}`).then((response) => {
+const getAllEHS = (queryParams, searchValues) => {
+    let url = `${API_PATH.API_VERSION}${API_PATH.EHS_LISTING_SEARCHBYBEAN}`;
+    if (queryParams) {
+        url += `?${queryParams}`;
+    }
+    return axiosInstance.post(url, searchValues).then((response) => {
         return response;
     });
 };
@@ -130,7 +134,7 @@ const searchDriver = (text) => {
 };
 
 const searchDriverWithVendor = (text,vendorName) =>{
-    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.SEARCH_DRIVER}${vendorName}/${text}/0/15`).then((response) => {
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.SEARCH_DRIVER_WITH_VENDOR}${vendorName}/${text}/0/15`).then((response) => {
         return response;
     });
 }

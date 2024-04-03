@@ -238,7 +238,7 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
     }
     const searchForDriver = async (e) => {
         try {
-            if (e.target.value) {
+            if (e.target.value && vendorName != "") {
                 console.log('searchForDriver', e.target.value)
                 const response = await ComplianceService.searchDriverWithVendor(e.target.value,vendorName);
                 console.log(response)
@@ -261,6 +261,7 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                     alert("Enter vendor name");
                     return;
                 }
+                values.driverId = driverId;
                 values.vendorName = vendorName;
                 const response = await ComplianceService.updateVehicle({ "vehicleDTO": values });
                 if (response.status === 200) {

@@ -507,3 +507,11 @@ button:disabled, .btn:disabled:hover {
   background-color: #e9ecef;
   opacity: 1;
 }
+
+.d-flex{
+  display: flex;
+}
+
+.align-items-center{
+  align-items: center;
+}
