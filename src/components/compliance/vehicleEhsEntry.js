@@ -81,21 +81,18 @@ const VehicleEhsEntry = () => {
         console.log(response.data);
         let list = [response.data.vehicleDTO];
         setVehicleData(list);
-        getAllEhs(response.data.vehicleDTO.officeId);
+        getAllEhsByVehicleId(vehicleId);
       }
     } catch (err) {
       console.log(err);
     }
   };
-  const getAllEhs = async (officeId) => {
+  const getAllEhsByVehicleId = async (vehicleId) => {
     try {
-      const searchValue = { officeId: officeId, ehsAppliedOnDriver: false };
-      let params = new URLSearchParams(pagination);
-      const response = await ComplianceService.getAllEHS(params, searchValue);
+      const response = await ComplianceService.getAllEhsByVehicleId(vehicleId);
       const { data } = response || {};
-      const content = data.data;
-      console.log(content);
-      setEhsList(content);
+      console.log(data.driverEhsDTO);
+      setEhsList(data.driverEhsDTO);
     } catch (err) {
       console.log(err);
     }
@@ -216,9 +213,16 @@ const VehicleEhsEntry = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {ehsList.length > 0 &&
+                    {ehsList &&
+                      ehsList.length > 0 &&
                       ehsList.map((item, i) => {
-                        return <EhsEntryComponent listing={item} key={i} />;
+                        return (
+                          <EhsEntryComponent
+                            listing={item}
+                            key={i}
+                            ehsStatusList={ehsStatusList}
+                          />
+                        );
                       })}
                   </tbody>
                 </table>
