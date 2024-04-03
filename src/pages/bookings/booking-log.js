@@ -10,7 +10,7 @@ const BookingLog = ({ bookingId = "" }) => {
       display: "Booking Id",
     },
     {
-      key: "title",
+      key: "changedField",
       display: "Title",
     },
     {
@@ -22,11 +22,11 @@ const BookingLog = ({ bookingId = "" }) => {
       display: "New Value",
     },
     {
-      key: "changedBy",
+      key: "updatedBy",
       display: "Changed By",
     },
     {
-      key: "changedAt",
+      key: "updatedAt",
       display: "Changed At",
     },
     {
@@ -48,26 +48,33 @@ const BookingLog = ({ bookingId = "" }) => {
     setPagination(updatedPagination);
   };
 
-  const getBookingHistory = async(id) =>{
-    try{
-        const queryParams = `bookingId=${id}`;
-        const response = await BookingService.getBookingHistory(queryParams);
-        const {data} = response || {};
-        console.log(data);
-        setBookingListing(data)
+  const getBookingHistory = async (id) => {
+    try {
+      const queryParams = `bookingId=${id}`;
+      const response = await BookingService.getBookingHistory(queryParams);
+      const { data } = response || {};
+      console.log(data);
+      var modifiedList = [];
+      data.map((val) => {
+        let newObj = val;
+        if (val.oldValue === "") {
+          newObj.oldValue = "-";
+        }
+        modifiedList.push(newObj);
+      });
+      setBookingListing(modifiedList);
+    } catch (err) {
+      console.log(err);
     }
-    catch(err){
-        console.log(err);
-    }
-  }
+  };
 
   useEffect(() => {
     console.log("booking change logs>>>", bookingId);
     if (bookingId) {
       getBookingHistory(bookingId);
     }
-  },[]);
-  
+  }, []);
+
   return (
     <Grid
       pageNoText="pageNumber"

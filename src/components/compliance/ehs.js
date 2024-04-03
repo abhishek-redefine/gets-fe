@@ -52,11 +52,16 @@ const EHS = () => {
     const [isAddEHS, setIsAddEHS] = useState(false);
     const [ehsListing, setEhsListing] = useState();
     const [editEhsData, setEditEhsData] = useState({});
+    const [pagination ,setPagination] = useState({
+        pageNo : 0,
+        pageSize : 10
+    })
 
     const fetchAllEHS = async () => {
         try {
-            const response = await ComplianceService.getAllEHS();
-            setEhsListing(response.data.paginatedResponse.content);
+            let params = new URLSearchParams(pagination);
+            const response = await ComplianceService.getAllEHS(params, {});
+            setEhsListing(response.data.data);
         } catch (e) {
             console.error(e);
         }

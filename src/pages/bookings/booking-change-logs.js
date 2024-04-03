@@ -65,7 +65,7 @@ const BookingChangeLogs = () => {
       display: "Reporting Manager",
     },
     {
-      key: "status",
+      key: "bookingStatus",
       display: "Status",
     },
     {
@@ -144,9 +144,10 @@ const BookingChangeLogs = () => {
                 delete allSearchValues[objKey];
             }
         });
-        
+        allSearchValues.isAdmin = true;
+        allSearchValues.isChanged = true;
         console.log("role>>",role.roleName);
-        const response = resetFlag ? await BookingService.getAllBookings(params.toString(), {}) : await BookingService.getAllBookings(params.toString(), allSearchValues);
+        const response = resetFlag ? await BookingService.getAllBookings(params.toString(), {isAdmin : true, isChanged : true}) : await BookingService.getAllBookings(params.toString(), allSearchValues);
         //const response = await BookingService.getAllBookings(params.toString(), allSearchValues);
         const { data } = response || {};
         const { data: paginatedResponse } = data || {};

@@ -273,7 +273,7 @@ const EhsDriverProfile = () => {
                     </div>
                     <div style={{ display: 'flex' }}>
                         <div style={{margin: 20}}>
-                            <button type='button' className='btn btn-primary '>Add Entry</button>
+                            <button type='button' className='btn btn-primary' style={{padding:18}}>Add Entry</button>
                         </div>
                     </div>
                 </div>

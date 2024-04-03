@@ -284,7 +284,7 @@ const EhsVehicleProfile = () => {
                     </div>
                     <div style={{ display: 'flex' }}>
                         <div className='form-control-input' style={{minWidth: "70px"}}>
-                            <button type='button' className='btn btn-primary filterApplyBtn'>Add EHS Entry</button>
+                            <button type='button' className='btn btn-primary' style={{padding:18}}>Add EHS Entry</button>
                         </div>
                     </div>
                 </div>
