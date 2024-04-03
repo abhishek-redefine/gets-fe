@@ -79,6 +79,18 @@ const getAllEHS = (queryParams, searchValues) => {
     });
 };
 
+const getAllEHSByDriverId = (driverId) =>{
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.EHS_LISTING_BY_DRIVERID}${driverId}`).then((response) =>{
+        return response;
+    })
+}
+
+const getAllEhsByVehicleId = (vehicleId) =>{
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.EHS_LISTING_BY_VEHICLEID}${vehicleId}`).then((response) =>{
+        return response;
+    })
+}
+
 const getSelectedVehicleEHS = (id) => {
     return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.SELECTED_VEHICLE_EHS}${id}`).then((response) => {
         return response;
@@ -209,6 +221,26 @@ const addEhsEntryDriver = (data) => {
     });
 };
 
+const updateDriverEhs = (data) =>{
+    return axiosInstance.put(`${API_PATH.API_VERSION}${API_PATH.UPDATE_EHS_ENTRY_DRIVER}`,data,{
+        headers: {
+            "Content-Type": "multipart/form-data"
+        }
+    }).then((response)=>{
+        return response;
+    })
+}
+
+const updateVehicleEhs = (data) =>{
+    return axiosInstance.put(`${API_PATH.API_VERSION}${API_PATH.UPDATE_EHS_ENTRY_VEHICLE}`,data,{
+        headers: {
+            "Content-Type": "multipart/form-data"
+        }
+    }).then((response)=>{
+        return response;
+    })
+}
+
 const addEhsEntryVehicle = (data) => {
     return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.ADD_EHS_ENTRY_VEHICLE}`, data, {
         headers: {
@@ -326,7 +358,11 @@ const ComplianceService = {
     forceMappingVehicle,
     getDriverById,
     getVehicleById,
-    searchVehicle
+    searchVehicle,
+    getAllEHSByDriverId,
+    getAllEhsByVehicleId,
+    updateDriverEhs,
+    updateVehicleEhs
 };
 
 export default ComplianceService;

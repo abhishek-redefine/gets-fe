@@ -93,22 +93,19 @@ const DriverEhsEntry = () => {
           let list = [response.data.driver];
           console.log(list.length);
           setDriverData(list);
-          getAllEhs(response.data.driver.officeId);
+          getAllEhsByDriverId(driverId);
         }
       }
     } catch (err) {
       console.log(err);
     }
   };
-  const getAllEhs = async (officeId) => {
+  const getAllEhsByDriverId = async (driverId) => {
     try {
-      const searchValue = { officeId: officeId, ehsAppliedOnDriver: true };
-      let params = new URLSearchParams(pagination);
-      const response = await ComplianceService.getAllEHS(params, searchValue);
+      const response = await ComplianceService.getAllEHSByDriverId(driverId);
       const { data } = response || {};
-      const content = data.data;
-      console.log(content);
-      setEhsList(content);
+      console.log(data.driverEhsDTO);
+      setEhsList(data.driverEhsDTO);
     } catch (err) {
       console.log(err);
     }
@@ -231,7 +228,7 @@ const DriverEhsEntry = () => {
                   <tbody>
                     {ehsList.length > 0 &&
                       ehsList.map((item, i) => {
-                        return <EhsEntryComponent listing={item} key={i} />;
+                        return <EhsEntryComponent listing={item} key={i} ehsStatusList={ehsStatusList} type={"driver"}/>;
                       })}
                   </tbody>
                 </table>
