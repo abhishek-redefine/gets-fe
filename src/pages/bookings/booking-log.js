@@ -60,6 +60,9 @@ const BookingLog = ({ bookingId = "" }) => {
         if (val.oldValue === "") {
           newObj.oldValue = "-";
         }
+        else if(val.newValue === ""){
+          newObj.newValue = "-";
+        }
         modifiedList.push(newObj);
       });
       setBookingListing(modifiedList);
