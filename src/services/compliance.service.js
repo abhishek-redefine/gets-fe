@@ -315,6 +315,18 @@ const getVehicleById = (id) =>{
     })
 }
 
+const getEhsHistoryByDriverId = (id,date) =>{
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.EHS_INSPECTION}${API_PATH.SINGLE_DRIVER}/${id}${API_PATH.HISTORY}${date}`).then((response)=>{
+        return response;
+    })
+}
+
+const getEhsHistoryByVehicleId = (id,date) =>{
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.EHS_INSPECTION}${API_PATH.SINGLE_VEHICLE}/${id}${API_PATH.HISTORY}${date}`).then((response)=>{
+        return response;
+    })
+}
+
 
 const ComplianceService = {
     createDriver,
@@ -362,7 +374,9 @@ const ComplianceService = {
     getAllEHSByDriverId,
     getAllEhsByVehicleId,
     updateDriverEhs,
-    updateVehicleEhs
+    updateVehicleEhs,
+    getEhsHistoryByDriverId,
+    getEhsHistoryByVehicleId
 };
 
 export default ComplianceService;

@@ -9,8 +9,10 @@ import { Button,FormControl,Autocomplete,TextField,Select,InputLabel,MenuItem } 
 import OfficeService from '@/services/office.service';
 import { getFormattedLabel } from '@/utils/utils';
 import { DEFAULT_PAGE_SIZE } from '@/constants/app.constants.';
+import { useRouter } from 'next/router';
 
 const EhsVehicleProfile = () => {
+    const router = useRouter();
     const headers = [
         {
             key: "vehicleId",
@@ -74,7 +76,7 @@ const EhsVehicleProfile = () => {
             navigation: true,
             menuItems: [
                 {
-                    display: "Add EHS Entry",
+                    display: "View EHS Entry",
                     key: "addEhsEntry"
                 }
             ]
@@ -284,7 +286,7 @@ const EhsVehicleProfile = () => {
                     </div>
                     <div style={{ display: 'flex' }}>
                         <div className='form-control-input' style={{minWidth: "70px"}}>
-                            <button type='button' className='btn btn-primary' style={{padding:18}}>Add EHS Entry</button>
+                            <button type='button' className='btn btn-primary' onClick={()=>router.push('ehsEntry')} style={{padding:18}}>Add EHS Entry</button>
                         </div>
                     </div>
                 </div>
