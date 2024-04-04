@@ -215,7 +215,7 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
     const addNewVendorDetailsSubmit = async (values) => {
         try {
             if (EditVendorData.id || vendorId) {
-                values.vendorOfficeId = initialValues.vendorOfficeId;
+                //values.vendorOfficeId = initialValues.vendorOfficeId;
                 values.id = vendorId;
                 if (escalationNumber === 1) {
                     values.escalationMatrices = [{
