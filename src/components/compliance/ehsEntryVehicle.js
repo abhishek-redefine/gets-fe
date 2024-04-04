@@ -18,7 +18,7 @@ import {
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import moment from "moment";
 
-const EhsEntryVehicle = ({ EhsVehicleData }) => {
+const EhsEntryVehicle = ({ EhsVehicleData, ehsStatusList }) => {
   console.log("EhsEntryVehicle", EhsVehicleData);
   const headers = [
     {
@@ -46,6 +46,10 @@ const EhsEntryVehicle = ({ EhsVehicleData }) => {
       display: "Remarks",
     },
     {
+      key: "updatedBy",
+      display: "Ehs done by",
+    },
+    {
       key: "hamburgerMenu",
       html: (
         <>
@@ -67,7 +71,17 @@ const EhsEntryVehicle = ({ EhsVehicleData }) => {
   const [editEhsEntryVehicleOpen, setEditEhsEntryVehicleOpen] = useState(false);
   const [editEhsEntryVehicle, setEditEhsEntryVehicle] = useState(false);
   const [ehsVehicleData, setEhsVehicleData] = useState();
+  const [ehsStatus, setEhsStatus] = useState("");
   const [searchDate, setSearchDate] = useState(moment());
+  const [pagination, setPagination] = useState({
+    page: 0,
+    size: 20,
+  });
+  const [searchBean, setSearchBean] = useState({
+    createdDate: "",
+    ehsStatus: "",
+    entityId: EhsDriverData.id,
+  });
 
   const onMenuItemClick = async (key, clickedItem) => {
     if (key === "addValues") {
@@ -76,13 +90,28 @@ const EhsEntryVehicle = ({ EhsVehicleData }) => {
     }
   };
 
-  const searchEhsHistory = async () => {
+  const searchEhsHistory = async (resetFlag = false) => {
     try {
       var date = moment(searchDate).format("YYYY-MM-DD");
-      const response = await ComplianceService.getEhsHistoryByVehicleId(
-        EhsVehicleData.id,
-        date
-      );
+      let params = new URLSearchParams(pagination);
+      var filter = { ...searchBean };
+      filter.createdDate = date;
+      filter.ehsStatus = ehsStatus;
+      console.log(filter);
+      Object.keys(filter).forEach((objKey) => {
+        if (filter[objKey] === null || filter[objKey] === "") {
+          delete filter[objKey];
+        }
+      });
+      const response = !resetFlag
+        ? await ComplianceService.getEhsHistoryByVehicleId(
+            params.toString(),
+            filter
+          )
+        : await ComplianceService.getEhsHistoryByVehicleId(params.toString(), {
+            createdDate: date,
+            entityId: EhsDriverData.id,
+          });
       console.log(response.data.vehicleEhsHistories);
       setEhsVehicleData(response.data.vehicleEhsHistories);
     } catch (err) {
@@ -163,6 +192,27 @@ const EhsEntryVehicle = ({ EhsVehicleData }) => {
                 />
               </LocalizationProvider>
             </div>
+            <div style={{ minWidth: "180px" }} className="form-control-input">
+              <FormControl fullWidth>
+                <InputLabel id="ehs-status-label">EHS Status</InputLabel>
+                <Select
+                  style={{ width: "180px" }}
+                  labelId="ehs-status-label"
+                  id="ehsStatusId"
+                  value={ehsStatus}
+                  name="ehsStatusId"
+                  label="EHS Status"
+                  onChange={(e) => setEhsStatus(e.target.value)}
+                >
+                  {!!ehsStatusList?.length &&
+                    ehsStatusList.map((status, idx) => (
+                      <MenuItem key={idx} value={status.value}>
+                        {status.displayName}
+                      </MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
+            </div>
             <div className="form-control-input" style={{ minWidth: "70px" }}>
               <button
                 type="submit"
@@ -170,6 +220,15 @@ const EhsEntryVehicle = ({ EhsVehicleData }) => {
                 className="btn btn-primary filterApplyBtn"
               >
                 Search
+              </button>
+            </div>
+            <div className="form-control-input" style={{ minWidth: "70px" }}>
+              <button
+                type="submit"
+                onClick={() => searchEhsHistory(true)}
+                className="btn btn-primary filterApplyBtn"
+              >
+                Reset
               </button>
             </div>
           </div>

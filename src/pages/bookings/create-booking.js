@@ -62,7 +62,6 @@ const CreateBooking = () => {
         dropPoint: "",
         source : "Web",
         bookingFor: "self",
-        bookingType:"",
         shiftId:[]
     });
 

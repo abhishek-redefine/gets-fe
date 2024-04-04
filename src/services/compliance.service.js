@@ -315,16 +315,24 @@ const getVehicleById = (id) =>{
     })
 }
 
-const getEhsHistoryByDriverId = (id,date) =>{
-    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.EHS_INSPECTION}${API_PATH.SINGLE_DRIVER}/${id}${API_PATH.HISTORY}${date}`).then((response)=>{
+const getEhsHistoryByDriverId = (queryParams,searchValues) =>{
+    let url = `${API_PATH.API_VERSION}${API_PATH.EHS_INSPECTION}${API_PATH.SINGLE_DRIVER}${API_PATH.HISTORY}`;
+    if (queryParams) {
+        url += `?${queryParams}`;
+    }
+    return axiosInstance.post(url, searchValues).then((response) => {
         return response;
-    })
+    });
 }
 
-const getEhsHistoryByVehicleId = (id,date) =>{
-    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.EHS_INSPECTION}${API_PATH.SINGLE_VEHICLE}/${id}${API_PATH.HISTORY}${date}`).then((response)=>{
+const getEhsHistoryByVehicleId = (queryParams,searchValues) =>{
+    let url = `${API_PATH.API_VERSION}${API_PATH.EHS_INSPECTION}${API_PATH.SINGLE_VEHICLE}${API_PATH.HISTORY}`;
+    if (queryParams) {
+        url += `?${queryParams}`;
+    }
+    return axiosInstance.post(url, searchValues).then((response) => {
         return response;
-    })
+    });
 }
 
 

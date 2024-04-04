@@ -18,7 +18,7 @@ import {
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import moment from "moment";
 
-const EhsEntryDriver = ({ EhsDriverData }) => {
+const EhsEntryDriver = ({ EhsDriverData, ehsStatusList }) => {
   console.log("EhsEntryDriver", EhsDriverData);
   const headers = [
     {
@@ -26,7 +26,7 @@ const EhsEntryDriver = ({ EhsDriverData }) => {
       display: "Ehs Name",
     },
     {
-      key: "ehsMandate",
+      key: "ehsMandatoryStatus",
       display: "Mandatory Status",
     },
     {
@@ -38,13 +38,17 @@ const EhsEntryDriver = ({ EhsDriverData }) => {
       key: "ehsStatus",
       display: "EHS Status",
     },
-    // {
-    //     key: "ehsDueDate",
-    //     display: "EHS Due Date"
-    // },
+    {
+      key: "ehsDueDate",
+      display: "EHS Due Date",
+    },
     {
       key: "remarks",
       display: "Remarks",
+    },
+    {
+      key: "updatedBy",
+      display: "Ehs done By",
     },
     {
       key: "hamburgerMenu",
@@ -67,8 +71,18 @@ const EhsEntryDriver = ({ EhsDriverData }) => {
 
   const [editEhsEntryDriverOpen, setEditEhsEntryDriverOpen] = useState(false);
   const [editEhsEntryDriver, setEditEhsEntryDriver] = useState(false);
+  const [ehsStatus, setEhsStatus] = useState("");
   const [ehsDriverData, setEhsDriverData] = useState();
   const [searchDate, setSearchDate] = useState(moment());
+  const [pagination, setPagination] = useState({
+    page: 0,
+    size: 20,
+  });
+  const [searchBean, setSearchBean] = useState({
+    createdDate: "",
+    ehsStatus: "",
+    entityId: EhsDriverData.id,
+  });
 
   const onMenuItemClick = async (key, clickedItem) => {
     if (key === "addValues") {
@@ -77,15 +91,30 @@ const EhsEntryDriver = ({ EhsDriverData }) => {
     }
   };
 
-  const searchEhsHistory = async () => {
+  const searchEhsHistory = async (resetFlag = false) => {
     try {
       var date = moment(searchDate).format("YYYY-MM-DD");
-      const response = await ComplianceService.getEhsHistoryByDriverId(
-        EhsDriverData.id,
-        date
-      );
-      console.log(response.data.driverEhsHistories);
-      setEhsDriverData(response.data.driverEhsHistories);
+      let params = new URLSearchParams(pagination);
+      var filter = { ...searchBean };
+      filter.createdDate = date;
+      filter.ehsStatus = ehsStatus;
+      Object.keys(filter).forEach((objKey) => {
+        if (filter[objKey] === null || filter[objKey] === "") {
+          delete filter[objKey];
+        }
+      });
+      console.log(filter,resetFlag);
+      const response = !resetFlag
+        ? await ComplianceService.getEhsHistoryByDriverId(
+            params.toString(),
+            filter
+          )
+        : await ComplianceService.getEhsHistoryByDriverId(params.toString(), {
+            createdDate: date,
+            entityId: EhsDriverData.id,
+          });
+      console.log(response.data.data);
+      setEhsDriverData(response.data.data);
     } catch (err) {
       console.log(err);
     }
@@ -167,13 +196,43 @@ const EhsEntryDriver = ({ EhsDriverData }) => {
                 />
               </LocalizationProvider>
             </div>
+            <div style={{ minWidth: "180px" }} className="form-control-input">
+              <FormControl fullWidth>
+                <InputLabel id="ehs-status-label">EHS Status</InputLabel>
+                <Select
+                  style={{ width: "180px" }}
+                  labelId="ehs-status-label"
+                  id="ehsStatusId"
+                  value={ehsStatus}
+                  name="ehsStatusId"
+                  label="EHS Status"
+                  onChange={(e) => setEhsStatus(e.target.value)}
+                >
+                  {!!ehsStatusList?.length &&
+                    ehsStatusList.map((status, idx) => (
+                      <MenuItem key={idx} value={status.value}>
+                        {status.displayName}
+                      </MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
+            </div>
             <div className="form-control-input" style={{ minWidth: "70px" }}>
               <button
                 type="submit"
-                onClick={searchEhsHistory}
+                onClick={()=>searchEhsHistory(false)}
                 className="btn btn-primary filterApplyBtn"
               >
                 Search
+              </button>
+            </div>
+            <div className="form-control-input" style={{ minWidth: "70px" }}>
+              <button
+                type="submit"
+                onClick={() => {searchEhsHistory(true); setEhsStatus("")}}
+                className="btn btn-primary filterApplyBtn"
+              >
+                Reset
               </button>
             </div>
           </div>
