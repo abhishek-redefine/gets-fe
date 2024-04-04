@@ -110,5 +110,7 @@ export const API_PATH = {
     SELECTED_DRIVER_EHS:'/ehs/inspection/driver/',
     CHANGE_STATUS:'/changeStatus/',
     VEHICLE_DRIVER_MAPPING_BEAN: '/vehicleDriverMapping/searchByBean/',
-    VEHICLE_DRIVER_FORCE_MAPPING: '/vehicleDriverMapping/forceMapping/'
+    VEHICLE_DRIVER_FORCE_MAPPING: '/vehicleDriverMapping/forceMapping/',
+    EHS_INSPECTION : '/ehs/inspection/' ,
+    HISTORY : '/history/',
 };

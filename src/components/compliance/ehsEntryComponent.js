@@ -164,6 +164,7 @@ const EhsEntryComponent = ({ listing, ehsStatusList, type }) => {
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             name="DueDate"
+            value={dayjs(initialValues.ehsDueDate)}
             format={"DD-MM-YYYY"}
             minDate={dayjs()}
             onChange={(e) => {

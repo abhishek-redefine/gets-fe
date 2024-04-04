@@ -210,6 +210,14 @@ const DriverEhsEntry = () => {
                       </span>
                     </p>
                   </div>
+                  {/* <div style={{ margin: "0 30px" }}>
+                    <p style={{ fontWeight: "bold" }}>
+                      EHS Status:{" "}
+                      <span style={{ fontWeight: "normal", marginLeft: 10 }}>
+                        {driver.ehsStatus}
+                      </span>
+                    </p>
+                  </div> */}
                 </div>
               </div>
               <div className="gridContainer" style={{ marginTop: 20 }}>
