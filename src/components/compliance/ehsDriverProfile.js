@@ -201,34 +201,6 @@ const EhsDriverProfile = () => {
         <div className='internalSettingContainer'>
             {!ehsDriverOpen && <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    {/* <div style={{ display: 'flex', justifyContent: 'start' }}>
-                    <div className='form-control-input'>
-                        <FormControl variant="outlined">
-                            <Autocomplete
-                                disablePortal
-                                id="search-driver"
-                                options={searchedDriver}
-                                autoComplete
-                                open={openSearchDriver}
-                                onOpen={() => {
-                                    setOpenSearchDriver(true);
-                                }}
-                                onClose={() => {
-                                    setOpenSearchDriver(false);
-                                }}
-                                onChange={(e, val) => onChangeDriverHandler(val, "driver", "driverId")}
-                                getOptionKey={(driver) => driver.driverId}
-                                getOptionLabel={(driver) => driver.driverName}
-                                freeSolo
-                                name="driver"
-                                renderInput={(params) => <TextField {...params} label="Search Driver" onChange={searchForDriver} />}
-                            />
-                        </FormControl>
-                    </div> 
-                    <div className='form-control-input' style={{minWidth: "70px"}}>
-                        <button type='button' onClick={searchDriverById} className='btn btn-primary filterApplyBtn'>Search</button>
-                    </div>
-                    </div> */}
                     <div style={{ display: 'flex' }}>
                         <div style={{minWidth: "180px"}} className='form-control-input'>
                             <FormControl fullWidth>

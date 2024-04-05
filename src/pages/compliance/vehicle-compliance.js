@@ -186,7 +186,7 @@ const VehicleCompliance = () => {
                 </div>
             </div>}
             {
-                viewVehicleOpen && <AddVehiclePendingApproval ViewDetailsData={editVehicleData} viewVehicleOpen={onSuccess}/>
+                viewVehicleOpen && <AddVehiclePendingApproval ViewDetailsData={editVehicleData} viewVehicleOpen={onSuccess} isView={true}/>
              }
         </div>
     );

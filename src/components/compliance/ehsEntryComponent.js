@@ -76,7 +76,7 @@ const EhsEntryComponent = ({ listing, ehsStatusList, type }) => {
         dispatch(
           toggleToast({
             message: "Driver EHS details not updated. Please try again later!",
-            type: "success",
+            type: "error",
           })
         );
       }
