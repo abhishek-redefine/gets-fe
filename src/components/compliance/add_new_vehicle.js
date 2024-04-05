@@ -65,7 +65,7 @@ const validationSchemaStepOne = object({
     rfidStatus: string().required('RFID Status is required'),
     acStatus: string().required('AC Status is required'),
     gpsStatus: string().required('GPS Fitted Status is required'),
-    vehicleRemarks: string().required('Vehicle Remarks is required'),
+    //vehicleRemarks: string().required('Vehicle Remarks is required'),
     //driverId: string().required("Driver Id is required"),
 })
 
@@ -257,12 +257,17 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
         try {
             if (EditVehicleData) {
                 values.id = vehicleId;
-                if(vendorName === ""){
-                    alert("Enter vendor name");
-                    return;
+                // if(vendorName === ""){
+                //     alert("Enter vendor name");
+                //     return;
+                // }
+                // values.vendorName = vendorName;
+                if(driverId === ""){
+                    delete values.driverId;
                 }
-                values.driverId = driverId;
-                values.vendorName = vendorName;
+                else{
+                    values.driverId = driverId;
+                }                
                 const response = await ComplianceService.updateVehicle({ "vehicleDTO": values });
                 if (response.status === 200) {
                     setVehicleId(response.data.vehicleDTO.id);
@@ -361,6 +366,7 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
             formData.append('file', data);
             const response = await ComplianceService.documentUpload(id, role, documentToUpload, formData);
             if (response.status === 200) {
+                dispatch(toggleToast({ message: `${documentToUpload.replace("/","").replace("_"," ")} uploaded successfully!`, type: 'success' }));
                 if(documentToUpload === "/REGISTRATION_CERTIFICATE"){
                     EditVehicleData.registrationCertificateUrl = response.data.vehicleDTO.registrationCertificateUrl;
                 }
@@ -383,7 +389,7 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                     EditVehicleData.nationalPermitUrl = response.data.vehicleDTO.nationalPermitUrl;
                 }
                 setUploadCount(uploadCount+1);
-                dispatch(toggleToast({ message: 'Data uploaded successfully!', type: 'success' }));
+                //dispatch(toggleToast({ message: 'Data uploaded successfully!', type: 'success' }));
                 return true;
             } else if (response.status === 500) {
                 dispatch(toggleToast({ message: 'Data not uploaded. Please try again after some time!', type: 'error' }));
@@ -469,6 +475,7 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
         if (EditVehicleData?.id) {
             let newEditInfo = Object.assign(initialValues, EditVehicleData);
             setInitialValues(newEditInfo);
+            setVendorName(EditVehicleData?.vendorName);
         }
     }, [EditVehicleData]);
 
@@ -494,7 +501,9 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                         <TextInputField
                             name="vehicleId"
-                            label="Vehicle ID" />
+                            label="Vehicle ID" 
+                            disabled={EditVehicleData?.id  ? true : false}
+                            />
                         <TextInputField
                             name="vehicleRegistrationNumber"
                             label="Vehicle Registration Number" />
@@ -528,29 +537,40 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                             name="fuelType"
                             label="Fuel Type"
                             genderList={fuelType} />
-                        <div className='form-control-input'>
-                            <FormControl variant="outlined">
-                                <Autocomplete
-                                    disablePortal
-                                    id="search-reporting-manager"
-                                    options={searchVendor}
-                                    autoComplete
-                                    open={openSearchVendor}
-                                    onOpen={() => {
-                                        setOpenSearchVendor(true);
-                                    }}
-                                    onClose={() => {
-                                        setOpenSearchVendor(false);
-                                    }}
-                                    onChange={(e, val) => onChangeHandler(val, "Vendor", "vendorId")}
-                                    getOptionKey={(vendor) => vendor.vendorId}
-                                    getOptionLabel={(vendor) => vendor.vendorName}
-                                    freeSolo
-                                    name="Vendor"
-                                    renderInput={(params) => <TextField {...params} label="Search Vendor Name" onChange={searchForVendor} />}
+                        {
+                            EditVehicleData?.id ?
+                                <TextInputField
+                                    name="vendorName"
+                                    label="Vendor Name" 
+                                    disabled={true}
                                 />
-                            </FormControl>
-                        </div>
+                                :
+                                <div className='form-control-input'>
+                                    <FormControl variant="outlined">
+                                        <Autocomplete
+                                            disablePortal
+                                            id="search-reporting-manager"
+                                            options={searchVendor}
+                                            autoComplete
+                                            open={openSearchVendor}
+                                            onOpen={() => {
+                                                setOpenSearchVendor(true);
+                                            }}
+                                            onClose={() => {
+                                                setOpenSearchVendor(false);
+                                            }}
+                                            onChange={(e, val) => onChangeHandler(val, "Vendor", "vendorId")}
+                                            getOptionKey={(vendor) => vendor.vendorId}
+                                            getOptionLabel={(vendor) => vendor.vendorName}
+                                            freeSolo
+                                            name="Vendor"
+                                            renderInput={(params) => <TextField {...params} label="Search Vendor Name" onChange={searchForVendor} />}
+                                        />
+                                    </FormControl>
+                                </div>
+                        }
+                        
+                        
                         <SelectInputField
                             name="officeId"
                             label="Office Id"

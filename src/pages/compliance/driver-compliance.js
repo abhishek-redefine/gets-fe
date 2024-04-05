@@ -142,7 +142,7 @@ const DriverCompliance = () => {
                 </div>
             </div>}
             {
-                viewDriverOpen && <AddDriverPendingApproval ViewDetailsData={editDriverData} SetAddDriverOpen={onSuccess}/>
+                viewDriverOpen && <AddDriverPendingApproval ViewDetailsData={editDriverData} SetAddDriverOpen={onSuccess} isView={true}/>
             }
         </div>
     );

@@ -536,7 +536,7 @@ const VehicleProfile = () => {
                 addVehicleOpen && <AddNewVehicle SetAddVehicleOpen={cancelHandler} EditVehicleData={editVehicleData} />
             }
             {
-                viewVehicleOpen && <AddVehiclePendingApproval ViewDetailsData={editVehicleData} viewVehicleOpen={onSuccess}/>
+                viewVehicleOpen && <AddVehiclePendingApproval ViewDetailsData={editVehicleData} viewVehicleOpen={onSuccess} isView={true}/>
             }
         </div>
     );

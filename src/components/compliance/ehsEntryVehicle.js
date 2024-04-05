@@ -17,8 +17,25 @@ import {
 } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import moment from "moment";
+import IframeComponent from "../iframe/Iframe";
+import Modal from "@mui/material/Modal";
+import Box from "@mui/material/Box";
 
-const EhsEntryVehicle = ({ EhsVehicleData, ehsStatusList }) => {
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 800,
+  bgcolor: "background.paper",
+  height: 600,
+};
+
+const EhsEntryVehicle = ({
+  EhsVehicleData,
+  ehsStatusList,
+  setEhsVehicleOpen,
+}) => {
   console.log("EhsEntryVehicle", EhsVehicleData);
   const headers = [
     {
@@ -26,7 +43,7 @@ const EhsEntryVehicle = ({ EhsVehicleData, ehsStatusList }) => {
       display: "Ehs Name",
     },
     {
-      key: "ehsMandate",
+      key: "ehsMandatoryStatus",
       display: "Mandatory Status",
     },
     {
@@ -80,13 +97,26 @@ const EhsEntryVehicle = ({ EhsVehicleData, ehsStatusList }) => {
   const [searchBean, setSearchBean] = useState({
     createdDate: "",
     ehsStatus: "",
-    entityId: EhsDriverData.id,
+    entityId: EhsVehicleData.id,
   });
 
+  const [documentUrl, setDocumentUrl] = useState();
+  const [noFile, setNoFile] = useState(false);
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
   const onMenuItemClick = async (key, clickedItem) => {
-    if (key === "addValues") {
-      setEditEhsEntryVehicle(clickedItem);
-      //setEditEhsEntryVehicleOpen(true);
+    if (key === "view") {
+      if (clickedItem?.ehsFileUrl != "") {
+        setNoFile(false);
+        setDocumentUrl(clickedItem?.ehsFileUrl.replace("gets-dev.",""));
+        handleOpen();
+      } else {
+        setNoFile(true);
+        setDocumentUrl("");
+        handleOpen();
+      }
     }
   };
 
@@ -110,7 +140,7 @@ const EhsEntryVehicle = ({ EhsVehicleData, ehsStatusList }) => {
           )
         : await ComplianceService.getEhsHistoryByVehicleId(params.toString(), {
             createdDate: date,
-            entityId: EhsDriverData.id,
+            entityId: EhsVehicleData.id,
           });
       console.log(response.data.vehicleEhsHistories);
       setEhsVehicleData(response.data.vehicleEhsHistories);
@@ -225,10 +255,26 @@ const EhsEntryVehicle = ({ EhsVehicleData, ehsStatusList }) => {
             <div className="form-control-input" style={{ minWidth: "70px" }}>
               <button
                 type="submit"
-                onClick={() => searchEhsHistory(true)}
+                onClick={() => {
+                  searchEhsHistory(true);
+                  setEhsStatus("");
+                }}
                 className="btn btn-primary filterApplyBtn"
               >
                 Reset
+              </button>
+            </div>
+            <div className="form-control-input" style={{ minWidth: "70px" }}>
+              <button
+                type="submit"
+                onClick={() => {
+                  searchEhsHistory(true);
+                  setEhsStatus("");
+                  setEhsVehicleOpen(false);
+                }}
+                className="btn btn-primary filterApplyBtn"
+              >
+                Back
               </button>
             </div>
           </div>
@@ -239,6 +285,22 @@ const EhsEntryVehicle = ({ EhsVehicleData, ehsStatusList }) => {
               onMenuItemClick={onMenuItemClick}
             />
           </div>
+          <Modal
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+          >
+            <Box sx={style}>
+              {noFile ? (
+                <div>
+                  <h1>No file is present</h1>
+                </div>
+              ) : (
+                <IframeComponent url={documentUrl} />
+              )}
+            </Box>
+          </Modal>
         </div>
       )}
       {editEhsEntryVehicleOpen && (

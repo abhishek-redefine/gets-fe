@@ -14,11 +14,17 @@ const compliance = (WrappedComponent) => {
         };
 
         useEffect(() => {
-            let routeName = router?.pathname?.split("/");
-            routeName = routeName?.[routeName?.length - 1];
-            if (routeName) {
-                setCurrentActiveState(routeName);
+            try{
+                let routeName = router?.pathname?.split("/");
+                routeName = routeName?.[routeName?.length - 1];
+                if (routeName) {
+                    setCurrentActiveState(routeName);
+                }
             }
+            catch(err){
+                console.log(err);
+            }
+            
         }, []);
     
         return (

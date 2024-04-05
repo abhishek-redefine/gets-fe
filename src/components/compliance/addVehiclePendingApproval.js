@@ -23,7 +23,7 @@ const style = {
   height: 600,
 };
 
-const AddVehiclePendingApproval = ({ ViewDetailsData,viewVehicleOpen }) => {
+const AddVehiclePendingApproval = ({ ViewDetailsData,viewVehicleOpen,isView }) => {
   const [initialValues, setInitialValues] = useState({
     vehicleId: "",
     vehicleRegistrationNumber: "",
@@ -342,17 +342,30 @@ const AddVehiclePendingApproval = ({ ViewDetailsData,viewVehicleOpen }) => {
             )}
           </div>
         </div>
-        <div className="addBtnContainer" style={{ justifyContent: "end" }}>
-          <button className="btn btn-secondary" onClick={() => handleOpen()}>
-            Reject
-          </button>
-          <button
-            className="btn btn-primary"
-            onClick={() => approveVehicle(true)}
-          >
-            Approve
-          </button>
-        </div>
+        {
+          !isView ?
+            <div className="addBtnContainer" style={{ justifyContent: "end" }}>
+              <button className="btn btn-secondary" onClick={() => handleOpen()}>
+                Reject
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => approveVehicle(true)}
+              >
+                Approve
+              </button>
+            </div>
+            :
+            <div className="addBtnContainer" style={{ justifyContent: "end" }}>
+              <button
+                className="btn btn-primary"
+                onClick={() => viewVehicleOpen()}
+              >
+                Back
+              </button>
+            </div>
+        }
+        
       </div>
       <Dialog
         open={open}

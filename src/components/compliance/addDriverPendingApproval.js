@@ -25,7 +25,7 @@ const style = {
   height: 600,
 };
 
-const AddDriverPendingApproval = ({ ViewDetailsData, SetAddDriverOpen }) => {
+const AddDriverPendingApproval = ({ ViewDetailsData, SetAddDriverOpen,isView }) => {
   const [initialValues, setInitialValues] = useState({
     name: "",
     mobile: "",
@@ -408,17 +408,30 @@ const AddDriverPendingApproval = ({ ViewDetailsData, SetAddDriverOpen }) => {
             )}
           </div>
         </div>
-        <div className="addBtnContainer" style={{ justifyContent: "end" }}>
-          <button className="btn btn-secondary" onClick={() => handleOpen()}>
-            Reject
-          </button>
-          <button
-            className="btn btn-primary"
-            onClick={() => approveDriver(true)}
-          >
-            Approve
-          </button>
-        </div>
+        {
+          !isView ?
+            <div className="addBtnContainer" style={{ justifyContent: "end" }}>
+              <button className="btn btn-secondary" onClick={() => handleOpen()}>
+                Reject
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => approveDriver(true)}
+              >
+                Approve
+              </button>
+            </div>
+            :
+            <div className="addBtnContainer" style={{ justifyContent: "end" }}>
+              <button
+                className="btn btn-primary"
+                onClick={() => SetAddDriverOpen()}
+              >
+                Back
+              </button>
+            </div>
+        }
+        
       </div>
       <Dialog
         open={open}

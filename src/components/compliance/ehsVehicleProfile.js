@@ -295,7 +295,7 @@ const EhsVehicleProfile = () => {
                 </div>
             </div>}
             {
-                ehsVehicleOpen && <EhsEntryVehicle EhsVehicleData={ehsVehicleData} ehsStatusList={ehsStatusList}/>
+                ehsVehicleOpen && <EhsEntryVehicle EhsVehicleData={ehsVehicleData} setEhsVehicleOpen={setEhsVehicleOpen} ehsStatusList={ehsStatusList}/>
             }
         </div>
     );

@@ -209,11 +209,11 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
         try {
             if (EditDriverData?.id) {
                 values.id = driverId;
-                values.vendorName = vendorName;
-                if(vendorName === ""){
-                    alert("please enter vendor");
-                    return;
-                }
+                // values.vendorName = vendorName;
+                // if(vendorName === ""){
+                //     alert("please enter vendor");
+                //     return;
+                // }
                 const response = await ComplianceService.updateDriver({ "driver": values });
                 if (response.status === 200) {
                     setDriverId(response.data.driver.id);
@@ -232,7 +232,6 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                 const response = await ComplianceService.createDriver({ "driver": values });
                 if (response.status === 200) {
                     setDriverId(response.data.driver.id);
-                    setUploadFlag(true);
                     dispatch(toggleToast({ message: 'Driver details added successfully!', type: 'success' }));
                     return true;
                 } else if (response.status === 500) {
@@ -311,6 +310,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
             formData.append('file', data);
             const response = await ComplianceService.documentUpload(id, role, documentToUpload, formData);
             if (response.status === 200) {
+                dispatch(toggleToast({ message: `${documentToUpload.replace("/","").replace("_"," ")} uploaded successfully!`, type: 'success' }));
                 if(documentToUpload === "/LICENSE_CERTIFICATE"){
                     setUploadCount(uploadCount + 1);
                     EditDriverData.licenseUrl = response.data.driver.licenseUrl;
@@ -337,7 +337,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                 else if(documentToUpload === "/DRIVER_MEDICAL_CERTIFICATE"){
                     EditDriverData.medicalCertUrl = response.data.driver.medicalCertUrl;
                 }
-                dispatch(toggleToast({ message: 'Data uploaded successfully!', type: 'success' }));
+                //dispatch(toggleToast({ message: 'Data uploaded successfully!', type: 'success' }));
                 return true;
             } else if (response.status === 500) {
                 dispatch(toggleToast({ message: 'Data not uploaded. Please try again after some time!', type: 'error' }));
@@ -375,18 +375,18 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
         SetAddDriverOpen(false);
     }
 
-    useEffect(()=>{
-        if(driverId && uploadFlag){
-            EditDriverData.licenseUrl = "";
-            EditDriverData.photoUrl = "";
-            EditDriverData.bgvUrl = "";
-            EditDriverData.policeVerificationUrl = "";
-            EditDriverData.badgeUrl = "";
-            EditDriverData.undertakingUrl = "";
-            EditDriverData.driverTrainingCertUrl = "";
-            EditDriverData.medicalCertUrl = "";
-        }
-    },[driverId])
+    // useEffect(()=>{
+    //     if(driverId){
+    //         EditDriverData?.licenseUrl = "";
+    //         EditDriverData?.photoUrl = "";
+    //         EditDriverData?.bgvUrl = "";
+    //         EditDriverData?.policeVerificationUrl = "";
+    //         EditDriverData?.badgeUrl = "";
+    //         EditDriverData?.undertakingUrl = "";
+    //         EditDriverData?.driverTrainingCertUrl = "";
+    //         EditDriverData?.medicalCertUrl = "";
+    //     }
+    // },[driverId])
 
     useEffect(() => {
         if(SetAddDriverOpen) initializer();
@@ -414,6 +414,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
         if (EditDriverData?.id) {
             let newEditInfo = Object.assign(initialValues, EditDriverData);
             setInitialValues(newEditInfo);
+            setVendorName(EditDriverData?.vendorName)
         }
     }, [EditDriverData]);
 
@@ -457,29 +458,37 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                             name="officeId"
                             label="Office ID"
                             genderList={officeList} />
-                        <div className='form-control-input'>
-                            <FormControl variant="outlined">
-                                <Autocomplete
-                                    disablePortal
-                                    id="search-vendor"
-                                    options={searchVendor}
-                                    autoComplete
-                                    open={openSearchVendor}
-                                    onOpen={() => {
-                                        setOpenSearchVendor(true);
-                                    }}
-                                    onClose={() => {
-                                        setOpenSearchVendor(false);
-                                    }}
-                                    onChange={(e, val) => onChangeHandler(val, "Vendor", "vendorId")}
-                                    getOptionKey={(vendor) => vendor.vendorId}
-                                    getOptionLabel={(vendor) => vendor.vendorName}
-                                    freeSolo
-                                    name="Vendor"
-                                    renderInput={(params) => <TextField {...params} label="Search Vendor Name" onChange={searchForVendor} />}
-                                />
-                            </FormControl>
-                        </div>
+                        {
+                            EditDriverData?.id ?
+                            <TextInputField
+                                name="vendorName"
+                                label="Vendor Name" 
+                                disabled={true}/>
+                            :
+                            <div className='form-control-input'>
+                                <FormControl variant="outlined">
+                                    <Autocomplete
+                                        disablePortal
+                                        id="search-vendor"
+                                        options={searchVendor}
+                                        autoComplete
+                                        open={openSearchVendor}
+                                        onOpen={() => {
+                                            setOpenSearchVendor(true);
+                                        }}
+                                        onClose={() => {
+                                            setOpenSearchVendor(false);
+                                        }}
+                                        onChange={(e, val) => onChangeHandler(val, "Vendor", "vendorId")}
+                                        getOptionKey={(vendor) => vendor.vendorId}
+                                        getOptionLabel={(vendor) => vendor.vendorName}
+                                        freeSolo
+                                        name="Vendor"
+                                        renderInput={(params) => <TextField {...params} label="Search Vendor Name" onChange={searchForVendor} />}
+                                    />
+                                </FormControl>
+                            </div>
+                        }
                         <TextInputField
                             name="licenseNo"
                             label="License No" />

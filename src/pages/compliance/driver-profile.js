@@ -532,7 +532,7 @@ const DriverProfile = () => {
                 addDriverOpen && <AddNewDriver SetAddDriverOpen={cancelHandler} EditDriverData={editDriverData} />
             }
             {
-                viewDriverOpen && <AddDriverPendingApproval SetAddDriverOpen={onSuccess} ViewDetailsData={editDriverData} />
+                viewDriverOpen && <AddDriverPendingApproval SetAddDriverOpen={onSuccess} ViewDetailsData={editDriverData} isView={true}/>
             }
             {
                 viewEhsDriverOpen && <EhsEntryDriver SetAddDriverOpen={setAddDriverOpen} EhsDetailsData={editDriverData} />

@@ -16,11 +16,11 @@ import EhsEntryComponent from "./ehsEntryComponent";
 const VehicleEhsEntry = () => {
   const headers = [
     {
-      key: "ehsName",
+      key: "ehsTitle",
       display: "EHS Name",
     },
     {
-      key: "ehsMandate",
+      key: "ehsMandatoryStatus",
       display: "EHS Mandate",
     },
     {
@@ -28,7 +28,7 @@ const VehicleEhsEntry = () => {
       display: "Frequency",
     },
     {
-      key: "dueDate",
+      key: "ehsDueDate",
       display: "Checked Due Date",
     },
     {
@@ -91,8 +91,8 @@ const VehicleEhsEntry = () => {
     try {
       const response = await ComplianceService.getAllEhsByVehicleId(vehicleId);
       const { data } = response || {};
-      console.log(data.driverEhsDTO);
-      setEhsList(data.driverEhsDTO);
+      console.log(data.vehicleEhsDTO);
+      setEhsList(data.vehicleEhsDTO);
     } catch (err) {
       console.log(err);
     }
