@@ -16,6 +16,7 @@ import IframeComponent from '../iframe/Iframe';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import MasterDataService from '@/services/masterdata.service';
+import dayjs from 'dayjs';
 
 const style = {
     position: 'absolute',
@@ -439,25 +440,25 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
         }
         if(EditVehicleData?.id){
             var documentCount = 0;
-            if(EditVehicleData?.registrationCertificateUrl != ""){
+            if(EditVehicleData?.registrationCertificateUrl && EditVehicleData.registrationCertificateUrl != ""){
                 documentCount++;
             }
-            if(EditVehicleData?.fitnessCertificateUrl != ""){
+            if(EditVehicleData?.fitnessCertificateUrl && EditVehicleData.fitnessCertificateUrl != ""){
                 documentCount++;
             }
-            if(EditVehicleData?.insuranceUrl != ""){
+            if(EditVehicleData?.insuranceUrl && EditVehicleData.insuranceUrl != ""){
                 documentCount++;
             }
-            if(EditVehicleData?.statePermitUrl != ""){
+            if(EditVehicleData?.statePermitUrl && EditVehicleData.statePermitUrl != ""){
                 documentCount++;
             }
-            if(EditVehicleData?.pollutionCertificateUrl != ""){
+            if(EditVehicleData?.pollutionCertificateUrl && EditVehicleData.pollutionCertificateUrl != ""){
                 documentCount++;
             }
-            if(EditVehicleData?.nationalPermitUrl != ""){
+            if(EditVehicleData?.nationalPermitUrl && EditVehicleData.nationalPermitUrl != ""){
                 documentCount++;
             }
-            if(EditVehicleData?.roadTaxCertificateUrl != ""){
+            if(EditVehicleData?.roadTaxCertificateUrl && EditVehicleData.roadTaxCertificateUrl != ""){
                 documentCount++;
             }
             setUploadCount(documentCount);
@@ -577,40 +578,50 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                             genderList={officeList} />
                         <DateInputField
                             name="registrationDate"
-                            label="Registration Date" />
+                            label="Registration Date" 
+                            maxDate={dayjs()}/>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                         <DateInputField
                             name="manufacturingDate"
-                            label="Manufacturing Date" />
+                            label="Manufacturing Date" 
+                            maxDate={dayjs()}/>
                         <DateInputField
                             name="inductionDate"
-                            label="Induction Date" />
+                            label="Induction Date" 
+                            minDate={dayjs()}/>
                         <DateInputField
                             name="insuranceExpiryDate"
-                            label="Insurance Expiry Date" />
+                            label="Insurance Expiry Date" 
+                            minDate={dayjs()}/>
                         <DateInputField
                             name="roadTaxExpiryDate"
-                            label="Road Tax Expiry Date" />
+                            label="Road Tax Expiry Date"
+                            minDate={dayjs()} />
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                         <DateInputField
                             name="pollutionExpiryDate"
-                            label="Pollution Expiry Date" />
+                            label="Pollution Expiry Date" 
+                            minDate={dayjs()}/>
                         <DateInputField
                             name="statePermitExpiryDate"
-                            label="State Permit Expiry Date" />
+                            label="State Permit Expiry Date" 
+                            minDate={dayjs()}/>
                         <DateInputField
                             name="nationalPermitExpiryDate"
-                            label="National Permit Expiry Date" />
+                            label="National Permit Expiry Date" 
+                            minDate={dayjs()}/>
                         <DateInputField
                             name="fitnessExpiryDate"
-                            label="Fitness Expiry Date" />
+                            label="Fitness Expiry Date" 
+                            minDate={dayjs()}/>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                         <DateInputField
                             name="fitnessDate"
-                            label="Fitness Date" />
+                            label="Fitness Date" 
+                            minDate={dayjs()}/>
                         <TextInputField
                             name="garageLocation"
                             label="Garage Location" />

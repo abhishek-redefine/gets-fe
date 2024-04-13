@@ -52,6 +52,11 @@ const CreateShiftTime = ({
     const [officeList, setOfficeList] = useState([]);
     const [startDate, setStartDate] = useState(dayjs());
     const [endDate, setEndDate] = useState(dayjs().month(new Date().getMonth() + 1));
+    const [shiftTypeError,setShiftTypeError] = useState(false);
+    const [transportTypeError,setTransportTypeError] = useState(false);
+    const [officeIdError,setOfficeIdError] = useState(false);
+    const [routeError,setRouteError] = useState(false);
+    const [weekDayError,setWeekDayError] = useState(false);
     const [formValues, setFormValues] = useState({
         "shiftTime": editValues ? editValues.shiftTime : '00:00',
         "shiftType": editValues ? editValues.shiftType : "",
@@ -75,6 +80,50 @@ const CreateShiftTime = ({
         "shiftNoShowBookingAttribute": editValues ? editValues.shiftNoShowBookingAttribute : "{\"Monday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Tuesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Wednesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Thursday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Friday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Saturday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Sunday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0}}",
     });
 
+    const checkValidation = () =>{
+        var errorFlag = false;
+        var weekDayFlag = true;
+        if(formValues.shiftTime === "") {errorFlag=true;}
+        if(formValues.shiftType === "") {errorFlag= true; setShiftTypeError(true)}
+        else{setShiftTypeError(false)}
+        if(formValues.transportTypes === "") {errorFlag=true; setTransportTypeError(true)}
+        else{setTransportTypeError(false)}
+        if(formValues.officeIds === ""){errorFlag=true; setOfficeIdError(true)}
+        else{setOfficeIdError(false)}
+        if(formValues.routeTypes === ""){errorFlag=true; setRouteError(true)}
+        else{setRouteError(false)}
+        const entries = Object.entries(formValues);
+        for (let [key, value] of entries) {
+            switch (key){
+                case "sundayShift" :
+                    weekDayFlag = value === false ? true : false;
+                    break;
+                case "mondayShift" :
+                    weekDayFlag = value === false ? true : false;
+                    break;
+                case "tuesdayShift" :
+                    weekDayFlag = value === false ? true : false;
+                    break;
+                case "wednesdayShift" :
+                    weekDayFlag = value === false ? true : false;
+                    break;
+                case "thursdayShift" :
+                    weekDayFlag = value === false ? true : false;
+                    break;
+                case "fridayShift" :
+                    weekDayFlag = value === false ? true : false;
+                    break;
+                case "saturdayShift" :
+                    weekDayFlag = value === false ? true : false;
+                    break;
+                default :
+                    break;
+            }
+        }
+        if(weekDayFlag){errorFlag=true;  setWeekDayError(true)}
+        else{setWeekDayError(false)}
+        return !errorFlag;
+    }
     const handleDaySelect = (event) => {
         const {
             target: { value },
@@ -147,68 +196,75 @@ const CreateShiftTime = ({
 
     const createShiftFormSubmit = async () => {
         try {
-            const response = await ShiftService.createShift({ "shift": formValues });
-            if (response.data === 'Shift has been created') {
-                setFormValues({
-                    "shiftTime": '00:00',
-                    "shiftType": "",
-                    "officeIds": "",
-                    "transportTypes": "",
-                    "weekDaysVisibility": "",
-                    "isVisibleOnHoliday": false,
-                    "shiftStartDate": dayjs().format('DD-MM-YYYY'),
-                    "shiftEndDate": "",
-                    "routeTypes": "",
-                    "sundayShift": false,
-                    "mondayShift": false,
-                    "tuesdayShift": false,
-                    "wednesdayShift": false,
-                    "thursdayShift": false,
-                    "fridayShift": false,
-                    "saturdayShift": false,
-                    "enabled": true,
-                    "shiftCancelBookingAttribute": "{\"Monday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Tuesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Wednesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Thursday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Friday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Saturday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Sunday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0}}",
-                    "shiftCreateBookingAttribute": "{\"Monday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Tuesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Wednesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Thursday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Friday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Saturday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Sunday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0}}",
-                    "shiftNoShowBookingAttribute": "{\"Monday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Tuesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Wednesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Thursday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Friday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Saturday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Sunday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0}}",
-                });
-                setDays([])
-                dispatch(toggleToast({ message: 'Shift created successfully!', type: 'success' }));
-                onSuccess();
+            const valid = checkValidation();
+            if(valid){
+                const response = await ShiftService.createShift({ "shift": formValues });
+                if (response.data === 'Shift has been created') {
+                    setFormValues({
+                        "shiftTime": '00:00',
+                        "shiftType": "",
+                        "officeIds": "",
+                        "transportTypes": "",
+                        "weekDaysVisibility": "",
+                        "isVisibleOnHoliday": false,
+                        "shiftStartDate": dayjs().format('DD-MM-YYYY'),
+                        "shiftEndDate": "",
+                        "routeTypes": "",
+                        "sundayShift": false,
+                        "mondayShift": false,
+                        "tuesdayShift": false,
+                        "wednesdayShift": false,
+                        "thursdayShift": false,
+                        "fridayShift": false,
+                        "saturdayShift": false,
+                        "enabled": true,
+                        "shiftCancelBookingAttribute": "{\"Monday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Tuesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Wednesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Thursday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Friday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Saturday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Sunday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0}}",
+                        "shiftCreateBookingAttribute": "{\"Monday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Tuesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Wednesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Thursday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Friday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Saturday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Sunday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0}}",
+                        "shiftNoShowBookingAttribute": "{\"Monday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Tuesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Wednesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Thursday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Friday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Saturday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Sunday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0}}",
+                    });
+                    setDays([])
+                    dispatch(toggleToast({ message: 'Shift created successfully!', type: 'success' }));
+                    onSuccess();
+                }
             }
         } catch (e) {
+            console.log(e);
         }
     }
     const editShiftFormSubmit = async () => {
         try {
-            console.log(formValues)
-            formValues.id=editValues.id;
-            const response = await ShiftService.updateShift({ "shift": formValues }); 
-            if (response.status === 200) {
-                setFormValues({
-                    "shiftTime": '00:00',
-                    "shiftType": "",
-                    "officeIds": "",
-                    "transportTypes": "",
-                    "weekDaysVisibility": "",
-                    "isVisibleOnHoliday": false,
-                    "shiftStartDate": "",
-                    "shiftEndDate": "",
-                    "routeTypes": "",
-                    "sundayShift": false,
-                    "mondayShift": false,
-                    "tuesdayShift": false,
-                    "wednesdayShift": false,
-                    "thursdayShift": false,
-                    "fridayShift": false,
-                    "saturdayShift": false,
-                    "enabled": true,
-                    "shiftCancelBookingAttribute": "{\"Monday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Tuesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Wednesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Thursday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Friday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Saturday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Sunday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0}}",
-                    "shiftCreateBookingAttribute": "{\"Monday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Tuesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Wednesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Thursday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Friday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Saturday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Sunday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0}}",
-                    "shiftNoShowBookingAttribute": "{\"Monday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Tuesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Wednesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Thursday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Friday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Saturday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Sunday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0}}",
-                });
-                setDays([])
-                dispatch(toggleToast({ message: 'Shift updated successfully!', type: 'success' }));
-                onSuccess();
+            const valid = checkValidation();
+            if(valid){
+                console.log(formValues)
+                formValues.id=editValues.id;
+                const response = await ShiftService.updateShift({ "shift": formValues }); 
+                if (response.status === 200) {
+                    setFormValues({
+                        "shiftTime": '00:00',
+                        "shiftType": "",
+                        "officeIds": "",
+                        "transportTypes": "",
+                        "weekDaysVisibility": "",
+                        "isVisibleOnHoliday": false,
+                        "shiftStartDate": "",
+                        "shiftEndDate": "",
+                        "routeTypes": "",
+                        "sundayShift": false,
+                        "mondayShift": false,
+                        "tuesdayShift": false,
+                        "wednesdayShift": false,
+                        "thursdayShift": false,
+                        "fridayShift": false,
+                        "saturdayShift": false,
+                        "enabled": true,
+                        "shiftCancelBookingAttribute": "{\"Monday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Tuesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Wednesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Thursday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Friday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Saturday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Sunday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0}}",
+                        "shiftCreateBookingAttribute": "{\"Monday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Tuesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Wednesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Thursday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Friday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Saturday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Sunday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0}}",
+                        "shiftNoShowBookingAttribute": "{\"Monday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Tuesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Wednesday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Thursday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Friday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Saturday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0},\"Sunday\":{\"EmployeeAvailability\":\"No\",\"CutoffforEmployee\":0,\"SpocAvailability\":\"No\",\"CutoffforSpoc\":0}}",
+                    });
+                    setDays([])
+                    dispatch(toggleToast({ message: 'Shift updated successfully!', type: 'success' }));
+                    onSuccess();
+                }
             }
         } catch (e) {
         }
@@ -313,6 +369,7 @@ const CreateShiftTime = ({
                                 value={formValues.shiftType}
                                 name="shiftType"
                                 label="Shift Type"
+                                error={shiftTypeError}
                                 onChange={(e) => setFormValues({ ...formValues, shiftType: e.target.value })}
                             >
                                 {shiftTypeList?.map((item, idx) => (
@@ -330,6 +387,7 @@ const CreateShiftTime = ({
                                 value={formValues.transportTypes}
                                 name="transportType"
                                 label="Transport Type"
+                                error={transportTypeError}
                                 onChange={(e) => setFormValues({ ...formValues, transportTypes: e.target.value })}
                             >
                                 {!!transportTypeList?.length && transportTypeList.map((item, idx) => (
@@ -349,6 +407,7 @@ const CreateShiftTime = ({
                                 value={formValues.officeIds}
                                 name="primaryOfficeId"
                                 label="Primary Office"
+                                error={officeIdError}
                                 onChange={(e) => setFormValues({ ...formValues, officeIds: e.target.value })}
                             >
                                 {!!officeList?.length && officeList.map((office, idx) => (
@@ -370,6 +429,7 @@ const CreateShiftTime = ({
                                 renderValue={(selected) => selected.join(', ')}
                                 MenuProps={MenuProps}
                                 defaultValue={'Monday'}
+                                error={weekDayError}
                             >
                                 {dayNames.map((name) => (
                                     <MenuItem key={name} value={name}>
@@ -429,6 +489,7 @@ const CreateShiftTime = ({
                                 value={formValues.routeTypes}
                                 name="routeType"
                                 label="Route Type"
+                                error={routeError}
                                 onChange={(e) => setFormValues({ ...formValues, routeTypes: e.target.value })}
                             >
                                 {!!routeTypeList?.length && routeTypeList.map((item, idx) => (

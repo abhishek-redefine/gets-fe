@@ -9,7 +9,7 @@ import { FormHelperText } from '@mui/material';
 import moment from 'moment';
 import { DATE_FORMAT } from '@/constants/app.constants.';
 
-const DateInputField = ({ label, ...props }) => {
+const DateInputField = ({ label,maxDate="",minDate="", ...props }) => {
     const [field, meta] = useField(props);
     const { setFieldValue } = useFormikContext();
 
@@ -22,6 +22,8 @@ const DateInputField = ({ label, ...props }) => {
                         {...field}
                         {...props}
                         format='DD-MM-YYYY'
+                        maxDate={maxDate}
+                        minDate={minDate}
                         value={meta.value ? dayjs(meta.value) : null}
                         onChange={newValue => {
                             setFieldValue(field.name, moment(newValue)._i.format(DATE_FORMAT));
