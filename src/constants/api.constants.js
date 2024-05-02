@@ -113,4 +113,12 @@ export const API_PATH = {
     VEHICLE_DRIVER_FORCE_MAPPING: '/vehicleDriverMapping/forceMapping/',
     EHS_INSPECTION : '/ehs/inspection' ,
     HISTORY : '/history',
+    ZONE : '/zone',
+    ENABLE : '/enable',
+    AREA : '/area',
+    SEARCH_BY_BEAN : '/searchByBean',
+    NODAL : '/nodal',
+    BUS_ROUTE : '/busRoute',
+    SHUTTLE_ROUTE : '/shuttleRoute',
+    SEARCH_NODAL: '/search/autoSuggestNodal/'
 };

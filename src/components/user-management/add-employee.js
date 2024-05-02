@@ -510,6 +510,7 @@ const AddEmployee = ({
                                 onClose={() => {
                                     setOpenSearchRM(false);
                                 }}
+                                defaultValue={{}}
                                 onChange={(e, val) => onChangeHandler(val, "reportingManager", "empId")}
                                 getOptionKey={(rm) => rm.empId}
                                 getOptionLabel={(rm) => `${rm.data}, ${rm.empId}`}

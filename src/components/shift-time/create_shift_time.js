@@ -3,7 +3,6 @@ import OfficeService from '@/services/office.service';
 import dayjs from 'dayjs';
 import { getFormattedLabel } from '@/utils/utils';
 import { FormControl, FormControlLabel, InputLabel, MenuItem, Select } from '@mui/material';
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -346,17 +345,15 @@ const CreateShiftTime = ({
                     <div className='form-control-input'>
                         <FormControl required>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DemoContainer components={['TimeField', 'TimeField', 'TimeField']}>
-                                    <TimeField
-                                        label="Shift Time"
-                                        value={dayjs().hour(Number(formValues.shiftTime.slice(0, 2))).minute(Number(formValues.shiftTime.slice(3, 5)))}
-                                        format="HH:mm"
-                                        onChange={(e) => {
-                                            var ShiftTime = e.$d.toLocaleTimeString('it-IT').slice(0, -3);
-                                            setFormValues({ ...formValues, shiftTime: ShiftTime });
-                                        }}
-                                    />
-                                </DemoContainer>
+                                <TimeField
+                                    label="Shift Time"
+                                    value={dayjs().hour(Number(formValues.shiftTime.slice(0, 2))).minute(Number(formValues.shiftTime.slice(3, 5)))}
+                                    format="HH:mm"
+                                    onChange={(e) => {
+                                        var ShiftTime = e.$d.toLocaleTimeString('it-IT').slice(0, -3);
+                                        setFormValues({ ...formValues, shiftTime: ShiftTime });
+                                    }}
+                                />
                             </LocalizationProvider>
                         </FormControl>
                     </div>
@@ -448,19 +445,17 @@ const CreateShiftTime = ({
                     <div className='form-control-input'>
                         <FormControl required>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DemoContainer components={['DatePicker', 'DatePicker']}>
-                                    <DatePicker
-                                        label="Start Date"
-                                        value={startDate}
-                                        format='DD/MM/YYYY'
-                                        onChange={(newValue) => {
-                                            var ShiftStartDate = dayjs(newValue).format('DD-MM-YYYY HH:mm:ss');
-                                            console.log(ShiftStartDate);
-                                            setStartDate(newValue);
-                                            setFormValues({ ...formValues, shiftStartDate: ShiftStartDate });
-                                        }}
-                                    />
-                                </DemoContainer>
+                                <DatePicker
+                                    label="Start Date"
+                                    value={startDate}
+                                    format='DD/MM/YYYY'
+                                    onChange={(newValue) => {
+                                        var ShiftStartDate = dayjs(newValue).format('DD-MM-YYYY HH:mm:ss');
+                                        console.log(ShiftStartDate);
+                                        setStartDate(newValue);
+                                        setFormValues({ ...formValues, shiftStartDate: ShiftStartDate });
+                                    }}
+                                />
                             </LocalizationProvider>
                         </FormControl>
                     </div>
