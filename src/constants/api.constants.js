@@ -120,5 +120,6 @@ export const API_PATH = {
     NODAL : '/nodal',
     BUS_ROUTE : '/busRoute',
     SHUTTLE_ROUTE : '/shuttleRoute',
-    SEARCH_NODAL: '/search/autoSuggestNodal/'
+    SEARCH_NODAL: '/search/autoSuggestNodal/',
+    UPDATE : '/update'
 };

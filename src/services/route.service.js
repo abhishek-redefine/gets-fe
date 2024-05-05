@@ -1,7 +1,7 @@
 import { API_PATH } from "@/constants/api.constants";
 import axiosInstance from "./../utils/axios";
 
-const getAllZones = () => {
+const getAllZones = async () => {
   return axiosInstance
     .get(`${API_PATH.API_VERSION}${API_PATH.ZONE}${API_PATH.ALL}`)
     .then((response) => {
@@ -9,7 +9,7 @@ const getAllZones = () => {
     });
 };
 
-const createZone = (value) => {
+const createZone = async (value) => {
   return axiosInstance
     .post(`${API_PATH.API_VERSION}${API_PATH.ZONE}${API_PATH.CREATE}`, value)
     .then((response) => {
@@ -17,7 +17,7 @@ const createZone = (value) => {
     });
 };
 
-const enableDisableZone = (id, flag) => {
+const enableDisableZone = async (id, flag) => {
   return axiosInstance
     .put(
       `${API_PATH.API_VERSION}${API_PATH.ZONE}${API_PATH.ENABLE}/${id}/${flag}`
@@ -27,7 +27,7 @@ const enableDisableZone = (id, flag) => {
     });
 };
 
-const getZonesByOfficeId = (id) => {
+const getZonesByOfficeId = async (id) => {
   let url = `${API_PATH.API_VERSION}${API_PATH.ZONE}${API_PATH.ALL}`;
   url += `?officeId=${id}&page=0&size=25`;
   return axiosInstance.get(url).then((response) => {
@@ -35,7 +35,7 @@ const getZonesByOfficeId = (id) => {
   });
 };
 
-const createArea = (values) => {
+const createArea = async (values) => {
   return axiosInstance
     .post(`${API_PATH.API_VERSION}${API_PATH.AREA}${API_PATH.CREATE}`, values)
     .then((response) => {
@@ -43,7 +43,7 @@ const createArea = (values) => {
     });
 };
 
-const getAllArea = () => {
+const getAllArea = async () => {
   return axiosInstance
     .post(`${API_PATH.API_VERSION}${API_PATH.AREA}${API_PATH.SEARCH_BY_BEAN}`)
     .then((response) => {
@@ -51,7 +51,7 @@ const getAllArea = () => {
     });
 };
 
-const enableDisableArea = (id, flag) => {
+const enableDisableArea = async (id, flag) => {
   return axiosInstance
     .put(
       `${API_PATH.API_VERSION}${API_PATH.AREA}${API_PATH.ENABLE}/${id}/${flag}`
@@ -61,7 +61,7 @@ const enableDisableArea = (id, flag) => {
     });
 };
 
-const getAllNodalPoints = (params, values) => {
+const getAllNodalPoints = async (params, values) => {
   let url = `${API_PATH.API_VERSION}${API_PATH.NODAL}${API_PATH.SEARCH_BY_BEAN}`;
   if (params) {
     url += `?${params}`;
@@ -71,7 +71,7 @@ const getAllNodalPoints = (params, values) => {
   });
 };
 
-const createNodalPoint = (values) => {
+const createNodalPoint = async (values) => {
   return axiosInstance
     .post(`${API_PATH.API_VERSION}${API_PATH.NODAL}${API_PATH.CREATE}`, values)
     .then((response) => {
@@ -79,7 +79,7 @@ const createNodalPoint = (values) => {
     });
 };
 
-const enableDisableNodalPoint = (id, flag) => {
+const enableDisableNodalPoint = async (id, flag) => {
   return axiosInstance
     .put(
       `${API_PATH.API_VERSION}${API_PATH.NODAL}${API_PATH.ENABLE}/${id}/${flag}`
@@ -95,18 +95,79 @@ const getAllHomeRoutes = () => {
   // .get(`${API_PATH.API_VERSION}${API_PATH.HOME}${API_PATH.HOME_ROUTE}`)
 };
 
-const getAllBusRoute = () => {
+const getAllBusRoute = async () => {
   let url = `${API_PATH.API_VERSION}${API_PATH.BUS_ROUTE}${API_PATH.SEARCH_BY_BEAN}`;
   return axiosInstance.post(url).then((response) => {
     return response;
   });
 };
 
-const getAllShuttleRoute = () => {
+const getAllShuttleRoute = async () => {
   let url = `${API_PATH.API_VERSION}${API_PATH.SHUTTLE_ROUTE}${API_PATH.SEARCH_BY_BEAN}`;
   return axiosInstance.post(url).then((response) => {
     return response;
   });
+};
+
+const autoSuggestNodalPoints = async (text) => {
+  return axiosInstance
+    .get(`${API_PATH.API_VERSION}${API_PATH.SEARCH_NODAL}${text}/0/15`)
+    .then((response) => {
+      return response;
+    });
+};
+
+const createBusRouting = async (value) => {
+  return axiosInstance
+    .post(
+      `${API_PATH.API_VERSION}${API_PATH.BUS_ROUTE}${API_PATH.CREATE}`,
+      value
+    )
+    .then((response) => {
+      return response;
+    });
+};
+
+const updateBusRouting = async (value) => {
+  return axiosInstance
+    .put(
+      `${API_PATH.API_VERSION}${API_PATH.BUS_ROUTE}${API_PATH.UPDATE}`,
+      value
+    )
+    .then((response) => {
+      return response;
+    });
+};
+
+const enableDisableBusRoute = async (id, flag) => {
+  return axiosInstance
+    .put(
+      `${API_PATH.API_VERSION}${API_PATH.BUS_ROUTE}${API_PATH.ENABLE}/${id}/${flag}`
+    )
+    .then((response) => {
+      return response;
+    });
+};
+
+const enableDisableShuttleRoute = async (id, flag) => {
+  return axiosInstance
+    .put(
+      `${API_PATH.API_VERSION}${API_PATH.SHUTTLE_ROUTE}${API_PATH.ENABLE}/${id}/${flag}`
+    )
+    .then((response) => {
+      return response;
+    });
+};
+
+const createShuttleRouting = async (value) => {
+  return axiosInstance
+    .post(
+      `${API_PATH.API_VERSION}${API_PATH.SHUTTLE_ROUTE}${API_PATH.CREATE}`,
+      value
+    )
+    .then((response) => {
+      return response;
+    });
 };
 
 const RoutingService = {
@@ -123,5 +184,11 @@ const RoutingService = {
   getAllHomeRoutes,
   getAllBusRoute,
   getAllShuttleRoute,
+  autoSuggestNodalPoints,
+  createBusRouting,
+  updateBusRouting,
+  enableDisableBusRoute,
+  createShuttleRouting,
+  enableDisableShuttleRoute,
 };
 export default RoutingService;
