@@ -33,8 +33,8 @@ const getLoginLogoutTimeByBean = (queryParams,searchValues) =>{
     });
 }
 
-const getTeamLoginLogoutTimes = (officeId, isIn, transportType,teamId) => {
-    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.SHIFT}${API_PATH.TEAM}/${officeId}/${transportType}/${isIn ? API_PATH.IN : API_PATH.OUT}?teamId=${teamId}`).then((response) => {
+const getTeamLoginLogoutTimes = (officeId, isIn, transportType,teamId,startDate,endDate) => {
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.SHIFT}${API_PATH.TEAM}/${officeId}/${transportType}/${isIn ? API_PATH.IN : API_PATH.OUT}?teamId=${teamId}&startDate=${startDate}&endDate=${endDate}`).then((response) => {
         return response;
     });
 };

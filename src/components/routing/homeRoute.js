@@ -20,31 +20,42 @@ const HomeRoute = () => {
       display: "Area Name",
     },
     {
-      key: "nodalPoint",
-      display: "Nodal Point Name",
+      key: "zone",
+      display: "Zone Name",
     },
-    {
-      key: "hamburgerMenu",
-      html: (
-        <>
-          <span className="material-symbols-outlined">more_vert</span>
-        </>
-      ),
-      navigation: true,
-      menuItems: [
-        {
-          display: "Enable",
-          key: "enable",
-        },
-        {
-          display: "Disable",
-          key: "disable",
-        },
-      ],
-    },
+    // {
+    //   key: "hamburgerMenu",
+    //   html: (
+    //     <>
+    //       <span className="material-symbols-outlined">more_vert</span>
+    //     </>
+    //   ),
+    //   navigation: true,
+    //   menuItems: [
+    //     {
+    //       display: "Enable",
+    //       key: "activate",
+    //     },
+    //     {
+    //       display: "Disable",
+    //       key: "deactivate",
+    //     },
+    //   ],
+    // },
   ];
   const [offices, setOffice] = useState([]);
   const [searchValues, setSearchValues] = useState({ officeId: "" });
+  const [homeRoutes, setHomeRoutes] = useState([]);
+  const [pagination, setPagination] = useState({
+    page: 0,
+    size: 10,
+  });
+  const [paginationData, setPaginationData] = useState();
+  const handlePageChange = (page) => {
+    let updatedPagination = { ...pagination };
+    updatedPagination.page = page;
+    setPagination(updatedPagination);
+  };
 
   const handleFilterChange = (e) => {
     const { target } = e;
@@ -82,8 +93,15 @@ const HomeRoute = () => {
 
   const fetchAllHomeRoutes = async () => {
     try {
-      const response = await RoutingService.getAllHomeRoutes();
+      const params = new URLSearchParams(pagination);
+      const response = await RoutingService.getAllHomeRoutes(params.toString());
       console.log(response);
+      const { data } = response || {};
+      const homeRouteDTO = response.data.data;
+      setHomeRoutes(homeRouteDTO);
+      let localPaginationData = { ...data };
+      delete localPaginationData?.data;
+      setPaginationData(localPaginationData);
     } catch (err) {
       console.log(err);
     }
@@ -91,8 +109,11 @@ const HomeRoute = () => {
 
   useEffect(() => {
     fetchAllOffices();
-    fetchAllHomeRoutes();
   }, []);
+
+  useEffect(() => {
+    fetchAllHomeRoutes();
+  }, [pagination]);
 
   return (
     <div className="internalSettingContainer">
@@ -129,6 +150,15 @@ const HomeRoute = () => {
                 Apply
               </button>
             </div>
+            <div className="form-control-input" style={{ minWidth: "70px" }}>
+              <button
+                type="submit"
+                onClick={() => console.log("clicked")}
+                className="btn btn-primary filterApplyBtn"
+              >
+                Reset
+              </button>
+            </div>
           </div>
           <div
             className="form-control-input"
@@ -140,7 +170,14 @@ const HomeRoute = () => {
             </div>
           </div>
         </div>
-        <Grid headers={headers} />
+        <Grid
+          headers={headers}
+          pageNoText="pageNumber"
+          pagination={paginationData}
+          listing={homeRoutes}
+          handlePageChange={handlePageChange}
+          //enableDisableRow={true}
+        />
       </div>
     </div>
   );

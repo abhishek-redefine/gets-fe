@@ -89,10 +89,14 @@ const enableDisableNodalPoint = async (id, flag) => {
     });
 };
 
-const getAllHomeRoutes = () => {
-  console.log("Need api");
-  // return axiosInstance
-  // .get(`${API_PATH.API_VERSION}${API_PATH.HOME}${API_PATH.HOME_ROUTE}`)
+const getAllHomeRoutes = async (params) => {
+  let url = `${API_PATH.API_VERSION}${API_PATH.HOME_ROUTE}${API_PATH.ALL}`;
+  if (params != "") {
+    url += `?${params}`;
+  }
+  return axiosInstance.get(url).then((response) => {
+    return response;
+  });
 };
 
 const getAllBusRoute = async () => {
@@ -115,6 +119,24 @@ const autoSuggestNodalPoints = async (text) => {
     .then((response) => {
       return response;
     });
+};
+
+const autoSuggestZone = async (text) => {
+  return axiosInstance
+    .get(`${API_PATH.API_VERSION}${API_PATH.SEARCH_ZONE}${text}/0/15`)
+    .then((response) => {
+      return response;
+    });
+};
+
+const autoSuggestArea = async (text, zoneName = "") => {
+  let url = `${API_PATH.API_VERSION}${API_PATH.SEARCH_AREA}${text}/0/15`;
+  if (zoneName != "") {
+    url += `?zoneName=${zoneName}`;
+  }
+  return axiosInstance.get(url).then((response) => {
+    return response;
+  });
 };
 
 const createBusRouting = async (value) => {
@@ -190,5 +212,7 @@ const RoutingService = {
   enableDisableBusRoute,
   createShuttleRouting,
   enableDisableShuttleRoute,
+  autoSuggestZone,
+  autoSuggestArea,
 };
 export default RoutingService;

@@ -155,6 +155,11 @@ const BusShuttleRoute = () => {
     shuttleRouteSeatCount: 0,
     shuttleRouteEnable: true,
   });
+  const [busSPError, setBusSPError] = useState(false);
+  const [busEPError, setBusEPError] = useState(false);
+  const [shuttleSPError, setShuttleSPError] = useState(false);
+  const [shuttleEPError, setShuttleEPError] = useState(false);
+
   const [busReportingTime, setBusReportingTime] = useState("00:00");
   const [shuttleReportingTime, setShuttleReportingTime] = useState("00:00");
   const [loginShiftTime, setLoginShiftTime] = useState([]);
@@ -183,6 +188,7 @@ const BusShuttleRoute = () => {
     page: 0,
     size: 10,
   });
+  const [busEPReportingTime, setBusEPReportingTime] = useState("00:00");
 
   const addClickHandler = () => {
     setMiddlePointCount(middlePointCount - 1);
@@ -218,6 +224,8 @@ const BusShuttleRoute = () => {
       ]);
       const response = await RoutingService.autoSuggestNodalPoints(value);
       console.log(response);
+      const { data } = response || {};
+      setSearchedNodalPoints(data);
     } catch (err) {
       console.log(err);
     }
@@ -226,15 +234,21 @@ const BusShuttleRoute = () => {
   //>>>>>>>>>>>>FORMIK
   const formik = useFormik({
     initialValues: initialValues,
-    // validationSchema: () => {
-    //   if (routeFlag === "Bus") {
-    //     return validationSchemaBus;
-    //   } else if (routeFlag === "Shuttle") {
-    //     return validationSchemaShuttle;
-    //   }
-    // },
+    validationSchema: () => {
+      if (routeFlag === "Bus") {
+        return validationSchemaBus;
+      } else if (routeFlag === "Shuttle") {
+        return validationSchemaShuttle;
+      }
+    },
     onSubmit: async (values) => {
       if (routeFlag === "Bus") {
+        if (busStartingPoint === "" || busEndPoint === "") {
+          console.log(busStartingPoint, "endpoint>>>", busEndPoint);
+          busStartingPoint === "" ? setBusSPError(true) : setBusSPError(true);
+          busEndPoint === "" ? setBusEPError(true) : setBusEPError(false);
+          return;
+        }
         var busRouteDTO = {
           busRouteDTO: {
             name: values.busRouteName,
@@ -245,7 +259,7 @@ const BusShuttleRoute = () => {
             endPoint: busEndPoint,
             reportingTime: busReportingTime,
             seatCount: values.busRouteSeatCount,
-            enable: true,
+            enabled: true,
             middlePointCount: values.busRouteMiddlePointCount,
             middlePoint: "",
           },
@@ -263,7 +277,7 @@ const BusShuttleRoute = () => {
             setMiddlePointCount(values.busRouteMiddlePointCount);
             const json = {
               middlePoint: busStartingPoint,
-              reportingTime: "00:00",
+              reportingTime: busReportingTime,
             };
             shiftType === "LOGOUT" &&
               (json.reportingTime = values.busRouteShiftTime);
@@ -271,10 +285,17 @@ const BusShuttleRoute = () => {
             setStep(1);
           } else if (step === 1) {
             var middlePoint = [...middlePointJson];
-            middlePoint.push({
-              middlePoint: busEndPoint,
-              reportingTime: busReportingTime,
-            });
+            if (shiftType === "LOGIN") {
+              middlePoint.push({
+                middlePoint: busEndPoint,
+                reportingTime: values.busRouteShiftTime,
+              });
+            } else {
+              middlePoint.push({
+                middlePoint: busEndPoint,
+                reportingTime: busEPReportingTime,
+              });
+            }
             var stringMiddlePoint = middlePoint.map((obj) =>
               JSON.stringify(obj)
             );
@@ -290,6 +311,15 @@ const BusShuttleRoute = () => {
           console.log(err);
         }
       } else {
+        if (shuttleStartingPoint === "" || shuttleEndPoint === "") {
+          shuttleStartingPoint === ""
+            ? setShuttleSPError(true)
+            : setShuttleSPError(true);
+          shuttleEndPoint === ""
+            ? setShuttleEPError(true)
+            : setShuttleEPError(false);
+          return;
+        }
         var shuttleRouteDTO = {
           shuttleRouteDTO: {
             name: values.shuttleRouteName,
@@ -300,7 +330,7 @@ const BusShuttleRoute = () => {
             endPoint: shuttleEndPoint,
             startingTime: shuttleReportingTime,
             seatCount: values.shuttleRouteSeatCount,
-            enable: true,
+            enabled: true,
           },
         };
         console.log(shuttleRouteDTO);
@@ -351,7 +381,12 @@ const BusShuttleRoute = () => {
     setMiddlePoints([]);
     setBusReportingTime("00:00");
     setShuttleReportingTime("00:00");
+    setBusEPError(false);
+    setBusSPError(false);
+    setShuttleEPError(false);
+    setShuttleSPError(false);
     setMiddlePointJson([]);
+    setBusEPReportingTime("00:00");
     setOpenModal(false);
   };
 
@@ -805,12 +840,7 @@ const BusShuttleRoute = () => {
                         {shiftType === "LOGOUT" ? (
                           <FormControl fullWidth>
                             <TextField
-                              error={
-                                touched.busRouteStartingPoint &&
-                                Boolean(errors.busRouteStartingPoint)
-                              }
                               disabled={true}
-                              onChange={handleChange}
                               required
                               id="busRouteStartingPointText"
                               name="busRouteStartingPointText"
@@ -829,10 +859,7 @@ const BusShuttleRoute = () => {
                               labelId="busRouteStartingPoint-label"
                               id="busRouteStartingPoint"
                               value={busStartingPoint}
-                              error={
-                                touched.busRouteStartingPoint &&
-                                Boolean(errors.busRouteStartingPoint)
-                              }
+                              error={busSPError}
                               name="busRouteStartingPoint"
                               label="busRouteStartingPoint"
                               onChange={(e) =>
@@ -853,10 +880,7 @@ const BusShuttleRoute = () => {
                         {shiftType === "LOGIN" ? (
                           <FormControl fullWidth>
                             <TextField
-                              error={
-                                touched.busRouteEndPoint &&
-                                Boolean(errors.busRouteEndPoint)
-                              }
+                              error={busEPError}
                               disabled={shiftTypeFlag || shiftType != "LOGOUT"}
                               onChange={handleChange}
                               required
@@ -877,10 +901,7 @@ const BusShuttleRoute = () => {
                               labelId="busRouteEndPoint-label"
                               id="busRouteEndPoint"
                               value={busEndPoint}
-                              error={
-                                touched.busRouteEndPoint &&
-                                Boolean(errors.busRouteEndPoint)
-                              }
+                              error={busEPError}
                               name="busRouteEndPoint"
                               label="busRouteEndPoint"
                               onChange={(e) => setBusEndPoint(e.target.value)}
@@ -949,7 +970,7 @@ const BusShuttleRoute = () => {
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                           <TimeField
                             fullWidth
-                            label="Reporting Time"
+                            label="Starting Time"
                             value={dayjs()
                               .hour(
                                 Number(
@@ -1080,7 +1101,12 @@ const BusShuttleRoute = () => {
                         <h5>{busStartingPoint}</h5>
                       </div>
                       <div style={{ width: "25%" }}>
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <h5>
+                          {shiftType === "LOGIN"
+                            ? busReportingTime
+                            : values.busRouteShiftTime}
+                        </h5>
+                        {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
                           <TimeField
                             disabled={shiftType === "LOGOUT" ? true : false}
                             id="startingReportingTime"
@@ -1122,7 +1148,7 @@ const BusShuttleRoute = () => {
                               //setStartingReportingTime(StartingReportingTime);
                             }}
                           ></TimeField>
-                        </LocalizationProvider>
+                        </LocalizationProvider> */}
                       </div>
                     </div>
                     <div className="d-flex" style={{ margin: "10px 20px" }}>
@@ -1225,14 +1251,51 @@ const BusShuttleRoute = () => {
                         width: "80%",
                       }}
                     >
-                      <div>
+                      <div className="d-flex" style={{ alignItems: "center" }}>
                         <h5>Destination</h5>
                       </div>
-                      <div style={{ margin: "0 30px" }}>
+                      <div
+                        className="d-flex"
+                        style={{ margin: "0 30px", alignItems: "center" }}
+                      >
                         <h5>{busEndPoint}</h5>
                       </div>
-                      <div>
-                        <h5>{busReportingTime}</h5>
+                      <div style={{ width: "25%" }}>
+                        {shiftType === "LOGIN" ? (
+                          <h5>{values.busRouteShiftTime}</h5>
+                        ) : (
+                          <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <TimeField
+                              disabled={shiftType === "LOGIN" ? true : false}
+                              id="startingReportingTime"
+                              format="HH:mm"
+                              value={dayjs()
+                                .hour(Number(busEPReportingTime.slice(0, 2)))
+                                .minute(Number(busEPReportingTime.slice(3, 5)))}
+                              InputProps={{
+                                style: {
+                                  padding: 0,
+                                },
+                              }}
+                              inputProps={{
+                                style: {
+                                  padding: "0 10px",
+                                  backgroundColor: "#FFF",
+                                  borderRadius: "4px",
+                                  //fontSize: "12px",
+                                },
+                                //placeholder: "Reporting Time",
+                              }}
+                              onChange={(e) => {
+                                var StartingReportingTime = e.$d
+                                  .toLocaleTimeString("it-IT")
+                                  .slice(0, -3);
+                                console.log(StartingReportingTime);
+                                setBusEPReportingTime(StartingReportingTime);
+                              }}
+                            ></TimeField>
+                          </LocalizationProvider>
+                        )}
                       </div>
                     </div>
                     <div
@@ -1370,10 +1433,7 @@ const BusShuttleRoute = () => {
                       {shiftType === "LOGOUT" ? (
                         <FormControl fullWidth>
                           <TextField
-                            error={
-                              touched.shuttleRouteStartingPoint &&
-                              Boolean(errors.shuttleRouteStartingPoint)
-                            }
+                            error={shuttleSPError}
                             disabled={true}
                             onChange={handleChange}
                             required
@@ -1394,10 +1454,7 @@ const BusShuttleRoute = () => {
                             labelId="shuttleRouteStartingPoint-label"
                             id="shuttleRouteStartingPoint"
                             value={shuttleStartingPoint}
-                            error={
-                              touched.shuttleRouteStartingPoint &&
-                              Boolean(errors.shuttleRouteStartingPoint)
-                            }
+                            error={shuttleSPError}
                             name="shuttleRouteStartingPoint"
                             label="Shuttle Route Starting Point"
                             onChange={(e) =>
@@ -1418,10 +1475,7 @@ const BusShuttleRoute = () => {
                       {shiftType === "LOGIN" ? (
                         <FormControl fullWidth>
                           <TextField
-                            error={
-                              touched.shuttleRouteEndPoint &&
-                              Boolean(errors.shuttleRouteEndPoint)
-                            }
+                            error={shuttleEPError}
                             disabled={shiftTypeFlag || shiftType != "LOGOUT"}
                             onChange={handleChange}
                             required
@@ -1442,10 +1496,7 @@ const BusShuttleRoute = () => {
                             labelId="shuttleRouteEndPoint-label"
                             id="shuttleRouteEndPoint"
                             value={shuttleEndPoint}
-                            error={
-                              touched.shuttleRouteEndPoint &&
-                              Boolean(errors.shuttleRouteEndPoint)
-                            }
+                            error={shuttleEPError}
                             name="shuttleRouteEndPoint"
                             label="Shuttle Route End Point"
                             onChange={(e) => setShuttleEndPoint(e.target.value)}
