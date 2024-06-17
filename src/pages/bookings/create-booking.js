@@ -62,7 +62,8 @@ const CreateBooking = () => {
         dropPoint: "",
         source : "Web",
         bookingFor: "self",
-        shiftId:[]
+        shiftIds:[],
+        areaName : "",
     });
 
     const [customizedScheduledBean, setCustomizedScheduledBean] = useState([]);
@@ -72,6 +73,7 @@ const CreateBooking = () => {
     const [customizedShiftIdBean,setCustomizedShiftBean] = useState([]);
     const [loginShiftId,setLoginShiftId] = useState();
     const [logoutShiftId,setLogoutShiftId] = useState();
+    const [areaName, setAreaName] = useState("")
 
     const teamHeaders = [
         {
@@ -238,6 +240,7 @@ const CreateBooking = () => {
             if (bookingFor !== 1) {
                 allValues.bookingEmployeeIds = selectedUsers;
                 allValues.bookingFor = "";
+                allValues.areaName = areaName;
                 if (bookingFor === 3) {
                     allValues.teamId = selectedTeamDetail.id;
                 }
@@ -281,7 +284,7 @@ const CreateBooking = () => {
                     shiftIdList.push(loginShiftId);
                     shiftIdList.push(logoutShiftId);
                 }
-                allValues.shiftId = shiftIdList;
+                allValues.shiftIds = shiftIdList;
             }
             if(allValues.teamId === ""){
                 delete allValues.teamId
@@ -309,7 +312,9 @@ const CreateBooking = () => {
 
     const fetchInOutTimes = async (isIn = false) => {
         try {
-            const response = await BookingService.getLoginLogoutTimes(values.officeId, isIn, values.transportType);
+            const startDate = moment(formik.values.bookingFromDate).format(DATE_FORMAT);
+            const endDate = moment(formik.values.bookingToDate).format(DATE_FORMAT);
+            const response = await BookingService.getLoginLogoutTimeWithDate(values.officeId, isIn, values.transportType,startDate,endDate);
             const { data } = response || {};
             console.log(data);
             if (isIn) {
@@ -324,7 +329,9 @@ const CreateBooking = () => {
 
     const fetchInOutTeamsTime = async(isIn = false) =>{
         try {
-            const response = await BookingService.getTeamLoginLogoutTimes(values.officeId, isIn, values.transportType,selectedTeamDetail.id);
+            const startDate = moment(formik.values.bookingFromDate).format(DATE_FORMAT);
+            const endDate = moment(formik.values.bookingToDate).format(DATE_FORMAT);
+            const response = await BookingService.getTeamLoginLogoutTimes(values.officeId, isIn, values.transportType,selectedTeamDetail.id,startDate,endDate);
             const { data } = response || {};
             console.log(data);
             if (isIn) {
@@ -339,7 +346,9 @@ const CreateBooking = () => {
 
     const fetchMultiInOutTimes = async (isIn, idxToSet, officeId) => {
         try {
-            const response = await BookingService.getLoginLogoutTimes(officeId, isIn, values.transportType);
+            const startDate = moment(formik.values.bookingFromDate).format(DATE_FORMAT);
+            const endDate = moment(formik.values.bookingToDate).format(DATE_FORMAT);
+            const response = await BookingService.getLoginLogoutTimeWithDate(officeId, isIn, values.transportType,startDate,endDate);
             const { data } = response || {};
             if (isIn) {
                 console.log(data[0]);
@@ -358,7 +367,9 @@ const CreateBooking = () => {
 
     const fetchMultiInOutTeamsTimes = async (isIn, idxToSet, officeId) =>{
         try {
-            const response = await BookingService.getTeamLoginLogoutTimes(officeId, isIn, values.transportType,selectedTeamDetail.id);
+            const startDate = moment(formik.values.bookingFromDate).format(DATE_FORMAT);
+            const endDate = moment(formik.values.bookingToDate).format(DATE_FORMAT);
+            const response = await BookingService.getTeamLoginLogoutTimes(officeId, isIn, values.transportType,selectedTeamDetail.id,startDate,endDate);
             const { data } = response || {};
             if (isIn) {
                 const allInIdxs = [...multiLoginTimes];
@@ -746,6 +757,7 @@ const CreateBooking = () => {
                                 <FormControl required fullWidth>
                                     <InputLabel id="login-label">Login Time</InputLabel>
                                     <Select
+                                        disabled={(values.bookingFromDate != "" && values.bookingToDate != "") ? false : true}
                                         labelId="login-label"
                                         id="loginShift"
                                         value={values.loginShift}
@@ -769,6 +781,7 @@ const CreateBooking = () => {
                                         <FormControl required fullWidth>
                                             <InputLabel id="logout-label">Logout Time</InputLabel>
                                             <Select
+                                                disabled={(values.bookingFromDate != "" && values.bookingToDate != "") ? false : true}
                                                 labelId="logout-label"
                                                 id="logoutShift"
                                                 value={values.logoutShift}
@@ -804,6 +817,7 @@ const CreateBooking = () => {
                                             <FormControl required fullWidth>
                                                 <InputLabel id="login-label">Login Time</InputLabel>
                                                 <Select
+                                                    disabled={(values.bookingFromDate != "" && values.bookingToDate != "") ? false : true}
                                                     labelId="login-label"
                                                     id="loginShift"
                                                     value={values.loginShift}
@@ -823,6 +837,7 @@ const CreateBooking = () => {
                                             <FormControl required fullWidth>
                                                 <InputLabel id="logout-label">Logout Time</InputLabel>
                                                 <Select
+                                                    disabled={(values.bookingFromDate != "" && values.bookingToDate != "") ? false : true}
                                                     labelId="logout-label"
                                                     id="logoutShift"
                                                     value={values.logoutShift}
@@ -988,7 +1003,9 @@ const CreateBooking = () => {
         try {
             const response = await OfficeService.getEmployeeDetails(id);
             const { data } = response;
+            console.log(data.areaName)
             setSelectedOtherUserDetails(data);
+            setAreaName(data?.areaName);
         } catch (e) {
             console.error(e);
         }

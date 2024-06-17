@@ -13,6 +13,7 @@ import { useFormik } from "formik";
 import { validationSchema } from './employee/validationSchema';
 import { toggleToast } from '@/redux/company.slice';
 import moment from 'moment';
+import RoutingService from '@/services/route.service';
 
 const AddEmployee = ({
     roleType,
@@ -22,6 +23,9 @@ const AddEmployee = ({
 
     const [openSearchTeam, setOpenSearchTeam] = useState(false);
     const [openSearchRM, setOpenSearchRM] = useState(false);
+    const [openSearchZone,setOpenSearchZone] = useState(false);
+    const [openSearchArea,setOpenSearchArea] = useState(false);
+    const [openSearchNodalPoint, setOpenSearchNodalPoint] = useState(false);
     const [smsCheckbox,setSmsCheckbox] = useState(false);
     const [emailCheckbox,setEmailCheckbox] = useState(false);
     const [initialValues, setInitialValues] = useState({
@@ -36,6 +40,10 @@ const AddEmployee = ({
         transportEligibilities: [],
         address: "",
         geoCode: "",
+        landmark: "",
+        nodal: "",
+        areaName: "",
+        zoneName: "",
         isAddHocBooking: null,
         mobAppAccess: null,
         notificationModes: [],
@@ -49,6 +57,7 @@ const AddEmployee = ({
         weekOff: [],
         specialStatus: ""
     });
+    const [defaultRM,setDefaultRM] = useState({});
 
     useState(() => {
         if (editEmployeeData?.id) {
@@ -131,6 +140,10 @@ const AddEmployee = ({
                     specialStatus: allValues.specialStatus,
                     enabled: true,
                     isManager : allValues.reportingManager ? false : true,
+                    landmark : allValues.landmark,
+                    zoneName : allValues.zoneName,
+                    areaName : allValues.areaName,
+                    nodal : allValues.nodal,
                 } 
                 //formik.setFieldValue('transportEligibilities',transportString.slice(0,-1));
                 console.log(transportString.slice(0,-1));
@@ -158,6 +171,9 @@ const AddEmployee = ({
     const [offices, setOffice] = useState([]);
     const [searchedReportingManager, setSearchedReportingManager] = useState([]);
     const [searchedTeam, setSearchedTeam] = useState([]);
+    const [searchedZone,setSearchedZone] = useState([]);
+    const [searchedArea,setSearchedArea] = useState([]);
+    const [searchedNodalPoints, setSearchedNodalPoints] = useState([]);
 
     const fetchMasterData = async (type) => {
         try {
@@ -246,7 +262,47 @@ const AddEmployee = ({
         } catch (e) {
             console.error(e);
         }
-    };    
+    };  
+    
+    const searchForZone = async (e) => {
+        try {
+            if (e.target.value) {
+                const response = await RoutingService.autoSuggestZone(e.target.value);
+                const { data } = response || {};
+                setSearchedZone(data);
+            } else {
+                setSearchedZone([]);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+    const searchForArea = async (e) => {
+        try {
+            if (e.target.value) {
+                const response = await RoutingService.autoSuggestArea(e.target.value,values.zoneName);
+                const { data } = response || {};
+                setSearchedArea(data);
+            } else {
+                setSearchedArea([]);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const searchForMiddlePoint = async (event) => {
+        const { target } = event;
+        const { value } = target;
+        try {
+          const response = await RoutingService.autoSuggestNodalPoints(value,values.areaName);
+          console.log(response);
+          const { data } = response || {};
+          setSearchedNodalPoints(data)
+        } catch (err) {
+          console.log(err);
+        }
+    };
 
     const onChangeHandler = (newValue, name, key) => {
         formik.setFieldValue(name, newValue?.[key] || "");
@@ -395,10 +451,94 @@ const AddEmployee = ({
                     </div>
                     <div className='form-control-input'>
                         <TextField
+                        value={values.landmark} onChange={handleChange}
+                        error={touched.landmark && Boolean(errors.landmark)}
+                        helperText={touched.landmark && errors.landmark}
+                        name="landmark" id="landmark" label="Landmark" variant="outlined" />
+                    </div>
+                    <div className='form-control-input'>
+                        <TextField
                         value={values.geoCode} onChange={handleChange}
                         error={touched.geoCode && Boolean(errors.geoCode)}
                         helperText={touched.geoCode && errors.geoCode}
                         name="geoCode" id="geoCode" label="Geocode" variant="outlined" />
+                    </div>
+                </div>
+                <div>
+                    <div className='form-control-input'>
+                        <FormControl variant="outlined">
+                            <Autocomplete
+                                disablePortal
+                                id="search-zone"
+                                options={searchedZone}
+                                autoComplete
+                                open={openSearchZone}
+                                onOpen={() => {
+                                    setOpenSearchZone(true);
+                                }}
+                                onClose={() => {
+                                    setOpenSearchZone(false);
+                                }}
+                                onChange={(e, val) => onChangeHandler(val, "zoneName", "zoneName")}
+                                getOptionKey={(zone) => zone.zoneId}
+                                getOptionLabel={(zone) => zone.zoneName}
+                                freeSolo
+                                name="zoneName"
+                                renderInput={(params) => <TextField {...params} label="Search Zone*"  onChange={searchForZone} />}
+                            />
+                        </FormControl>
+                    </div>
+                    <div className='form-control-input'>
+                        <FormControl variant="outlined">
+                            <Autocomplete
+                                disablePortal
+                                id="search-area"
+                                options={searchedArea}
+                                autoComplete
+                                open={openSearchArea}
+                                onOpen={() => {
+                                    setOpenSearchArea(true);
+                                }}
+                                onClose={() => {
+                                    setOpenSearchArea(false);
+                                }}
+                                onChange={(e, val) => onChangeHandler(val, "areaName", "areaName")}
+                                getOptionKey={(area) => area.areaId}
+                                getOptionLabel={(area) => area.areaName}
+                                freeSolo
+                                name="areaName"
+                                renderInput={(params) => <TextField {...params} label="Search Area*"  onChange={searchForArea} />}
+                            />
+                        </FormControl>
+                    </div>
+                    <div className='form-control-input'>
+                        <FormControl variant="outlined" fullWidth>
+                          <Autocomplete
+                            disablePortal
+                            id="search-middle-point"
+                            options={searchedNodalPoints}
+                            autoComplete
+                            open={openSearchNodalPoint}
+                            onOpen={() => {
+                              setOpenSearchNodalPoint(true);
+                            }}
+                            onClose={() => {
+                              setOpenSearchNodalPoint(false);
+                            }}
+                            onChange={(e, val) => onChangeHandler(val, "nodal", "nodalName")}
+                            getOptionKey={(mp) => mp.nodalId}
+                            getOptionLabel={(mp) => mp.nodalName}
+                            freeSolo
+                            name="nodal"
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="Nodal Point*"
+                                onChange={searchForMiddlePoint}
+                              />
+                            )}
+                          />
+                        </FormControl>
                     </div>
                 </div>
                 <div>
@@ -510,7 +650,7 @@ const AddEmployee = ({
                                 onClose={() => {
                                     setOpenSearchRM(false);
                                 }}
-                                defaultValue={{}}
+                                defaultValue={{empId: "",data:""}}
                                 onChange={(e, val) => onChangeHandler(val, "reportingManager", "empId")}
                                 getOptionKey={(rm) => rm.empId}
                                 getOptionLabel={(rm) => `${rm.data}, ${rm.empId}`}
@@ -578,6 +718,7 @@ const AddEmployee = ({
                                 name="specialStatus"
                                 onChange={handleChange}
                             >
+                                <FormControlLabel value={"NO"} control={<Radio />} label={"None"} />
                                 <FormControlLabel value={"DIFFERENTLY_ABLED"} control={<Radio />} label={"Differently Abled"} />
                                 <FormControlLabel value={"VIP"} control={<Radio />} label={"VIP"} />
                                 <FormControlLabel value={"PREGNANT_WOMAN"} control={<Radio />} label={"Pregnant Woman"} />

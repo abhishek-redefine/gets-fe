@@ -165,7 +165,7 @@ const HomeRoute = () => {
             style={{ display: "flex", justifyContent: "end" }}
           >
             <div className="fileUpload">
-              <input type="file" onChange={uploadHandler} className="upload" />
+              <input type="file" onChange={uploadHandler} className="upload file-input" />
               <span>Upload File</span>
             </div>
           </div>

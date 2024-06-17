@@ -7,5 +7,6 @@ export const validationSchema = yup.object({
     isCustomiseSchedule: yup.bool("Select Next Day Logout"),
     transportType: yup.string("Select Transport Type").required("Select Transport Type"),
     pickUpPoint: yup.string("Enter Pickup Point"),
-    dropPoint: yup.string("Enter Drop Point")
+    dropPoint: yup.string("Enter Drop Point"),
+    areaName: yup.string("Enter Area Name").nullable()
 });

@@ -131,9 +131,9 @@ const autoSuggestZone = async (text) => {
 
 const autoSuggestArea = async (text, zoneName = "") => {
   let url = `${API_PATH.API_VERSION}${API_PATH.SEARCH_AREA}${text}/0/15`;
-  if (zoneName != "") {
-    url += `?zoneName=${zoneName}`;
-  }
+  // if (zoneName != "") {
+  //   url += `?zoneName=${zoneName}`;
+  // }
   return axiosInstance.get(url).then((response) => {
     return response;
   });
