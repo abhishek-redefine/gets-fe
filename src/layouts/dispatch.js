@@ -21,7 +21,7 @@ const dispatch = (WrappedComponent) => {
     }, []);
 
     return (
-      <div className="mainSettingsContainer">
+      <div className="mainSettingsContainer" style={{backgroundColor:'white'}}>
         <div className="currentStateContainer">
           <button
             onClick={() => changeRoute("routing")}
@@ -31,7 +31,15 @@ const dispatch = (WrappedComponent) => {
           >
             Routing
           </button>
-          {/* <button
+          <button
+            onClick={() => changeRoute("B2B-routing")}
+            className={`btn btn-secondary ${
+              currentActiveState === "B2B-routing" ? "btn-blk" : ""
+            }`}
+          >
+            B2B Routing
+          </button>
+          <button
             onClick={() => changeRoute("vendor-allocation")}
             className={`btn btn-secondary ${
               currentActiveState === "vendor-allocation" ? "btn-blk" : ""
@@ -70,7 +78,7 @@ const dispatch = (WrappedComponent) => {
             }`}
           >
             Operation Penalty
-          </button> */}
+          </button>
         </div>
         <div>
           <WrappedComponent {...props} />

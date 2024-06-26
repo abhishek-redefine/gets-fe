@@ -30,8 +30,6 @@ import DispatchService from "@/services/dispatch.service";
 import { setMasterData } from "@/redux/master.slice";
 import ReplicateTripModal from "@/components/dispatch/replicateTripModal";
 import RouteEditor from "@/components/dispatch/route-editor";
-import TripEditor from "@/components/dispatch/tripEditor";
-import AdsClickIcon from '@mui/icons-material/AdsClick';
 
 const style = {
   position: "absolute",
@@ -44,7 +42,7 @@ const style = {
   borderRadius: 5,
 };
 
-const Routing = () => {
+const MainComponent = () => {
   const headers = [
     { field: "officeId", checkboxSelection: true },
     { field: "shiftType" },
@@ -56,105 +54,55 @@ const Routing = () => {
     { field: "allocatedVendorCount" },
     { field: "allocatedCabCount" },
     { field: "fleetMix" },
+    { field: "escortTrip"},
     { field: "allocatedEscortCount" },
     { field: "backToBackCount" },
     { field: "smsSent" },
+    { field: "emailSent" },
   ];
-  const [offices, setOffice] = useState([]);
+  const [office, setOffice] = useState([]);
   const [searchValues, setSearchValues] = useState({
     officeId: "",
-    date: moment().format("YYYY-MM-DD"),
     shiftType: "",
+    date: moment().format("YYYY-MM-DD"),
+    transportType: "",
   });
-  const [mrList, setMrList] = useState([
-    {
-      key: 1,
-      value: "Generate Trips",
-    },
-    {
-      key: 2,
-      value: "Replicate Trips",
-    },
-    {
-      key: 3,
-      value: "Download Trips",
-    },
-    {
-      key: 4,
-      value: "Upload Trips",
-    },
-    {
-      key: 5,
-      value: "Generate Dummy Trips",
-    },
-    {
-      key: 6,
-      value: "Delete Trips",
-    },
-  ]);
-  const [mb2b, setMb2b] = useState([
-    "Auto Generate B2B",
-    "Manaual B2B Routes",
-    "Delete B2B Mapping",
-  ]);
-  const [mva, setMva] = useState([
-    "Auto Vendor Allocation",
-    "Allocate Vendors",
-  ]);
-  const [mca, setMca] = useState([
-    "Allocate Cabs",
-    "Download Cab Allocation",
-    "Upload Cab Allocation",
-    "Assign Cab Sticker",
-  ]);
-  const [downloadTripList, setDownloadTripList] = useState([
-    "Download Tripsheet",
-    "Download Trip Summary",
-  ]);
-  const [autoSuggestType, setAutoSuggestType] = useState([
-    { name: "Vehicle", value: "vehicle" },
-    { name: "Employee Name", value: "employee" },
-    { name: "Trip Id", value: "tripId" },
-    { name: "Vendor Name", value: "vendorName" },
-  ]);
-  const [searchBy, setSearchBy] = useState("vehicle");
-  const [searched, setSearched] = useState([]);
-  const [openSearch, setOpenSearch] = useState(false);
-  const [searchValue, setSearchedValue] = useState("");
-  const [showAction, setShowAction] = useState(false);
-  const [selectedRow, setSelectedRow] = useState([]);
-  const [showGenerateTrip, setShowGenerateTrip] = useState(false);
-  const [manageTrip, setManageTrip] = useState();
-  const [data, setData] = useState([]);
-  const dispatch = useDispatch();
-  const [routeEditorShow, setRouteEditorShow] = useState(false);
 
+  const [mrList, setMrList] = useState([]);
+  const [mb2b, setMb2b] = useState([]);
+  const [mva, setMva] = useState([]);
+  const [mca, setMca] = useState([]);
+  const [downloadTripList, setDownloadTripList] = useState([]);
+  const [selectedLogoutTrips, setSelectedLogoutTrips] = useState([]);
+  const [selectedLoginTrips, setSelectedLoginTrips] = useState([]);
+  const [pairedTrips, setPairedTrips] = useState([]);
+  const [pairedTripIds, setPairedTripIds] = useState([]);
+  const { ShiftType: shiftTypes } = useSelector((state) => state.master);
+  const dispatch = useDispatch();
+  const [showAction, setShowAction] = useState(false);
+  const [routeEditorShow, setRouteEditorShow] = useState(false);
+  const [data, setData] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const handleModalOpen = () => setOpenModal(true);
   const handleModalClose = () => setOpenModal(false);
+  const [manageTrip, setManageTrip] = useState();
+  const [selectedRow, setSelectedRow] = useState([]);
 
-  const searchByChangeHandler = (event) => {
-    const { target } = event;
-    const { value, name } = target;
-    setSearchBy(value);
-  };
 
-  const autoSuggestSearch = async (e) => {
-    const { target } = e;
-    const { name, value } = target;
-    console.log(value, searchBy);
-    try {
-      if (searchBy === "vehicle") {
-      } else if (searchBy === "employee") {
-      } else if (searchBy === "tripId") {
-      } else if (searchBy === "vendorName") {
-      }
-    } catch (err) {
-      console.log(err);
+
+  const handlePairTrips = () => {
+    if (selectedLogoutTrips.length === 1 && selectedLoginTrips.length === 1) {
+      const newPairedTrip = `${selectedLogoutTrips[0]}-${selectedLoginTrips[0]}`;
+      setPairedTrips([
+        ...pairedTrips,
+        selectedLogoutTrips[0],
+        selectedLoginTrips[0],
+      ]);
+      setPairedTripIds([...pairedTripIds, newPairedTrip]);
+      setSelectedLogoutTrips([]);
+      setSelectedLoginTrips([]);
     }
   };
-
-  const { ShiftType: shiftTypes } = useSelector((state) => state.master);
 
   const handleFilterChange = (e) => {
     const { target } = e;
@@ -163,7 +111,7 @@ const Routing = () => {
     if (name === "date") newSearchValues[name] = value.format("YYYY-MM-DD");
     else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
-  };
+  }; 
 
   const fetchAllOffices = async () => {
     try {
@@ -178,6 +126,7 @@ const Routing = () => {
       setOffice(clientOfficeDTO);
     } catch (e) {}
   };
+
   const fetchMasterData = async (type) => {
     try {
       const response = await MasterDataService.getMasterData(type);
@@ -187,12 +136,7 @@ const Routing = () => {
       }
     } catch (e) {}
   };
-  const generateTripHandler = () => {
-    handleModalOpen();
-  };
-  const replicateTripModal = () => {
-    handleModalOpen();
-  };
+
 
   const fetchSummary = async () => {
     try {
@@ -214,70 +158,11 @@ const Routing = () => {
     }
   };
 
-  const manageTripHandler = (key, value) => {
-    console.log(key, value, selectedRow);
-    switch (key) {
-      case 1:
-        setManageTrip(1);
-        generateTripHandler();
-        break;
-      case 2:
-        setManageTrip(2);
-        generateTripHandler();
-        break;
-      case 3:
-        downloadTrip();
-        break;
-      case 5:
-        setManageTrip(5);
-        generateTripHandler();
-        break;
-      case 6:6
-        deleteTrip(5);
-        break;
-    }
-  };
-
-  const deleteTrip = async (tripId) => {
-    try {
-      const response = DispatchService.deleteTrip(tripId);
-      console.log(response.data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-  const downloadTrip = async () => {
-    try {
-      const shiftId = selectedRow.shiftId;
-      const selectedDate = searchValues.date;
-      console.log(shiftId, selectedDate);
-      const response = await DispatchService.downloadTrip(
-        shiftId,
-        selectedDate
-      );
-      console.log(response.data);
-      const byteArray = new Uint8Array(response.data);
-      console.log(byteArray);
-      // Create a Blob from the byte array
-      const blob = new Blob([response.data], {
-        type: "application/octet-stream",
-      });
-      const link = document.createElement("a");
-      const url = window.URL.createObjectURL(blob);
-      link.href = url;
-      link.download = `trips${selectedDate}.xlsx`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.log(error);
-    }
-  };
   const selectedRowHandler = (flag, row) => {
     setShowAction(flag);
     setSelectedRow(row);
   };
+
   const resetFilter = () => {
     let allSearchValue = {
       officeId: offices[0].officeId,
@@ -299,11 +184,11 @@ const Routing = () => {
       {!routeEditorShow ? (
         <div className="gridContainer">
           <div className="filterContainer">
-            {offices.length > 0 && (
+            {office.length > 0 && (
               <div style={{ minWidth: "180px" }} className="form-control-input">
                 <FormControl fullWidth>
                   <InputLabel id="primary-office-label">
-                    Primary Office
+                    Office ID
                   </InputLabel>
                   <Select
                     style={{ width: "180px" }}
@@ -314,8 +199,8 @@ const Routing = () => {
                     label="Office ID"
                     onChange={handleFilterChange}
                   >
-                    {!!offices?.length &&
-                      offices.map((office, idx) => (
+                    {!!office?.length &&
+                      office.map((office, idx) => (
                         <MenuItem key={idx} value={office.officeId}>
                           {getFormattedLabel(office.officeId)}, {office.address}
                         </MenuItem>
@@ -360,6 +245,26 @@ const Routing = () => {
                 </Select>
               </FormControl>
             </div>
+            <div style={{ minWidth: "160px" }} className="form-control-input">
+              <FormControl fullWidth>
+                <InputLabel id="shiftType-label">Shift Time</InputLabel>
+                <Select
+                  style={{ width: "160px" }}
+                  labelId="shiftType-label"
+                  id="shiftType"
+                  name="shiftType"
+                  value={searchValues.shiftType}
+                  label="Shift Type"
+                  onChange={handleFilterChange}
+                >
+                  {shiftTypes.map((sT, idx) => (
+                    <MenuItem key={idx} value={sT.value}>
+                      {getFormattedLabel(sT.value)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </div>
             <div className="form-control-input" style={{ minWidth: "70px" }}>
               <button
                 type="submit"
@@ -380,66 +285,6 @@ const Routing = () => {
             </div>
           </div>
           <div className="d-flex" style={{ justifyContent: "flex-end" }}>
-            {/* <div className="filterContainer">
-            <div style={{ minWidth: "160px" }} className="form-control-input">
-              <FormControl fullWidth>
-                <InputLabel id="shiftType-label">Search By</InputLabel>
-                <Select
-                  style={{ width: "160px" }}
-                  labelId="shiftType-label"
-                  id="shiftType"
-                  name="shiftType"
-                  value={searchBy}
-                  label="Shift Type"
-                  onChange={searchByChangeHandler}
-                >
-                  {autoSuggestType.map((sT, idx) => (
-                    <MenuItem key={idx} value={sT.value}>
-                      {sT.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </div>
-            <div className="form-control-input">
-              <FormControl variant="outlined">
-                <Autocomplete
-                  disablePortal
-                  id="search-team"
-                  options={searched}
-                  autoComplete
-                  open={openSearch}
-                  onOpen={() => {
-                    setOpenSearch(true);
-                  }}
-                  onClose={() => {
-                    setOpenSearch(false);
-                  }}
-                  onChange={(e, val) => setSearchValues(val)}
-                  getOptionKey={(item) => item.itemId}
-                  getOptionLabel={(item) => item.itemName}
-                  freeSolo
-                  name="team"
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Search"
-                      onChange={autoSuggestSearch}
-                    />
-                  )}
-                />
-              </FormControl>
-            </div>
-            <div className="form-control-input" style={{ minWidth: "70px" }}>
-              <button
-                type="submit"
-                //onClick={searchBookings}
-                className="btn btn-primary filterApplyBtn"
-              >
-                Search
-              </button>
-            </div>
-          </div> */}
             <div className="filterContainer">
               <div className="form-control-input" style={{ minWidth: "170px" }}>
                 {showAction && (
@@ -461,7 +306,7 @@ const Routing = () => {
               style={{ margin: "15px 0", justifyContent: "space-between" }}
             >
               <div className="d-flex" style={{ alignItems: "center"}}>
-                <h3 style={{ paddingLeft: 10 }}>Dispatch Summary</h3>
+                <h3 style={{ paddingLeft: 10 }}>Routing Details</h3>
               </div>
               {showAction && (
                 <div
@@ -478,7 +323,7 @@ const Routing = () => {
                   </div>
                   <div style={{ minWidth: "180px" }} className="mx-4">
                     <div className="dropdown">
-                      <button className="dropbtn">Manage Trips</button>
+                      <button className="dropbtn">Pending Vendor Allocation</button>
                       <div className="dropdown-content">
                         {!!mrList?.length &&
                           mrList.map((mr, idx) => (
@@ -498,7 +343,7 @@ const Routing = () => {
                   <div style={{ minWidth: "180px" }} className="mx-4">
                     <div className="dropdown">
                       <button className="dropbtn">
-                        Manage Back to Back Routes
+                        Allocate Vendors
                       </button>
                       <div className="dropdown-content">
                         {!!mb2b?.length &&
@@ -513,7 +358,7 @@ const Routing = () => {
                   <div style={{ minWidth: "180px" }} className="mx-4">
                     <div className="dropdown">
                       <button className="dropbtn">
-                        Manage Vendor Allocation
+                        Auto Allocate Vendors
                       </button>
                       <div className="dropdown-content">
                         {!!mva?.length &&
@@ -527,7 +372,7 @@ const Routing = () => {
                   </div>
                   <div style={{ minWidth: "180px" }} className="mx-4">
                     <div className="dropdown">
-                      <button className="dropbtn">Manage Cab Allocation</button>
+                      <button className="dropbtn">Upload Options</button>
                       <div className="dropdown-content">
                         {!!mca?.length &&
                           mca.map((mr, idx) => (
@@ -540,7 +385,7 @@ const Routing = () => {
                   </div>
                   <div style={{ minWidth: "180px" }} className="mx-4">
                     <div className="dropdown">
-                      <button className="dropbtn">Download Trip Sheets</button>
+                      <button className="dropbtn">Download Options</button>
                       <div className="dropdown-content">
                         {!!downloadTripList?.length &&
                           downloadTripList.map((list, idx) => (
@@ -561,7 +406,7 @@ const Routing = () => {
             />
           </div>
 
-          <Modal
+        <Modal
             open={openModal}
             onClose={handleModalClose}
             aria-labelledby="modal-modal-title"
@@ -601,9 +446,10 @@ const Routing = () => {
           selectedDate={searchValues.date}
         />
         // <TripEditor />
-      )}
+      )}    
     </div>
+    
   );
 };
 
-export default dispatch(Routing);
+export default dispatch(MainComponent);
