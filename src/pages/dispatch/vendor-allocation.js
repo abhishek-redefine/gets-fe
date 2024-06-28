@@ -4,10 +4,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Autocomplete,
-  TextField,
 } from "@mui/material";
-import Menu from "@mui/material/Menu";
 import { useEffect, useState } from "react";
 import { getFormattedLabel } from "@/utils/utils";
 import OfficeService from "@/services/office.service";
@@ -16,31 +13,15 @@ import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
 import {
   DATE_FORMAT,
-  DEFAULT_PAGE_SIZE,
   MASTER_DATA_TYPES,
-  SHIFT_TYPE,
 } from "@/constants/app.constants.";
 import { useDispatch, useSelector } from "react-redux";
 import MasterDataService from "@/services/masterdata.service";
 import GridNew from "@/components/gridNew";
-import GenerateTripModal from "@/components/dispatch/genrateTripModal";
-import Modal from "@mui/material/Modal";
-import Box from "@mui/material/Box";
 import DispatchService from "@/services/dispatch.service";
 import { setMasterData } from "@/redux/master.slice";
-import ReplicateTripModal from "@/components/dispatch/replicateTripModal";
-import RouteEditor from "@/components/dispatch/route-editor";
+import AllocateVendor from "@/components/dispatch/allocate-vendors";
 
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 800,
-  bgcolor: "background.paper",
-  height: 650,
-  borderRadius: 5,
-};
 
 const MainComponent = () => {
   const headers = [
@@ -68,41 +49,13 @@ const MainComponent = () => {
     transportType: "",
   });
 
-  const [mrList, setMrList] = useState([]);
-  const [mb2b, setMb2b] = useState([]);
-  const [mva, setMva] = useState([]);
-  const [mca, setMca] = useState([]);
-  const [downloadTripList, setDownloadTripList] = useState([]);
-  const [selectedLogoutTrips, setSelectedLogoutTrips] = useState([]);
-  const [selectedLoginTrips, setSelectedLoginTrips] = useState([]);
-  const [pairedTrips, setPairedTrips] = useState([]);
-  const [pairedTripIds, setPairedTripIds] = useState([]);
+
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
   const [showAction, setShowAction] = useState(false);
-  const [routeEditorShow, setRouteEditorShow] = useState(false);
   const [data, setData] = useState([]);
-  const [openModal, setOpenModal] = useState(false);
-  const handleModalOpen = () => setOpenModal(true);
-  const handleModalClose = () => setOpenModal(false);
-  const [manageTrip, setManageTrip] = useState();
   const [selectedRow, setSelectedRow] = useState([]);
-
-
-
-  const handlePairTrips = () => {
-    if (selectedLogoutTrips.length === 1 && selectedLoginTrips.length === 1) {
-      const newPairedTrip = `${selectedLogoutTrips[0]}-${selectedLoginTrips[0]}`;
-      setPairedTrips([
-        ...pairedTrips,
-        selectedLogoutTrips[0],
-        selectedLoginTrips[0],
-      ]);
-      setPairedTripIds([...pairedTripIds, newPairedTrip]);
-      setSelectedLogoutTrips([]);
-      setSelectedLoginTrips([]);
-    }
-  };
+  const [allocateVendorShow, setAllocateVendorShow] = useState(false);
 
   const handleFilterChange = (e) => {
     const { target } = e;
@@ -181,9 +134,9 @@ const MainComponent = () => {
 
   return (
     <div>
-      {!routeEditorShow ? (
+      {!allocateVendorShow ? (
         <div className="gridContainer">
-          <div className="filterContainer">
+          <div className="filterContainer" style={{backgroundColor: '#f9f9f9', borderRadius: '10px'}}>
             {office.length > 0 && (
               <div style={{ minWidth: "180px" }} className="form-control-input">
                 <FormControl fullWidth>
@@ -191,7 +144,7 @@ const MainComponent = () => {
                     Office ID
                   </InputLabel>
                   <Select
-                    style={{ width: "180px" }}
+                    style={{ width: "180px", backgroundColor: 'white', }}
                     labelId="primary-office-label"
                     id="officeId"
                     value={searchValues.officeId}
@@ -201,7 +154,7 @@ const MainComponent = () => {
                   >
                     {!!office?.length &&
                       office.map((office, idx) => (
-                        <MenuItem key={idx} value={office.officeId}>
+                        <MenuItem key={idx} value={office.officeId} >
                           {getFormattedLabel(office.officeId)}, {office.address}
                         </MenuItem>
                       ))}
@@ -210,9 +163,9 @@ const MainComponent = () => {
               </div>
             )}
 
-            <div className="form-control-input">
-              <InputLabel htmlFor="date">Date</InputLabel>
-              <LocalizationProvider dateAdapter={AdapterMoment}>
+            <div className="form-control-input" style={{backgroundColor: 'white'}}>
+              <InputLabel style={{backgroundColor: '#f9f9f9'}} htmlFor="date">Date</InputLabel>
+              <LocalizationProvider dateAdapter={AdapterMoment} >
                 <DatePicker
                   name="date"
                   format={DATE_FORMAT}
@@ -229,7 +182,7 @@ const MainComponent = () => {
               <FormControl fullWidth>
                 <InputLabel id="shiftType-label">Shift Type</InputLabel>
                 <Select
-                  style={{ width: "160px" }}
+                  style={{ width: "160px", backgroundColor: 'white', }}
                   labelId="shiftType-label"
                   id="shiftType"
                   name="shiftType"
@@ -245,7 +198,7 @@ const MainComponent = () => {
                 </Select>
               </FormControl>
             </div>
-            <div style={{ minWidth: "160px" }} className="form-control-input">
+            <div style={{ minWidth: "160px", backgroundColor: 'white', }} className="form-control-input">
               <FormControl fullWidth>
                 <InputLabel id="shiftType-label">Shift Time</InputLabel>
                 <Select
@@ -284,26 +237,12 @@ const MainComponent = () => {
               </button>
             </div>
           </div>
-          <div className="d-flex" style={{ justifyContent: "flex-end" }}>
-            <div className="filterContainer">
-              <div className="form-control-input" style={{ minWidth: "170px" }}>
-                {showAction && (
-                  <button
-                    type="submit"
-                    onClick={() => setRouteEditorShow(true)}
-                    className="btn btn-primary filterApplyBtn"
-                    style={{ width: "100%" }}
-                  >
-                    Route Editor
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="commonTable">
+          <div className="commonTable"
+           style={{backgroundColor: '#f9f9f9', marginTop: '20px'}}
+          >
             <div
               className="d-flex"
-              style={{ margin: "15px 0", justifyContent: "space-between" }}
+              style={{ margin: "15px 0", justifyContent: "space-between", backgroundColor: 'white', padding: '15px 10px', borderRadius: '10px'  }}
             >
               <div className="d-flex" style={{ alignItems: "center"}}>
                 <h3 style={{ paddingLeft: 10 }}>Routing Details</h3>
@@ -324,35 +263,18 @@ const MainComponent = () => {
                   <div style={{ minWidth: "180px" }} className="mx-4">
                     <div className="dropdown">
                       <button className="dropbtn">Pending Vendor Allocation</button>
-                      <div className="dropdown-content">
-                        {!!mrList?.length &&
-                          mrList.map((mr, idx) => (
-                            <MenuItem
-                              key={idx}
-                              value={mr.key}
-                              onClick={() =>
-                                manageTripHandler(mr.key, mr.value)
-                              }
-                            >
-                              {mr.value}
-                            </MenuItem>
-                          ))}
-                      </div>
                     </div>
                   </div>
                   <div style={{ minWidth: "180px" }} className="mx-4">
                     <div className="dropdown">
-                      <button className="dropbtn">
+                    {showAction && (
+                      <button 
+                       onClick={() => setAllocateVendorShow(true)}
+                        className="dropbtn"
+                      >
                         Allocate Vendors
                       </button>
-                      <div className="dropdown-content">
-                        {!!mb2b?.length &&
-                          mb2b.map((mr, idx) => (
-                            <MenuItem key={idx} value={mr}>
-                              {mr}
-                            </MenuItem>
-                          ))}
-                      </div>
+                    )}
                     </div>
                   </div>
                   <div style={{ minWidth: "180px" }} className="mx-4">
@@ -360,40 +282,16 @@ const MainComponent = () => {
                       <button className="dropbtn">
                         Auto Allocate Vendors
                       </button>
-                      <div className="dropdown-content">
-                        {!!mva?.length &&
-                          mva.map((mr, idx) => (
-                            <MenuItem key={idx} value={mr}>
-                              {mr}
-                            </MenuItem>
-                          ))}
-                      </div>
                     </div>
                   </div>
                   <div style={{ minWidth: "180px" }} className="mx-4">
                     <div className="dropdown">
                       <button className="dropbtn">Upload Options</button>
-                      <div className="dropdown-content">
-                        {!!mca?.length &&
-                          mca.map((mr, idx) => (
-                            <MenuItem key={idx} value={mr}>
-                              {mr}
-                            </MenuItem>
-                          ))}
-                      </div>
                     </div>
                   </div>
                   <div style={{ minWidth: "180px" }} className="mx-4">
                     <div className="dropdown">
                       <button className="dropbtn">Download Options</button>
-                      <div className="dropdown-content">
-                        {!!downloadTripList?.length &&
-                          downloadTripList.map((list, idx) => (
-                            <MenuItem key={idx} value={list}>
-                              {list}
-                            </MenuItem>
-                          ))}
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -403,49 +301,14 @@ const MainComponent = () => {
               data={data}
               headers={headers}
               setShowAction={(flag, row) => selectedRowHandler(flag, row)}
+              
             />
           </div>
-
-        <Modal
-            open={openModal}
-            onClose={handleModalClose}
-            aria-labelledby="modal-modal-title"
-            aria-describedby="modal-modal-description"
-          >
-            <Box sx={style}>
-              {manageTrip === 1 ? (
-                <GenerateTripModal
-                  data={selectedRow}
-                  onClose={handleModalClose}
-                  selectedDate={searchValues.date}
-                  dummy={false}
-                />
-              ) : manageTrip === 2 ? (
-                <ReplicateTripModal
-                  data={selectedRow}
-                  date={searchValues.date}
-                />
-              ) : manageTrip === 5 ? (
-                <GenerateTripModal
-                  data={selectedRow}
-                  onClose={handleModalClose}
-                  selectedDate={searchValues.date}
-                  dummy={true}
-                  officeData={offices}
-                  shiftTypes={shiftTypes}
-                />
-              ) : (
-                <></>
-              )}
-            </Box>
-          </Modal>
         </div>
       ) : (
-        <RouteEditor
-          shiftId={selectedRow.shiftId}
-          selectedDate={searchValues.date}
-        />
-        // <TripEditor />
+        <div style={{margin:'20px 0', boxShadow:'none',}}>
+        <AllocateVendor />
+        </div>
       )}    
     </div>
     

@@ -73,6 +73,7 @@ const GridNew = ({ headers, setShowAction,data }) => {
           suppressAggFuncInHeader={true}
           onSelectionChanged={onSelectionChanged}
           pagination={true}
+          
         />
       </div>
     </div>

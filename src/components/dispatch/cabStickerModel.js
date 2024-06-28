@@ -13,13 +13,10 @@ import dayjs from "dayjs";
 
 const CabStickerModal = (props) => {
   const {
-    onClose,
     data,
     officeData,
     selectedDate,
     dummy,
-    shiftType,
-    shiptTime,
   } = props;
 
   const vehicleType = ["4s", "6s", "7s", "12s"];
