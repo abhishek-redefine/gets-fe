@@ -118,7 +118,7 @@ const MainComponent = () => {
 
   const resetFilter = () => {
     let allSearchValue = {
-      officeId: offices[0].officeId,
+      officeId: office[0].officeId,
       date: moment().format("YYYY-MM-DD"),
       shiftType: "",
     };
