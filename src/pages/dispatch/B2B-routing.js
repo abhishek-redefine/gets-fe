@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import StickyHeadTable from "../../components/table/B2BTable";
+import StickyHeadTable from "../../components/dispatch/B2BTable";
 import { logoutB2B, loginB2B } from "./data";
 import {
   FormControl,
