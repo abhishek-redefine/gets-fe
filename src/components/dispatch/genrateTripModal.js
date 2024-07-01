@@ -26,10 +26,10 @@ const GenerateTripModal = (props) => {
     escortCriteria: "",
     tripStartFrom: "",
     flexMix: {
-      "4s": 0,
-      "6s": 0,
-      "7s": 0,
-      "12s": 0,
+      "4s": -1,
+      "6s": -1,
+      "7s": -1,
+      "12s": -1,
     },
   });
   const [dummyRouteOptions, setDummyOption] = useState({
