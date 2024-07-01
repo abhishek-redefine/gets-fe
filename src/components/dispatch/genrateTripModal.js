@@ -10,6 +10,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { TimeField } from "@mui/x-date-pickers/TimeField";
 import { getFormattedLabel } from "@/utils/utils";
 import dayjs from "dayjs";
+import ConfirmationModal from "./tripGenratedSuccesModal";
 
 const GenerateTripModal = (props) => {
   const { onClose, data, selectedDate, dummy, officeData, shiftTypes } = props;
@@ -22,6 +23,8 @@ const GenerateTripModal = (props) => {
   ]);
   const [tripStartsFrom, setTripStartsFrom] = useState(["Kundli", "Sonipat"]);
   const [transportType, setTransportType] = useState("CAB");
+  const [messageShow, setMessageShow] = useState(false);
+  const [passFlag, setPassFlag] = useState(false);
   const [routeOptions, setRouteOptions] = useState({
     escortCriteria: "",
     tripStartFrom: "",
@@ -84,9 +87,22 @@ const GenerateTripModal = (props) => {
       console.log(payload);
       const response = await DispatchService.generateTrips(payload);
       if (response.status === 201) {
-        console.log("trips generated");
-        onClose();
+        console.log("data>>>" +response.data.trips.length);
+        if(response.data.trips.length > 0){
+
+          setMessageShow(true);
+          setPassFlag(true);
+          console.log("trips generated");
+          //onClose();
+        }
+        else{
+          setMessageShow(true);
+          setPassFlag(false);
+          console.log("trip did not generated");
+          //onClose();
+        }
       }
+      setMessageShow(true);
     } catch (error) {
       console.log(error);
     }
@@ -141,7 +157,9 @@ const GenerateTripModal = (props) => {
 
   return (
     <>
-      <div
+      {
+        !messageShow ?
+        <div
         style={{ padding: "30px", backgroundColor: "#FFF", borderRadius: 10 }}
       >
         <div>
@@ -548,7 +566,11 @@ const GenerateTripModal = (props) => {
             </div>
           </div>
         </div>
+        
       </div>
+      :
+      <ConfirmationModal pass={passFlag} onClose={onClose}/>
+      }
     </>
   );
 };
