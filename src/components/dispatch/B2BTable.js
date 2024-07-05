@@ -11,11 +11,12 @@ import Checkbox from "@mui/material/Checkbox";
 import { styled } from "@mui/material/styles";
 
 const columns = [
-  { id: "tripId", label: "Trip ID", minWidth: 150 },
-  { id: "tripName", label: "Trip Name", minWidth: 150 },
+  { id: "tripIdForUI", label: "Trip ID", minWidth: 150},
+  { id: "id", label: "ID", minWidth: 150 },  
+  { id: "routeName", label: "Trip Name", minWidth: 150 },
   { id: "shiftTime", label: "Shift Time", minWidth: 150 },
   { id: "vendorName", label: "Vendor Name", minWidth: 150 },
-  { id: "vehicleType", label: "Vehicle Type", minWidth: 150 },
+  { id: "noOfSeats", label: "Vehicle Type", minWidth: 150 },
   { id: "employeeCount", label: "Employee Count", minWidth: 160 },
   { id: "escortStatus", label: "Escort Status", minWidth: 150 },
 ];
@@ -33,7 +34,7 @@ const StyledTableRow = styled(TableRow)(({ theme, isPaired }) => ({
   },
 }));
 
-const StickyHeadTable = ({ rows, selectedTrips, setSelectedTrips, pairedTrips }) => {
+const StickyHeadTable = ({ rows, selectedTrips, setSelectedTrips, pairedTrips,setSelectedTripsUI }) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -46,11 +47,13 @@ const StickyHeadTable = ({ rows, selectedTrips, setSelectedTrips, pairedTrips })
     setPage(0);
   };
 
-  const handleSelectTrip = (tripId) => {
+  const handleSelectTrip = (tripId,tripIdForUI) => {
     if (selectedTrips.includes(tripId)) {
-      setSelectedTrips([]); 
+      setSelectedTrips([]);
+      setSelectedTripsUI([]);
     } else {
-      setSelectedTrips([tripId]); 
+      setSelectedTrips([tripId]);
+      setSelectedTripsUI([tripIdForUI])
     }
   };
 
@@ -80,21 +83,21 @@ const StickyHeadTable = ({ rows, selectedTrips, setSelectedTrips, pairedTrips })
           </TableHead>
           <TableBody>
             {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-              const isSelected = selectedTrips.includes(row.tripId);
-              const isPaired = pairedTrips.includes(row.tripId);
+              const isSelected = selectedTrips.includes(row.id);
+              const isPaired = pairedTrips.includes(row.id);
               return (
                 <StyledTableRow
                   hover={!isPaired}
                   role="checkbox"
                   tabIndex={-1}
-                  key={row.tripId}
+                  key={row.id}
                   isPaired={isPaired}
-                  onClick={() => handleSelectTrip(row.tripId)}
+                  onClick={() => handleSelectTrip(row.id,row.tripIdForUI)}
                 >
                   <TableCell padding="checkbox">
                     <StyledCheckbox
                       checked={isSelected || isPaired}
-                      onChange={() => handleSelectTrip(row.tripId)}
+                      onChange={() => handleSelectTrip(row.id,row.tripIdForUI)}
                     />
                   </TableCell>
                   {columns.map((column) => {
@@ -113,7 +116,7 @@ const StickyHeadTable = ({ rows, selectedTrips, setSelectedTrips, pairedTrips })
                         {column.format && typeof value === "number"
                           ? column.format(value)
                           : value}
-                        {column.id === "tripId" && isPaired && (
+                        {column.id === "id" && isPaired && (
                           <span
                             style={{
                               marginLeft: "10px",

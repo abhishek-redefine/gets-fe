@@ -39,7 +39,7 @@ export default function ConfirmationModal({ pass, onClose}) {
               style={{margin: '20px 0 0'}}
             /> 
             <Typography id="modal-modal-title" sx={style.text}>
-              Hey! <br /> Successfully trip generated!
+              Successfully trip generated!
             </Typography>
               <Button
                 style={{
@@ -79,7 +79,7 @@ export default function ConfirmationModal({ pass, onClose}) {
               style={{margin: '70px 0 0'}}
             /> 
             <Typography style={{marginTop:'60px'}} id="modal-modal-title" sx={style.text}>
-              Hey! <br /> Trip generation failed!
+              Trip generation failed!
             </Typography>
               <Button
                 style={{

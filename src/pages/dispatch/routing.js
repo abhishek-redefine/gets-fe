@@ -32,6 +32,9 @@ import ReplicateTripModal from "@/components/dispatch/replicateTripModal";
 import RouteEditor from "@/components/dispatch/route-editor";
 import TripEditor from "@/components/dispatch/tripEditor";
 import AdsClickIcon from '@mui/icons-material/AdsClick';
+import { useRouter } from "next/router";
+import TripEditorNew from "@/components/dispatch/tripEditorNew";
+import { toggleToast } from '@/redux/company.slice';
 
 const style = {
   position: "absolute",
@@ -45,6 +48,7 @@ const style = {
 };
 
 const Routing = () => {
+  const router = useRouter();
   const headers = [
     { field: "officeId", checkboxSelection: true },
     { field: "shiftType" },
@@ -79,10 +83,10 @@ const Routing = () => {
       key: 3,
       value: "Download Trips",
     },
-    {
-      key: 4,
-      value: "Upload Trips",
-    },
+    // {
+    //   key: 4,
+    //   value: "Upload Trips",
+    // },
     {
       key: 5,
       value: "Generate Dummy Trips",
@@ -176,7 +180,7 @@ const Routing = () => {
         (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) {}
+    } catch (e) { }
   };
   const fetchMasterData = async (type) => {
     try {
@@ -185,7 +189,7 @@ const Routing = () => {
       if (data?.length) {
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) {}
+    } catch (e) { }
   };
   const generateTripHandler = () => {
     handleModalOpen();
@@ -233,17 +237,46 @@ const Routing = () => {
         generateTripHandler();
         break;
       case 6:6
-        deleteTrip(5);
+        getAllTrips();
         break;
     }
   };
+
+  const getAllTrips = async () => {
+    try {
+      const queryParams = {
+        shiftId: selectedRow.shiftId,
+        tripDate: searchValues.date,
+      };
+      const params = new URLSearchParams(queryParams);
+      const response = await DispatchService.getTripByShiftIdAndTripDate(
+        params
+      );
+      console.log(response.data);
+      var data = response?.data;
+      var flag = false;
+      data.map((val,index)=>{
+        flag = deleteTrip(val.id);
+      })
+      !flag ? dispatch(toggleToast({ message: 'Please try again in after some time.', type: 'error' })) : dispatch(toggleToast({ message: 'Trips deleted successfully!', type: 'success' }))
+      // setTripData(response.data);
+      //await getTripsMember(response.data);
+    } catch (er) {
+      console.log(er);
+    }
+  }
 
   const deleteTrip = async (tripId) => {
     try {
       const response = DispatchService.deleteTrip(tripId);
       console.log(response.data);
+      if(response.status === 200){
+        dispatch(toggleToast({ message: 'Trips deleted successfully!', type: 'success' }))
+        return true;
+      }
     } catch (err) {
       console.log(err);
+      return false;
     }
   };
   const downloadTrip = async () => {
@@ -255,21 +288,22 @@ const Routing = () => {
         shiftId,
         selectedDate
       );
-      console.log(response.data);
-      const byteArray = new Uint8Array(response.data);
-      console.log(byteArray);
-      // Create a Blob from the byte array
-      const blob = new Blob([response.data], {
+      const data = await response.data;
+      console.log(typeof data)
+      const byteArray = new Uint8Array(data);
+      console.log(byteArray)
+      const blob = new Blob([byteArray], {
         type: "application/octet-stream",
       });
-      const link = document.createElement("a");
       const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
       link.href = url;
       link.download = `trips${selectedDate}.xlsx`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
+
     } catch (error) {
       console.log(error);
     }
@@ -503,7 +537,11 @@ const Routing = () => {
                       <div className="dropdown-content">
                         {!!mb2b?.length &&
                           mb2b.map((mr, idx) => (
-                            <MenuItem key={idx} value={mr}>
+                            <MenuItem key={idx} value={mr} onClick={()=>{
+                              if(idx === 1){
+                                router.push("B2B-routing");
+                              }
+                            }}>
                               {mr}
                             </MenuItem>
                           ))}
@@ -596,11 +634,21 @@ const Routing = () => {
           </Modal>
         </div>
       ) : (
-        <RouteEditor
+        // <RouteEditor
+        //   edit={(flag) => setRouteEditorShow(flag)}
+        //   shiftId={selectedRow.shiftId}
+        //   selectedDate={searchValues.date}
+        // />
+        // <TripEditor 
+        //   edit={(flag) => setRouteEditorShow(flag)}
+        //   shiftId={selectedRow.shiftId}
+        //   selectedDate={searchValues.date}
+        // />
+        <TripEditorNew
+        edit={(flag) => setRouteEditorShow(flag)}
           shiftId={selectedRow.shiftId}
           selectedDate={searchValues.date}
         />
-        // <TripEditor />
       )}
     </div>
   );

@@ -23,20 +23,36 @@ import OfficeService from "@/services/office.service";
 import { useDispatch, useSelector } from "react-redux";
 import dispatch from "@/layouts/dispatch";
 import { setMasterData } from "@/redux/master.slice";
+import DispatchService from "@/services/dispatch.service";
+import MasterDataService from "@/services/masterdata.service";
+import { toggleToast } from '@/redux/company.slice';
 
 const MainComponent = () => {
   const [selectedLogoutTrips, setSelectedLogoutTrips] = useState([]);
   const [selectedLoginTrips, setSelectedLoginTrips] = useState([]);
+  const [selectedLogoutTripsUI, setSelectedLogoutTripsUI] = useState([]);
+  const [selectedLoginTripsUI, setSelectedLoginTripsUI] = useState([]);
   const [pairedTrips, setPairedTrips] = useState([]);
   const [pairedTripIds, setPairedTripIds] = useState([]);
+  const [pairedTripIdsUI, setPairedTripIdsUI] = useState([]);
   const [office, setOffice] = useState([]);
+  const [loginTripList, setLoginTripList] = useState([]);
+  const [logoutTripList, setLogoutTripList] = useState([]);
+  const [pagination, setPagination] = useState({
+    page: 0,
+    size: 10
+  })
   // const [shiftTypes, setShiftTypes] = useState([]);
-  const [searchValuesForLogin, setSearchValuesForLogin] = useState({
-    officeId: "",
-    shiftType: "",
-    date: moment().format("YYYY-MM-DD"),
-    transportType: "",
+  const [searchValuesForLogout, setSearchValuesForLogout] = useState({
+    officeIdForLogout: "",
+    shiftTypeForLogout: "LOGOUT",
+    dateForLogout: moment().format("YYYY-MM-DD"),
   });
+  const [searchValuesForLogin, setSearchValuesForLogin] = useState({
+    officeIdForLogin: "",
+    shiftTypeForLogin: "LOGIN",
+    dateForLogin: moment().format("YYYY-MM-DD"),
+  })
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
 
@@ -53,53 +69,84 @@ const MainComponent = () => {
       const response = await MasterDataService.getMasterData(type);
       const { data } = response || {};
       if (data?.length) {
+        console.log(data);
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) {}
+    } catch (e) { }
   };
-
-  const fetchSummary = async () => {
+  const getTrips = async () => {
     try {
-      console.log("search values>>>>>", searchValues);
-      let allSearchValues = { ...searchValues };
-      Object.keys(allSearchValues).forEach((objKey) => {
-        if (
-          allSearchValues[objKey] === null ||
-          allSearchValues[objKey] === ""
-        ) {
-          delete allSearchValues[objKey];
-        }
-      });
-      const response = await DispatchService.getAllSummary(allSearchValues);
-      console.log(response);
-      setData(response.data);
-    } catch (error) {
-      console.log(error);
+      let params = new URLSearchParams(pagination);
+      let searchValues = {
+        "officeId": searchValuesForLogin.officeIdForLogin,
+        "shiftType": searchValuesForLogin.shiftTypeForLogin,
+        "tripDateStr": searchValuesForLogin.dateForLogin
+      }
+      const loginResponse = await DispatchService.getTripSearchByBean(params, searchValues);
+      searchValues = {
+        "officeId": searchValuesForLogout.officeIdForLogout,
+        "shiftType": searchValuesForLogout.shiftTypeForLogout,
+        "tripDateStr": searchValuesForLogout.dateForLogout
+      }
+      const logoutResponse = await DispatchService.getTripSearchByBean(params, searchValues);
+      setLoginTripList(loginResponse.data.data);
+      setLogoutTripList(logoutResponse.data.data);
+    } catch (err) {
+      console.log(err);
     }
-  };
+  }
 
   const handleFilterChange = (e) => {
     const { target } = e;
     const { value, name } = target;
-    let newSearchValues = { ...searchValuesForLogin };
-    if (name === "date") newSearchValues[name] = value.format("YYYY-MM-DD");
+    let newSearchValues = name.includes("ForLogin") ? { ...searchValuesForLogin } : { ...searchValuesForLogout };
+    if (name === "dateForLogin" || name === "dateForLogout") newSearchValues[name] = value.format("YYYY-MM-DD");
     else newSearchValues[name] = value;
-    setSearchValuesForLogin(newSearchValues);
+    name.includes("ForLogin") ? setSearchValuesForLogin(newSearchValues) : setSearchValuesForLogout(newSearchValues);
   };
 
   const handlePairTrips = () => {
     if (selectedLogoutTrips.length === 1 && selectedLoginTrips.length === 1) {
+      console.log(selectedLogoutTrips, selectedLoginTrips);
       const newPairedTrip = `${selectedLogoutTrips[0]}-${selectedLoginTrips[0]}`;
+      const newPairedTripUI = `${selectedLogoutTripsUI[0]}-${selectedLoginTripsUI[0]}`;
+      console.log(newPairedTripUI)
       setPairedTrips([
         ...pairedTrips,
         selectedLogoutTrips[0],
         selectedLoginTrips[0],
       ]);
       setPairedTripIds([...pairedTripIds, newPairedTrip]);
+      setPairedTripIdsUI([...pairedTripIdsUI, newPairedTripUI]);
       setSelectedLogoutTrips([]);
       setSelectedLoginTrips([]);
     }
   };
+
+  const generateB2B = async () => {
+    try {
+      console.log(pairedTripIds)
+      const b2BTripDTO = {
+        "b2BTripDTO": []
+      }
+      pairedTripIds.map((val,index)=>{
+        const tripId = val.split("-");
+        b2BTripDTO.b2BTripDTO.push({
+          "id": 0,
+          "combinedTripId": val,
+          "loginTripId": tripId[1],
+          "logoutTripId": tripId[0]
+        })
+      })
+      const response = await DispatchService.generateB2bTrip(b2BTripDTO);
+      console.log(response);
+      if(response.status === 201){
+        dispatch(toggleToast({ message: 'B2B created successfully!', type: 'success' }));
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
   const handleUnpairTrips = () => {
     setPairedTrips([]);
@@ -115,13 +162,19 @@ const MainComponent = () => {
       console.log(clientOfficeDTO);
       setSearchValuesForLogin(
         { ...searchValuesForLogin },
-        (searchValuesForLogin["officeId"] = clientOfficeDTO[0]?.officeId)
+        (searchValuesForLogin["officeIdForLogin"] = clientOfficeDTO[0]?.officeId)
       );
+      setSearchValuesForLogout(
+        { ...searchValuesForLogout },
+        (searchValuesForLogout["officeIdForLogout"] = clientOfficeDTO[0]?.officeId)
+      )
       setOffice(clientOfficeDTO);
-    } catch (e) {}
+    } catch (e) { }
   };
 
   useEffect(() => {
+    setLoginTripList([]);
+    setLogoutTripList([])
     if (!shiftTypes?.length) {
       fetchMasterData(MASTER_DATA_TYPES.SHIFT_TYPE);
     }
@@ -163,8 +216,8 @@ const MainComponent = () => {
                     style={{ width: "160px", height: "40px", fontSize: "14px" }}
                     labelId="logout-primary-office-label"
                     id="logoutOfficeId"
-                    value={searchValuesForLogin.officeId}
-                    name="officeId"
+                    value={searchValuesForLogout.officeIdForLogout}
+                    name="officeIdForLogout"
                     label="Office ID"
                     onChange={handleFilterChange}
                   >
@@ -185,15 +238,15 @@ const MainComponent = () => {
               </InputLabel>
               <LocalizationProvider dateAdapter={AdapterMoment}>
                 <DatePicker
-                  name="date"
+                  name="dateForLogout"
                   format={DATE_FORMAT}
                   value={
-                    searchValuesForLogin.date
-                      ? moment(searchValuesForLogin.date)
+                    searchValuesForLogout.dateForLogout
+                      ? moment(searchValuesForLogout.dateForLogout)
                       : null
                   }
                   onChange={(e) =>
-                    handleFilterChange({ target: { name: "date", value: e } })
+                    handleFilterChange({ target: { name: "dateForLogout", value: e } })
                   }
                   slotProps={{
                     textField: {
@@ -216,11 +269,12 @@ const MainComponent = () => {
                 Shift Type
               </InputLabel>
               <Select
+                disabled={true}
                 style={{ width: "120px", height: "40px" }}
                 labelId="logout-shiftType-label"
                 id="logoutShiftType"
-                name="shiftType"
-                value={searchValuesForLogin.shiftType}
+                name="shiftTypeForLogout"
+                value={searchValuesForLogout.shiftTypeForLogout}
                 label="Shift Type"
                 onChange={handleFilterChange}
               >
@@ -260,8 +314,8 @@ const MainComponent = () => {
                     style={{ width: "150px", height: "40px", fontSize: "14px" }}
                     labelId="login-primary-office-label"
                     id="loginOfficeId"
-                    value={searchValuesForLogin.officeId}
-                    name="officeId"
+                    value={searchValuesForLogin.officeIdForLogin}
+                    name="officeIdForLogin"
                     label="Office ID"
                     onChange={handleFilterChange}
                   >
@@ -285,12 +339,12 @@ const MainComponent = () => {
                   name="date"
                   format={DATE_FORMAT}
                   value={
-                    searchValuesForLogin.date
-                      ? moment(searchValuesForLogin.date)
+                    searchValuesForLogin.dateForLogin
+                      ? moment(searchValuesForLogin.dateForLogin)
                       : null
                   }
                   onChange={(e) =>
-                    handleFilterChange({ target: { name: "date", value: e } })
+                    handleFilterChange({ target: { name: "dateForLogin", value: e } })
                   }
                   slotProps={{
                     textField: {
@@ -313,11 +367,12 @@ const MainComponent = () => {
                 Shift Type
               </InputLabel>
               <Select
+                disabled={true}
                 style={{ width: "120px", height: "40px" }}
                 labelId="login-shiftType-label"
                 id="loginShiftType"
-                name="shiftType"
-                value={searchValuesForLogin.shiftType}
+                name="shiftTypeForLogin"
+                value={searchValuesForLogin.shiftTypeForLogin}
                 label="Shift Type"
                 onChange={handleFilterChange}
               >
@@ -342,7 +397,7 @@ const MainComponent = () => {
         >
           <button
             type="submit"
-            onClick={() => fetchSummary()}
+            onClick={() => getTrips()}
             className="btn btn-primary filterApplyBtn"
             style={{
               width: "80px",
@@ -423,6 +478,7 @@ const MainComponent = () => {
 
           <div>
             <button
+              onClick={()=>generateB2B()}
               style={{
                 backgroundColor: "#f6ce47",
                 color: "black",
@@ -459,9 +515,10 @@ const MainComponent = () => {
               </h4>
             </div>
             <StickyHeadTable
-              rows={logoutB2B}
+              rows={logoutTripList}
               selectedTrips={selectedLogoutTrips}
               setSelectedTrips={setSelectedLogoutTrips}
+              setSelectedTripsUI={setSelectedLogoutTripsUI}
               pairedTrips={pairedTrips}
             />
           </div>
@@ -486,9 +543,10 @@ const MainComponent = () => {
               </h4>
             </div>
             <StickyHeadTable
-              rows={loginB2B}
+              rows={loginTripList}
               selectedTrips={selectedLoginTrips}
               setSelectedTrips={setSelectedLoginTrips}
+              setSelectedTripsUI={setSelectedLoginTripsUI}
               pairedTrips={pairedTrips}
             />
           </div>
@@ -508,7 +566,7 @@ const MainComponent = () => {
           >
             Paired Trip IDs:{" "}
             <span style={{ fontWeight: "normal" }}>
-              {pairedTripIds.join(", ")}
+              {pairedTripIdsUI.join(", ")}
             </span>
           </p>
         </div>

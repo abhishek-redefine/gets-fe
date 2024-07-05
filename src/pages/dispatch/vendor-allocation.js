@@ -22,7 +22,6 @@ import DispatchService from "@/services/dispatch.service";
 import { setMasterData } from "@/redux/master.slice";
 import AllocateVendor from "@/components/dispatch/allocate-vendors";
 
-
 const MainComponent = () => {
   const headers = [
     { field: "officeId", checkboxSelection: true },
@@ -56,12 +55,18 @@ const MainComponent = () => {
   const [data, setData] = useState([]);
   const [selectedRow, setSelectedRow] = useState([]);
   const [allocateVendorShow, setAllocateVendorShow] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(moment().format("YYYY-MM-DD"));
+  const [shiftId,setShiftId] = useState(null);
+  const [tripList, setTripList] = useState([]);
 
   const handleFilterChange = (e) => {
     const { target } = e;
     const { value, name } = target;
     let newSearchValues = { ...searchValues };
-    if (name === "date") newSearchValues[name] = value.format("YYYY-MM-DD");
+    if (name === "date"){ 
+      newSearchValues[name] = value.format("YYYY-MM-DD");
+      setSelectedDate(value.format("YYYY-MM-DD"));
+    }
     else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
   }; 
@@ -90,6 +95,21 @@ const MainComponent = () => {
     } catch (e) {}
   };
 
+  const allocateVendorHanlder = async() =>{
+    try{
+      const queryParams = {
+        shiftId: shiftId,
+        tripDate: selectedDate,
+      };
+      const params = new URLSearchParams(queryParams);
+      const response = await DispatchService.getTripByShiftIdAndTripDate(params);
+      setTripList(response.data);
+      console.log(response.data);
+      setAllocateVendorShow(true);
+    }catch(err){
+      console.log(err);
+    }
+  }
 
   const fetchSummary = async () => {
     try {
@@ -114,6 +134,7 @@ const MainComponent = () => {
   const selectedRowHandler = (flag, row) => {
     setShowAction(flag);
     setSelectedRow(row);
+    setShiftId(row.shiftId);
   };
 
   const resetFilter = () => {
@@ -269,7 +290,7 @@ const MainComponent = () => {
                     <div className="dropdown">
                     {showAction && (
                       <button 
-                       onClick={() => setAllocateVendorShow(true)}
+                       onClick={() => allocateVendorHanlder()}
                         className="dropbtn"
                       >
                         Allocate Vendors
@@ -307,7 +328,7 @@ const MainComponent = () => {
         </div>
       ) : (
         <div style={{margin:'20px 0', boxShadow:'none',}}>
-        <AllocateVendor />
+        <AllocateVendor tripList={tripList}/>
         </div>
       )}    
     </div>
