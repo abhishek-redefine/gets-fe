@@ -11,6 +11,7 @@
   "dependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
+    "@handsontable/react": "^14.4.0",
     "@mui/icons-material": "^5.15.11",
     "@mui/material": "^5.15.0",
     "@mui/styles": "^5.15.12",
@@ -25,6 +26,7 @@
     "form-data": "^4.0.0",
     "formik": "^2.4.5",
     "fs": "^0.0.1-security",
+    "handsontable": "^14.4.0",
     "json-as-xlsx": "^2.5.6",
     "ka-table": "^10.0.0",
     "material-react-table": "^2.13.0",
