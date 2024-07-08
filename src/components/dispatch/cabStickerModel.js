@@ -17,6 +17,7 @@ const CabStickerModal = (props) => {
     officeData,
     selectedDate,
     dummy,
+
   } = props;
 
   const vehicleType = ["4s", "6s", "7s", "12s"];
@@ -29,6 +30,18 @@ const CabStickerModal = (props) => {
   });
 
   const [selectFormat, setSelectFormat] = useState("Linear");
+
+  const [ state, setState] = useState({
+    linear: {
+
+    }
+
+
+  });
+
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
+  
 
   const [dummyRouteOptions, setDummyOption] = useState({
     date: selectedDate,
@@ -262,8 +275,10 @@ const CabStickerModal = (props) => {
               <p style={{ fontWeight: "bold" }}>Start</p>
               <input
                 type="number"
+                htmlFor="start"
                 name="start"
                 className="seaterInput"
+                
                 style={{ width: "30px", height: "30px", margin:'10px 0 0', padding:'2px', textAlign: 'center', }}
               />
             </div>
@@ -271,8 +286,10 @@ const CabStickerModal = (props) => {
               <p style={{ fontWeight: "bold" }}>End</p>
               <input
                 type="number"
+                htmlFor="end"
                 name="end"
                 className="seaterInput"
+                
                 style={{ width: "30px", height: "30px", margin:'10px 0 0', padding:'2px', textAlign: 'center', }}
               />
             </div>
@@ -295,7 +312,7 @@ const CabStickerModal = (props) => {
               <input
                 type="text"
                 maxLength="3"
-                className="seaterInput"
+                className="seaterInput"               
                 style={{ textTransform: "uppercase", width: "50px", height: "30px", margin:'10px 0 0', padding:'2px', textAlign: 'center', }}
               /><br/>
               <input

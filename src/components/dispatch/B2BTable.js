@@ -7,7 +7,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
-import Checkbox from "@mui/material/Checkbox";
+import Radio from "@mui/material/Radio";
 import { styled } from "@mui/material/styles";
 
 const columns = [
@@ -21,7 +21,7 @@ const columns = [
   { id: "escortStatus", label: "Escort Status", minWidth: 150 },
 ];
 
-const StyledCheckbox = styled(Checkbox)({
+const StyledRadio = styled(Radio)({
   "&.Mui-checked": {
     color: "#303232",
   },
@@ -57,13 +57,15 @@ const StickyHeadTable = ({ rows, selectedTrips, setSelectedTrips, pairedTrips,se
     }
   };
 
+  
+
   return (
     <Paper sx={{ width: "100%", overflow: "hidden", margin: "10px" }}>
       <TableContainer sx={{ maxHeight: 440 }}>
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox"></TableCell>
+            <TableCell padding="radio"></TableCell>
               {columns.map((column) => (
                 <TableCell
                   key={column.id}
@@ -88,16 +90,16 @@ const StickyHeadTable = ({ rows, selectedTrips, setSelectedTrips, pairedTrips,se
               return (
                 <StyledTableRow
                   hover={!isPaired}
-                  role="checkbox"
+                  role="radio"
                   tabIndex={-1}
                   key={row.id}
                   isPaired={isPaired}
                   onClick={() => handleSelectTrip(row.id,row.tripIdForUI)}
                 >
-                  <TableCell padding="checkbox">
-                    <StyledCheckbox
-                      checked={isSelected || isPaired}
-                      onChange={() => handleSelectTrip(row.id,row.tripIdForUI)}
+                  <TableCell padding="radio">
+                  <StyledRadio 
+                      checked={ isSelected }
+                      onChange={() => handleSelectTrip(row.id, row.tripIdForUI)}
                     />
                   </TableCell>
                   {columns.map((column) => {
@@ -152,3 +154,8 @@ const StickyHeadTable = ({ rows, selectedTrips, setSelectedTrips, pairedTrips,se
 };
 
 export default StickyHeadTable;
+
+
+
+
+
