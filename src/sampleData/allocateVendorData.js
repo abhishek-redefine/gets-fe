@@ -8,8 +8,8 @@ export const allocateVendorData  = [
         "noOfEmployees": "5",
         "escortStatus": "Yes",
         "special": "Yes",
-        "vendorName": "",
-        "vehicleNumber": "MH 01 AB 1234",
+        "vendorName": "Ganga Tourism",
+        // "vehicleNumber": "MH 01 AB 1234",
         "driverName": "John Doe"
     },
     {
@@ -22,7 +22,7 @@ export const allocateVendorData  = [
         "escortStatus": "No",
         "special": "No",
         "vendorName": "",
-        "vehicleNumber": "KA 02 CD 5678",
+        // "vehicleNumber": "KA 02 CD 5678",
         "driverName": "Jane Smith"
     },
     {
@@ -35,7 +35,7 @@ export const allocateVendorData  = [
         "escortStatus": "Yes",
         "special": "Yes",
         "vendorName": "Bharat Travels",
-        "vehicleNumber": "TN 03 EF 9012",
+        // "vehicleNumber": "TN 03 EF 9012",
         "driverName": "Michael Johnson"
     },
     {
@@ -48,7 +48,7 @@ export const allocateVendorData  = [
         "escortStatus": "No",
         "special": "No",
         "vendorName": "Sk Travels",
-        "vehicleNumber": "UP 04 GH 3456",
+        // "vehicleNumber": "UP 04 GH 3456",
         "driverName": "Emily Brown"
     },
     {
@@ -61,7 +61,7 @@ export const allocateVendorData  = [
         "escortStatus": "Yes",
         "special": "Yes",
         "vendorName": "World Travels",
-        "vehicleNumber": "DL 05 IJ 7890",
+        // "vehicleNumber": "DL 05 IJ 7890",
         "driverName": "Robert Lee"
     },
     {
@@ -74,7 +74,7 @@ export const allocateVendorData  = [
         "escortStatus": "No",
         "special": "No",
         "vendorName": "Bharat Travels",
-        "vehicleNumber": "MH 06 KL 2345",
+        // "vehicleNumber": "MH 06 KL 2345",
         "driverName": "Sarah Wilson"
     },
     {
@@ -87,7 +87,7 @@ export const allocateVendorData  = [
         "escortStatus": "Yes",
         "special": "Yes",
         "vendorName": "Sk Travels",
-        "vehicleNumber": "KA 07 MN 6789",
+        // "vehicleNumber": "KA 07 MN 6789",
         "driverName": "Christopher Martinez"
     },
     {
@@ -100,7 +100,7 @@ export const allocateVendorData  = [
         "escortStatus": "No",
         "special": "No",
         "vendorName": "World Travels",
-        "vehicleNumber": "TN 08 OP 1234",
+        // "vehicleNumber": "TN 08 OP 1234",
         "driverName": "Amanda Davis"
     },
     {
@@ -113,7 +113,7 @@ export const allocateVendorData  = [
         "escortStatus": "Yes",
         "special": "Yes",
         "vendorName": "Bharat Travels",
-        "vehicleNumber": "UP 09 QR 5678",
+        // "vehicleNumber": "UP 09 QR 5678",
         "driverName": "Daniel Garcia"
     },
     {
@@ -126,7 +126,7 @@ export const allocateVendorData  = [
         "escortStatus": "No",
         "special": "No",
         "vendorName": "Sk Travels",
-        "vehicleNumber": "DL 10 ST 9012",
+        // "vehicleNumber": "DL 10 ST 9012",
         "driverName": "Jennifer Rodriguez"
     }
 ]

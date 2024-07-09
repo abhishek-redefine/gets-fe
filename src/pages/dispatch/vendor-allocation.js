@@ -258,6 +258,7 @@ const MainComponent = () => {
               </button>
             </div>
           </div>
+          
           <div className="commonTable"
            style={{backgroundColor: '#f9f9f9', marginTop: '20px'}}
           >

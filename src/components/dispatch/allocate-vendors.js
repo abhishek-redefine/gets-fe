@@ -3,7 +3,7 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
-import { allocateVendorData } from "../../pages/dispatch/allocateVendorData";
+import { allocateVendorData } from "../../sampleData/allocateVendorData";
 import { Button, Menu, MenuItem } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import Fade from "@mui/material/Fade";

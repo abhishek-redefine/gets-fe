@@ -20,6 +20,7 @@ const dispatch = (WrappedComponent) => {
       }
     }, []);
 
+    
     return (
       <div className="mainSettingsContainer" style={{backgroundColor:'white'}}>
         <div className="currentStateContainer">

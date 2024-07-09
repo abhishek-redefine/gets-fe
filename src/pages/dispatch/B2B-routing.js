@@ -586,7 +586,7 @@
 
 import React, { useState, useEffect } from "react";
 import StickyHeadTable from "../../components/dispatch/B2BTable";
-import { logoutB2B, loginB2B } from "./data";
+import { logoutB2B, loginB2B } from "../../sampleData/data";
 import {
   FormControl,
   InputLabel,
