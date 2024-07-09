@@ -59,6 +59,9 @@ const MainComponent = () => {
     date: moment().format("YYYY-MM-DD"),
     transportType: "",
   });
+  const [tripList, setTripList] = useState([]);
+  const [shiftId,setShiftId] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(moment().format("YYYY-MM-DD"));
 
 
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
@@ -76,7 +79,10 @@ const MainComponent = () => {
     const { target } = e;
     const { value, name } = target;
     let newSearchValues = { ...searchValues };
-    if (name === "date") newSearchValues[name] = value.format("YYYY-MM-DD");
+    if (name === "date") {
+      newSearchValues[name] = value.format("YYYY-MM-DD");
+      setSelectedDate(value.format("YYYY-MM-DD"));
+    }
     else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
   };
@@ -128,6 +134,7 @@ const MainComponent = () => {
   const selectedRowHandler = (flag, row) => {
     setShowAction(flag);
     setSelectedRow(row);
+    setShiftId(row.shiftId);
   };
 
   const resetFilter = () => {
@@ -138,6 +145,21 @@ const MainComponent = () => {
     };
     setSearchValues(allSearchValue);
   };
+  const allocateCabHanlder = async() =>{
+    try{
+      const queryParams = {
+        shiftId: shiftId,
+        tripDate: selectedDate,
+      };
+      const params = new URLSearchParams(queryParams);
+      const response = await DispatchService.getTripByShiftIdAndTripDate(params);
+      setTripList(response.data);
+      console.log(response.data);
+      setAllocateCabShow(true);
+    }catch(err){
+      console.log(err);
+    }
+  }
 
   useEffect(() => {
     if (!shiftTypes?.length) {
@@ -274,7 +296,7 @@ const MainComponent = () => {
                     <div className="dropdown">
                       {showAction && (
                         <button
-                          onClick={() => setAllocateCabShow(true)}
+                          onClick={() => allocateCabHanlder()}
                           className="dropbtn"
                         >
                           Allocate Cabs
@@ -332,7 +354,7 @@ const MainComponent = () => {
         </div>
       ) : (
         <div style={{margin:'20px 0', boxShadow:'none',}}>
-        <AllocateCab />
+        <AllocateCab tripList={tripList} allocationComplete={()=>setAllocateCabShow(false)}/>
         </div>
       )}
     </div>
