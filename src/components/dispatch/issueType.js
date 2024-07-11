@@ -55,27 +55,27 @@ const IssueType = () => {
   };
 
   const BillingInformation1 = {
-    "Planned Vendor Name": "Planned Vendor Name",
-    "Actual vendor Name": "Actual vendor Name",
-    "Planned Vehicle Type": "Planned Vehicle Type",
-    "Vehicle Fuel Type": "Vehicle Fuel Type",
-    "Billing Zone": "Billing zone",
-    "First Pickup/ Last Drop Location": "First Pickup/ Last Drop Location",
-    "Planned Km.": "Planned Km.",
-    "Actual Km.": "Actual Km.",
-    "Reference Km.": "Reference Km.",
-    "Final Km.": "Final Km.",
+    "Planned Vendor Name": "Ganga Tourism",
+    "Actual vendor Name": "Ganga Tourism",
+    "Planned Vehicle Type": "Cab",
+    "Vehicle Fuel Type": "Petrol",
+    "Billing Zone": "Noida",
+    "First Pickup/Last Drop Location": "Noida Sector 59",
+    "Planned Km.": "99",
+    "Actual Km.": "97",
+    "Reference Km.": "101",
+    "Final Km.": "97",
   };
 
   const BillingInformation2 = {
-    "Contract ID": "Contarct ID",
-    "Contract Type": "Contract Type",
-    "Trip Start Time": "Trip Start Time",
-    "Trip End Time": "Trip End Time",
-    "Trip Duration": "Trip Duration",
-    "On Time Status": "On Time Status",
-    "Delay Reason": "Delay Reason",
-    "Trip Remarks": "Trip Remarks",
+    "Contract ID": "CID0001",
+    "Contract Type": "T&M",
+    "Trip Start Time": "09:00 AM",
+    "Trip End Time": "11:00 AM",
+    "Trip Duration": "2 Hours",
+    "On Time Status": "Yes",
+    "Delay Reason": "NA",
+    "Trip Remarks": "Good",
   };
 
   return (
