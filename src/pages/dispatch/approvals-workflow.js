@@ -23,6 +23,8 @@ import dispatch from "@/layouts/dispatch";
 import { setMasterData } from "@/redux/master.slice";
 import MasterDataService from "@/services/masterdata.service";
 import ApprovalsWorkflowTable from "@/components/dispatch/approvals-workflow";
+import IssueType from "@/components/dispatch/issueType";
+
 
 const MainComponent = () => {
   const [office, setOffice] = useState([]);
@@ -34,6 +36,11 @@ const MainComponent = () => {
   });
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
+
+  // Temprary
+  const [showAction, setShowAction] = useState(false);
+  const [issueTypeShow, setIssueTypeShow] = useState(false);
+  // Temprary
 
   const issueType = [
     "All",
@@ -94,6 +101,8 @@ const MainComponent = () => {
 
   return (
     <div>
+     {!issueTypeShow?(
+      <div>
       <div
         className="filterContainer"
         style={{
@@ -226,6 +235,17 @@ const MainComponent = () => {
             Reset
           </button>
         </div>
+        {/* Temprary */}
+        <div className="form-control-input" style={{ minWidth: "120px" }}>
+          <button
+            type="submit"
+            onClick={() => setIssueTypeShow(true)}
+            className="btn btn-primary filterApplyBtn"
+            style={{width: "120px"}}
+          >
+            Issue Type
+          </button>
+        </div>
       </div>
 
       <div
@@ -237,6 +257,12 @@ const MainComponent = () => {
       >
         <ApprovalsWorkflowTable/>
       </div>
+      </div>
+    ):(
+      <div>
+        <IssueType />
+      </div>
+    )}
     </div>
   );
 };

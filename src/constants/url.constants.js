@@ -8,4 +8,5 @@ export const MODULE_NAMES = {
     ADMIN_SETTINGS: "AS",
     COMPLIANCE: "C",
     DISPATCH: "D",
+    TRACKING: "T",
 };

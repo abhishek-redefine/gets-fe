@@ -1,17 +1,5 @@
 export const dispatchNotificationData = [
     {
-        "tripId": "TRIP0001",
-        "empId": "EMP0001",
-        "shiftTime": "09:30",
-        "shiftType": "Login",
-        "cabDetails": "CAB001",
-        "pickupTime": "08:30",
-        "pickupPoint": "123 Main St",
-        "dropPoint": "456 Elm St",
-        "smsStatus": "Sent",
-        "emailStatus": "Sent"
-    },
-    {
         "tripId": "TRIP0002",
         "empId": "EMP0002",
         "shiftTime": "10:00",
