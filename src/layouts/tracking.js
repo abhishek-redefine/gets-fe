@@ -29,7 +29,7 @@ const tracking = (WrappedComponent) => {
           <button
             onClick={() => changeRoute("live-tracking")}
             className={`btn btn-secondary ${
-              currentActiveState === "routing" ? "btn-blk" : ""
+              currentActiveState === "live-tracking" ? "btn-blk" : ""
             }`}
           >
             Live Tracking
@@ -37,7 +37,7 @@ const tracking = (WrappedComponent) => {
           <button
             onClick={() => changeRoute("security-dashboard")}
             className={`btn btn-secondary ${
-              currentActiveState === "B2B-routing" ? "btn-blk" : ""
+              currentActiveState === "security-dashboard" ? "btn-blk" : ""
             }`}
           >
             Security Dashboard
@@ -46,7 +46,7 @@ const tracking = (WrappedComponent) => {
             style={{width: "200px"}}
             onClick={() => changeRoute("safe-reach-confirmation")}
             className={`btn btn-secondary ${
-              currentActiveState === "vendor-allocation" ? "btn-blk" : ""
+              currentActiveState === "safe-reach-confirmation" ? "btn-blk" : ""
             }`}
           >
             Safe Reach Confirmation
@@ -54,7 +54,7 @@ const tracking = (WrappedComponent) => {
           <button
             onClick={() => changeRoute("incident-management")}
             className={`btn btn-secondary ${
-              currentActiveState === "cab-allocation" ? "btn-blk" : ""
+              currentActiveState === "incident-management" ? "btn-blk" : ""
             }`}
           >
             Incident Management

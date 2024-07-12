@@ -31,10 +31,10 @@ import { setMasterData } from "@/redux/master.slice";
 import ReplicateTripModal from "@/components/dispatch/replicateTripModal";
 import RouteEditor from "@/components/dispatch/route-editor";
 import TripEditor from "@/components/dispatch/tripEditor";
-import AdsClickIcon from '@mui/icons-material/AdsClick';
+import AdsClickIcon from "@mui/icons-material/AdsClick";
 import { useRouter } from "next/router";
 import TripEditorNew from "@/components/dispatch/tripEditorNew";
-import { toggleToast } from '@/redux/company.slice';
+import { toggleToast } from "@/redux/company.slice";
 
 const style = {
   position: "absolute",
@@ -136,6 +136,7 @@ const Routing = () => {
   const [openModal, setOpenModal] = useState(false);
   const handleModalOpen = () => setOpenModal(true);
   const handleModalClose = () => setOpenModal(false);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const searchByChangeHandler = (event) => {
     const { target } = event;
@@ -180,7 +181,7 @@ const Routing = () => {
         (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) { }
+    } catch (e) {}
   };
   const fetchMasterData = async (type) => {
     try {
@@ -189,7 +190,7 @@ const Routing = () => {
       if (data?.length) {
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) { }
+    } catch (e) {}
   };
   const generateTripHandler = () => {
     handleModalOpen();
@@ -236,7 +237,8 @@ const Routing = () => {
         setManageTrip(5);
         generateTripHandler();
         break;
-      case 6:6
+      case 6:
+        6;
         getAllTrips();
         break;
     }
@@ -255,23 +257,40 @@ const Routing = () => {
       console.log(response.data);
       var data = response?.data;
       var flag = false;
-      data.map((val,index)=>{
+      data.map((val, index) => {
         flag = deleteTrip(val.id);
-      })
-      !flag ? dispatch(toggleToast({ message: 'Please try again in after some time.', type: 'error' })) : dispatch(toggleToast({ message: 'Trips deleted successfully!', type: 'success' }))
+      });
+      !flag
+        ? dispatch(
+            toggleToast({
+              message: "Please try again in after some time.",
+              type: "error",
+            })
+          )
+        : dispatch(
+            toggleToast({
+              message: "Trips deleted successfully!",
+              type: "success",
+            })
+          );
       // setTripData(response.data);
       //await getTripsMember(response.data);
     } catch (er) {
       console.log(er);
     }
-  }
+  };
 
   const deleteTrip = async (tripId) => {
     try {
       const response = DispatchService.deleteTrip(tripId);
       console.log(response.data);
-      if(response.status === 200){
-        dispatch(toggleToast({ message: 'Trips deleted successfully!', type: 'success' }))
+      if (response.status === 200) {
+        dispatch(
+          toggleToast({
+            message: "Trips deleted successfully!",
+            type: "success",
+          })
+        );
         return true;
       }
     } catch (err) {
@@ -289,21 +308,20 @@ const Routing = () => {
         selectedDate
       );
       const data = await response.data;
-      console.log(typeof data)
+      console.log(typeof data);
       const byteArray = new Uint8Array(data);
-      console.log(byteArray)
+      console.log(byteArray);
       const blob = new Blob([byteArray], {
         type: "application/octet-stream",
       });
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
       link.download = `trips${selectedDate}.xlsx`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-
     } catch (error) {
       console.log(error);
     }
@@ -494,7 +512,7 @@ const Routing = () => {
               className="d-flex"
               style={{ margin: "15px 0", justifyContent: "space-between" }}
             >
-              <div className="d-flex" style={{ alignItems: "center"}}>
+              <div className="d-flex" style={{ alignItems: "center" }}>
                 <h3 style={{ paddingLeft: 10 }}>Dispatch Summary</h3>
               </div>
               {showAction && (
@@ -526,6 +544,20 @@ const Routing = () => {
                               {mr.value}
                             </MenuItem>
                           ))}
+                        <MenuItem
+                          onClick={() => {
+                            const fileInput = document.createElement("input");
+                            fileInput.type = "file";
+                            fileInput.accept = ".xlsx";
+                            fileInput.onchange = (e) => {
+                              const file = e.target.files[0];
+                              setSelectedFile(file);
+                            };
+                            fileInput.click();
+                          }}
+                        >
+                          Upload Trips
+                        </MenuItem>
                       </div>
                     </div>
                   </div>
@@ -537,11 +569,15 @@ const Routing = () => {
                       <div className="dropdown-content">
                         {!!mb2b?.length &&
                           mb2b.map((mr, idx) => (
-                            <MenuItem key={idx} value={mr} onClick={()=>{
-                              if(idx === 1){
-                                router.push("B2B-routing");
-                              }
-                            }}>
+                            <MenuItem
+                              key={idx}
+                              value={mr}
+                              onClick={() => {
+                                if (idx === 1) {
+                                  router.push("B2B-routing");
+                                }
+                              }}
+                            >
                               {mr}
                             </MenuItem>
                           ))}
@@ -639,13 +675,13 @@ const Routing = () => {
         //   shiftId={selectedRow.shiftId}
         //   selectedDate={searchValues.date}
         // />
-        // <TripEditor 
+        // <TripEditor
         //   edit={(flag) => setRouteEditorShow(flag)}
         //   shiftId={selectedRow.shiftId}
         //   selectedDate={searchValues.date}
         // />
         <TripEditorNew
-        edit={(flag) => setRouteEditorShow(flag)}
+          edit={(flag) => setRouteEditorShow(flag)}
           shiftId={selectedRow.shiftId}
           selectedDate={searchValues.date}
         />

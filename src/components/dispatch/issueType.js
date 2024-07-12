@@ -400,6 +400,7 @@ const IssueType = () => {
                       fullWidth
                       style={{
                         margin: "0 19px 20px 25px",
+                        padding: "4px 0",
                         fontFamily: "DM Sans",
                       }}
                     >
