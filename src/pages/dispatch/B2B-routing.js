@@ -25,7 +25,7 @@ import dispatch from "@/layouts/dispatch";
 import { setMasterData } from "@/redux/master.slice";
 import DispatchService from "@/services/dispatch.service";
 import MasterDataService from "@/services/masterdata.service";
-import { toggleToast } from '@/redux/company.slice';
+import { toggleToast } from "@/redux/company.slice";
 
 const MainComponent = () => {
   const [selectedLogoutTrips, setSelectedLogoutTrips] = useState([]);
@@ -40,14 +40,16 @@ const MainComponent = () => {
   const [logoutTripList, setLogoutTripList] = useState([]);
   const [b2bLoginList, setB2bLoginList] = useState([]);
   const [b2bLogoutList, setB2bLogoutList] = useState([]);
-  const [b2bPair,setB2bPair] = useState([]);
-  const [autoSelectLogin,setAutoSelectLogin] = useState(null);
-  const [autoSelectLogout,setAutoSelectLogout] = useState(null);
+  const [b2bPair, setB2bPair] = useState([]);
+  const [b2bPairList, setB2bPairList] = useState([]);
+  const [allIdsPairedAndB2bList, setAllIdsPairedAndB2bList] = useState([]);
+  const [autoSelectLogin, setAutoSelectLogin] = useState(null);
+  const [autoSelectLogout, setAutoSelectLogout] = useState(null);
 
   const [pagination, setPagination] = useState({
     page: 0,
-    size: 10
-  })
+    size: 10,
+  });
   // const [shiftTypes, setShiftTypes] = useState([]);
   const [searchValuesForLogout, setSearchValuesForLogout] = useState({
     officeIdForLogout: "",
@@ -58,7 +60,7 @@ const MainComponent = () => {
     officeIdForLogin: "",
     shiftTypeForLogin: "LOGIN",
     dateForLogin: moment().format("YYYY-MM-DD"),
-  })
+  });
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
 
@@ -79,136 +81,8 @@ const MainComponent = () => {
         console.log(data);
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) { }
+    } catch (e) {}
   };
-
-  const getTrips = async () => {
-    try {
-      let params = new URLSearchParams(pagination);
-      let searchValues = {
-        "officeId": searchValuesForLogin.officeIdForLogin,
-        "shiftType": searchValuesForLogin.shiftTypeForLogin,
-        "tripDateStr": searchValuesForLogin.dateForLogin
-      }
-      const loginResponse = await DispatchService.getTripSearchByBean(params, searchValues);
-      searchValues = {
-        "officeId": searchValuesForLogout.officeIdForLogout,
-        "shiftType": searchValuesForLogout.shiftTypeForLogout,
-        "tripDateStr": searchValuesForLogout.dateForLogout
-      }
-      const logoutResponse = await DispatchService.getTripSearchByBean(params, searchValues);
-      setLoginTripList(loginResponse.data.data);
-      setLogoutTripList(logoutResponse.data.data);
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
-  const deleteB2b = async(b2bId) =>{
-    try{
-      const response = await DispatchService.deleteB2B(b2bId);
-      console.log(response.data);
-    }catch(err){
-      console.log(err);
-    }
-  }
-
-  const getB2BTrips = async () => {
-    try {
-      const response = await DispatchService.getAllB2B();
-      var data = response.data.data;
-      var tempLogin = [];
-      var tempLogout = [];
-      var tempPair = [];
-      console.log(data);
-      data.map((val) => {
-        tempLogin.push({
-          b2bId: val.id,
-          id: val.loginTripId
-        });
-        tempLogout.push({ b2bId: val.id, id: val.logoutTripId });
-        tempPair.push({loginId : val.loginTripId, logoutId : val.logoutTripId})
-      });
-      setB2bLoginList(tempLogin);
-      setB2bLogoutList(tempLogout);
-      setB2bPair(tempPair);
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
-  const handleFilterChange = (e) => {
-    const { target } = e;
-    const { value, name } = target;
-    let newSearchValues = name.includes("ForLogin") ? { ...searchValuesForLogin } : { ...searchValuesForLogout };
-    if (name === "dateForLogin" || name === "dateForLogout") newSearchValues[name] = value.format("YYYY-MM-DD");
-    else newSearchValues[name] = value;
-    name.includes("ForLogin") ? setSearchValuesForLogin(newSearchValues) : setSearchValuesForLogout(newSearchValues);
-  };
-
-
-
-  const handlePairTrips = () => {
-    if (selectedLogoutTrips.length === 1 && selectedLoginTrips.length === 1) {
-      console.log(selectedLogoutTrips, selectedLoginTrips);
-      const newPairedTrip = `TRIP-${selectedLogoutTrips[0]}-TRIP-${selectedLoginTrips[0]}`;
-      const newPairedTripUI = `${selectedLogoutTripsUI[0]}-${selectedLoginTripsUI[0]}`;
-
-      if (!pairedTripIds.includes(newPairedTrip)) {
-        setPairedTrips([...pairedTrips, selectedLogoutTrips[0], selectedLoginTrips[0]]);
-        setPairedTripIds([...pairedTripIds, newPairedTrip]);
-        setPairedTripIdsUI([...pairedTripIdsUI, newPairedTripUI]);
-
-        setSelectedLogoutTrips([]);
-        setSelectedLoginTrips([]);
-      }
-
-      // Automatic Selection functionality
-      if (pairedTripIds.includes(newPairedTrip) > 0) {
-        if (selectedLogoutTrips.length === 1) {
-          setSelectedLoginTrips(selectedLoginTrips);
-        } else if (selectedLoginTrips.length === 1) {
-          setSelectedLogoutTrips(selectedLogoutTrips);
-        }
-      }
-    }
-  };
-
-
-
-  const handleUnpairTrips = () => {
-    setPairedTrips([]);
-    setPairedTripIds([]);
-    setSelectedLogoutTrips([]);
-    setSelectedLoginTrips([]);
-    setPairedTripIdsUI([]);
-  };
-
-  const generateB2B = async () => {
-    try {
-      console.log(pairedTripIds)
-      const b2BTripDTO = {
-        "b2BTripDTO": []
-      }
-      pairedTripIds.map((val, index) => {
-        const tripId = val.split("-");
-        b2BTripDTO.b2BTripDTO.push({
-          "id": 0,
-          "combinedTripId": val,
-          "loginTripId": tripId[3],
-          "logoutTripId": tripId[1]
-        })
-      })
-      const response = await DispatchService.generateB2bTrip(b2BTripDTO);
-      console.log(response);
-      if (response.status === 201) {
-        dispatch(toggleToast({ message: 'B2B created successfully!', type: 'success' }));
-        getB2BTrips();
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  }
 
   const fetchAllOffices = async () => {
     try {
@@ -218,27 +92,238 @@ const MainComponent = () => {
       console.log(clientOfficeDTO);
       setSearchValuesForLogin(
         { ...searchValuesForLogin },
-        (searchValuesForLogin["officeIdForLogin"] = clientOfficeDTO[0]?.officeId)
+        (searchValuesForLogin["officeIdForLogin"] =
+          clientOfficeDTO[0]?.officeId)
       );
       setSearchValuesForLogout(
         { ...searchValuesForLogout },
-        (searchValuesForLogout["officeIdForLogout"] = clientOfficeDTO[0]?.officeId)
-      )
+        (searchValuesForLogout["officeIdForLogout"] =
+          clientOfficeDTO[0]?.officeId)
+      );
       setOffice(clientOfficeDTO);
-    } catch (e) { }
+    } catch (e) {}
   };
 
-  const autoSelectHandler = (type,tripId) =>{
-    if(type === 'login'){
-      
-    }else{
 
+  const getTrips = async () => {
+    try {
+      let params = new URLSearchParams(pagination);
+      let searchValues = {
+        officeId: searchValuesForLogin.officeIdForLogin,
+        shiftType: searchValuesForLogin.shiftTypeForLogin,
+        tripDateStr: searchValuesForLogin.dateForLogin,
+      };
+      const loginResponse = await DispatchService.getTripSearchByBean(
+        params,
+        searchValues
+      );
+      searchValues = {
+        officeId: searchValuesForLogout.officeIdForLogout,
+        shiftType: searchValuesForLogout.shiftTypeForLogout,
+        tripDateStr: searchValuesForLogout.dateForLogout,
+      };
+      const logoutResponse = await DispatchService.getTripSearchByBean(
+        params,
+        searchValues
+      );
+      setLoginTripList(loginResponse.data.data);
+      setLogoutTripList(logoutResponse.data.data);
+    } catch (err) {
+      console.log(err);
     }
-  }
+  };
+
+  const deleteB2b = async (b2bId) => {
+    try {
+      const response = await DispatchService.deleteB2B(b2bId);
+      console.log(response.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const getB2BTrips = async () => {
+    try {
+      const response = await DispatchService.getAllB2B();
+      var data = response.data.data;
+      var tempLogin = [];
+      var tempLogout = [];
+      var tempPair = [];
+      var ids = [];
+      console.log(data);
+      data.map((val) => {
+        tempLogin.push({
+          b2bId: val.id,
+          id: val.loginTripId,
+        });
+        tempLogout.push({ b2bId: val.id, id: val.logoutTripId });
+        tempPair.push({ loginId: val.loginTripId, logoutId: val.logoutTripId });
+        ids.push(val.logoutTripId);
+        ids.push(val.loginTripId);
+      });
+      setAllIdsPairedAndB2bList(tempPair);
+      setB2bPairList(data);
+      setB2bLoginList(tempLogin);
+      setB2bLogoutList(tempLogout);
+      setB2bPair(tempPair);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleFilterChange = (e) => {
+    const { target } = e;
+    const { value, name } = target;
+    let newSearchValues = name.includes("ForLogin")
+      ? { ...searchValuesForLogin }
+      : { ...searchValuesForLogout };
+    if (name === "dateForLogin" || name === "dateForLogout")
+      newSearchValues[name] = value.format("YYYY-MM-DD");
+    else newSearchValues[name] = value;
+    name.includes("ForLogin")
+      ? setSearchValuesForLogin(newSearchValues)
+      : setSearchValuesForLogout(newSearchValues);
+  };
+
+  const handlePairTrips = () => {
+    if (selectedLogoutTrips.length === 1 && selectedLoginTrips.length === 1) {
+      console.log(selectedLogoutTrips, selectedLoginTrips);
+      const newPairedTrip = `TRIP-${selectedLogoutTrips[0]}-TRIP-${selectedLoginTrips[0]}`;
+      const newPairedTripUI = `${selectedLogoutTripsUI[0]}-${selectedLoginTripsUI[0]}`;
+
+      if (!pairedTripIds.includes(newPairedTrip)) {
+        setPairedTrips([
+          ...pairedTrips,
+          selectedLogoutTrips[0],
+          selectedLoginTrips[0],
+        ]);
+        setPairedTripIds([...pairedTripIds, newPairedTrip]);
+        setPairedTripIdsUI([...pairedTripIdsUI, newPairedTripUI]);
+        setAllIdsPairedAndB2bList([
+          ...allIdsPairedAndB2bList,
+          { logoutId: selectedLogoutTrips[0], loginId: selectedLoginTrips[0] },
+        ]);
+        setSelectedLogoutTrips([]);
+        setSelectedLoginTrips([]);
+      }
+    }
+  };
+
+  // const handleUnpairTrips = () => {
+  //   let temp = [...allIdsPairedAndB2bList];
+  //   const found = allIdsPairedAndB2bList.findIndex((pair) => pair.loginId === selectedLoginTrips[0] || pair.logoutId === selectedLogoutTrips[0]);
+  //   temp.splice(found,1);
+  //   setAllIdsPairedAndB2bList(temp);
+  //   setPairedTrips([]);
+  //   setPairedTripIds([]);
+  //   setSelectedLogoutTrips([]);
+  //   setSelectedLoginTrips([]);
+  //   setPairedTripIdsUI([]);
+  //   setAutoSelectLogout(null);
+  //   setAutoSelectLogin(null);
+  // };
+
+  const handleUnpairTrips = () => {
+    let tempPairedTrips = [...pairedTrips];
+    let tempPairedTripIds = [...pairedTripIds];
+    let tempPairedTripIdsUI = [...pairedTripIdsUI];
+    let tempAllIdsPairedAndB2bList = [...allIdsPairedAndB2bList];
+
+    selectedLogoutTrips.forEach((logoutTrip) => {
+      const foundIndex = tempAllIdsPairedAndB2bList.findIndex(
+        (pair) => pair.logoutId === logoutTrip
+      );
+      if (foundIndex !== -1) {
+        const { logoutId, loginId } = tempAllIdsPairedAndB2bList[foundIndex];
+        tempPairedTrips = tempPairedTrips.filter(
+          (trip) => trip !== logoutId && trip !== loginId
+        );
+        tempPairedTripIds = tempPairedTripIds.filter(
+          (id) => id !== `TRIP-${logoutId}-TRIP-${loginId}`
+        );
+        tempPairedTripIdsUI = tempPairedTripIdsUI.filter(
+          (id) => id !== `${logoutId}-${loginId}`
+        );
+        tempAllIdsPairedAndB2bList.splice(foundIndex, 1);
+      }
+    });
+
+    selectedLoginTrips.forEach((loginTrip) => {
+      const foundIndex = tempAllIdsPairedAndB2bList.findIndex(
+        (pair) => pair.loginId === loginTrip
+      );
+      if (foundIndex !== -1) {
+        const { logoutId, loginId } = tempAllIdsPairedAndB2bList[foundIndex];
+        tempPairedTrips = tempPairedTrips.filter(
+          (trip) => trip !== logoutId && trip !== loginId
+        );
+        tempPairedTripIds = tempPairedTripIds.filter(
+          (id) => id !== `TRIP-${logoutId}-TRIP-${loginId}`
+        );
+        tempPairedTripIdsUI = tempPairedTripIdsUI.filter(
+          (id) => id !== `${logoutId}-${loginId}`
+        );
+        tempAllIdsPairedAndB2bList.splice(foundIndex, 1);
+      }
+    });
+
+    setPairedTrips(tempPairedTrips);
+    setPairedTripIds(tempPairedTripIds);
+    setPairedTripIdsUI(tempPairedTripIdsUI);
+    setAllIdsPairedAndB2bList(tempAllIdsPairedAndB2bList);
+    setSelectedLogoutTrips([]);
+    setSelectedLoginTrips([]);
+    setAutoSelectLogout(null);
+    setAutoSelectLogin(null);
+  };
+
+  const generateB2B = async () => {
+    try {
+      console.log(pairedTripIds);
+      const b2BTripDTO = {
+        b2BTripDTO: [],
+      };
+      pairedTripIds.map((val, index) => {
+        const tripId = val.split("-");
+        b2BTripDTO.b2BTripDTO.push({
+          id: 0,
+          combinedTripId: val,
+          loginTripId: tripId[3],
+          logoutTripId: tripId[1],
+        });
+      });
+      const response = await DispatchService.generateB2bTrip(b2BTripDTO);
+      console.log(response);
+      if (response.status === 201) {
+        dispatch(
+          toggleToast({ message: "B2B created successfully!", type: "success" })
+        );
+        getB2BTrips();
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const autoSelectHandler = (type, tripId, event) => {
+    if (type === "login") {
+      const found = allIdsPairedAndB2bList.findIndex((pair) => pair.loginId === tripId);
+      console.log(found);
+      event === "selectedTrips"
+        ? setAutoSelectLogout(allIdsPairedAndB2bList[found]?.logoutId)
+        : setAutoSelectLogout(null);
+    } else {
+      const found = allIdsPairedAndB2bList.findIndex((pair) => pair.logoutId === tripId);
+      console.log(found);
+      event === "selectedTrips"
+        ? setAutoSelectLogin(allIdsPairedAndB2bList[found]?.loginId)
+        : setAutoSelectLogin(null);
+    }
+  };
 
   useEffect(() => {
     setLoginTripList([]);
-    setLogoutTripList([])
+    setLogoutTripList([]);
     if (!shiftTypes?.length) {
       fetchMasterData(MASTER_DATA_TYPES.SHIFT_TYPE);
     }
@@ -310,7 +395,9 @@ const MainComponent = () => {
                       : null
                   }
                   onChange={(e) =>
-                    handleFilterChange({ target: { name: "dateForLogout", value: e } })
+                    handleFilterChange({
+                      target: { name: "dateForLogout", value: e },
+                    })
                   }
                   slotProps={{
                     textField: {
@@ -408,7 +495,9 @@ const MainComponent = () => {
                       : null
                   }
                   onChange={(e) =>
-                    handleFilterChange({ target: { name: "dateForLogin", value: e } })
+                    handleFilterChange({
+                      target: { name: "dateForLogin", value: e },
+                    })
                   }
                   slotProps={{
                     textField: {
@@ -518,7 +607,7 @@ const MainComponent = () => {
                 border: "2px solid #f6ce47",
                 borderRadius: "6px",
                 padding: "6px 10px",
-                marginLeft: '11px',
+                marginLeft: "11px",
                 marginRight: "20px",
                 fontWeight: "bold",
                 cursor: "pointer",
@@ -554,7 +643,7 @@ const MainComponent = () => {
                 fontWeight: "bold",
                 padding: "6px 10px",
                 cursor: "pointer",
-                marginRight: 10
+                marginRight: 10,
               }}
             >
               Delete B2B Trips
@@ -605,6 +694,10 @@ const MainComponent = () => {
               b2bList={b2bLogoutList}
               type={"logout"}
               b2bPair={b2bPair}
+              autoSelect={(type, id, event) =>
+                autoSelectHandler(type, id, event)
+              }
+              autoSelectTrip={autoSelectLogout}
             />
           </div>
           <div style={{ flex: 1, minWidth: "600px" }}>
@@ -636,7 +729,10 @@ const MainComponent = () => {
               b2bList={b2bLoginList}
               type={"login"}
               b2bPair={b2bPair}
-              autoSelect={(type,id)=>autoSelectHandler(type,id)}
+              autoSelect={(type, id, event) =>
+                autoSelectHandler(type, id, event)
+              }
+              autoSelectTrip={autoSelectLogin}
             />
           </div>
         </div>
@@ -665,7 +761,4 @@ const MainComponent = () => {
 };
 
 export default dispatch(MainComponent);
-
-
-
 

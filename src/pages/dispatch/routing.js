@@ -56,7 +56,22 @@ const Routing = () => {
     { field: "bookingCount" },
     { field: "routingStatus" },
     { field: "dispatchStatus" },
-    { field: "tripCount" },
+    { field: "tripCount",
+      cellRenderer: (params) => {
+        const tripCount = params.value;
+
+        const handleClick = () => {
+          //clicked cell row data
+          console.log(params.node.data);
+        };
+
+        return (
+          <div style={{ cursor: 'pointer', textDecoration: 'underline', color: "blue"}} onClick={handleClick}>
+            {tripCount}
+          </div>
+        );
+      }
+    },
     { field: "allocatedVendorCount" },
     { field: "allocatedCabCount" },
     { field: "fleetMix" },

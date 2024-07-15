@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -33,9 +33,10 @@ const StyledTableRow = styled(TableRow)(({ theme, isPaired }) => ({
   },
 }));
 
-const StickyHeadTable = ({ rows, selectedTrips, setSelectedTrips, pairedTrips,setSelectedTripsUI, pairedList,b2bList,type,b2bPair,autoSelect }) => {
+const StickyHeadTable = ({ rows, selectedTrips, setSelectedTrips, pairedTrips, setSelectedTripsUI, pairedList, b2bList, type, b2bPair, autoSelect, autoSelectTrip }) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [flag,setFlag ]= useState(false);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -46,17 +47,27 @@ const StickyHeadTable = ({ rows, selectedTrips, setSelectedTrips, pairedTrips,se
     setPage(0);
   };
 
-  const handleSelectTrip = (tripId,tripIdForUI, isPaired) => {
-    console.log(tripId, tripIdForUI, "Hello world>>>>>>"+ selectedTrips.includes(tripId),isPaired,">>>>>>>>>",pairedTrips);
+  const handleSelectTrip = (tripId, tripIdForUI, isPaired) => {
+    //console.log(tripId, tripIdForUI, "Hello world>>>>>>"+ selectedTrips.includes(tripId),isPaired,">>>>>>>>>",pairedTrips);
     if (selectedTrips.includes(tripId)) {
+      autoSelect(type,tripId,"unselectedTrips");
       setSelectedTrips([]);
       setSelectedTripsUI([]);
     } else {
+      autoSelect(type,tripId,"selectedTrips");
       setSelectedTrips([tripId]);
       setSelectedTripsUI([tripIdForUI])
     }
   };
 
+  useEffect(() => {
+    console.log(autoSelectTrip);
+    if(autoSelectTrip){
+      setFlag(true);
+    }else{
+      setFlag(false);
+    }
+  },[autoSelectTrip])
   
 
   return (
@@ -89,6 +100,7 @@ const StickyHeadTable = ({ rows, selectedTrips, setSelectedTrips, pairedTrips,se
               const isPaired = pairedTrips.includes(row.id);
               var index = b2bList.findIndex(item => item.id === row.id);
               const isB2bTrip = index !== -1;
+              const autoFlag = flag && autoSelectTrip === row.id;
               return (
                 <StyledTableRow
                   hover={!isPaired}
@@ -100,7 +112,7 @@ const StickyHeadTable = ({ rows, selectedTrips, setSelectedTrips, pairedTrips,se
                 >
                   <TableCell padding="radio">
                   <StyledRadio 
-                      checked={ isSelected }
+                      checked={ isSelected || autoFlag}
                       onChange={() => handleSelectTrip(row.id, row.tripIdForUI,isPaired)}
                     />
                   </TableCell>
