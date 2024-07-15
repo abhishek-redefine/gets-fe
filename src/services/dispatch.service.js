@@ -53,17 +53,14 @@ const getTripByShiftIdAndTripDate = async (queryParams) => {
 
 const generateDummyTrip = async (body) => {
   let url = `${API_PATH.API_VERSION}${API_PATH.TRIP}${API_PATH.DUMMY_TRIP}`;
-  return axiosInstance.put(url, body).then((response) => {
+  return axiosInstance.post(url, body).then((response) => {
     return response;
   });
 };
 
-const deleteTrip = async (tripId) => {
-  let url = `${API_PATH.API_VERSION}${API_PATH.TRIP}${API_PATH.DELETE_TRIP}`;
-  if (tripId) {
-    url += `/${tripId}`;
-  }
-  return axiosInstance.delete(url).then((response) => {
+const deleteTrip = async (ids) => {
+  let url = `${API_PATH.API_VERSION}${API_PATH.TRIP}${API_PATH.DELETE_TRIPS}`;
+  return axiosInstance.post(url,{ids}).then((response) => {
     return response;
   });
 };
@@ -105,7 +102,7 @@ const allocateVehicle = async (tripId, vehicleId) => {
   });
 }
 
-const autoSuggestVehicleByVendor = async(vendor,text) =>{
+const autoSuggestVehicleByVendor = async (vendor, text) => {
   return axiosInstance
     .get(`${API_PATH.API_VERSION}${API_PATH.SEARCH_VEHICLE_BY_VENDOR}/${vendor}/${text}/0/15`)
     .then((response) => {
@@ -113,13 +110,28 @@ const autoSuggestVehicleByVendor = async(vendor,text) =>{
     });
 }
 
-const assignVehicle = async(tripId,VehicleId) =>{
+const assignVehicle = async (tripId, VehicleId) => {
   return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.ALLOCATION}${API_PATH.VEHICLE}?tripId=${tripId}&vehicleId=${VehicleId}`).then(
     response => {
       return response
     }
   )
+}
 
+const getAllB2B = async () => {
+  return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.B2B}${API_PATH.ALL}?page=0&size=100`).then(
+    response => {
+      return response;
+    }
+  )
+}
+
+const deleteB2B = async (b2bId) => {
+  return axiosInstance.delete(`${API_PATH.API_VERSION}${API_PATH.B2B}${API_PATH.DELETE_TRIP}/${b2bId}`).then(
+    response => {
+      return response;
+    }
+  )
 }
 
 const DispatchService = {
@@ -136,7 +148,9 @@ const DispatchService = {
   allocateVendor,
   allocateVehicle,
   autoSuggestVehicleByVendor,
-  assignVehicle
+  assignVehicle,
+  getAllB2B,
+  deleteB2B
 };
 
 export default DispatchService;
