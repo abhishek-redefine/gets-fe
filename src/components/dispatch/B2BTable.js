@@ -11,8 +11,7 @@ import Radio from "@mui/material/Radio";
 import { styled } from "@mui/material/styles";
 
 const columns = [
-  { id: "tripIdForUI", label: "Trip ID", minWidth: 150},
-  { id: "id", label: "ID", minWidth: 150 },  
+  { id: "id", label: "ID", minWidth: 250 },  
   { id: "routeName", label: "Trip Name", minWidth: 150 },
   { id: "shiftTime", label: "Shift Time", minWidth: 150 },
   { id: "vendorName", label: "Vendor Name", minWidth: 150 },
@@ -34,7 +33,7 @@ const StyledTableRow = styled(TableRow)(({ theme, isPaired }) => ({
   },
 }));
 
-const StickyHeadTable = ({ rows, selectedTrips, setSelectedTrips, pairedTrips,setSelectedTripsUI }) => {
+const StickyHeadTable = ({ rows, selectedTrips, setSelectedTrips, pairedTrips,setSelectedTripsUI, pairedList,b2bList,type,b2bPair,autoSelect }) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -47,7 +46,8 @@ const StickyHeadTable = ({ rows, selectedTrips, setSelectedTrips, pairedTrips,se
     setPage(0);
   };
 
-  const handleSelectTrip = (tripId,tripIdForUI) => {
+  const handleSelectTrip = (tripId,tripIdForUI, isPaired) => {
+    console.log(tripId, tripIdForUI, "Hello world>>>>>>"+ selectedTrips.includes(tripId),isPaired,">>>>>>>>>",pairedTrips);
     if (selectedTrips.includes(tripId)) {
       setSelectedTrips([]);
       setSelectedTripsUI([]);
@@ -87,6 +87,8 @@ const StickyHeadTable = ({ rows, selectedTrips, setSelectedTrips, pairedTrips,se
             {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
               const isSelected = selectedTrips.includes(row.id);
               const isPaired = pairedTrips.includes(row.id);
+              var index = b2bList.findIndex(item => item.id === row.id);
+              const isB2bTrip = index !== -1;
               return (
                 <StyledTableRow
                   hover={!isPaired}
@@ -94,12 +96,12 @@ const StickyHeadTable = ({ rows, selectedTrips, setSelectedTrips, pairedTrips,se
                   tabIndex={-1}
                   key={row.id}
                   isPaired={isPaired}
-                  onClick={() => handleSelectTrip(row.id,row.tripIdForUI)}
+                  onClick={() => handleSelectTrip(row.id,row.tripIdForUI,isPaired)}
                 >
                   <TableCell padding="radio">
                   <StyledRadio 
                       checked={ isSelected }
-                      onChange={() => handleSelectTrip(row.id, row.tripIdForUI)}
+                      onChange={() => handleSelectTrip(row.id, row.tripIdForUI,isPaired)}
                     />
                   </TableCell>
                   {columns.map((column) => {
@@ -115,9 +117,14 @@ const StickyHeadTable = ({ rows, selectedTrips, setSelectedTrips, pairedTrips,se
                           color: "black",
                         }}
                       >
-                        {column.format && typeof value === "number"
-                          ? column.format(value)
-                          : value}
+                        {column.format && typeof value === "number" ? 
+                          column.format(value)
+                          : 
+                          column.id === "id" ?
+                          `TRIP-${value}`
+                          :
+                          value
+                        }
                         {column.id === "id" && isPaired && (
                           <span
                             style={{
@@ -131,6 +138,21 @@ const StickyHeadTable = ({ rows, selectedTrips, setSelectedTrips, pairedTrips,se
                             Paired
                           </span>
                         )}
+                        {
+                          column.id === "id" && isB2bTrip &&(
+                            <span
+                            style={{
+                              marginLeft: "10px",
+                              backgroundColor: "#66C76C",
+                              color: "white",
+                              padding: "2px 10px",
+                              borderRadius: "10px",
+                            }}
+                          >
+                            {b2bList[index].b2bId}
+                          </span>
+                          )
+                        }
                       </TableCell>
                     );
                   })}
