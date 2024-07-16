@@ -104,7 +104,6 @@ const MainComponent = () => {
     } catch (e) {}
   };
 
-
   const getTrips = async () => {
     try {
       let params = new URLSearchParams(pagination);
@@ -224,55 +223,55 @@ const MainComponent = () => {
   // };
 
   const handleUnpairTrips = () => {
+    console.log("entered",pairedTrips,pairedTripIds,autoSelectLogin,autoSelectLogout);
+
     let tempPairedTrips = [...pairedTrips];
     let tempPairedTripIds = [...pairedTripIds];
-    let tempPairedTripIdsUI = [...pairedTripIdsUI];
     let tempAllIdsPairedAndB2bList = [...allIdsPairedAndB2bList];
 
-    selectedLogoutTrips.forEach((logoutTrip) => {
-      const foundIndex = tempAllIdsPairedAndB2bList.findIndex(
-        (pair) => pair.logoutId === logoutTrip
-      );
-      if (foundIndex !== -1) {
-        const { logoutId, loginId } = tempAllIdsPairedAndB2bList[foundIndex];
-        tempPairedTrips = tempPairedTrips.filter(
-          (trip) => trip !== logoutId && trip !== loginId
-        );
-        tempPairedTripIds = tempPairedTripIds.filter(
-          (id) => id !== `TRIP-${logoutId}-TRIP-${loginId}`
-        );
-        tempPairedTripIdsUI = tempPairedTripIdsUI.filter(
-          (id) => id !== `${logoutId}-${loginId}`
-        );
-        tempAllIdsPairedAndB2bList.splice(foundIndex, 1);
-      }
-    });
+    // selectedLogoutTrips.forEach((logoutTrip) => {
+    //   const foundIndex = tempAllIdsPairedAndB2bList.findIndex(
+    //     (pair) => pair.logoutId === logoutTrip
+    //   );
+    //   if (foundIndex !== -1) {
+    //     const { logoutId, loginId } = tempAllIdsPairedAndB2bList[foundIndex];
+    //     tempPairedTrips = tempPairedTrips.filter(
+    //       (trip) => trip !== logoutId && trip !== loginId
+    //     );
+    //     tempPairedTripIds = tempPairedTripIds.filter(
+    //       (id) => id !== `TRIP-${logoutId}-TRIP-${loginId}`
+    //     );
+    //     tempPairedTripIdsUI = tempPairedTripIdsUI.filter(
+    //       (id) => id !== `${logoutId}-${loginId}`
+    //     );
+    //     tempAllIdsPairedAndB2bList.splice(foundIndex, 1);
+    //   }
+    // });
 
-    selectedLoginTrips.forEach((loginTrip) => {
-      const foundIndex = tempAllIdsPairedAndB2bList.findIndex(
-        (pair) => pair.loginId === loginTrip
-      );
-      if (foundIndex !== -1) {
-        const { logoutId, loginId } = tempAllIdsPairedAndB2bList[foundIndex];
-        tempPairedTrips = tempPairedTrips.filter(
-          (trip) => trip !== logoutId && trip !== loginId
-        );
-        tempPairedTripIds = tempPairedTripIds.filter(
-          (id) => id !== `TRIP-${logoutId}-TRIP-${loginId}`
-        );
-        tempPairedTripIdsUI = tempPairedTripIdsUI.filter(
-          (id) => id !== `${logoutId}-${loginId}`
-        );
-        tempAllIdsPairedAndB2bList.splice(foundIndex, 1);
-      }
-    });
+    // selectedLoginTrips.forEach((loginTrip) => {
+    //   const foundIndex = tempAllIdsPairedAndB2bList.findIndex(
+    //     (pair) => pair.loginId === loginTrip
+    //   );
+    //   if (foundIndex !== -1) {
+    //     const { logoutId, loginId } = tempAllIdsPairedAndB2bList[foundIndex];
+    //     tempPairedTrips = tempPairedTrips.filter(
+    //       (trip) => trip !== logoutId && trip !== loginId
+    //     );
+    //     tempPairedTripIds = tempPairedTripIds.filter(
+    //       (id) => id !== `TRIP-${logoutId}-TRIP-${loginId}`
+    //     );
+    //     tempPairedTripIdsUI = tempPairedTripIdsUI.filter(
+    //       (id) => id !== `${logoutId}-${loginId}`
+    //     );
+    //     tempAllIdsPairedAndB2bList.splice(foundIndex, 1);
+    //   }
+    // });
 
+    const findIndex = pairedTrips.findIndex();
+    tempPairedTrips.splice(findIndex, 1);
     setPairedTrips(tempPairedTrips);
     setPairedTripIds(tempPairedTripIds);
-    setPairedTripIdsUI(tempPairedTripIdsUI);
     setAllIdsPairedAndB2bList(tempAllIdsPairedAndB2bList);
-    setSelectedLogoutTrips([]);
-    setSelectedLoginTrips([]);
     setAutoSelectLogout(null);
     setAutoSelectLogin(null);
   };
@@ -305,19 +304,63 @@ const MainComponent = () => {
     }
   };
 
+  const handleSelectRow = (type,tripId) => {
+    console.log("hello world>>>>>>", type,tripId);
+    if (type === "login") {
+      setSelectedLoginTrips([tripId]);
+      setAutoSelectLogout(null);
+      setAutoSelectLogin(null);
+    } else {
+      setSelectedLogoutTrips([tripId]);
+      setAutoSelectLogin(null);
+      setAutoSelectLogout(null);
+    }
+  };
+
   const autoSelectHandler = (type, tripId, event) => {
     if (type === "login") {
-      const found = allIdsPairedAndB2bList.findIndex((pair) => pair.loginId === tripId);
-      console.log(found);
-      event === "selectedTrips"
-        ? setAutoSelectLogout(allIdsPairedAndB2bList[found]?.logoutId)
-        : setAutoSelectLogout(null);
+      const found = allIdsPairedAndB2bList.findIndex(
+        (pair) => pair.loginId === tripId
+      );
+      console.log(allIdsPairedAndB2bList, event);
+      setSelectedLoginTrips([]);
+      setSelectedLogoutTrips([]);
+      // if (found === -1 && allIdsPairedAndB2bList.length > 0 && selectedLoginTrips.length > 0) {
+      //   setAutoSelectLogin(null);
+      //   setAutoSelectLogout(null);
+      //   setSelectedLoginTrips([]);
+      //   setSelectedLogoutTrips([]);
+      // }
+      // else{
+      if (event === "selectedTrips") {
+        setAutoSelectLogout(allIdsPairedAndB2bList[found]?.logoutId);
+        setAutoSelectLogin(allIdsPairedAndB2bList[found]?.loginId);
+      } else {
+        setAutoSelectLogin(null);
+        setAutoSelectLogout(null);
+      }
+      // }
     } else {
-      const found = allIdsPairedAndB2bList.findIndex((pair) => pair.logoutId === tripId);
-      console.log(found);
-      event === "selectedTrips"
-        ? setAutoSelectLogin(allIdsPairedAndB2bList[found]?.loginId)
-        : setAutoSelectLogin(null);
+      const found = allIdsPairedAndB2bList.findIndex(
+        (pair) => pair.logoutId === tripId
+      );
+      setSelectedLoginTrips([]);
+      setSelectedLogoutTrips([]);
+      console.log(allIdsPairedAndB2bList, event);
+      // if (found === -1 && allIdsPairedAndB2bList.length > 0 && selectedLogoutTrips.length > 0) {
+      //   setAutoSelectLogin(null);
+      //   setAutoSelectLogout(null);
+      //   setSelectedLoginTrips([]);
+      //   setSelectedLogoutTrips([]);
+      // } else {
+      if (event === "selectedTrips") {
+        setAutoSelectLogout(allIdsPairedAndB2bList[found]?.logoutId);
+        setAutoSelectLogin(allIdsPairedAndB2bList[found]?.loginId);
+      } else {
+        setAutoSelectLogin(null);
+        setAutoSelectLogout(null);
+      }
+      // }
     }
   };
 
@@ -698,6 +741,7 @@ const MainComponent = () => {
                 autoSelectHandler(type, id, event)
               }
               autoSelectTrip={autoSelectLogout}
+              handleSelectRow={(type,tripId) => handleSelectRow(type,tripId)}
             />
           </div>
           <div style={{ flex: 1, minWidth: "600px" }}>
@@ -733,6 +777,7 @@ const MainComponent = () => {
                 autoSelectHandler(type, id, event)
               }
               autoSelectTrip={autoSelectLogin}
+              handleSelectRow={(type,tripId) => handleSelectRow(type,tripId)}
             />
           </div>
         </div>
@@ -761,4 +806,3 @@ const MainComponent = () => {
 };
 
 export default dispatch(MainComponent);
-
