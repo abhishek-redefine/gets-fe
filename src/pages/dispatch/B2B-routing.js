@@ -267,10 +267,19 @@ const MainComponent = () => {
     //   }
     // });
 
-    const findIndex = pairedTrips.findIndex();
-    tempPairedTrips.splice(findIndex, 1);
+    const findIndex = pairedTrips.findIndex((pair) => pair.loginId === selectedLoginTrips[0] && pair.logoutId === selectedLogoutTrips[0]);
+    tempPairedTrips.splice(findIndex, 2);
+    // console.log("tempPairedTrips" +tempPairedTrips);
     setPairedTrips(tempPairedTrips);
+
+    const findTripIdsIndex = pairedTripIds.findIndex((id) => id === `TRIP-${selectedLogoutTrips[0]}-TRIP-${selectedLoginTrips[0]}`);
+    tempPairedTripIds.splice(findTripIdsIndex, 1);
+    // console.log("tempPairedTripIds" +tempPairedTripIds);
     setPairedTripIds(tempPairedTripIds);
+
+    const findAllIdsIndex = allIdsPairedAndB2bList.findIndex((pair) => pair.loginId === selectedLoginTrips[0]);
+    tempAllIdsPairedAndB2bList.splice(findAllIdsIndex, 1);
+    // console.log("tempAllIdsPairedAndB2bList" +tempAllIdsPairedAndB2bList);
     setAllIdsPairedAndB2bList(tempAllIdsPairedAndB2bList);
     setAutoSelectLogout(null);
     setAutoSelectLogin(null);
