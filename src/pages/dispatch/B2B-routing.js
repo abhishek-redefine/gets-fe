@@ -208,20 +208,6 @@ const MainComponent = () => {
     }
   };
 
-  // const handleUnpairTrips = () => {
-  //   let temp = [...allIdsPairedAndB2bList];
-  //   const found = allIdsPairedAndB2bList.findIndex((pair) => pair.loginId === selectedLoginTrips[0] || pair.logoutId === selectedLogoutTrips[0]);
-  //   temp.splice(found,1);
-  //   setAllIdsPairedAndB2bList(temp);
-  //   setPairedTrips([]);
-  //   setPairedTripIds([]);
-  //   setSelectedLogoutTrips([]);
-  //   setSelectedLoginTrips([]);
-  //   setPairedTripIdsUI([]);
-  //   setAutoSelectLogout(null);
-  //   setAutoSelectLogin(null);
-  // };
-
   const handleUnpairTrips = () => {
     console.log("entered",pairedTrips,pairedTripIds,autoSelectLogin,autoSelectLogout);
 
@@ -229,61 +215,29 @@ const MainComponent = () => {
     let tempPairedTripIds = [...pairedTripIds];
     let tempAllIdsPairedAndB2bList = [...allIdsPairedAndB2bList];
 
-    // selectedLogoutTrips.forEach((logoutTrip) => {
-    //   const foundIndex = tempAllIdsPairedAndB2bList.findIndex(
-    //     (pair) => pair.logoutId === logoutTrip
-    //   );
-    //   if (foundIndex !== -1) {
-    //     const { logoutId, loginId } = tempAllIdsPairedAndB2bList[foundIndex];
-    //     tempPairedTrips = tempPairedTrips.filter(
-    //       (trip) => trip !== logoutId && trip !== loginId
-    //     );
-    //     tempPairedTripIds = tempPairedTripIds.filter(
-    //       (id) => id !== `TRIP-${logoutId}-TRIP-${loginId}`
-    //     );
-    //     tempPairedTripIdsUI = tempPairedTripIdsUI.filter(
-    //       (id) => id !== `${logoutId}-${loginId}`
-    //     );
-    //     tempAllIdsPairedAndB2bList.splice(foundIndex, 1);
-    //   }
-    // });
-
-    // selectedLoginTrips.forEach((loginTrip) => {
-    //   const foundIndex = tempAllIdsPairedAndB2bList.findIndex(
-    //     (pair) => pair.loginId === loginTrip
-    //   );
-    //   if (foundIndex !== -1) {
-    //     const { logoutId, loginId } = tempAllIdsPairedAndB2bList[foundIndex];
-    //     tempPairedTrips = tempPairedTrips.filter(
-    //       (trip) => trip !== logoutId && trip !== loginId
-    //     );
-    //     tempPairedTripIds = tempPairedTripIds.filter(
-    //       (id) => id !== `TRIP-${logoutId}-TRIP-${loginId}`
-    //     );
-    //     tempPairedTripIdsUI = tempPairedTripIdsUI.filter(
-    //       (id) => id !== `${logoutId}-${loginId}`
-    //     );
-    //     tempAllIdsPairedAndB2bList.splice(foundIndex, 1);
-    //   }
-    // });
-
-    const findIndex = pairedTrips.findIndex((pair) => pair.loginId === selectedLoginTrips[0] && pair.logoutId === selectedLogoutTrips[0]);
+    const findIndex = tempPairedTrips.indexOf(autoSelectLogout);
+    // console.log("autoSelectLogin: ", autoSelectLogin);
+    // console.log("autoSelectLogout: ", autoSelectLogout);
+    // console.log("findIndex: ",findIndex);
+    // console.log("tempPairedTrips>> " +tempPairedTrips);
     tempPairedTrips.splice(findIndex, 2);
-    // console.log("tempPairedTrips" +tempPairedTrips);
+    // console.log("tempPairedTrips>> " +tempPairedTrips);
     setPairedTrips(tempPairedTrips);
+    console.log("setPairedTrips>> " +tempPairedTrips);
 
-    const findTripIdsIndex = pairedTripIds.findIndex((id) => id === `TRIP-${selectedLogoutTrips[0]}-TRIP-${selectedLoginTrips[0]}`);
+    const findTripIdsIndex = tempPairedTripIds.findIndex((id) => id === `TRIP-${autoSelectLogout}-TRIP-${autoSelectLogin}`);
     tempPairedTripIds.splice(findTripIdsIndex, 1);
-    // console.log("tempPairedTripIds" +tempPairedTripIds);
+    // console.log("tempPairedTripIds: " +tempPairedTripIds);
     setPairedTripIds(tempPairedTripIds);
 
-    const findAllIdsIndex = allIdsPairedAndB2bList.findIndex((pair) => pair.loginId === selectedLoginTrips[0]);
+    const findAllIdsIndex = tempAllIdsPairedAndB2bList.findIndex((id) => id.logoutId === autoSelectLogout);
     tempAllIdsPairedAndB2bList.splice(findAllIdsIndex, 1);
-    // console.log("tempAllIdsPairedAndB2bList" +tempAllIdsPairedAndB2bList);
+    // console.log("tempAllIdsPairedAndB2bList: " +tempAllIdsPairedAndB2bList);
     setAllIdsPairedAndB2bList(tempAllIdsPairedAndB2bList);
     setAutoSelectLogout(null);
     setAutoSelectLogin(null);
   };
+
 
   const generateB2B = async () => {
     try {
