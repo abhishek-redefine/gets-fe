@@ -85,13 +85,16 @@ const MainComponent = () => {
   const handleModalClose = () => setOpenModal(false);
   const [selectedRow, setSelectedRow] = useState([]);
   const [allocateCabShow, setAllocateCabShow] = useState(false);
+  const [tripList, setTripList] = useState([]);
+  const [shiftId, setShiftId] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(moment().format("YYYY-MM-DD"));
 
 
   const handleFilterChange = (e) => {
     const { target } = e;
     const { value, name } = target;
     let newSearchValues = { ...searchValues };
-    if (name === "date") newSearchValues[name] = value.format("YYYY-MM-DD");
+    if (name === "date") { newSearchValues[name] = value.format("YYYY-MM-DD"); setSelectedDate(value.format("YYYY-MM-DD")) }
     else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
   };
@@ -107,7 +110,7 @@ const MainComponent = () => {
         (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const fetchMasterData = async (type) => {
@@ -117,7 +120,7 @@ const MainComponent = () => {
       if (data?.length) {
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const fetchSummary = async () => {
@@ -140,9 +143,26 @@ const MainComponent = () => {
     }
   };
 
+  const allocateCabHanlder = async () => {
+    try {
+      const queryParams = {
+        shiftId: shiftId,
+        tripDate: selectedDate,
+      };
+      const params = new URLSearchParams(queryParams);
+      const response = await DispatchService.getTripByShiftIdAndTripDate(params);
+      setTripList(response.data);
+      console.log(response.data);
+      setAllocateCabShow(true);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   const selectedRowHandler = (flag, row) => {
     setShowAction(flag);
     setSelectedRow(row);
+    setShiftId(row.shiftId);
   };
 
   const resetFilter = () => {
@@ -289,7 +309,9 @@ const MainComponent = () => {
                     <div className="dropdown">
                       {showAction && (
                         <button
-                          onClick={() => setAllocateCabShow(true)}
+                          onClick={() => {
+                            allocateCabHanlder();
+                          }}
                           className="dropbtn"
                         >
                           Allocate Cabs
@@ -297,11 +319,11 @@ const MainComponent = () => {
                       )}
                     </div>
                   </div>
-                  <div style={{ minWidth: "180px" }} className="mx-4">
+                  {/* <div style={{ minWidth: "180px" }} className="mx-4">
                     <div className="dropdown">
                       <button className="dropbtn">Auto Allocate Cabs</button>
                     </div>
-                  </div>
+                  </div> */}
                   <div style={{ minWidth: "180px" }} className="mx-4">
                     <div className="dropdown">
                       <button className="dropbtn" onClick={handleModalOpen}>
@@ -309,7 +331,7 @@ const MainComponent = () => {
                       </button>
                     </div>
                   </div>
-                  <div style={{ minWidth: "180px" }} className="mx-4">
+                  {/* <div style={{ minWidth: "180px" }} className="mx-4">
                     <div className="dropdown">
                       <button className="dropbtn">Upload Cab Allocation</button>
                     </div>
@@ -318,7 +340,7 @@ const MainComponent = () => {
                     <div className="dropdown">
                       <button className="dropbtn">Download</button>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               )}
             </div>
@@ -346,8 +368,8 @@ const MainComponent = () => {
           </Modal>
         </div>
       ) : (
-        <div style={{margin:'20px 0', boxShadow:'none',}}>
-        <AllocateCab />
+        <div style={{ margin: '20px 0', boxShadow: 'none', }}>
+          <AllocateCab tripList={tripList} allocationComplete={() => setAllocateCabShow(false)} />
         </div>
       )}
     </div>

@@ -134,6 +134,7 @@ export const API_PATH = {
   SHIFTID_TRIP_DATE: "/byShiftIdAndTripDate",
   DUMMY_TRIP: "/generate-dummyTrip",
   DELETE_TRIP: "/deleteTrip",
+  DELETE_TRIPS: "/deleteTrips",
   B2B : "/b2b",
   ALLOCATION : '/allocation',
   VENDOR: '/vendor',

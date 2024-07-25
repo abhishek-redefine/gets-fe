@@ -24,24 +24,20 @@ const AllocateVendor = ({ tripList }) => {
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'id',
-        header: "ID",
-        size: 150,
-      },
-      {
-        accessorKey: 'tripIdForUI',
+        accessorKey: "id",
         header: "Trip ID",
         size: 150,
+        Cell: ({ cell }) => {
+          return <div>TRIP-{cell.getValue()}</div>;
+        },
       },
       {
-        accessorKey: 'backToBack',
-        header: "BackToBack",
-        size: 150,
-      },
-      {
-        accessorKey: 'noOfSeats',
+        accessorKey: "noOfSeats",
         header: "Vehicle Type",
-        size: 200,
+        size: 150,
+        Cell: ({ cell }) => {
+          return <div>{cell.getValue()}S</div>;
+        },
       },
       {
         accessorKey: 'routeName',
@@ -49,14 +45,15 @@ const AllocateVendor = ({ tripList }) => {
         size: 150,
       },
       {
-        accessorKey: 'zone',
-        header: "Zone",
-        size: 150,
-      },
-      {
-        accessorKey: 'noOfEmployees',
+        accessorKey: "bookingIds",
         header: "No. of Employees",
         size: 150,
+        Cell: ({ cell }) => {
+          var cellValue = cell.getValue();
+          var count = cellValue.split(",");
+          console.log(count);
+          return <div>{count.length}</div>;
+        },
       },
       {
         accessorKey: 'escortStatus',

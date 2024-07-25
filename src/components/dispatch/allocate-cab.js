@@ -3,7 +3,6 @@
 //   MaterialReactTable,
 //   useMaterialReactTable,
 // } from "material-react-table";
-// import { allocateVendorData } from "../../pages/dispatch/allocateVendorData";
 // import { TextField } from "@mui/material";
 // import Autocomplete from '@mui/material/Autocomplete';
 // import DispatchService from "@/services/dispatch.service";
@@ -337,62 +336,64 @@
 // export default AllocateCab;
 
 // Cab Allocation table
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
-import { allocateVendorData } from "../../sampleData/allocateVendorData";
 import { TextField } from "@mui/material";
-import Autocomplete from "@mui/material/Autocomplete";
+import Autocomplete from '@mui/material/Autocomplete';
 import DispatchService from "@/services/dispatch.service";
+import { toggleToast } from '@/redux/company.slice';
+import { useDispatch, useSelector } from "react-redux";
 
-const AllocateCab = () => {
-  const [data, setData] = useState(allocateVendorData);
+const AllocateCab = ({ tripList, allocationComplete }) => {
+  const dispatch = useDispatch();
+  const [data, setData] = useState(tripList);
   const [selectedRows, setSelectedRows] = useState({});
+  const [selectedVehicle,setSelectedVehicle] = useState()
   const [searchedVehicleNumbers, setSearchedVehicleNumbers] = useState([]);
   const [vendor, setVendor] = useState("");
   const [searchedVehicle, setSearchedvehicle] = useState([]);
 
-  const sampleVehicleNumbers = [
-    { vehicleNumber: "MH12AB1234" },
-    { vehicleNumber: "MH12CD5678" },
-    { vehicleNumber: "MH12EF9012" },
-    { vehicleNumber: "MH12GH3456" },
-    { vehicleNumber: "MH12IJ7890" },
-  ];
-
   const columns = useMemo(
     () => [
       {
-        accessorKey: "tripId",
+        accessorKey: "id",
         header: "Trip ID",
         size: 150,
+        Cell: ({ cell }) => {
+          return <div>TRIP-{cell.getValue()}</div>;
+        },
       },
       {
-        accessorKey: "backToBack",
-        header: "BackToBack",
-        size: 150,
-      },
-      {
-        accessorKey: "vehicleType",
+        accessorKey: "noOfSeats",
         header: "Vehicle Type",
         size: 150,
+        Cell: ({ cell }) => {
+          return <div>{cell.getValue()}S</div>;
+        },
       },
       {
-        accessorKey: "firstPickup/lastDrop",
+        accessorKey: 'routeName',
         header: "First Pickup/ Last Drop",
         size: 200,
       },
+      // {
+      //   accessorKey: "zone",
+      //   header: "Zone",
+      //   size: 150,
+      // },
       {
-        accessorKey: "zone",
-        header: "Zone",
-        size: 150,
-      },
-      {
-        accessorKey: "noOfEmployees",
+        accessorKey: "bookingIds",
         header: "No. of Employees",
         size: 150,
+        Cell: ({ cell }) => {
+          var cellValue = cell.getValue();
+          var count = cellValue.split(",");
+          console.log(count);
+          return <div>{count.length}</div>;
+        },
       },
       {
         accessorKey: "escortStatus",
@@ -413,17 +414,27 @@ const AllocateCab = () => {
         accessorKey: "vehicleNumber",
         header: "Vehicle Number",
         size: 150,
-        Cell: ({ value, row }) => (
-          <VehicleNumberCell
-            value={value}
-            rowData={row}
-            onClick={(row) => row.vendorName}
-            onChange={(newValue) => {
-              row.setValue("vehicleNumber", newValue);
-            }}
-            // options={setSearchedvehicle}
-          />
-        ),
+        Cell: ({ value, row }) => {
+          console.log("vehicle value " + row.original?.vehicleNumber);
+          return (
+            <>
+              {
+                row.original.vehicleNumber ?
+                  <div>{row.original.vehicleNumber}</div>
+                  :
+                  <VehicleNumberCell
+                    value={value}
+                    rowData={row}
+                    onClick={(row) => row.vendorName}
+                    onChange={(newValue) => {
+                      row.setValue("vehicleNumber", newValue);
+                    }}
+                  // options={setSearchedvehicle}
+                  />
+              }
+            </>
+          )
+        },
       },
       {
         accessorKey: "driverName",
@@ -438,53 +449,20 @@ const AllocateCab = () => {
     setSelectedRows(rowSelection);
   };
 
-  const handleAssignVehicle = () => {
-    const updatedData = data.map((item) => {
-      if (selectedRows[item.tripId]) {
-        return {
-          ...item,
-          vehicleNumber: selectedRows[item.tripId].vehicleNumber, // Update based on selected rows
-        };
-      }
-      return item;
-    });
-    setData(updatedData);
-    // setSelectedRows({});
-    // setSearchedVehicleNumbers([]);
-  };
-
   const tableInstance = useMaterialReactTable({
     columns,
-    data,
-    // enableRowSelection: true,
-    // enableSelectAll: false,
-    // enableMultiRowSelection: false,
-    // state: {
-    //   rowSelection: selectedRows,
-    // },
-    // onRowSelectionChange: handleRowSelection,
-    // getRowId: (row) => row.tripId,
+    data: data,
   });
 
-  const searchForVehicleNumbers = (event) => {
-    const value = event.target.value.toLowerCase();
-    const filteredVehicleNumbers = sampleVehicleNumbers.filter((vn) =>
-      vn.vehicleNumber.toLowerCase().includes(value)
-    );
-    setSearchedVehicleNumbers(filteredVehicleNumbers);
-  };
-
-  
-
-  const VehicleNumberCell = ({ value, onChange, options,rowData }) => {
-    // console.log(Object.keys(rowData)+"SAifali?<<<<<<<<><><<><><><");
+  const VehicleNumberCell = ({ value, onChange, options, rowData }) => {
     const [localSearchedVehicle, setLocalSearchedVehicle] = useState([]);
     const [openSearchVN, setOpenSearchVN] = useState(false);
     const getAutoSuggestVehicle = async (event) => {
       try {
         const text = event.target.value;
         if (text) {
-          console.log(rowData.original.vendorName);
+          console.log(rowData.original);
+          setSelectedRows(rowData.original.id);
           const vendorName = rowData.original.vendorName;
           console.log(vendorName);
           const response = await DispatchService.autoSuggestVehicleByVendor(
@@ -504,14 +482,47 @@ const AllocateCab = () => {
       }
     };
 
-    const VehicleChangeHandler = (event,value) => {
-      console.log("tripId>>>>>>>>>>>>",rowData.original.tripId,"vehicleId")
-      console.log(value.vehicleId);
+    const handleAssignVehicle = async (tripId,vehicleId,vehicleNumber) => {
+      try {
+        const response = await DispatchService.allocateVehicle(tripId, vehicleId);
+        console.log(response);
+        if (response.status === 201) {
+          dispatch(toggleToast({ message: 'Cab allocated to the trip successfully!', type: 'success' }));
+        }
+        const updatedData = data.map(item => {
+          console.log(item.id,">>>>>>",selectedRows);
+          if (tripId === item.id) {
+            return {
+              ...item,
+              vehicleNumber: vehicleNumber,
+              driverName: response.data.driverName
+            };
+          }
+          return item;
+        });
+        console.log("Updated Data:", updatedData);
+        setData(updatedData);
+        setSearchedvehicle([]);
+        setSelectedRows({});
+      }
+      catch (err) {
+        dispatch(toggleToast({ message: 'Please try again in after some time.', type: 'error' }));
+        console.log(err);
+      }
+    };
+
+    const VehicleChangeHandler = (event, value) => {
+      console.log("tripId>>>>>>>>>>>>", rowData.original.id, "vehicleId")
+      console.log(value?.vehicleId);
+      setSelectedVehicle(value?.vehicleNumber);
+      if(value?.vehicleId){
+        handleAssignVehicle(rowData.original.id,value?.vehicleId,value?.vehicleNumber);
+      }
       setOpenSearchVN(false);
       setLocalSearchedVehicle([]);
     }
 
-    return(<Autocomplete
+    return (<Autocomplete
       id="search-vehicle-number-cell"
       options={localSearchedVehicle}
       autoComplete
@@ -525,7 +536,7 @@ const AllocateCab = () => {
       getOptionKey={(vehicle) => vehicle.vehicleId}
       getOptionLabel={(vehicle) => vehicle.vehicleRegistrationNumber}
       freeSolo
-      onChange={(e,value)=>VehicleChangeHandler(e,value)}
+      onChange={(e, value) => VehicleChangeHandler(e, value)}
       renderInput={(params) => (
         <TextField
           {...params}
@@ -540,7 +551,7 @@ const AllocateCab = () => {
         />
       )}
     />)
-};
+  };
 
   return (
     <div>
@@ -621,6 +632,7 @@ const AllocateCab = () => {
 
           <div>
             <button
+              onClick={()=>allocationComplete()}
               style={{
                 backgroundColor: "#f6ce47",
                 color: "black",

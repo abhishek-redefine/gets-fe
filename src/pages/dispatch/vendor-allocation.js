@@ -299,11 +299,6 @@ const MainComponent = () => {
                   </div>
                   <div style={{ minWidth: "180px" }} className="mx-4">
                     <div className="dropdown">
-                      <button className="dropbtn">Pending Vendor Allocation</button>
-                    </div>
-                  </div>
-                  <div style={{ minWidth: "180px" }} className="mx-4">
-                    <div className="dropdown">
                     {showAction && (
                       <button 
                        onClick={() => allocateVendorHanlder()}
@@ -316,12 +311,17 @@ const MainComponent = () => {
                   </div>
                   <div style={{ minWidth: "180px" }} className="mx-4">
                     <div className="dropdown">
+                      <button className="dropbtn">Pending Vendor Allocation</button>
+                    </div>
+                  </div>
+                  {/* <div style={{ minWidth: "180px" }} className="mx-4">
+                    <div className="dropdown">
                       <button className="dropbtn">
                         Auto Allocate Vendors
                       </button>
                     </div>
-                  </div>
-                  <div style={{ minWidth: "180px" }} className="mx-4">
+                  </div> */}
+                  {/* <div style={{ minWidth: "180px" }} className="mx-4">
                     <div className="dropdown">
                       <button className="dropbtn">Upload Options</button>
                     </div>
@@ -330,7 +330,7 @@ const MainComponent = () => {
                     <div className="dropdown">
                       <button className="dropbtn">Download Options</button>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               )}
             </div>
