@@ -137,8 +137,7 @@ const IssueTypeModal = (props) => {
                         marginBottom: "20px",
                       }}
                     >
-                      {value ? value : "N/A
-                      "}
+                      {value ? value : "N/A"}
                     </p>
                   </Grid>
                 );
