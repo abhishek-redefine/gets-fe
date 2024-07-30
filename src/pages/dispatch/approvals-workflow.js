@@ -4,8 +4,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Autocomplete,
-  TextField,
+  Box,
 } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
@@ -25,6 +24,24 @@ import MasterDataService from "@/services/masterdata.service";
 import ApprovalsWorkflowTable from "@/components/dispatch/approvals-workflow";
 import IssueType from "@/components/dispatch/issueType";
 import DispatchService from "@/services/dispatch.service";
+import Modal from "@mui/material/Modal";
+import IssueTypeModal from "@/components/dispatch/approvalWorkflowModal";
+
+
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 800,
+  bgcolor: "background.paper",
+  height: 550,
+  borderRadius: 5,
+};
+
+
+
+
 
 const MainComponent = () => {
   const [office, setOffice] = useState([]);
@@ -40,7 +57,11 @@ const MainComponent = () => {
     page: 0,
     size: 100,
   });
-  const [list,setList] = useState([]);
+  const [list, setList] = useState([]);
+  const [openModal, setOpenModal] = useState(false);
+  const handleModalOpen = () => setOpenModal(true);
+  const handleModalClose = () => setOpenModal(false);
+  const [selectedRow, setSelectedRow] = useState([]);
 
   // Temprary
   const [showAction, setShowAction] = useState(false);
@@ -48,7 +69,6 @@ const MainComponent = () => {
   // Temprary
 
   const issueType = [
-    "All",
     "Vehicle Not Assigned",
     "Trip Not Started",
     "Trip Not Ended",
@@ -97,17 +117,10 @@ const MainComponent = () => {
     setSearchValues(allSearchValue);
   };
 
-  useEffect(() => {
-    if (!shiftTypes?.length) {
-      fetchMasterData(MASTER_DATA_TYPES.SHIFT_TYPE);
-    }
-    fetchAllOffices();
-  }, []);
-
-  const fetchSummary = async() =>{
-    try{
+  const fetchSummary = async () => {
+    try {
       let params = new URLSearchParams(pagination);
-      let allSearchValues = {...searchValues};
+      let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
         if (
           allSearchValues[objKey] === null ||
@@ -122,89 +135,101 @@ const MainComponent = () => {
       );
       console.log(response.data.data);
       setList(response.data.data);
-    }catch(err){
+    } catch (err) {
       console.log(err);
     }
-  }
+  };
+
+  const onRowSelect = (row) => {
+    setSelectedRow(row);
+    console.log("slected", row);
+  };
+
+  useEffect(() => {
+    if (!shiftTypes?.length) {
+      fetchMasterData(MASTER_DATA_TYPES.SHIFT_TYPE);
+    }
+    fetchAllOffices();
+  }, []);
 
   return (
     <div>
-     {!issueTypeShow?(
-      <div>
-      <div
-        className="filterContainer"
-        style={{
-          backgroundColor: "#f9f9f9",
-          borderRadius: "10px",
-          margin: "30px 0",
-          padding: "0 13px",
-        }}
-      >
-        {office.length > 0 && (
-          <div style={{ minWidth: "180px" }} className="form-control-input">
-            <FormControl fullWidth>
-              <InputLabel id="primary-office-label">Office ID</InputLabel>
-              <Select
-                style={{ width: "180px", backgroundColor: "white" }}
-                labelId="primary-office-label"
-                id="officeId"
-                value={searchValues.officeId}
-                name="officeId"
-                label="Office ID"
-                onChange={handleFilterChange}
-              >
-                {!!office?.length &&
-                  office.map((office, idx) => (
-                    <MenuItem key={idx} value={office.officeId}>
-                      {getFormattedLabel(office.officeId)}, {office.address}
+      {!issueTypeShow ? (
+        <div>
+          <div
+            className="filterContainer"
+            style={{
+              backgroundColor: "#f9f9f9",
+              borderRadius: "10px",
+              margin: "30px 0",
+              padding: "0 13px",
+            }}
+          >
+            {office.length > 0 && (
+              <div style={{ minWidth: "180px" }} className="form-control-input">
+                <FormControl fullWidth>
+                  <InputLabel id="primary-office-label">Office ID</InputLabel>
+                  <Select
+                    style={{ width: "180px", backgroundColor: "white" }}
+                    labelId="primary-office-label"
+                    id="officeId"
+                    value={searchValues.officeId}
+                    name="officeId"
+                    label="Office ID"
+                    onChange={handleFilterChange}
+                  >
+                    {!!office?.length &&
+                      office.map((office, idx) => (
+                        <MenuItem key={idx} value={office.officeId}>
+                          {getFormattedLabel(office.officeId)}, {office.address}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
+              </div>
+            )}
+
+            <div
+              className="form-control-input"
+              style={{ backgroundColor: "white" }}
+            >
+              <InputLabel style={{ backgroundColor: "#f9f9f9" }} htmlFor="date">
+                Date
+              </InputLabel>
+              <LocalizationProvider dateAdapter={AdapterMoment}>
+                <DatePicker
+                  name="date"
+                  format={DATE_FORMAT}
+                  value={searchValues.date ? moment(searchValues.date) : null}
+                  onChange={(e) =>
+                    handleFilterChange({
+                      target: { name: "date", value: e },
+                    })
+                  }
+                />
+              </LocalizationProvider>
+            </div>
+            <div style={{ minWidth: "160px" }} className="form-control-input">
+              <FormControl fullWidth>
+                <InputLabel id="shiftType-label">Shift Type</InputLabel>
+                <Select
+                  style={{ width: "160px", backgroundColor: "white" }}
+                  labelId="shiftType-label"
+                  id="shiftType"
+                  name="shiftType"
+                  value={searchValues.shiftType}
+                  label="Shift Type"
+                  onChange={handleFilterChange}
+                >
+                  {shiftTypes.map((sT, idx) => (
+                    <MenuItem key={idx} value={sT.value}>
+                      {getFormattedLabel(sT.value)}
                     </MenuItem>
                   ))}
-              </Select>
-            </FormControl>
-          </div>
-        )}
-
-        <div
-          className="form-control-input"
-          style={{ backgroundColor: "white" }}
-        >
-          <InputLabel style={{ backgroundColor: "#f9f9f9" }} htmlFor="date">
-            Date
-          </InputLabel>
-          <LocalizationProvider dateAdapter={AdapterMoment}>
-            <DatePicker
-              name="date"
-              format={DATE_FORMAT}
-              value={searchValues.date ? moment(searchValues.date) : null}
-              onChange={(e) =>
-                handleFilterChange({
-                  target: { name: "date", value: e },
-                })
-              }
-            />
-          </LocalizationProvider>
-        </div>
-        <div style={{ minWidth: "160px" }} className="form-control-input">
-          <FormControl fullWidth>
-            <InputLabel id="shiftType-label">Shift Type</InputLabel>
-            <Select
-              style={{ width: "160px", backgroundColor: "white" }}
-              labelId="shiftType-label"
-              id="shiftType"
-              name="shiftType"
-              value={searchValues.shiftType}
-              label="Shift Type"
-              onChange={handleFilterChange}
-            >
-              {shiftTypes.map((sT, idx) => (
-                <MenuItem key={idx} value={sT.value}>
-                  {getFormattedLabel(sT.value)}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </div>
-        {/* <div style={{ minWidth: "160px", backgroundColor: 'white', }} className="form-control-input">
+                </Select>
+              </FormControl>
+            </div>
+            {/* <div style={{ minWidth: "160px", backgroundColor: 'white', }} className="form-control-input">
               <FormControl fullWidth>
                 <InputLabel id="shiftType-label">Shift Time</InputLabel>
                 <Select
@@ -224,47 +249,59 @@ const MainComponent = () => {
                 </Select>
               </FormControl>
             </div> */}
-        <div
-          style={{ minWidth: "160px", backgroundColor: "white" }}
-          className="form-control-input"
-        >
-          <FormControl fullWidth>
-            <InputLabel id="ops-issue-type-label">Ops Issue type</InputLabel>
-            <Select
-              style={{ width: "180px", backgroundColor: "white" }}
-              labelId="ops-issue-type-label"
-              id="opsIssueType"
-              name="issueType"
-              value={searchValues.issueType}
-              label="Ops Issue type"
-              onChange={handleFilterChange}
+            <div
+              style={{ minWidth: "160px", backgroundColor: "white" }}
+              className="form-control-input"
             >
-              {issueType.map((item) => (
-                <MenuItem value={item}>{item}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </div>
-        <div className="form-control-input" style={{ minWidth: "70px" }}>
-          <button
-            type="submit"
-            onClick={() => fetchSummary()}
-            className="btn btn-primary filterApplyBtn"
-          >
-            Apply
-          </button>
-        </div>
-        <div className="form-control-input" style={{ minWidth: "70px" }}>
-          <button
-            type="submit"
-            onClick={resetFilter}
-            className="btn btn-primary filterApplyBtn"
-          >
-            Reset
-          </button>
-        </div>
-        {/* Temprary */}
-        <div className="form-control-input" style={{ minWidth: "120px" }}>
+              <FormControl fullWidth>
+                <InputLabel id="ops-issue-type-label">
+                  Ops Issue type
+                </InputLabel>
+                <Select
+                  style={{ width: "180px", backgroundColor: "white" }}
+                  labelId="ops-issue-type-label"
+                  id="opsIssueType"
+                  name="issueType"
+                  value={searchValues.issueType}
+                  label="Ops Issue type"
+                  onChange={handleFilterChange}
+                >
+                  {issueType.map((item) => (
+                    <MenuItem value={item}>{item}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </div>
+            <div className="form-control-input" style={{ minWidth: "70px" }}>
+              <button
+                type="submit"
+                onClick={() => fetchSummary()}
+                className="btn btn-primary filterApplyBtn"
+              >
+                Apply
+              </button>
+            </div>
+            <div className="form-control-input" style={{ minWidth: "70px" }}>
+              <button
+                type="submit"
+                onClick={resetFilter}
+                className="btn btn-primary filterApplyBtn"
+              >
+                Reset
+              </button>
+            </div>
+            {/* Temprary */}
+            <div className="form-control-input" style={{ minWidth: "120px" }}>
+              <button
+                type="issue-type-btn"
+                onClick={handleModalOpen}
+                className="btn btn-primary filterApplyBtn"
+                style={{ width: "120px" }}
+              >
+                Issue Type
+              </button>
+            </div>
+            {/* <div className="form-control-input" style={{ minWidth: "120px" }}>
           <button
             type="submit"
             onClick={() => setIssueTypeShow(true)}
@@ -273,24 +310,37 @@ const MainComponent = () => {
           >
             Issue Type
           </button>
-        </div>
-      </div>
+          </div> */}
+          </div>
 
-      <div
-        style={{
-          padding: "20px 10px",
-          backgroundColor: "#f9f9f9",
-          fontFamily: "DM Sans, sans-serif",
-        }}
-      >
-        <ApprovalsWorkflowTable list={list}/>
-      </div>
-      </div>
-    ):(
-      <div>
-        <IssueType />
-      </div>
-    )}
+          <div
+            style={{
+              padding: "20px 10px",
+              backgroundColor: "#f9f9f9",
+              fontFamily: "DM Sans, sans-serif",
+            }}
+          >
+            <ApprovalsWorkflowTable list={list} onRowSelect={onRowSelect} />
+          </div>
+          <Modal
+            open={openModal}
+            onClose={handleModalClose}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+          >
+            <Box sx={style}>
+              <IssueTypeModal
+                data={selectedRow}
+                onClose={handleModalClose}
+              />
+            </Box>
+          </Modal>
+        </div>
+      ) : (
+        <div>
+          <IssueType />
+        </div>
+      )}
     </div>
   );
 };

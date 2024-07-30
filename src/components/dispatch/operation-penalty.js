@@ -1,11 +1,11 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState,useEffect } from "react";
 import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
 
-const ApprovalsWorkflowTable = ({ onRowSelect, list }) => {
-  const [data, setData] = useState([]);
+const OperationPenaltyTable = ({ onRowSelect, list }) => {
+  const[data, setData] = useState([])
   const [rowSelection, setRowSelection] = useState({});
 
   const columns = useMemo(
@@ -17,6 +17,11 @@ const ApprovalsWorkflowTable = ({ onRowSelect, list }) => {
         Cell: ({ cell }) => {
           return <div>TRIP-{cell.getValue()}</div>;
         },
+      },
+      {
+        accessorKey: "officeId",
+        header: "Office ID",
+        size: 150,
       },
       {
         accessorKey: "tripState",
@@ -38,24 +43,25 @@ const ApprovalsWorkflowTable = ({ onRowSelect, list }) => {
         header: "Cab Details",
         size: 150,
       },
-      {
-        accessorKey: "signIn",
-        header: "Sign In",
-        size: 150,
-      },
-      {
-        accessorKey: "signOut",
-        header: "Sign Out",
-        size: 150,
-      },
-      {
-        accessorKey: "smsStatus",
-        header: "SMS Status",
-        size: 150,
-      },
+      // {
+      //   accessorKey: "signIn",
+      //   header: "Sign In",
+      //   size: 100,
+      // },
+      // {
+      //   accessorKey: "signOut",
+      //   header: "Sign Out",
+      //   size: 100,
+      // },
+      // {
+      //   accessorKey: "smsStatus",
+      //   header: "SMS Status",
+      //   size: 150,
+      // },
     ],
     []
   );
+
 
   const tableInstance = useMaterialReactTable({
     columns,
@@ -63,18 +69,17 @@ const ApprovalsWorkflowTable = ({ onRowSelect, list }) => {
     enableRowSelection: true,
     enableMultiRowSelection: false,
     getRowId: (originalRow) => originalRow?.tripId,
-    state: { rowSelection },
+    state : {rowSelection},
     onRowSelectionChange: setRowSelection,
   });
 
-  useEffect(() => {
-    tableInstance.getSelectedRowModel().flatRows[0]?.original &&
-      onRowSelect(tableInstance.getSelectedRowModel().flatRows[0]?.original);
-  }, [rowSelection]);
+  useEffect(()=>{
+    tableInstance.getSelectedRowModel().flatRows[0]?.original && onRowSelect(tableInstance.getSelectedRowModel().flatRows[0]?.original);
+  },[rowSelection]);
 
-  useEffect(() => {
-    setData(list);
-  }, [list]);
+  useEffect(()=>{
+    setData(list)
+  },[list])
 
   return (
     <div>
@@ -94,4 +99,4 @@ const ApprovalsWorkflowTable = ({ onRowSelect, list }) => {
   );
 };
 
-export default ApprovalsWorkflowTable;
+export default OperationPenaltyTable;
