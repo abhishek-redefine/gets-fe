@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   MaterialReactTable,
   useMaterialReactTable,
@@ -7,18 +7,21 @@ import { dispatchNotificationData } from "@/sampleData/dispatchNotificationData"
 
 
 
-const DispatchNotificationTable = () => {
-  const [data, setData] = useState(dispatchNotificationData);
+const DispatchNotificationTable = ({list}) => {
+  const [data, setData] = useState([]);
 
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'tripId', 
+        accessorKey: 'id', 
         header: 'Trip ID',
         size: 150,
+        Cell: ({ cell }) => {
+          return <div>TRIP-{cell.getValue()}</div>;
+        },
       },
       {
-        accessorKey: 'empId',
+        accessorKey: 'empIds',
         header: 'Employee ID',
         size: 150,
       },
@@ -33,7 +36,7 @@ const DispatchNotificationTable = () => {
         size: 150,
       },
       {
-        accessorKey: 'cabDetails',
+        accessorKey: 'vehicleNumber',
         header: 'Cab Details',
         size: 150,
       },
@@ -72,6 +75,9 @@ const DispatchNotificationTable = () => {
     getRowId: row => row.tripId,
   });
 
+  useEffect(()=>{
+    setData(list)
+  },[list])
 
   return (
     <div>

@@ -347,11 +347,11 @@ import DispatchService from "@/services/dispatch.service";
 import { toggleToast } from '@/redux/company.slice';
 import { useDispatch, useSelector } from "react-redux";
 
-const AllocateCab = ({ tripList, allocationComplete }) => {
+const AllocateCab = ({ tripList, allocationComplete,setTripList }) => {
   const dispatch = useDispatch();
-  const [data, setData] = useState(tripList);
+  const [data, setData] = useState([]);
   const [selectedRows, setSelectedRows] = useState({});
-  const [selectedVehicle,setSelectedVehicle] = useState()
+  const [selectedVehicle, setSelectedVehicle] = useState()
   const [searchedVehicleNumbers, setSearchedVehicleNumbers] = useState([]);
   const [vendor, setVendor] = useState("");
   const [searchedVehicle, setSearchedvehicle] = useState([]);
@@ -391,7 +391,6 @@ const AllocateCab = ({ tripList, allocationComplete }) => {
         Cell: ({ cell }) => {
           var cellValue = cell.getValue();
           var count = cellValue.split(",");
-          console.log(count);
           return <div>{count.length}</div>;
         },
       },
@@ -415,7 +414,6 @@ const AllocateCab = ({ tripList, allocationComplete }) => {
         header: "Vehicle Number",
         size: 150,
         Cell: ({ value, row }) => {
-          console.log("vehicle value " + row.original?.vehicleNumber);
           return (
             <>
               {
@@ -461,15 +459,15 @@ const AllocateCab = ({ tripList, allocationComplete }) => {
       try {
         const text = event.target.value;
         if (text) {
-          console.log(rowData.original);
+          // console.log(rowData.original);
           setSelectedRows(rowData.original.id);
           const vendorName = rowData.original.vendorName;
-          console.log(vendorName);
+          // console.log(vendorName);
           const response = await DispatchService.autoSuggestVehicleByVendor(
             vendorName,
             text
           );
-          console.log(response.data);
+          // console.log(response.data);
           const { data } = response || {};
           setSearchedvehicle(data);
           setLocalSearchedVehicle(data);
@@ -482,41 +480,12 @@ const AllocateCab = ({ tripList, allocationComplete }) => {
       }
     };
 
-    const handleAssignVehicle = async (tripId,vehicleId,vehicleNumber) => {
-      try {
-        const response = await DispatchService.allocateVehicle(tripId, vehicleId);
-        console.log(response);
-        if (response.status === 201) {
-          dispatch(toggleToast({ message: 'Cab allocated to the trip successfully!', type: 'success' }));
-        }
-        const updatedData = data.map(item => {
-          console.log(item.id,">>>>>>",selectedRows);
-          if (tripId === item.id) {
-            return {
-              ...item,
-              vehicleNumber: vehicleNumber,
-              driverName: response.data.driverName
-            };
-          }
-          return item;
-        });
-        console.log("Updated Data:", updatedData);
-        setData(updatedData);
-        setSearchedvehicle([]);
-        setSelectedRows({});
-      }
-      catch (err) {
-        dispatch(toggleToast({ message: 'Please try again in after some time.', type: 'error' }));
-        console.log(err);
-      }
-    };
-
     const VehicleChangeHandler = (event, value) => {
       console.log("tripId>>>>>>>>>>>>", rowData.original.id, "vehicleId")
-      console.log(value?.vehicleId);
+      // console.log(value?.vehicleId);
       setSelectedVehicle(value?.vehicleNumber);
-      if(value?.vehicleId){
-        handleAssignVehicle(rowData.original.id,value?.vehicleId,value?.vehicleNumber);
+      if (value?.vehicleId) {
+        handleAssignVehicle(rowData.original.id, value?.vehicleId, value?.vehicleRegistrationNumber);
       }
       setOpenSearchVN(false);
       setLocalSearchedVehicle([]);
@@ -553,6 +522,54 @@ const AllocateCab = ({ tripList, allocationComplete }) => {
     />)
   };
 
+  const handleAssignVehicle = async (tripId, vehicleId, vehicleNumber) => {
+    try {
+      console.log("Data before updating >>>>>>>", tripList);
+      const response = await DispatchService.allocateVehicle(tripId, vehicleId);
+      // console.log(response);
+  
+      if (response.status === 201) {
+        dispatch(toggleToast({ message: 'Cab allocated to the trip successfully!', type: 'success' }));
+      }
+  
+      if (vehicleNumber && response.data?.driverName) {
+        setTripList(prevTripList => {
+          if (Array.isArray(prevTripList)) {
+            const updatedData = prevTripList.map(item => {
+              if (tripId === item.id) {
+                return {
+                  ...item,
+                  vehicleNumber: vehicleNumber,
+                  driverName: response.data.driverName
+                };
+              }
+              return item;
+            });
+  
+            console.log("Updated Data:", updatedData);
+  
+            // Update state
+            return updatedData;
+          } else {
+            console.error("Invalid data or missing values.");
+            return prevTripList;
+          }
+        });
+      }
+  
+      setSearchedvehicle([]);
+      setSelectedRows({});
+    } catch (err) {
+      dispatch(toggleToast({ message: 'Please try again after some time.', type: 'error' }));
+      console.log(err);
+    }
+  };
+
+  useEffect(()=>{
+    setData(tripList);
+  },[tripList]);
+
+
   return (
     <div>
       <div
@@ -573,66 +590,9 @@ const AllocateCab = ({ tripList, allocationComplete }) => {
             width: "100%",
           }}
         >
-          {/* <div style={{ backgroundColor: 'white', display: 'flex' }}>
-            <Autocomplete
-              disablePortal
-              id="search-vehicle-number"
-              options={searchedVehicleNumbers}
-              autoComplete
-              open={openSearchVN}
-              onOpen={() => {
-                setOpenSearchVN(true);
-              }}
-              onClose={() => {
-                setOpenSearchVN(false);
-              }}
-              defaultValue={{ vehicleNumber: '' }}
-              onChange={(e, val) => handleSelectChange(val ? val.vehicleNumber : '')}
-              getOptionLabel={(vn) => vn.vehicleNumber}
-              freeSolo
-              name="vehicleNumber"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  paddingBottom: '5px',
-                  width: '220px',
-                },
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Search Vehicle Number"
-                  onChange={searchForVehicleNumbers}
-                  InputProps={{
-                    ...params.InputProps,
-                    sx: { fontSize: '15px', fontFamily: 'DM Sans' },
-                  }}
-                  InputLabelProps={{
-                    sx: { fontSize: '15px', fontFamily: 'DM Sans' },
-                  }}
-                />
-              )}
-            />
-            <button
-              onClick={handleAssignVehicle}
-              style={{
-                backgroundColor: '#f6ce47',
-                color: 'black',
-                border: '2px solid #f6ce47',
-                borderRadius: '6px',
-                fontSize: '15px',
-                fontWeight: 'bold',
-                padding: '6px 10px',
-                cursor: 'pointer',
-                marginLeft: '30px',
-              }}
-            >
-              Assign Vehicle
-            </button>
-          </div> */}
-
           <div>
             <button
-              onClick={()=>allocationComplete()}
+              onClick={() => allocationComplete()}
               style={{
                 backgroundColor: "#f6ce47",
                 color: "black",
@@ -663,7 +623,5 @@ const AllocateCab = ({ tripList, allocationComplete }) => {
     </div>
   );
 };
-
-// Custom cell renderer for Vehicle Number column
 
 export default AllocateCab;

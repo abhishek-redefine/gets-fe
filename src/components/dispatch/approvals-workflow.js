@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState,useEffect } from "react";
 import {
   MaterialReactTable,
   useMaterialReactTable,
@@ -7,18 +7,21 @@ import { approvalsWorkflowData } from "../../sampleData/approvalsWorkflowData";
 
 
 
-const ApprovalsWorkflowTable = () => {
-  const [data, setData] = useState(approvalsWorkflowData);
+const ApprovalsWorkflowTable = ({list}) => {
+  const [data, setData] = useState([]);
 
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'tripId', 
+        accessorKey: 'id', 
         header: 'Trip ID',
         size: 150,
+        Cell: ({ cell }) => {
+          return <div>TRIP-{cell.getValue()}</div>;
+        },
       },
       {
-        accessorKey: 'tripStatus',
+        accessorKey: 'tripState',
         header: 'Trip Status',
         size: 150,
       },
@@ -33,7 +36,7 @@ const ApprovalsWorkflowTable = () => {
         size: 150,
       },
       {
-        accessorKey: 'cabDetails',
+        accessorKey: 'vehicleNumber',
         header: 'Cab Details',
         size: 150,
       },
@@ -61,6 +64,10 @@ const ApprovalsWorkflowTable = () => {
     data,
     getRowId: row => row.tripId,
   });
+
+  useEffect(()=>{
+    setData(list)
+  },[list])
 
 
   return (

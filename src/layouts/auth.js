@@ -108,6 +108,7 @@ const withAuthLayout = (WrappedComponent) => {
           <meta name="description" content="Ganga Tourism" />
           <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0" />
           <link rel="icon" href="/favicon.ico" />
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.3/themes/base/jquery-ui.min.css" integrity="sha512-8PjjnSP8Bw/WNPxF6wkklW6qlQJdWJc/3w/ZQPvZ/1bjVDkrrSqLe9mfPYrMxtnzsXFPc434+u4FHLnLjXTSsg==" crossorigin="anonymous" referrerpolicy="no-referrer" /> 
         </Head>
         <header>
           <div className='headerLogoContainer'>

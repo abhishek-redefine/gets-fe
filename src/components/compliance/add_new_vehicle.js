@@ -145,7 +145,7 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
         statePermitUrl: "",
         nationalPermitUrl: "",
         medicalCertificateUrl: "",
-        // complianceStatus: "NON_COMPLIANT"
+        isAllocated : false
     });
 
     const [officeList, setOfficeList] = useState([]);

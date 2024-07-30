@@ -23,6 +23,7 @@ import dispatch from "@/layouts/dispatch";
 import { setMasterData } from "@/redux/master.slice";
 import MasterDataService from "@/services/masterdata.service";
 import DispatchNotificationTable from "@/components/dispatch/dispatch-notifications";
+import DispatchService from "@/services/dispatch.service";
 
 const MainComponent = () => {
   const [office, setOffice] = useState([]);
@@ -34,6 +35,11 @@ const MainComponent = () => {
   });
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
+  const [pagination, setPagination] = useState({
+    page: 0,
+    size: 100,
+  });
+  const [list,setList] = useState([]);
 
   const handleFilterChange = (e) => {
     const { target } = e;
@@ -78,12 +84,37 @@ const MainComponent = () => {
     setSearchValues(allSearchValue);
   };
 
+  const fetchSummary = async() =>{
+    try{
+      let params = new URLSearchParams(pagination);
+      let allSearchValues = {...searchValues};
+      Object.keys(allSearchValues).forEach((objKey) => {
+        if (
+          allSearchValues[objKey] === null ||
+          allSearchValues[objKey] === ""
+        ) {
+          delete allSearchValues[objKey];
+        }
+      });
+      const response = await DispatchService.getTripSearchByBean(
+        params,
+        allSearchValues
+      );
+      console.log(response.data.data);
+      setList(response.data.data);
+    }catch(err){
+      console.log(err);
+    }
+  }
+
+
   useEffect(() => {
     if (!shiftTypes?.length) {
       fetchMasterData(MASTER_DATA_TYPES.SHIFT_TYPE);
     }
     fetchAllOffices();
   }, []);
+
 
   return (
     <div>
@@ -207,7 +238,7 @@ const MainComponent = () => {
           fontFamily: "DM Sans, sans-serif",
         }}
       >
-        <DispatchNotificationTable/>
+        <DispatchNotificationTable list={list}/>
       </div>
     </div>
   );

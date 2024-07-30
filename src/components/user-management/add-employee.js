@@ -55,7 +55,8 @@ const AddEmployee = ({
         endDate: "",
         businessUnit: "",
         weekOff: [],
-        specialStatus: ""
+        specialStatus: "",
+        pickupTime : null
     });
     const [defaultRM,setDefaultRM] = useState({});
 
@@ -144,6 +145,7 @@ const AddEmployee = ({
                     zoneName : allValues.zoneName,
                     areaName : allValues.areaName,
                     nodal : allValues.nodal,
+                    pickupTime : null,
                 } 
                 //formik.setFieldValue('transportEligibilities',transportString.slice(0,-1));
                 console.log(transportString.slice(0,-1));

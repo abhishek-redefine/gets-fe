@@ -181,6 +181,10 @@ const MainComponent = () => {
     fetchAllOffices();
   }, []);
 
+  useEffect(()=>{
+    console.log("In parent>>>>>>",tripList)
+  },[tripList]);
+
   return (
     <div>
       {!allocateCabShow ? (
@@ -369,7 +373,7 @@ const MainComponent = () => {
         </div>
       ) : (
         <div style={{ margin: '20px 0', boxShadow: 'none', }}>
-          <AllocateCab tripList={tripList} allocationComplete={() => setAllocateCabShow(false)} />
+          <AllocateCab tripList={tripList} setTripList={(list)=>setTripList(list)} allocationComplete={() => setAllocateCabShow(false)} />
         </div>
       )}
     </div>

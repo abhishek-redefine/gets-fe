@@ -1,5 +1,5 @@
 import { Label } from "@mui/icons-material";
-import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { FormControl, InputLabel, Select, MenuItem, TextField } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import React, { useEffect, useState } from "react";
@@ -30,19 +30,18 @@ const GenerateTripModal = (props) => {
     tripStartFrom: "",
     flexMix: {
       "4s": -1,
-      "6s": -1,
-      "7s": -1,
-      "12s": -1,
+      "6s": 1,
+      "7s": 1,
+      "12s": 1,
     },
     pickupTime: data?.shiftType === "LOGIN" ? "00:00" : data?.shiftTime || "00:00",
   });
   const [dummyRouteOptions, setDummyOption] = useState({
     date: selectedDate,
-    officeId: "",
-    shiftTime: moment().format("HH:mm"),
-    shiftType: "",
-    escortCriteria: "",
-    pickupTime: "",
+    officeId: data.officeId,
+    shiftTime: data.shiftTime,
+    shiftType: data.shiftType,
+    noOfTrips: 1,
   });
 
   const handleFilterChange = (event) => {
@@ -55,7 +54,7 @@ const GenerateTripModal = (props) => {
     if (name === "sixSeater") prev.flexMix["6s"] = value;
     if (name === "sevenSeater") prev.flexMix["7s"] = value;
     if (name === "twelveSeater") prev.flexMix["12s"] = value;
-    if( name === "pickupTime") prev.pickupTime = value;
+    if (name === "pickupTime") prev.pickupTime = value;
     console.log(prev);
     setRouteOptions(prev);
   };
@@ -68,7 +67,7 @@ const GenerateTripModal = (props) => {
         shiftTime: data.shiftTime,
         shiftType: data.shiftType,
         schemaVersion: "NORMAL",
-        pickupTime : routeOptions.pickupTime,
+        pickupTime: routeOptions.pickupTime,
         fleetMix: [
           {
             noOfVehicle: routeOptions.flexMix["4s"],
@@ -113,35 +112,14 @@ const GenerateTripModal = (props) => {
   };
   const dummyTrips = async () => {
     try {
-      const payload = { ...dummyRouteOptions };
-      payload.officeId = [payload.officeId];
-      payload.schemaVersion = "NORMAL";
-      payload.fleetMix = [
-        {
-          noOfVehicle: routeOptions.flexMix["4s"],
-          noOfSeats: 4,
-        },
-        {
-          noOfVehicle: routeOptions.flexMix["6s"],
-          noOfSeats: 6,
-        },
-        {
-          noOfVehicle: routeOptions.flexMix["7s"],
-          noOfSeats: 7,
-        },
-        {
-          noOfVehicle: routeOptions.flexMix["12s"],
-          noOfSeats: 12,
-        },
-      ];
-      Object.keys(payload).forEach((objKey) => {
-        if (payload[objKey] === null || payload[objKey] === "") {
-          delete payload[objKey];
-        }
-      });
+      let payload = { dummyTripDTO : dummyRouteOptions };
       console.log(payload);
       const response = await DispatchService.generateDummyTrip(payload);
       console.log(response.data);
+      if(response.status === 200){
+        setMessageShow(true);
+        setPassFlag(true);
+      }
     } catch (err) {
       console.log(err);
     }
@@ -241,6 +219,7 @@ const GenerateTripModal = (props) => {
                       <LocalizationProvider dateAdapter={AdapterMoment}>
                         <DatePicker
                           name="date"
+                          disabled={true}
                           format={DATE_FORMAT}
                           value={
                             dummyRouteOptions.date
@@ -285,8 +264,9 @@ const GenerateTripModal = (props) => {
                     <>
                       <FormControl fullWidth>
                         <Select
+                          disabled={true}
                           id="officeId"
-                          value={dummyRouteOptions.officeId}
+                          value={data?.officeId}
                           name="officeId"
                           onChange={handleFilterChangeDummyRoute}
                         >
@@ -327,10 +307,11 @@ const GenerateTripModal = (props) => {
                       <FormControl required>
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                           <TimeField
+                            disabled={true}
                             value={dayjs()
-                              .hour(Number(dummyRouteOptions.shiftTime.slice(0, 2)))
+                              .hour(Number(data?.shiftTime.slice(0, 2)))
                               .minute(
-                                Number(dummyRouteOptions.shiftTime.slice(3, 5))
+                                Number(data?.shiftTime.slice(3, 5))
                               )}
                             format="HH:mm"
                             onChange={(e) => {
@@ -371,9 +352,10 @@ const GenerateTripModal = (props) => {
                   ) : (
                     <FormControl fullWidth>
                       <Select
+                        disabled={true}
                         id="shiftType"
                         name="shiftType"
-                        value={dummyRouteOptions.shiftType}
+                        value={data?.shiftType}
                         onChange={handleFilterChangeDummyRoute}
                       >
                         {shiftTypes.map((sT, idx) => (
@@ -452,7 +434,7 @@ const GenerateTripModal = (props) => {
                                 .toLocaleTimeString("it-IT")
                                 .slice(0, -3);
 
-                                handleFilterChange({
+                              handleFilterChange({
                                 target: { name: "pickupTime", value: ShiftTime },
                               });
                             }}
@@ -485,7 +467,7 @@ const GenerateTripModal = (props) => {
                 {/* pickup Time */}
               </div>
               {/* fleet mix */}
-              {transportType === "CAB" && (
+              {transportType === "CAB" && !dummy && (
                 <div style={{ marginTop: 20 }}>
                   <div style={{ marginBottom: 10 }}>
                     <p>Fleet mix</p>
@@ -577,6 +559,21 @@ const GenerateTripModal = (props) => {
                   </div>
                 </div>
               )}
+
+              {dummy && 
+              <div className="d-flex" style={{ marginTop: 20 }}>
+                <div>
+                  <TextField
+                    required id="noOfTrips" 
+                    name="noOfTrips"
+                    label="Number of trips" 
+                    variant="outlined"
+                    value={dummyRouteOptions.noOfTrips}
+                    onChange={handleFilterChangeDummyRoute}
+                  />
+                </div>
+              </div>}
+
               <div
                 className="d-flex"
                 style={{

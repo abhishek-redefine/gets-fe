@@ -63,7 +63,7 @@ const CreateBooking = () => {
         source : "Web",
         bookingFor: "self",
         shiftIds:[],
-        areaName : "",
+        // areaName : "",
     });
 
     const [customizedScheduledBean, setCustomizedScheduledBean] = useState([]);
@@ -240,7 +240,7 @@ const CreateBooking = () => {
             if (bookingFor !== 1) {
                 allValues.bookingEmployeeIds = selectedUsers;
                 allValues.bookingFor = "";
-                allValues.areaName = areaName;
+                // allValues.areaName = areaName;
                 if (bookingFor === 3) {
                     allValues.teamId = selectedTeamDetail.id;
                 }

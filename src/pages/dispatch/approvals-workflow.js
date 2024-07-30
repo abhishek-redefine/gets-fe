@@ -24,7 +24,7 @@ import { setMasterData } from "@/redux/master.slice";
 import MasterDataService from "@/services/masterdata.service";
 import ApprovalsWorkflowTable from "@/components/dispatch/approvals-workflow";
 import IssueType from "@/components/dispatch/issueType";
-
+import DispatchService from "@/services/dispatch.service";
 
 const MainComponent = () => {
   const [office, setOffice] = useState([]);
@@ -36,6 +36,11 @@ const MainComponent = () => {
   });
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
+  const [pagination, setPagination] = useState({
+    page: 0,
+    size: 100,
+  });
+  const [list,setList] = useState([]);
 
   // Temprary
   const [showAction, setShowAction] = useState(false);
@@ -98,6 +103,29 @@ const MainComponent = () => {
     }
     fetchAllOffices();
   }, []);
+
+  const fetchSummary = async() =>{
+    try{
+      let params = new URLSearchParams(pagination);
+      let allSearchValues = {...searchValues};
+      Object.keys(allSearchValues).forEach((objKey) => {
+        if (
+          allSearchValues[objKey] === null ||
+          allSearchValues[objKey] === ""
+        ) {
+          delete allSearchValues[objKey];
+        }
+      });
+      const response = await DispatchService.getTripSearchByBean(
+        params,
+        allSearchValues
+      );
+      console.log(response.data.data);
+      setList(response.data.data);
+    }catch(err){
+      console.log(err);
+    }
+  }
 
   return (
     <div>
@@ -255,7 +283,7 @@ const MainComponent = () => {
           fontFamily: "DM Sans, sans-serif",
         }}
       >
-        <ApprovalsWorkflowTable/>
+        <ApprovalsWorkflowTable list={list}/>
       </div>
       </div>
     ):(

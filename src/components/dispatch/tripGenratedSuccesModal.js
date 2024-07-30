@@ -17,7 +17,7 @@ const style = {
   },
 };
 
-export default function ConfirmationModal({ pass, onClose}) {
+export default function ConfirmationModal({ pass, onClose, type}) {
 
   return (
     <div style={{height:'600px'}}>
@@ -39,7 +39,7 @@ export default function ConfirmationModal({ pass, onClose}) {
               style={{margin: '20px 0 0'}}
             /> 
             <Typography id="modal-modal-title" sx={style.text}>
-              Successfully trip generated!
+              Successfully Trips {type === 'replicate' ? 'Replicated!' : 'Generated!'}
             </Typography>
               <Button
                 style={{
