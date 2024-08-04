@@ -108,6 +108,7 @@ const withAuthLayout = (WrappedComponent) => {
           <meta name="description" content="Ganga Tourism" />
           <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0" />
           <link rel="icon" href="/favicon.ico" />
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.3/themes/base/jquery-ui.min.css" integrity="sha512-8PjjnSP8Bw/WNPxF6wkklW6qlQJdWJc/3w/ZQPvZ/1bjVDkrrSqLe9mfPYrMxtnzsXFPc434+u4FHLnLjXTSsg==" crossorigin="anonymous" referrerpolicy="no-referrer" /> 
         </Head>
         <header>
           <div className='headerLogoContainer'>
@@ -118,11 +119,12 @@ const withAuthLayout = (WrappedComponent) => {
               <Link onClick={() => changeRoute('dashboard')} className={currentActiveState === 'dashboard' && 'selected' || ''} href='/dashboard'>Dashboard</Link>
               {/* <Link onClick={() => changeRoute('helpdesk')} className={currentActiveState === 'helpdesk' && 'selected' || ''} href='/helpdesk'>Helpdesk</Link> */}
               {getModulePermissions(MODULE_NAMES.BOOKING) && <Link onClick={() => changeRoute('bookings')} className={currentActiveState === 'bookings' && 'selected' || ''} href='/bookings/search-bookings'>Bookings</Link>}
-              {/* <Link onClick={() => changeRoute('dispatch')} className={currentActiveState === 'dispatch' && 'selected' || ''} href='/dispatch'>Dispatch</Link>
-              <Link onClick={() => changeRoute('tracking')} className={currentActiveState === 'tracking' && 'selected' || ''} href='/tracking'>Tracking</Link>
-              <Link onClick={() => changeRoute('billing')} className={currentActiveState === 'billing' && 'selected' || ''} href='/billing'>Billing</Link> */}
+              {getModulePermissions(MODULE_NAMES.DISPATCH) && <Link onClick={() => changeRoute('dispatch')} className={currentActiveState === 'dispatch' && 'selected' || ''} href='/dispatch/routing'>Dispatch</Link>}
+              {getModulePermissions(MODULE_NAMES.TRACKING) && <Link onClick={() => changeRoute('tracking')} className={currentActiveState === 'tracking' && 'selected' || ''} href='/tracking/live-tracking'>Tracking</Link>}
+              {/* <Link onClick={() => changeRoute('tracking')} className={currentActiveState === 'tracking' && 'selected' || ''} href='/tracking'>Tracking</Link> */}
+              {/*<Link onClick={() => changeRoute('billing')} className={currentActiveState === 'billing' && 'selected' || ''} href='/billing'>Billing</Link> */}
+              {getModulePermissions(MODULE_NAMES.COMPLIANCE) && <Link onClick={() => changeRoute('compliance')} className={currentActiveState === 'compliance' && 'selected' || ''} href='/compliance/driver-profile'>Compliance</Link>}
               {getModulePermissions(MODULE_NAMES.ADMIN_SETTINGS) && <Link onClick={() => changeRoute('admin-settings')} className={currentActiveState === 'admin-settings' && 'selected' || ''} href='/admin-settings/access-control'>Admin Settings</Link>}
-              {getModulePermissions(MODULE_NAMES.ADMIN_SETTINGS) && <Link onClick={() => changeRoute('compliance')} className={currentActiveState === 'compliance' && 'selected' || ''} href='/compliance/driver-profile'>Compliance</Link>}
               {/* <Link onClick={() => changeRoute('configurations')} className={currentActiveState === 'configurations' && 'selected' || ''} href='/configurations'>Configurations</Link> */}
             </nav>
           </div>

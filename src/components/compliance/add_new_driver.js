@@ -14,6 +14,7 @@ import { Button,FormControl,Autocomplete,TextField } from '@mui/material';
 import IframeComponent from '../iframe/Iframe';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
+import dayjs from 'dayjs';
 
 const validationSchemaStepOne = object({
     name: string().required('Driver Name is required'),
@@ -61,9 +62,9 @@ const validationSchemaStepOne = object({
         .matches(/^[0-9]+$/, "Aadhar ID must be numeric")
         .min(12, 'Aadhar ID must be exactly 12 numbers')
         .max(12, 'Aadhar ID must be exactly 12 numbers'),
-    panNo: string().required('Pan No is required')
-        .min(10, 'Pan No must be exactly 10 alphanumeric')
-        .max(10, 'Pan No must be exactly 10 alphanumeric'),
+    // panNo: string().required('Pan No is required')
+    //     .min(10, 'Pan No must be exactly 10 alphanumeric')
+    //     .max(10, 'Pan No must be exactly 10 alphanumeric'),
     email: string().required('Email is required').email('Email is not in correct format'),
     medicalFitnessDate : string().required("enter a valid date"),
     policeVerificationDate : string().required("enter a valid date"),
@@ -393,10 +394,11 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
         console.log("condition check>>>>>>>>>>",EditDriverData?.licenseUrl && EditDriverData.licenseUrl != "" )        
         if(EditDriverData?.id){
             var documentCount = 0;
-            if(EditDriverData?.licenseUrl != ""){
+            console.log("condition check<<<<<<<<<<<<<<<<<>>>>>>>>>>",EditDriverData?.licenseUrl && EditDriverData.licenseUrl != "" ? true : false)        
+            if(EditDriverData?.licenseUrl && EditDriverData.licenseUrl != ""){
                 documentCount++;
             }
-            if(EditDriverData.photoUrl != ""){
+            if(EditDriverData?.photoUrl && EditDriverData.photoUrl != ""){
                 documentCount++;
             }
             setUploadCount(documentCount);
@@ -447,7 +449,9 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                             label="Driver Mobile No" />
                         <DateInputField
                             name="dob"
-                            label="DOB" />
+                            label="DOB"
+                            maxDate={dayjs()}
+                            />
                         <SelectInputField
                             name="gender"
                             label="Gender"
@@ -494,7 +498,9 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                             label="License No" />
                         <DateInputField
                             name="licenseExpiry"
-                            label="License Expiry" />
+                            label="License Expiry" 
+                            minDate={dayjs()}
+                            />
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                         <TextInputField
@@ -519,18 +525,24 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                             label="Remarks" />
                         <DateInputField
                             name="medicalFitnessDate"
-                            label="Medical Fitness Date" />
+                            label="Medical Fitness Date" 
+                            minDate={dayjs()}
+                            />
                         <DateInputField
                             name="policeVerificationDate"
-                            label="Police Verification Date" />
+                            label="Police Verification Date" 
+                            minDate={dayjs()}
+                            />
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                         <DateInputField
                             name="bgvDate"
-                            label="BGV Date" />
+                            label="BGV Date" 
+                            maxDate={dayjs()}/>
                         <DateInputField
                             name="ddTrainingDate"
-                            label="Driving Training Date" />
+                            label="Driving Training Date" 
+                            maxDate={dayjs()}/>
                     </div>
                 </FormStep>
                 <FormStep

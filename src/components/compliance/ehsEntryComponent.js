@@ -34,7 +34,7 @@ const EhsEntryComponent = ({ listing, ehsStatusList, type }) => {
     console.log(value);
 
     if (listing?.id) {
-      let jsonData = { ...listing };
+      let jsonData = { ...initialValues };
       switch (name) {
         case "DueDate":
           jsonData.ehsDueDate = dayjs(value).format("YYYY-MM-DD");
@@ -72,6 +72,7 @@ const EhsEntryComponent = ({ listing, ehsStatusList, type }) => {
             type: "success",
           })
         );
+        setInitialValues(response.data);
       } else {
         dispatch(
           toggleToast({
@@ -87,7 +88,8 @@ const EhsEntryComponent = ({ listing, ehsStatusList, type }) => {
 
   const uploadHandler = async (file) => {
     try {
-      const jsonData = listing;
+      var jsonData = initialValues;
+      jsonData.remarks = remark;
       var formData = new FormData();
       console.log(file);
       if (type === "driver") {
@@ -114,6 +116,7 @@ const EhsEntryComponent = ({ listing, ehsStatusList, type }) => {
             type: "success",
           })
         );
+        setInitialValues(response.data);
       } else {
         dispatch(
           toggleToast({
@@ -127,7 +130,7 @@ const EhsEntryComponent = ({ listing, ehsStatusList, type }) => {
     }
   };
 
-  useEffect(() => {
+  useState(() => {
     if (listing?.id) {
       console.log("value in listing", listing);
       const editValues = { ...initialValues, ...listing };
@@ -136,6 +139,7 @@ const EhsEntryComponent = ({ listing, ehsStatusList, type }) => {
     }
     console.log(ehsStatusList);
   }, [listing]);
+  // useEffect(() => {}, [listing]);
 
   return (
     <tr key={listing?.id}>

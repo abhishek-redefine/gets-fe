@@ -12,7 +12,7 @@ const Filters = () => {
     <div className='filtersContainer'>
         <div className='filtersInnerContainer'>
             <div className='filterTypeContainer'>
-                <span class="material-symbols-outlined">tune</span>
+                <span className="material-symbols-outlined">tune</span>
                 <span>Filters</span>
             </div>
             <div>

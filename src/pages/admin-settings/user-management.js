@@ -31,6 +31,7 @@ const UserManagement = () => {
     };
 
     useEffect(() => {
+        console.log('user-management', UserType)
         if (!UserType?.length) {
             fetchMasterData(MASTER_DATA_TYPES.USER_TYPE);
         }

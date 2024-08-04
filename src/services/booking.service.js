@@ -17,8 +17,24 @@ const getLoginLogoutTimes = (officeId, isIn, transportType) => {
     });
 };
 
-const getTeamLoginLogoutTimes = (officeId, isIn, transportType,teamId) => {
-    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.SHIFT}${API_PATH.TEAM}/${officeId}/${transportType}/${isIn ? API_PATH.IN : API_PATH.OUT}?teamId=${teamId}`).then((response) => {
+const getLoginLogoutTimeWithDate = (officeId, isIn, transportType,startDate,endDate) =>{
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.SHIFT}/${officeId}/${transportType}/${isIn ? API_PATH.IN : API_PATH.OUT}?startDate=${startDate}&endDate=${endDate}`).then((response) => {
+        return response;
+    }); 
+}
+
+const getLoginLogoutTimeByBean = (queryParams,searchValues) =>{
+    let url = `${API_PATH.API_VERSION}${API_PATH.SHIFT}${API_PATH.SEARCH_BY_BEAN}`;
+    if (queryParams) {
+        url += `?${queryParams}`;
+    }
+    return axiosInstance.post(url,searchValues).then((response) => {
+        return response;
+    });
+}
+
+const getTeamLoginLogoutTimes = (officeId, isIn, transportType,teamId,startDate,endDate) => {
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.SHIFT}${API_PATH.TEAM}/${officeId}/${transportType}/${isIn ? API_PATH.IN : API_PATH.OUT}?teamId=${teamId}&startDate=${startDate}&endDate=${endDate}`).then((response) => {
         return response;
     });
 };
@@ -94,7 +110,9 @@ const BookingService = {
     getBookingHistory,
     uploadForm,
     listAllBookings,
-    getTeamLoginLogoutTimes
+    getTeamLoginLogoutTimes,
+    getLoginLogoutTimeWithDate,
+    getLoginLogoutTimeByBean
 };
 
 export default BookingService;

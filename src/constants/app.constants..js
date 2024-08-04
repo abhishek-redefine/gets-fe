@@ -31,6 +31,14 @@ export const USER_TYPES = {
     TEAM: "TEAM"
 };
 
+export const ROUTING_TYPES = {
+    ZONE : "ZONE",
+    AREA : "AREA",
+    NODAL_POINT : "NODAL_POINT",
+    HOME_ROUTE : "HOME_ROUTE",
+    BUS_SHUTTLE_ROUTE : "BUS_SHUTTLE_ROUTE"
+}
+
 export const COMPLIANCE_TYPES = {
     EHS: "EHS",
     PENALTY: "PENALTY"

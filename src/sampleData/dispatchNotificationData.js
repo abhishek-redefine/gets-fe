@@ -1,0 +1,110 @@
+export const dispatchNotificationData = [
+    {
+        "tripId": "TRIP0002",
+        "empId": "EMP0002",
+        "shiftTime": "10:00",
+        "shiftType": "Logout",
+        "cabDetails": "CAB002",
+        "pickupTime": "09:00",
+        "pickupPoint": "789 Oak Ave",
+        "dropPoint": "890 Pine Blvd",
+        "smsStatus": "Sent",
+        "emailStatus": "Pending"
+    },
+    {
+        "tripId": "TRIP0003",
+        "empId": "EMP0003",
+        "shiftTime": "11:00",
+        "shiftType": "Break",
+        "cabDetails": "CAB003",
+        "pickupTime": "10:00",
+        "pickupPoint": "222 Maple Rd",
+        "dropPoint": "333 Birch Ln",
+        "smsStatus": "Not Sent",
+        "emailStatus": "Not Sent"
+    },
+    {
+        "tripId": "TRIP0004",
+        "empId": "EMP0004",
+        "shiftTime": "12:30",
+        "shiftType": "Login",
+        "cabDetails": "CAB004",
+        "pickupTime": "11:30",
+        "pickupPoint": "444 Cedar St",
+        "dropPoint": "555 Walnut Ave",
+        "smsStatus": "Sent",
+        "emailStatus": "Sent"
+    },
+    {
+        "tripId": "TRIP0005",
+        "empId": "EMP0005",
+        "shiftTime": "14:00",
+        "shiftType": "Logout",
+        "cabDetails": "CAB005",
+        "pickupTime": "13:00",
+        "pickupPoint": "666 Pine St",
+        "dropPoint": "777 Oak Ave",
+        "smsStatus": "Sent",
+        "emailStatus": "Pending"
+    },
+    {
+        "tripId": "TRIP0006",
+        "empId": "EMP0006",
+        "shiftTime": "15:30",
+        "shiftType": "Login",
+        "cabDetails": "CAB006",
+        "pickupTime": "14:30",
+        "pickupPoint": "888 Elm Rd",
+        "dropPoint": "999 Maple Ln",
+        "smsStatus": "Not Sent",
+        "emailStatus": "Not Sent"
+    },
+    {
+        "tripId": "TRIP0007",
+        "empId": "EMP0007",
+        "shiftTime": "17:00",
+        "shiftType": "Logout",
+        "cabDetails": "CAB007",
+        "pickupTime": "16:00",
+        "pickupPoint": "111 Oak St",
+        "dropPoint": "222 Pine Ave",
+        "smsStatus": "Sent",
+        "emailStatus": "Sent"
+    },
+    {
+        "tripId": "TRIP0008",
+        "empId": "EMP0008",
+        "shiftTime": "18:30",
+        "shiftType": "Login",
+        "cabDetails": "CAB008",
+        "pickupTime": "17:30",
+        "pickupPoint": "333 Maple Rd",
+        "dropPoint": "444 Birch Ln",
+        "smsStatus": "Sent",
+        "emailStatus": "Pending"
+    },
+    {
+        "tripId": "TRIP0009",
+        "empId": "EMP0009",
+        "shiftTime": "20:00",
+        "shiftType": "Logout",
+        "cabDetails": "CAB009",
+        "pickupTime": "19:00",
+        "pickupPoint": "555 Cedar Ave",
+        "dropPoint": "666 Walnut St",
+        "smsStatus": "Not Sent",
+        "emailStatus": "Not Sent"
+    },
+    {
+        "tripId": "TRIP0010",
+        "empId": "EMP0010",
+        "shiftTime": "21:30",
+        "shiftType": "Login",
+        "cabDetails": "CAB010",
+        "pickupTime": "20:30",
+        "pickupPoint": "777 Elm Rd",
+        "dropPoint": "888 Maple Ln",
+        "smsStatus": "Sent",
+        "emailStatus": "Sent"
+    }
+];

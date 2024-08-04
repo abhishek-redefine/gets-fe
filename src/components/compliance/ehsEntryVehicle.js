@@ -87,7 +87,7 @@ const EhsEntryVehicle = ({
   console.log("EhsEntryVehicle", EhsVehicleData);
   const [editEhsEntryVehicleOpen, setEditEhsEntryVehicleOpen] = useState(false);
   const [editEhsEntryVehicle, setEditEhsEntryVehicle] = useState(false);
-  const [ehsVehicleData, setEhsVehicleData] = useState();
+  const [ehsVehicleData, setEhsVehicleData] = useState([]);
   const [ehsStatus, setEhsStatus] = useState("");
   const [searchDate, setSearchDate] = useState(moment());
   const [pagination, setPagination] = useState({
@@ -142,8 +142,8 @@ const EhsEntryVehicle = ({
             createdDate: date,
             entityId: EhsVehicleData.id,
           });
-      console.log(response.data.vehicleEhsHistories);
-      setEhsVehicleData(response.data.vehicleEhsHistories);
+      console.log(response.data.data);
+      setEhsVehicleData(response.data.data);
     } catch (err) {
       console.log(err);
     }
