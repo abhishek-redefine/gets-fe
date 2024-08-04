@@ -139,5 +139,8 @@ export const API_PATH = {
   ALLOCATION : '/allocation',
   VENDOR: '/vendor',
   VEHICLE: '/vehicle',
-  SEARCH_VEHICLE_BY_VENDOR : '/search/autoSuggestFilteredVehicle'
+  SEARCH_VEHICLE_BY_VENDOR : '/search/autoSuggestFilteredVehicle',
+  APPLY_PENALTY_ON_TRIP : '/applyPenaltyOnTrip',
+  UPDATE_TRIP_FOR_ISUUE : '/updateTripForIssue',
+  STICKER : '/sticker',
 };

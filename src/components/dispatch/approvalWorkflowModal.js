@@ -9,9 +9,10 @@ import {
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import ComplianceService from "@/services/compliance.service";
+import DispatchService from "@/services/dispatch.service";
 
 const IssueTypeModal = (props) => {
-  const { data } = props;
+  const { data,onClose } = props;
   const [issueData, setIssueData] = useState({
     "Vehicle Id": "",
     "Registration Id": "",
@@ -25,9 +26,10 @@ const IssueTypeModal = (props) => {
     pageNo: 0,
     pageSize: 100,
   });
+  const [remark,setRemark] = useState("");
 
   const [searchValues, setSearchValues] = useState({
-    issueType: "",
+    issueType: data?.tripState,
     vehicleId: "",
     vehicleRegistrationNumber: data?.vehicleNumber,
     vehicleType: "",
@@ -80,17 +82,27 @@ const IssueTypeModal = (props) => {
     }
   };
 
-  useEffect(() => {
-    console.log("data: ", data);
-  }, [data]);
+  const addOpsIssue =async() =>{
+    try{
+      var tripState = searchValues.issueType === "Vehicle Not Assigned" ? "VECHICLE_NOT_ASSIGNED" : searchValues.issueType === "Trip Not Started" ? "TRIP_NOT_STARTED" : "TRIP_NOT_ENDED";
+      const response = await DispatchService.addOpsIssue(data.id,tripState,remark);
+      if(response.status === 200){
+        onClose();
+      }
+    }catch(err){
+      console.log(err);
+    }
+  }
 
   useEffect(() => {
-    fetchVehicleData();
-  }, []);
+    console.log("data: ", data);
+    if(data){
+      data?.vehicleNumber && fetchVehicleData();
+    }
+  }, [data]);
 
   return (
     <div
-      class=""
       style={{
         backgroundColor: "#FFF",
         borderRadius: 10,
@@ -127,7 +139,6 @@ const IssueTypeModal = (props) => {
             </Grid>
             <Grid item xs={6}>
               {Object.entries(issueData).map(([key, value], index) => {
-                console.log(key, value);
                 return (
                   <Grid item xs={12}>
                     <p
@@ -210,6 +221,7 @@ const IssueTypeModal = (props) => {
                   variant="outlined"
                   size="small"
                   fullWidth
+                  value={remark}
                   //   multiline
                   inputProps={{
                     style: {
@@ -218,6 +230,7 @@ const IssueTypeModal = (props) => {
                     },
                   }}
                   InputLabelProps={{ style: { fontSize: 14 } }}
+                  onChange={(e)=>setRemark(e.target.value)}
                 />
               </Box>
             </div>
@@ -239,6 +252,7 @@ const IssueTypeModal = (props) => {
             position: "absolute",
             bottom: "50px",
           }}
+          onClick={addOpsIssue}
         >
           Submit
         </button>

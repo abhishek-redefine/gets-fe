@@ -103,8 +103,12 @@ const getSelectedDriverEHS = (id) => {
     });
 };
 
-const getAllPenalty = () => {
-    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.PENALTY_LISTING_ALL}`).then((response) => {
+const getAllPenalty = (queryParams) => {
+    let url = `${API_PATH.API_VERSION}${API_PATH.PENALTY_LISTING_ALL}`;
+    if(queryParams){
+        url += `?${queryParams}`
+    }
+    return axiosInstance.get(url).then((response) => {
         return response;
     });
 };

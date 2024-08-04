@@ -1,3 +1,5 @@
+import ComplianceService from "@/services/compliance.service";
+import DispatchService from "@/services/dispatch.service";
 import {
   Box,
   FormControl,
@@ -20,24 +22,58 @@ const MenuProps = {
 
 
 const AddPenaltyModal = (props) => {
-  const { data } = props;
+  const { data,onClose } = props;
   const [select, setSelect] = useState("No Action");
-  const [searchValues, setSearchValues] = useState({
-    penaltyType: "",
-  });
-  const [penaltyAmount, setPenaltyAmount] = useState("")
- 
+  const [penaltyType, setPenaltyType] = useState({});
+  const [penaltyAmount, setPenaltyAmount] = useState(0);
+  const [pagination, setPagination] = useState({
+    pageNo: 0,
+    pageSize: 100,
+  })
+  const [penaltyTypes, setPenaltyTypes] = useState([]);
+  const [searchValues,setSearchValues] = useState({});
+
   const handleFilterChange = (e) => {
-    setSearchValues({ ...searchValues, [e.target.name]: e.target.value });
+    const { target } = e;
+    const { name, value } = target;
+    setPenaltyAmount(value.penaltyAmount);
+    setPenaltyType(value)
+    // setSearchValues({ ...searchValues, [e.target.name]: e.target.value });
   };
 
-  const PenaltyType = [
-    "Rash Drivinng",
-    "Over Speeding",
-    "Miss Behavior By Driver",
-    "Driver Under Influence Of Alcohol",
-    "Miscellaneous",
-  ];
+  const getOpsPenalty = async () => {
+    try {
+      const params = new URLSearchParams(pagination)
+      const response = await ComplianceService.getAllPenalty(params);
+      console.log(response.data.paginatedResponse.content);
+      let data = response.data.paginatedResponse.content;
+      data.push({ id: 0, penaltyName: "Miscellaneous", penaltyAmount: 0 });
+      setPenaltyTypes(data);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  const addPenalty = async () => {
+    try {
+      const payload = {
+        "tripId": data.id,
+        "penaltyType": penaltyType.penaltyName,
+        "penaltyAmount": penaltyAmount,
+        "penaltyAction": select,
+      }
+      console.log(payload);
+      const response = await DispatchService.addPenalty(payload);
+      if(response.status === 200){
+        onClose();
+      }
+      console.log(response.data);
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+
 
   const handleFormatChange = (e) => {
     setSelect(e.target.value);
@@ -46,6 +82,10 @@ const AddPenaltyModal = (props) => {
   useEffect(() => {
     console.log("data: ", data);
   }, [data]);
+
+  useEffect(() => {
+    getOpsPenalty();
+  }, [])
 
   return (
     <div
@@ -119,14 +159,14 @@ const AddPenaltyModal = (props) => {
               labelId="penalty-type-label"
               id="penaltyType"
               name="penaltyType"
-              value={searchValues.penaltyType}
+              value={penaltyType}
               label="Penalty type"
               onChange={handleFilterChange}
               MenuProps={MenuProps}
             >
-              {PenaltyType.map((item) => (
-                <MenuItem key={item} value={item} style={{ fontSize: "15px" }}>
-                  {item}
+              {penaltyTypes.map((item) => (
+                <MenuItem key={item.id} value={item} style={{ fontSize: "15px", textWrap: 'wrap' }}>
+                  {item.penaltyName}
                 </MenuItem>
               ))}
             </Select>
@@ -149,6 +189,9 @@ const AddPenaltyModal = (props) => {
               variant="outlined"
               size="small"
               fullWidth
+              value={penaltyAmount}
+              disabled={penaltyType?.penaltyName !== "Miscellaneous"}
+              onChange={(e)=>setPenaltyAmount(e.target.value)}
               inputProps={{ style: { fontFamily: "DM Sans", fontSize: 15 } }}
               InputLabelProps={{ style: { fontSize: 14 } }}
             />
@@ -200,7 +243,7 @@ const AddPenaltyModal = (props) => {
               id="terminateAndBlacklist"
               name="selectFormat"
               value="Terminate and Blacklist"
-              style={{ margin: "0 10px",}}
+              style={{ margin: "0 10px", }}
               checked={select === "Terminate and Blacklist"}
               onChange={handleFormatChange}
             />
@@ -224,6 +267,7 @@ const AddPenaltyModal = (props) => {
               cursor: "pointer",
               marginTop: "70px",
             }}
+            onClick={()=>addPenalty()}
           >
             Add
           </button>

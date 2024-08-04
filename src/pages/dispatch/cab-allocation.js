@@ -249,7 +249,7 @@ const MainComponent = () => {
                 </Select>
               </FormControl>
             </div>
-            <div style={{ minWidth: "160px" }} className="form-control-input">
+            {/* <div style={{ minWidth: "160px" }} className="form-control-input">
               <FormControl fullWidth>
                 <InputLabel id="shiftType-label">Shift Time</InputLabel>
                 <Select
@@ -268,7 +268,7 @@ const MainComponent = () => {
                   ))}
                 </Select>
               </FormControl>
-            </div>
+            </div> */}
             <div className="form-control-input" style={{ minWidth: "70px" }}>
               <button
                 type="submit"

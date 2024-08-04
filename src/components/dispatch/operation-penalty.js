@@ -42,6 +42,25 @@ const OperationPenaltyTable = ({ onRowSelect, list }) => {
         accessorKey: "vehicleNumber",
         header: "Cab Details",
         size: 150,
+        Cell: ({ cell }) => {
+          return <div>{cell?.getValue() || "N/A"}</div>;
+        },
+      },
+      {
+        accessorKey : 'penaltyType',
+        header: "Penalty Type",
+        size : 200,
+        Cell: ({ cell }) => {
+          return <div>{cell?.getValue() || "N/A"}</div>;
+        },
+      },
+      {
+        accessorKey : 'penaltyAmount',
+        header: "Penalty Amount",
+        size : 200,
+        Cell: ({ cell }) => {
+          return <div>{cell?.getValue() || "N/A"}</div>;
+        },
       },
       // {
       //   accessorKey: "signIn",

@@ -27,7 +27,6 @@ import DispatchService from "@/services/dispatch.service";
 import Modal from "@mui/material/Modal";
 import IssueTypeModal from "@/components/dispatch/approvalWorkflowModal";
 
-
 const style = {
   position: "absolute",
   top: "50%",
@@ -39,17 +38,13 @@ const style = {
   borderRadius: 5,
 };
 
-
-
-
-
 const MainComponent = () => {
   const [office, setOffice] = useState([]);
   const [searchValues, setSearchValues] = useState({
     officeId: "",
     shiftType: "",
-    date: moment().format("YYYY-MM-DD"),
-    issueType: "",
+    tripDateStr: moment().format("YYYY-MM-DD"),
+    tripState: "All",
   });
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
@@ -60,7 +55,7 @@ const MainComponent = () => {
   const [list, setList] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const handleModalOpen = () => setOpenModal(true);
-  const handleModalClose = () => setOpenModal(false);
+  const handleModalClose = () => {setOpenModal(false);fetchSummary();}
   const [selectedRow, setSelectedRow] = useState([]);
 
   // Temprary
@@ -69,17 +64,20 @@ const MainComponent = () => {
   // Temprary
 
   const issueType = [
-    "Vehicle Not Assigned",
-    "Trip Not Started",
-    "Trip Not Ended",
+    { value: "All", name: "All" },
+    { value: "UNASSIGNED", name: "Vehicle Not Assigned" },
+    { value: "Not Started", name: "Trip Not Started" },
+    { value: "Not Ended", name: "Trip Not Ended" },
   ];
 
   const handleFilterChange = (e) => {
     const { target } = e;
     const { value, name } = target;
+    console.log(value,name);
     let newSearchValues = { ...searchValues };
-    if (name === "date") newSearchValues[name] = value.format("YYYY-MM-DD");
+    if (name === "tripDateStr") newSearchValues[name] = value.format("YYYY-MM-DD");
     else newSearchValues[name] = value;
+    console.log(newSearchValues);
     setSearchValues(newSearchValues);
   };
 
@@ -94,7 +92,7 @@ const MainComponent = () => {
         (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const fetchMasterData = async (type) => {
@@ -105,14 +103,15 @@ const MainComponent = () => {
         console.log(data);
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const resetFilter = () => {
     let allSearchValue = {
       officeId: office[0].officeId,
-      date: moment().format("YYYY-MM-DD"),
+      tripDateStr: moment().format("YYYY-MM-DD"),
       shiftType: "",
+      tripState: "All",
     };
     setSearchValues(allSearchValue);
   };
@@ -134,6 +133,30 @@ const MainComponent = () => {
         allSearchValues
       );
       console.log(response.data.data);
+      var tripList = [];
+      response.data.data.map((item) => {
+        let temp = item;
+        switch (item.tripState) {
+          case "UNASSIGNED":
+            temp["tripState"] = "Vehicle Not Assigned";
+            break;
+          case "ACCEPTED":
+            temp["tripState"] = "Trip Not Started";
+            break;
+          case "ASSIGNED":
+            temp["tripState"] = "Trip Not Started";
+            break;
+          case "ONGOING":
+            temp["tripState"] = "Trip Not Started";
+            break;
+          case "START":
+            temp["tripState"] = "Trip Not Ended";
+            break;
+        }
+        console.log(temp);
+        tripList.push(temp);
+      })
+      console.log(tripList);
       setList(response.data.data);
     } catch (err) {
       console.log(err);
@@ -198,12 +221,12 @@ const MainComponent = () => {
               </InputLabel>
               <LocalizationProvider dateAdapter={AdapterMoment}>
                 <DatePicker
-                  name="date"
+                  name="tripDateStr"
                   format={DATE_FORMAT}
-                  value={searchValues.date ? moment(searchValues.date) : null}
+                  value={searchValues.tripDateStr ? moment(searchValues.tripDateStr) : null}
                   onChange={(e) =>
                     handleFilterChange({
-                      target: { name: "date", value: e },
+                      target: { name: "tripDateStr", value: e },
                     })
                   }
                 />
@@ -261,13 +284,13 @@ const MainComponent = () => {
                   style={{ width: "180px", backgroundColor: "white" }}
                   labelId="ops-issue-type-label"
                   id="opsIssueType"
-                  name="issueType"
-                  value={searchValues.issueType}
+                  name="tripState"
+                  value={searchValues.tripState}
                   label="Ops Issue type"
                   onChange={handleFilterChange}
                 >
                   {issueType.map((item) => (
-                    <MenuItem value={item}>{item}</MenuItem>
+                    <MenuItem value={item.value}>{item.name}</MenuItem>
                   ))}
                 </Select>
               </FormControl>

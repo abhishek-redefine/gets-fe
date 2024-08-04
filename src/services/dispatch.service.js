@@ -60,7 +60,7 @@ const generateDummyTrip = async (body) => {
 
 const deleteTrip = async (ids) => {
   let url = `${API_PATH.API_VERSION}${API_PATH.TRIP}${API_PATH.DELETE_TRIPS}`;
-  return axiosInstance.post(url,{ids}).then((response) => {
+  return axiosInstance.post(url, { ids }).then((response) => {
     return response;
   });
 };
@@ -134,6 +134,28 @@ const deleteB2B = async (b2bId) => {
   )
 }
 
+const addPenalty = async (body) => {
+  return axiosInstance.put(`${API_PATH.API_VERSION}${API_PATH.TRIP}${API_PATH.APPLY_PENALTY_ON_TRIP}`, body).then(
+    response => {
+      return response;
+    }
+  )
+}
+
+const addOpsIssue = async (tripId, tripState, remark) => {
+  let url = `${API_PATH.API_VERSION}${API_PATH.TRIP}${API_PATH.UPDATE_TRIP_FOR_ISUUE}/${tripId}/${tripState}/${remark}`;
+  return axiosInstance.put(url).then(response => {
+    return response;
+  })
+}
+
+const createCabSticker = async (payload) => {
+  let url = `${API_PATH.API_VERSION}${API_PATH.STICKER}${API_PATH.GENERATE}`;
+  return axiosInstance.post(url, payload).then(response => {
+    return response;
+  })
+}
+
 const DispatchService = {
   getAllSummary,
   generateTrips,
@@ -150,7 +172,10 @@ const DispatchService = {
   autoSuggestVehicleByVendor,
   assignVehicle,
   getAllB2B,
-  deleteB2B
+  deleteB2B,
+  addPenalty,
+  addOpsIssue,
+  createCabSticker
 };
 
 export default DispatchService;

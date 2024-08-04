@@ -35,6 +35,8 @@ import AdsClickIcon from "@mui/icons-material/AdsClick";
 import { useRouter } from "next/router";
 import TripEditorNew from "@/components/dispatch/tripEditorNew";
 import { toggleToast } from "@/redux/company.slice";
+import TripEditor2 from "@/components/dispatch/tripEditor2";
+import TripEditorManual from "@/components/dispatch/tripEditor-pq";
 
 const style = {
   position: "absolute",
@@ -112,12 +114,12 @@ const Routing = () => {
     },
   ]);
   const [mb2b, setMb2b] = useState([
-    "Auto Generate B2B",
+    // "Auto Generate B2B",
     "Manaual B2B Routes",
     "Delete B2B Mapping",
   ]);
   const [mva, setMva] = useState([
-    "Auto Vendor Allocation",
+    // "Auto Vendor Allocation",
     "Allocate Vendors",
   ]);
   const [mca, setMca] = useState([
@@ -272,22 +274,11 @@ const Routing = () => {
       console.log(response.data);
       var data = response?.data;
       var flag = false;
+      var tripIds = [];
       data.map((val, index) => {
-        flag = deleteTrip(val.id);
+        tripIds.push(val.id);
       });
-      !flag
-        ? dispatch(
-            toggleToast({
-              message: "Please try again in after some time.",
-              type: "error",
-            })
-          )
-        : dispatch(
-            toggleToast({
-              message: "Trips deleted successfully!",
-              type: "success",
-            })
-          );
+      deleteTrip(tripIds);
       // setTripData(response.data);
       //await getTripsMember(response.data);
     } catch (er) {
@@ -310,7 +301,12 @@ const Routing = () => {
       }
     } catch (err) {
       console.log(err);
-      return false;
+      dispatch(
+        toggleToast({
+          message: "Trips deleted successfully!",
+          type: "success",
+        })
+      );
     }
   };
   const downloadTrip = async () => {
@@ -666,6 +662,7 @@ const Routing = () => {
                 />
               ) : manageTrip === 2 ? (
                 <ReplicateTripModal
+                  onClose={handleModalClose}
                   data={selectedRow}
                   date={searchValues.date}
                 />
@@ -695,11 +692,17 @@ const Routing = () => {
         //   shiftId={selectedRow.shiftId}
         //   selectedDate={searchValues.date}
         // />
-        <TripEditorNew
-          edit={(flag) => setRouteEditorShow(flag)}
-          shiftId={selectedRow.shiftId}
-          selectedDate={searchValues.date}
-        />
+        // <TripEditorNew
+        //   edit={(flag) => setRouteEditorShow(flag)}
+        //   shiftId={selectedRow.shiftId}
+        //   selectedDate={searchValues.date}
+        // />
+        // <TripEditor2
+        //   edit={(flag) => setRouteEditorShow(flag)}
+        //   shiftId={selectedRow.shiftId}
+        //   selectedDate={searchValues.date}
+        // />
+        <TripEditorManual/>
       )}
     </div>
   );

@@ -45,6 +45,7 @@ const MainComponent = () => {
   const [allIdsPairedAndB2bList, setAllIdsPairedAndB2bList] = useState([]);
   const [autoSelectLogin, setAutoSelectLogin] = useState(null);
   const [autoSelectLogout, setAutoSelectLogout] = useState(null);
+  const [selectedB2bId, setSelectedB2bId] = useState(null);
 
   const [pagination, setPagination] = useState({
     page: 0,
@@ -66,10 +67,16 @@ const MainComponent = () => {
 
   const resetFilter = () => {
     let allSearchValue = {
-      officeId: office[0].officeId,
-      date: moment().format("YYYY-MM-DD"),
-      shiftType: "",
+      officeIdForLogin: office[0].officeId,
+      dateForLogin: moment().format("YYYY-MM-DD"),
+      shiftTypeForLogin: "LOGIN",
     };
+    let allSearchValueLogout = {
+      officeIdForLogout: office[0].officeId,
+      dateForLogout: moment().format("YYYY-MM-DD"),
+      shiftTypeForLogout: "LOGOUT",
+    };
+    setSearchValuesForLogout(allSearchValueLogout);
     setSearchValuesForLogin(allSearchValue);
   };
 
@@ -81,7 +88,7 @@ const MainComponent = () => {
         console.log(data);
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const fetchAllOffices = async () => {
@@ -101,7 +108,7 @@ const MainComponent = () => {
           clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const getTrips = async () => {
@@ -132,10 +139,17 @@ const MainComponent = () => {
     }
   };
 
-  const deleteB2b = async (b2bId) => {
+  const deleteB2b = async () => {
     try {
-      const response = await DispatchService.deleteB2B(b2bId);
+      const response = await DispatchService.deleteB2B(selectedB2bId);
       console.log(response.data);
+      if (response.status === 200) {
+        dispatch(
+          toggleToast({ message: "B2B Deleted Successfully!", type: "success" })
+        );
+        getTrips();
+        getB2BTrips();
+      }
     } catch (err) {
       console.log(err);
     }
@@ -209,7 +223,7 @@ const MainComponent = () => {
   };
 
   const handleUnpairTrips = () => {
-    console.log("entered",pairedTrips,pairedTripIds,autoSelectLogin,autoSelectLogout);
+    console.log("entered", pairedTrips, pairedTripIds, autoSelectLogin, autoSelectLogout);
 
     let tempPairedTrips = [...pairedTrips];
     let tempPairedTripIds = [...pairedTripIds];
@@ -223,7 +237,7 @@ const MainComponent = () => {
     tempPairedTrips.splice(findIndex, 2);
     // console.log("tempPairedTrips>> " +tempPairedTrips);
     setPairedTrips(tempPairedTrips);
-    console.log("setPairedTrips>> " +tempPairedTrips);
+    console.log("setPairedTrips>> " + tempPairedTrips);
 
     const findTripIdsIndex = tempPairedTripIds.findIndex((id) => id === `TRIP-${autoSelectLogout}-TRIP-${autoSelectLogin}`);
     tempPairedTripIds.splice(findTripIdsIndex, 1);
@@ -267,8 +281,8 @@ const MainComponent = () => {
     }
   };
 
-  const handleSelectRow = (type,tripId) => {
-    console.log("hello world>>>>>>", type,tripId);
+  const handleSelectRow = (type, tripId) => {
+    console.log("hello world>>>>>>", type, tripId);
     if (type === "login") {
       setSelectedLoginTrips([tripId]);
       setAutoSelectLogout(null);
@@ -704,7 +718,8 @@ const MainComponent = () => {
                 autoSelectHandler(type, id, event)
               }
               autoSelectTrip={autoSelectLogout}
-              handleSelectRow={(type,tripId) => handleSelectRow(type,tripId)}
+              handleSelectRow={(type, tripId) => handleSelectRow(type, tripId)}
+              setSelectedB2bId={setSelectedB2bId}
             />
           </div>
           <div style={{ flex: 1, minWidth: "600px" }}>
@@ -740,7 +755,8 @@ const MainComponent = () => {
                 autoSelectHandler(type, id, event)
               }
               autoSelectTrip={autoSelectLogin}
-              handleSelectRow={(type,tripId) => handleSelectRow(type,tripId)}
+              handleSelectRow={(type, tripId) => handleSelectRow(type, tripId)}
+              setSelectedB2bId={setSelectedB2bId}
             />
           </div>
         </div>

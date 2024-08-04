@@ -30,7 +30,7 @@ const MainComponent = () => {
   const [searchValues, setSearchValues] = useState({
     officeId: "",
     shiftType: "",
-    date: moment().format("YYYY-MM-DD"),
+    tripDateStr: moment().format("YYYY-MM-DD"),
     issueType: "",
   });
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
@@ -45,7 +45,7 @@ const MainComponent = () => {
     const { target } = e;
     const { value, name } = target;
     let newSearchValues = { ...searchValues };
-    if (name === "date") newSearchValues[name] = value.format("YYYY-MM-DD");
+    if (name === "tripDateStr") newSearchValues[name] = value.format("YYYY-MM-DD");
     else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
   };
@@ -78,7 +78,7 @@ const MainComponent = () => {
   const resetFilter = () => {
     let allSearchValue = {
       officeId: office[0].officeId,
-      date: moment().format("YYYY-MM-DD"),
+      tripDateStr: moment().format("YYYY-MM-DD"),
       shiftType: "",
     };
     setSearchValues(allSearchValue);
@@ -160,12 +160,12 @@ const MainComponent = () => {
           </InputLabel>
           <LocalizationProvider dateAdapter={AdapterMoment}>
             <DatePicker
-              name="date"
+              name="tripDateStr"
               format={DATE_FORMAT}
-              value={searchValues.date ? moment(searchValues.date) : null}
+              value={searchValues.tripDateStr ? moment(searchValues.tripDateStr) : null}
               onChange={(e) =>
                 handleFilterChange({
-                  target: { name: "date", value: e },
+                  target: { name: "tripDateStr", value: e },
                 })
               }
             />

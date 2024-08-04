@@ -32,15 +32,23 @@ const MainComponent = () => {
   const [office, setOffice] = useState([]);
   const[openModal, setOpenModal] = useState(false);
   const handleModalOpen = () => setOpenModal(true);
-  const handleModalClose = () => setOpenModal(false);
+  const handleModalClose = () => {
+    console.log("handle modal close")
+    fetchSummary();
+    setOpenModal(false); 
+  }
   const [showAction, setShowAction] = useState(false);
   const [selectedRow, setSelectedRow] = useState([]);
   const [list,setList] = useState([]);
   const [searchValues, setSearchValues] = useState({
     officeId: "",
     shiftType: "",
-    date: moment().format("YYYY-MM-DD"),
+    tripDateStr: moment().format("YYYY-MM-DD"),
   });
+  const [pagination,setPagination] = useState({
+    page : 0,
+    size : 20,
+  })
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
 
@@ -48,7 +56,7 @@ const MainComponent = () => {
     const { target } = e;
     const { value, name } = target;
     let newSearchValues = { ...searchValues };
-    if (name === "date") newSearchValues[name] = value.format("YYYY-MM-DD");
+    if (name === "tripDateStr") newSearchValues[name] = value.format("YYYY-MM-DD");
     else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
   };
@@ -80,6 +88,7 @@ const MainComponent = () => {
 
   const fetchSummary = async () => {
     try {
+      const params = new URLSearchParams(pagination);
       console.log("search values>>>>>", searchValues);
       let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
@@ -91,7 +100,7 @@ const MainComponent = () => {
         }
       });
       const response = await DispatchService.getTripSearchByBean(
-        // params,
+        params,
         allSearchValues
       );
       console.log("response: ", response.data.data);
@@ -167,12 +176,12 @@ const MainComponent = () => {
           </InputLabel>
           <LocalizationProvider dateAdapter={AdapterMoment}>
             <DatePicker
-              name="date"
+              name="tripDateStr"
               format={DATE_FORMAT}
-              value={searchValues.date ? moment(searchValues.date) : null}
+              value={searchValues.tripDateStr ? moment(searchValues.tripDateStr) : null}
               onChange={(e) =>
                 handleFilterChange({
-                  target: { name: "date", value: e },
+                  target: { name: "tripDateStr", value: e },
                 })
               }
             />
@@ -270,13 +279,10 @@ const MainComponent = () => {
             <Box sx={style}>
               <AddPenaltyModal
                 data={selectedRow}
-                onClose={handleModalClose}
+                onClose={()=>handleModalClose()}
               />
             </Box>
           </Modal>
-
-
-
     </div>
   );
 };

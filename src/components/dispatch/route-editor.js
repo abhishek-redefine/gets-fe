@@ -9,12 +9,16 @@ import Diversity2OutlinedIcon from "@mui/icons-material/Diversity2Outlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import AutoModeOutlinedIcon from "@mui/icons-material/AutoModeOutlined";
-import { Checkbox, FormGroup, FormControlLabel } from "@mui/material";
-import { useEffect, useState } from "react";
 import DispatchService from "@/services/dispatch.service";
 import { ITableProps, kaReducer, Table, useTable } from "ka-table";
 import { DataType, EditingMode, SortingMode } from "ka-table/enums";
 import { updateData } from "ka-table/actionCreators";
+import React, { useState, useMemo, useEffect } from "react";
+import {
+  MaterialReactTable,
+  useMaterialReactTable,
+} from 'material-react-table';
+import { Box, Typography } from '@mui/material';
 
 const RouteEditor = (props) => {
   const { edit, selectedDate, shiftId } = props;
@@ -23,58 +27,120 @@ const RouteEditor = (props) => {
   const [tripCount, setTripCount] = useState(0);
   const [tripsMemberCount, setTripsMemberCount] = useState(0);
   const [initialData, setInitialData] = useState([]);
-  const table = useTable();
-  const [tableProps, setTableProps] = useState({
-    columns: [
-      { key: "id", title: "", isEditable: false, width: 80 },
-      {
-        key: "tripId",
-        title: "Trip Id",
-        dataType: DataType.String,
-        isEditable: false,
+  const columns = useMemo(() => [
+    {
+      header: "Trip Id",
+      accessorKey: 'tripId',
+      enableColumnPinning: false,
+      footer: "Trip Id"
+    },
+    {
+      header: "Number of Seats",
+      accessorKey: 'noOfSeats',
+      footer: "Number of Seats"
+    },
+    {
+      header: "Member Count",
+      accessorKey: 'memberCount',
+      footer: "Member Count"
+    },
+    {
+      header: "Pickup point",
+      accessorKey: 'pickupPoint',
+      footer: "Pickup point"
+    },
+    {
+      header: "Drop Point",
+      accessorKey: 'dropPoint',
+      footer: "Drop Point"
+    },
+    {
+      header: "Pickup Time",
+      accessorKey: 'pickupTime',
+      footer: "Pickup Time"
+    },
+  ]);
+  const table = useMaterialReactTable({
+    autoResetPageIndex: false,
+    data,
+    columns,
+    enableColumnActions: false,
+    enableColumnFilters: false,
+    enableColumnFilterModes: false,
+    enableColumnOrdering: true,
+    onColumnOrderChange:setColumnOrder,
+    enableRowOrdering: true,
+    enableSorting: false,
+    enableRowPinning: true,
+    enablePagination: false,
+    enableTableFooter: false,
+    rowPinningDisplayMode: 'top',
+    enableColumnPinning: true,
+    layoutMode: 'grid-no-grow',
+    initialState: {
+      columnPinning: { left: ['mrt-row-drag'] },
+    },
+    muiRowDragHandleProps: ({ table }) => ({
+      onDragEnd: () => {
+        const { draggingRow, hoveredRow } = table.getState();
+        if (hoveredRow && draggingRow) {
+          data.splice(
+            hoveredRow.index,
+            0,
+            data.splice(draggingRow.index, 1)[0],
+          );
+          setData([...data]);
+        }
       },
-      {
-        key: "noOfSeats",
-        title: "Number of Seats",
-        dataType: DataType.String,
-        isEditable: false,
+    }),
+    muiTableContainerProps: {
+      sx: {
+        maxHeight: '400px',
       },
-      {
-        key: "memberCount",
-        title: "Employee Count",
-        dataType: DataType.String,
-        isEditable: false,
+    },
+    enableRowSelection: true,
+    getRowId: (row) => row.tripId,
+    onRowSelectionChange: setRowSelection,
+    displayColumnDefOptions: {
+      'mrt-row-pin': {
+        muiTableBodyCellProps: {
+          align: 'right',
+        },
+      },      
+    },
+    state: { columnOrder,rowSelection },
+    enableExpandAll: false, //hide expand all double arrow in column header
+    enableRowVirtualization: true,
+    muiDetailPanelProps: () => ({
+      sx: (theme) => ({
+        backgroundColor: 'rgba(0,0,0,0.1)',
+      }),
+    }),
+    //custom expand button rotation
+    muiExpandButtonProps: ({ row, table }) => ({
+      onClick: () => table.setExpanded({ [row.id]: !row.getIsExpanded() }), //only 1 detail panel open at a time
+      sx: {
+        transform: row.getIsExpanded() ? 'rotate(180deg)' : 'rotate(-90deg)',
+        transition: 'transform 0.2s',
       },
-      {
-        key: "shiftTime",
-        title: "Shift Time",
-        dataType: DataType.String,
-        isEditable: false,
-      },
-      {
-        key: "employeeName",
-        title: "Name",
-        dataType: DataType.String,
-      },
-      { key: "gender", title: "Gender", dataType: DataType.String },
-      { key: "pickupPoint", title: "Pickup Point", dataType: DataType.String },
-      { key: "dropPoint", title: "Drop Point", dataType: DataType.String },
-      { key: "specail", title: "Special Status", dataType: DataType.String },
-      { key: "pickupTime", title: "Pickup Time", dataType: DataType.String },
-    ],
-    data: [],
-    editingMode: EditingMode.Cell,
-    rowKeyField: "id",
-    sortingMode: SortingMode.Single,
-    treeGroupKeyField: "tripId",
-    // rowReordering: true,
-    columnReordering: true,
+    }),
+    //conditionally render detail panel
+    renderDetailPanel: ({ row }) =>
+      row.tripId ? (
+        <Box
+          sx={{
+            display: 'grid',
+            margin: 'auto',
+            gridTemplateColumns: '1fr 1fr',
+            width: '100%',
+          }}
+        >
+          <TripMemberDetails row={row}/>
+        </Box>
+      ) : null,
   });
-
-  const dispatch = (action) => {
-    const newState = kaReducer(tableProps, action);
-    setTableProps(newState);
-  };
+  const [columnOrder, setColumnOrder] = useState(()=>columns.map((c) => c.accessorKey))
+  const [rowSelection, setRowSelection] = useState({});
 
   const getTrips = async () => {
     try {
@@ -483,124 +549,18 @@ const RouteEditor = (props) => {
             <p className="tripEditorText">Customize Columns</p>
           </div>
         </div>
-        {/* <div style={{ marginTop: 15, display: "flex", margin: "0 10px" }}>
-          <FormGroup>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  value={selectAll}
-                  onChange={() => setSelectAll(!selectAll)}
-                />
-              }
-              label={`Selected (${rowCount})`}
-            />
-          </FormGroup>
-        </div> */}
-        {initialData.length > 0 && (
-          <div style={{ marginTop: 10, backgroundColor: "#FFF" }}>
-            <div>
-              <Table
-                table={table}
-                {...tableProps}
-                dispatch={dispatch}
-                childComponents={{
-                  dataRow: {
-                    elementAttributes: ({ rowData }) => ({
-                      style: {
-                        backgroundColor: !rowData.tripId ? "#f6ce47" : "",
-                        fontWeight: !rowData.tripId ? "bold" : "normal",
-                      },
-                      title: `${rowData.name}: ${rowData.score}`,
-                    }),
-                  },
-                  cell: {
-                    elementAttributes: ({
-                      column,
-                      rowKeyValue,
-                      isEditableCell,
-                    }) => {
-                      if (isEditableCell) return undefined;
-
-                      const cell = { columnKey: column.key, rowKeyValue };
-                      const isFocused =
-                        cell.columnKey ===
-                          table.props.focused?.cell?.columnKey &&
-                        cell.rowKeyValue ===
-                          table.props.focused?.cell?.rowKeyValue;
-                      return {
-                        tabIndex: 0,
-                        ref: (ref) => isFocused && ref?.focus(),
-                        onKeyUp: (e) => {
-                          switch (e.key) {
-                            case "ArrowRight":
-                              table.moveFocusedRight({ end: e.ctrlKey });
-                              break;
-                            case "ArrowLeft":
-                              table.moveFocusedLeft({ end: e.ctrlKey });
-                              break;
-                            case "ArrowUp":
-                              table.moveFocusedUp({ end: e.ctrlKey });
-                              break;
-                            case "ArrowDown":
-                              table.moveFocusedDown({ end: e.ctrlKey });
-                              break;
-                            case "Enter":
-                              table.openEditor(
-                                cell.rowKeyValue,
-                                cell.columnKey
-                              );
-                              table.setFocused({ cellEditorInput: cell });
-                              e.stopPropagation();
-                              break;
-                          }
-                        },
-                        onFocus: () =>
-                          !isFocused &&
-                          table.setFocused({
-                            cell: { columnKey: column.key, rowKeyValue },
-                          }),
-                        onKeyDown: (e) => e.keyCode !== 9 && e.preventDefault(),
-                        onBlur: () => isFocused && table.clearFocused(),
-                      };
-                    },
-                  },
-                  cellEditorInput: {
-                    elementAttributes: ({ column, rowKeyValue }) => {
-                      const isFocused =
-                        column.key ===
-                          table.props.focused?.cellEditorInput?.columnKey &&
-                        rowKeyValue ===
-                          table.props.focused?.cellEditorInput?.rowKeyValue;
-                      const cell = { columnKey: column.key, rowKeyValue };
-                      return {
-                        ref: (ref) => isFocused && ref?.focus(),
-                        onKeyUp: (e) =>
-                          e.keyCode === 13 && table.setFocused({ cell }),
-                        onBlur: (e, { baseFunc }) => {
-                          baseFunc();
-                          table.clearFocused();
-                        },
-                        onFocus: () =>
-                          !isFocused &&
-                          table.setFocused({
-                            cell: { columnKey: column.key, rowKeyValue },
-                          }),
-                      };
-                    },
-                  },
-                  headCell: {
-                    elementAttributes: (props) => ({
-                      tabIndex: 0,
-                      onKeyUp: (e) =>
-                        e.keyCode === 13 &&
-                        table.updateSortDirection(props.column.key),
-                    }),
-                  },
-                }}
-              />
-            </div>
-          </div>
-        )}
+        
+      </div>
+      <div className="d-flex" style={{ justifyContent: 'flex-end', marginTop: 20 }}>
+        <div className="d-flex">
+          <button
+            type="submit"
+            className="btn btn-secondary filterApplyBtn"
+            onClick={()=>edit(false)}
+          >Back</button>
+          <button type="submit" style={{margin: '0 10px'}}
+            className="btn btn-primary filterApplyBtn">Save</button>
+        </div>
       </div>
     </div>
   );

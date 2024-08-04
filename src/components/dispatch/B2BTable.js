@@ -47,6 +47,7 @@ const StickyHeadTable = (props) => {
     autoSelect,
     autoSelectTrip,
     handleSelectRow,
+    setSelectedB2bId,
   } = props;
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -61,8 +62,8 @@ const StickyHeadTable = (props) => {
     setPage(0);
   };
 
-  const handleSelectTrip = (tripId, tripIdForUI, isPaired, isB2bTrip,autoFlag) => {
-    console.log(isPaired, isB2bTrip);
+  const handleSelectTrip = (tripId, tripIdForUI, isPaired, isB2bTrip,autoFlag,b2bId) => {
+    console.log(isPaired, isB2bTrip,b2bId);
     if (selectedTrips.includes(tripId)) {
       isPaired || (isB2bTrip && !autoFlag && autoSelect(type, tripId, "unselectedTrips"));
       !isPaired || (!isB2bTrip && handleSelectRow(type, tripId));
@@ -75,8 +76,14 @@ const StickyHeadTable = (props) => {
       // setSelectedTripsUI([tripIdForUI]);
     }
     if(isPaired || isB2bTrip && autoFlag) {
-      console.log("hello world inside");
+      console.log("autoFlag === true inside");
       autoFlag ? autoSelect(type, tripId, "unselectedTrips") : autoSelect(type, tripId, "selectedTrips");  
+    }
+
+    if(b2bId){
+      setSelectedB2bId(b2bId.b2bId);
+    }else{
+      setSelectedB2bId(null);
     }
     
   };
@@ -137,7 +144,8 @@ const StickyHeadTable = (props) => {
                         row.tripIdForUI,
                         isPaired,
                         isB2bTrip,
-                        autoFlag
+                        autoFlag,
+                        b2bList[index]
                       )
                     }
                   >
@@ -150,7 +158,8 @@ const StickyHeadTable = (props) => {
                             row.tripIdForUI,
                             isPaired,
                             isB2bTrip,
-                            autoFlag
+                            autoFlag,
+                            b2bList[index]
                           )
                         }
                       />

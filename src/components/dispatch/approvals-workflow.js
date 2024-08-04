@@ -37,22 +37,33 @@ const ApprovalsWorkflowTable = ({ onRowSelect, list }) => {
         accessorKey: "vehicleNumber",
         header: "Cab Details",
         size: 150,
+        Cell: ({ cell }) => {
+          return <div>{cell?.getValue() || "N/A"}</div>;
+        },
       },
       {
-        accessorKey: "signIn",
-        header: "Sign In",
-        size: 150,
+        accessorKey : "remarks",
+        header: "Ops Remarks",
+        size : 200,
+        Cell: ({ cell }) => {
+          return <div>{cell?.getValue() || "N/A"}</div>;
+        },
       },
-      {
-        accessorKey: "signOut",
-        header: "Sign Out",
-        size: 150,
-      },
-      {
-        accessorKey: "smsStatus",
-        header: "SMS Status",
-        size: 150,
-      },
+      // {
+      //   accessorKey: "signIn",
+      //   header: "Sign In",
+      //   size: 150,
+      // },
+      // {
+      //   accessorKey: "signOut",
+      //   header: "Sign Out",
+      //   size: 150,
+      // },
+      // {
+      //   accessorKey: "smsStatus",
+      //   header: "SMS Status",
+      //   size: 150,
+      // },
     ],
     []
   );
