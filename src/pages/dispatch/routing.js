@@ -36,7 +36,7 @@ import { useRouter } from "next/router";
 import TripEditorNew from "@/components/dispatch/tripEditorNew";
 import { toggleToast } from "@/redux/company.slice";
 import TripEditor2 from "@/components/dispatch/tripEditor2";
-import TripEditorManual from "@/components/dispatch/tripEditor-pq";
+// import TripEditorManual from "@/components/dispatch/tripEditor-pq";
 
 const style = {
   position: "absolute",
@@ -697,12 +697,12 @@ const Routing = () => {
         //   shiftId={selectedRow.shiftId}
         //   selectedDate={searchValues.date}
         // />
-        // <TripEditor2
-        //   edit={(flag) => setRouteEditorShow(flag)}
-        //   shiftId={selectedRow.shiftId}
-        //   selectedDate={searchValues.date}
-        // />
-        <TripEditorManual/>
+        <TripEditor2
+          edit={(flag) => setRouteEditorShow(flag)}
+          shiftId={selectedRow.shiftId}
+          selectedDate={searchValues.date}
+        />
+        // <TripEditorManual/>
       )}
     </div>
   );
