@@ -16,6 +16,7 @@
     "@mui/material": "^5.15.0",
     "@mui/styles": "^5.15.12",
     "@mui/x-date-pickers": "^6.19.4",
+    "@react-google-maps/api": "^2.19.3",
     "@reduxjs/toolkit": "^2.0.1",
     "@types/jquery": "^3.5.30",
     "@types/jqueryui": "^1.12.23",

@@ -136,7 +136,7 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
         vehicleRemarks: "",
         insuranceUrl: "",
         registrationCertificateUrl: "",
-        driverId: "",
+        // driverId: "",
         // ehsDoneBy: "Sultan",
         // ehsDoneAt: "2024-03-13",
         pollutionCertificateUrl: "",
@@ -650,7 +650,7 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                             name="vehicleRemarks"
                             label="Vehicle Remarks" />
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                    {/* <div style={{ display: 'flex', alignItems: 'center' }}>
                         <div className='form-control-input'>
                             <FormControl variant="outlined">
                                 <Autocomplete
@@ -674,7 +674,7 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                                 />
                             </FormControl>
                         </div>
-                    </div>
+                    </div> */}
                 </FormStep>
                 <FormStep
                     stepName="Upload Certificate"
