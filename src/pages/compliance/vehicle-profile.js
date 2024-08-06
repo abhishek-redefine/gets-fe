@@ -8,7 +8,7 @@ import UploadButton from '@/components/buttons/uploadButton';
 import AddVehiclePendingApproval from '@/components/compliance/addVehiclePendingApproval';
 import { toggleToast } from '@/redux/company.slice';
 import { useDispatch } from 'react-redux';
-import { FormControl, InputLabel, MenuItem, Select,Autocomplete,TextField } from '@mui/material';
+import { FormControl, InputLabel, MenuItem, Select, Autocomplete, TextField,Button } from '@mui/material';
 import OfficeService from '@/services/office.service';
 import { getFormattedLabel } from '@/utils/utils';
 import Modal from '@mui/material/Modal';
@@ -16,6 +16,11 @@ import Box from '@mui/material/Box';
 import RemarkModal from '@/components/modal/remarkModal';
 import { DEFAULT_PAGE_SIZE } from '@/constants/app.constants.';
 import BookingService from '@/services/booking.service';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 const style = {
     position: 'absolute',
@@ -90,6 +95,10 @@ const VehicleProfile = () => {
                     display: "View Vehicle",
                     key: "viewVehicle"
                 },
+                {
+                    display: "Add Driver",
+                    key: "addDriver"
+                }
                 // {
                 //     display: "Add EHS Entry",
                 //     key: "addEHSEntry"
@@ -102,20 +111,20 @@ const VehicleProfile = () => {
     const [viewVehicleOpen, setViewVehicleOpen] = useState(false)
     const [editVehicleData, setEditVehicleData] = useState(false)
     const [vehicleData, setVehicleData] = useState()
-    const [searchVendor,setSearchVendor] = useState([]);
+    const [searchVendor, setSearchVendor] = useState([]);
     const [openSearchVendor, setOpenSearchVendor] = useState(false);
-    const [officeList,setOfficeList] = useState([]);
-    const [officeId,setOfficeId] = useState("");
-    const [complianceList,setComplianceList] = useState([]);
-    const [complianceStatus,setComplianceStatus] = useState("");
-    const [vehicleStateList,setVehicleStateList] = useState([]);
-    const [vehicleState,setVehicleState] = useState("");
-    const [ehsStatusList,setEhsStatusList] = useState([]);
-    const [ehsStatus,setEhsStatus] = useState("");
-    const [selectedVehicle,setSelectedVehicle] = useState();
-    const [isEnableFlag,setIsEnableFlag] = useState(false);
+    const [officeList, setOfficeList] = useState([]);
+    const [officeId, setOfficeId] = useState("");
+    const [complianceList, setComplianceList] = useState([]);
+    const [complianceStatus, setComplianceStatus] = useState("");
+    const [vehicleStateList, setVehicleStateList] = useState([]);
+    const [vehicleState, setVehicleState] = useState("");
+    const [ehsStatusList, setEhsStatusList] = useState([]);
+    const [ehsStatus, setEhsStatus] = useState("");
+    const [selectedVehicle, setSelectedVehicle] = useState();
+    const [isEnableFlag, setIsEnableFlag] = useState(false);
     const [open, setOpen] = useState(false);
-    const handleOpen = (id,isEnable) => {
+    const handleOpen = (id, isEnable) => {
         console.log(`id = ${id}, isEnable = ${isEnable}`)
         setSelectedVehicle(id);
         setIsEnableFlag(isEnable);
@@ -123,24 +132,63 @@ const VehicleProfile = () => {
     }
     const handleClose = () => setOpen(false);
 
+    const [openModal,setOpenModal] = useState(false);
+    const handleCloseModal = () =>{
+        setEditVehicleData(null);
+        setOpenModal(false);
+    }
+    const addDriverHandler =async()=>{
+        try{
+            console.log(mappedDriver);
+            let vehicleDto = editVehicleData;
+            vehicleDto.driverId = parseInt(mappedDriver);
+            const response = await ComplianceService.updateVehicle({vehicleDTO : vehicleDto});
+            console.log(response.status);
+            if(response.status === 200){
+                initializer(false);
+                handleCloseModal();
+            }
+        }catch(err){
+            console.log(err);
+        }
+    }
+    const [openSearchDriver, setOpenSearchDriver] = useState(false);
+    const [searchedDriver, setSearchedDriver] = useState([]);
+    const [mappedDriver, setMappedDriver] = useState();
+    const searchForDriver = async (e,vendorName) => {
+        try {
+            if (e.target.value) {
+                console.log('searchForDriver', e.target.value)
+                const response = await ComplianceService.searchDriverWithVendor(e.target.value,vendorName);
+                const { data } = response || {};
+                setSearchedDriver(data);
+            } else {
+                setSearchedDriver([]);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+
     const [pagination, setPagination] = useState({
         page: 0,
         size: DEFAULT_PAGE_SIZE,
     });
     const [paginationData, setPaginationData] = useState();
-    const [searchBean,setSearchBean] = useState({
-        officeId : "",
-        complianceStatus : "",
-        vendorName : "",
-        vehicleState : "",
+    const [searchBean, setSearchBean] = useState({
+        officeId: "",
+        complianceStatus: "",
+        vendorName: "",
+        vehicleState: "",
         ehsStatus: ""
     });
-    const [vendorName,setVendorName] = useState("")
+    const [vendorName, setVendorName] = useState("");
 
-    const searchForVendor = async(e) =>{
+    const searchForVendor = async (e) => {
         try {
             if (e.target.value) {
-                const response = await ComplianceService.searchVendor(e.target.value);
+                const response = await ComplianceService .searchVendor(e.target.value);
                 const { data } = response || {};
                 setSearchVendor(data);
             } else {
@@ -162,12 +210,16 @@ const VehicleProfile = () => {
             setEditVehicleData(clickedItem);
             setAddVehicleOpen(true);
         } else if (key === "deactivate") {
-            handleOpen(clickedItem.id,false);
+            handleOpen(clickedItem.id, false);
         } else if (key === "activate") {
-            handleOpen(clickedItem.id,true);
+            handleOpen(clickedItem.id, true);
         } else if (key === "viewVehicle") {
             setEditVehicleData(clickedItem);
             setViewVehicleOpen(true);
+        } else if (key === "addDriver") {
+            setEditVehicleData(clickedItem);
+            // console.log(clickedItem?.driver);
+            clickedItem?.complianceStatus === "COMPLIANT" && !clickedItem?.driverId && setOpenModal(true);
         }
     };
 
@@ -230,100 +282,100 @@ const VehicleProfile = () => {
     }
 
 
-    const initializer = async (resetFlag,filter={}) => {
+    const initializer = async (resetFlag, filter = {}) => {
         try {
-            var allValuesSearch = {...filter};
+            var allValuesSearch = { ...filter };
             Object.keys(allValuesSearch).forEach((objKey) => {
                 if (allValuesSearch[objKey] === null || allValuesSearch[objKey] === "") {
                     delete allValuesSearch[objKey];
                 }
             });
             let params;
-            if(resetFlag){
+            if (resetFlag) {
                 params = new URLSearchParams({
                     pageNo: 0,
                     pageSize: DEFAULT_PAGE_SIZE,
                 });
             }
-            console.log("Search bean>>>>",allValuesSearch)
+            console.log("Search bean>>>>", allValuesSearch)
             params = new URLSearchParams(pagination);
-            const response = !resetFlag ? await ComplianceService.getAllVehicles(params.toString(),allValuesSearch) : await ComplianceService.getAllVehicles(params.toString(),{});
+            const response = !resetFlag ? await ComplianceService.getAllVehicles(params.toString(), allValuesSearch) : await ComplianceService.getAllVehicles(params.toString(), {});
             const { data } = response || {};
             const { data: paginatedResponse } = data || {};
             console.log(paginatedResponse);
             setVehicleData(paginatedResponse || []);
-            let localPaginationData = {...data};
+            let localPaginationData = { ...data };
             delete localPaginationData?.data;
             setPaginationData(localPaginationData);
         } catch (e) {
         }
     }
 
-    const fetchAllOffice = async() =>{
-        try{
+    const fetchAllOffice = async () => {
+        try {
             const response = await OfficeService.getAllOffices();
             const { data } = response || {};
             const { clientOfficeDTO } = data || {};
-            console.log(clientOfficeDTO,"Client office Dto")
+            console.log(clientOfficeDTO, "Client office Dto")
             setOfficeList(clientOfficeDTO);
-        }catch(err){
+        } catch (err) {
             console.log(err);
         }
     }
 
-    const fetchComplianceStatus = async() =>{
-        try{
+    const fetchComplianceStatus = async () => {
+        try {
             const response = await ComplianceService.getMasterData('ComplianceStatus');
             console.log(response.data);
             setComplianceList(response.data);
         }
-        catch(err){
+        catch (err) {
             console.log(err);
         }
     }
 
-    const fetchEhsStatus = async() =>{
-        try{
+    const fetchEhsStatus = async () => {
+        try {
             const response = await ComplianceService.getMasterData('EhsStatus');
             console.log(response.data);
             setEhsStatusList(response.data);
 
-        }catch(err){
+        } catch (err) {
             console.log(err);
         }
     }
 
-    const fetchVehicleState = async() =>{
-        try{
+    const fetchVehicleState = async () => {
+        try {
             const response = await ComplianceService.getMasterData('State');
             console.log(response.data);
             setVehicleStateList(response.data);
-        
-        }catch(err){
+
+        } catch (err) {
             console.log(err);
         }
     }
 
-    const applyFilter = async() =>{
-        let newPagination = {...pagination};
-        let allSearchValues = {...searchBean};
+    const applyFilter = async () => {
+        let newPagination = { ...pagination };
+        let allSearchValues = { ...searchBean };
         allSearchValues.officeId = officeId || "";
         allSearchValues.complianceStatus = complianceStatus || "";
         allSearchValues.vendorName = vendorName || "";
         allSearchValues.ehsStatus = ehsStatus || "";
         allSearchValues.vehicleState = vehicleState || "";
-        console.log("all search values",allSearchValues);
+        console.log("all search values", allSearchValues);
         setSearchBean(allSearchValues);
         if (newPagination.page === 0) {
-            initializer(false,allSearchValues);
+            initializer(false, allSearchValues);
         } else {
             newPagination.page = 0;
             setPagination(newPagination);
-            initializer(false,allSearchValues);
+            initializer(false, allSearchValues);
         }
     }
 
-    const resetFilter = () =>{
+    const resetFilter = () => {
         setVendorName("");
         setOfficeId("");
         setComplianceStatus("");
@@ -333,12 +385,12 @@ const VehicleProfile = () => {
         handlePageChange(0);
     }
     const handlePageChange = (page) => {
-        let updatedPagination = {...pagination};
+        let updatedPagination = { ...pagination };
         updatedPagination.page = page;
         setPagination(updatedPagination);
     };
 
-    const cancelHandler = () =>{
+    const cancelHandler = () => {
         setEditVehicleData([]);
         setAddVehicleOpen(false);
     }
@@ -350,37 +402,37 @@ const VehicleProfile = () => {
         fetchVehicleState();
     }, []);
 
-    const onSuccess = () =>{
+    const onSuccess = () => {
         setViewVehicleOpen(false);
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         initializer(false);
-    },[pagination,addVehicleOpen,viewVehicleOpen])
+    }, [pagination, addVehicleOpen, viewVehicleOpen])
 
-    const onConfirmHandler = (remark) =>{
+    const onConfirmHandler = (remark) => {
         console.log(`remark == ${remark}`)
-        enableDisableVehicle(selectedVehicle, isEnableFlag,remark);
+        enableDisableVehicle(selectedVehicle, isEnableFlag, remark);
     }
 
-    const enableDisableVehicle = async(id,isEnable,remark) =>{
-        try{
-            const response = await ComplianceService.enableDisableVehicle(id,isEnable, remark);
-            if(response.status === 200){
+    const enableDisableVehicle = async (id, isEnable, remark) => {
+        try {
+            const response = await ComplianceService.enableDisableVehicle(id, isEnable, remark);
+            if (response.status === 200) {
                 dispatch(toggleToast({ message: 'Driver deactivated successfully!', type: 'success' }));
                 setOpen(false);
                 initializer(false);
             }
-             else {
+            else {
                 dispatch(toggleToast({ message: 'Driver deactivation unsuccessful. Please try again later!', type: 'error' }));
             }
         }
-        catch(err){
+        catch (err) {
             console.log(err);
         }
     }
     const uploadFunction = async (item) => {
-        try{
+        try {
             var form = new FormData();
             form.append('model', '{"importJobDTO": {"importType": "IMPORT_TYPE_VEHICLE","entityName": "VEHICLE"}}');
             form.append('file', item);
@@ -398,7 +450,7 @@ const VehicleProfile = () => {
             }
             initializer(false);
         }
-        catch(err){
+        catch (err) {
             console.log(err);
         }
     }
@@ -407,17 +459,17 @@ const VehicleProfile = () => {
         <div className='internalSettingContainer'>
             {!addVehicleOpen && !viewVehicleOpen && <div>
                 <div style={{ display: 'flex', justifyContent: 'start' }}>
-                    <div style={{minWidth: "180px"}} className='form-control-input'>
+                    <div style={{ minWidth: "180px" }} className='form-control-input'>
                         <FormControl fullWidth>
                             <InputLabel id="primary-office-label">Primary Office</InputLabel>
                             <Select
-                                style={{width: "180px"}}                                    
+                                style={{ width: "180px" }}
                                 labelId="primary-office-label"
                                 id="officeId"
                                 value={officeId}
                                 name="officeId"
                                 label="Office ID"
-                                onChange={(e)=>setOfficeId(e.target.value)}
+                                onChange={(e) => setOfficeId(e.target.value)}
                             >
                                 {!!officeList?.length && officeList.map((office, idx) => (
                                     <MenuItem key={idx} value={office.officeId}>{getFormattedLabel(office.officeId)}, {office.address}</MenuItem>
@@ -425,17 +477,17 @@ const VehicleProfile = () => {
                             </Select>
                         </FormControl>
                     </div>
-                    <div style={{minWidth: "180px"}} className='form-control-input'>
+                    <div style={{ minWidth: "180px" }} className='form-control-input'>
                         <FormControl fullWidth>
                             <InputLabel id="status-label">Compliance Status</InputLabel>
                             <Select
-                                style={{width: "180px"}}                                    
+                                style={{ width: "180px" }}
                                 labelId="status-label"
                                 id="status"
                                 value={complianceStatus}
                                 name="statusId"
                                 label="Compliance Status"
-                                onChange={(e)=>setComplianceStatus(e.target.value)}
+                                onChange={(e) => setComplianceStatus(e.target.value)}
                             >
                                 {!!complianceList?.length && complianceList.map((status, idx) => (
                                     <MenuItem key={idx} value={status.value}>{status.displayName}</MenuItem>
@@ -443,17 +495,17 @@ const VehicleProfile = () => {
                             </Select>
                         </FormControl>
                     </div>
-                    <div style={{minWidth: "180px"}} className='form-control-input'>
+                    <div style={{ minWidth: "180px" }} className='form-control-input'>
                         <FormControl fullWidth>
                             <InputLabel id="ehs-status-label">EHS Status</InputLabel>
                             <Select
-                                style={{width: "180px"}}                                    
+                                style={{ width: "180px" }}
                                 labelId="ehs-status-label"
                                 id="ehsStatusId"
                                 value={ehsStatus}
                                 name="ehsStatusId"
                                 label="EHS Status"
-                                onChange={(e)=>setEhsStatus(e.target.value)}
+                                onChange={(e) => setEhsStatus(e.target.value)}
                             >
                                 {!!ehsStatusList?.length && ehsStatusList.map((status, idx) => (
                                     <MenuItem key={idx} value={status.value}>{status.displayName}</MenuItem>
@@ -461,17 +513,17 @@ const VehicleProfile = () => {
                             </Select>
                         </FormControl>
                     </div>
-                    <div style={{minWidth: "180px"}} className='form-control-input'>
+                    <div style={{ minWidth: "180px" }} className='form-control-input'>
                         <FormControl fullWidth>
                             <InputLabel id="vehicle-state-label">Vehicle State</InputLabel>
                             <Select
-                                style={{width: "180px"}}                                    
+                                style={{ width: "180px" }}
                                 labelId="vehicle-state-label"
                                 id="vehicleStateId"
                                 value={vehicleState}
                                 name="vehicleStateId"
                                 label="Vehicle State"
-                                onChange={(e)=>setVehicleState(e.target.value)}
+                                onChange={(e) => setVehicleState(e.target.value)}
                             >
                                 {!!vehicleStateList?.length && vehicleStateList.map((status, idx) => (
                                     <MenuItem key={idx} value={status.value}>{status.displayName}</MenuItem>
@@ -502,25 +554,72 @@ const VehicleProfile = () => {
                             />
                         </FormControl>
                     </div>
-                    <div className='form-control-input' style={{minWidth: "70px"}}>
+                    <div className='form-control-input' style={{ minWidth: "70px" }}>
                         <button type='submit' onClick={applyFilter} className='btn btn-primary filterApplyBtn'>Apply</button>
                     </div>
-                    <div className='form-control-input' style={{minWidth: "70px"}}>
+                    <div className='form-control-input' style={{ minWidth: "70px" }}>
                         <button type='submit' onClick={resetFilter} className='btn btn-primary filterApplyBtn'>Reset</button>
                     </div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'end' }}>
-                    <UploadButton uploadFunction={uploadFunction}/>
+                    <UploadButton uploadFunction={uploadFunction} />
                     <div className='btnContainer'>
                         <button onClick={() => setAddVehicleOpen(true)} className='btn btn-primary' style={{ width: '137.94px' }}>Add Vehicle</button>
                     </div>
-                    <div className='btnContainer' style={{marginLeft: '30px'}}>
+                    <div className='btnContainer' style={{ marginLeft: '30px' }}>
                         <button onClick={() => downloadReport()} className='btn btn-download'>Download File</button>
                     </div>
                 </div>
                 <div className='gridContainer'>
-                    <Grid headers={headers} listing={vehicleData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} handlePageChange={handlePageChange} pagination={paginationData}/>
+                    <Grid headers={headers} listing={vehicleData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} handlePageChange={handlePageChange} pagination={paginationData} />
                 </div>
+                <Dialog
+                    open={openModal}
+                    onClose={handleCloseModal}
+                    PaperProps={{
+                        component: 'form',
+                        onSubmit: (event) => {
+                            event.preventDefault();
+                            const formData = new FormData(event.currentTarget);
+                            const formJson = Object.fromEntries(formData.entries());
+                            const email = formJson.email;
+                            console.log(email);
+                            handleCloseModal();
+                        },
+                    }}
+                    fullWidth
+                    maxWidth="sm"
+                >
+                    <DialogTitle>{`Add Driver for ${editVehicleData?.vehicleId}-${editVehicleData?.vehicleRegistrationNumber}`}</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            Select new driver from drop down
+                        </DialogContentText>
+                        <Autocomplete
+                            disablePortal
+                            id="search-driver"
+                            options={searchedDriver}
+                            autoComplete
+                            open={openSearchDriver}
+                            onOpen={() => {
+                                setOpenSearchDriver(true);
+                            }}
+                            onClose={() => {
+                                setOpenSearchDriver(false);
+                            }}
+                            onChange={(e, val) => setMappedDriver(val.driverId)}
+                            getOptionKey={(driver) => driver.driverId}
+                            getOptionLabel={(driver) => driver.driverName}
+                            freeSolo
+                            name="driver"
+                            renderInput={(params) => <TextField {...params} label="Search Driver" onChange={(e)=>searchForDriver(e,editVehicleData?.vendorName)} />}
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleCloseModal}>Cancel</Button>
+                        <Button type="button" onClick={addDriverHandler}>Add</Button>
+                    </DialogActions>
+                </Dialog>
                 <Modal
                     open={open}
                     onClose={handleClose}
@@ -528,7 +627,7 @@ const VehicleProfile = () => {
                     aria-describedby="modal-modal-description"
                 >
                     <Box sx={style}>
-                        <RemarkModal onClose={handleClose} onSubmit={onConfirmHandler}/>
+                        <RemarkModal onClose={handleClose} onSubmit={onConfirmHandler} />
                     </Box>
                 </Modal>
             </div>}
@@ -536,7 +635,7 @@ const VehicleProfile = () => {
                 addVehicleOpen && <AddNewVehicle SetAddVehicleOpen={cancelHandler} EditVehicleData={editVehicleData} />
             }
             {
-                viewVehicleOpen && <AddVehiclePendingApproval ViewDetailsData={editVehicleData} viewVehicleOpen={onSuccess} isView={true}/>
+                viewVehicleOpen && <AddVehiclePendingApproval ViewDetailsData={editVehicleData} viewVehicleOpen={onSuccess} isView={true} />
             }
         </div>
     );

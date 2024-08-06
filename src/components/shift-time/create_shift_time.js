@@ -81,7 +81,7 @@ const CreateShiftTime = ({
 
     const checkValidation = () =>{
         var errorFlag = false;
-        var weekDayFlag = true;
+        let atleastOne = false;
         if(formValues.shiftTime === "") {errorFlag=true;}
         if(formValues.shiftType === "") {errorFlag= true; setShiftTypeError(true)}
         else{setShiftTypeError(false)}
@@ -93,34 +93,39 @@ const CreateShiftTime = ({
         else{setRouteError(false)}
         const entries = Object.entries(formValues);
         for (let [key, value] of entries) {
-            switch (key){
-                case "sundayShift" :
-                    weekDayFlag = value === false ? true : false;
-                    break;
-                case "mondayShift" :
-                    weekDayFlag = value === false ? true : false;
-                    break;
-                case "tuesdayShift" :
-                    weekDayFlag = value === false ? true : false;
-                    break;
-                case "wednesdayShift" :
-                    weekDayFlag = value === false ? true : false;
-                    break;
-                case "thursdayShift" :
-                    weekDayFlag = value === false ? true : false;
-                    break;
-                case "fridayShift" :
-                    weekDayFlag = value === false ? true : false;
-                    break;
-                case "saturdayShift" :
-                    weekDayFlag = value === false ? true : false;
-                    break;
-                default :
-                    break;
+            if(!atleastOne){
+                switch (key){
+                    case "sundayShift" :
+                        atleastOne = value === true ? true : false;
+                        break;
+                    case "mondayShift" :
+                        atleastOne = value === true ? true : false;
+                        break;
+                    case "tuesdayShift" :
+                        atleastOne = value === true ? true : false;
+                        break;
+                    case "wednesdayShift" :
+                        atleastOne = value === true ? true : false;
+                        break;
+                    case "thursdayShift" :
+                        atleastOne = value === true ? true : false;
+                        break;
+                    case "fridayShift" :
+                        atleastOne = value === true ? true : false;
+                        break;
+                    case "saturdayShift" :
+                        atleastOne = value === true ? true : false;
+                        break;
+                }
             }
         }
-        if(weekDayFlag){errorFlag=true;  setWeekDayError(true)}
-        else{setWeekDayError(false)}
+        if(!atleastOne){
+            errorFlag=true;
+            setWeekDayError(true)
+        }
+        else{
+            setWeekDayError(false)
+        }
         return !errorFlag;
     }
     const handleDaySelect = (event) => {
@@ -196,6 +201,7 @@ const CreateShiftTime = ({
     const createShiftFormSubmit = async () => {
         try {
             const valid = checkValidation();
+            console.log(valid);
             if(valid){
                 const response = await ShiftService.createShift({ "shift": formValues });
                 if (response.data === 'Shift has been created') {
