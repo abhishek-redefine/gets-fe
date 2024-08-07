@@ -47,10 +47,17 @@ const GeocodeModal = ({ geocode, onClose }) => {
       title: "This marker is draggable.",
     });
 
+    newMarker.addListener('dragend', (event) => {
+      setLat(event.latLng.lat());
+      setLng(event.latLng.lng());
+    });
+  
     setMap(newMap);
     setMarker(newMarker);
     setLoading(false);
   };
+
+
 
   useEffect(() => {
     const loadMapScript = () => {
@@ -110,7 +117,7 @@ const GeocodeModal = ({ geocode, onClose }) => {
         setLng(location.lng());
 
         if (marker) {
-          marker.position = location; 
+          marker.position = location;
         }
         if (map) {
           map.panTo(location);
