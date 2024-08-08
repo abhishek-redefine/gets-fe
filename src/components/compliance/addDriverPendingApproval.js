@@ -224,7 +224,7 @@ const AddDriverPendingApproval = ({ ViewDetailsData, SetAddDriverOpen,isView }) 
                 type="button"
                 onClick={() => {
                   setDocumentUrl(
-                    ViewDetailsData.licenseUrl.replace("gets-dev.", "")
+                    ViewDetailsData.licenseUrl.replace("/getsdev1/", "/")
                   );
                   handleModalOpen();
                 }}
@@ -247,7 +247,7 @@ const AddDriverPendingApproval = ({ ViewDetailsData, SetAddDriverOpen,isView }) 
                 type="button"
                 onClick={() => {
                   setDocumentUrl(
-                    ViewDetailsData?.photoUrl.replace("gets-dev.", "")
+                    ViewDetailsData?.photoUrl.replace("/getsdev1/", "/")
                   );
                   handleModalOpen();
                 }}
@@ -270,7 +270,7 @@ const AddDriverPendingApproval = ({ ViewDetailsData, SetAddDriverOpen,isView }) 
                 type="button"
                 onClick={() => {
                   setDocumentUrl(
-                    ViewDetailsData?.bgvUrl.replace("gets-dev.", "")
+                    ViewDetailsData?.bgvUrl.replace("/getsdev1/", "/")
                   );
                   handleModalOpen();
                 }}
@@ -319,7 +319,7 @@ const AddDriverPendingApproval = ({ ViewDetailsData, SetAddDriverOpen,isView }) 
                 type="button"
                 onClick={() => {
                   setDocumentUrl(
-                    ViewDetailsData?.badgeUrl.replace("gets-dev.", "")
+                    ViewDetailsData?.badgeUrl.replace("/getsdev1/", "/")
                   );
                   handleModalOpen();
                 }}
@@ -342,7 +342,7 @@ const AddDriverPendingApproval = ({ ViewDetailsData, SetAddDriverOpen,isView }) 
                 type="button"
                 onClick={() => {
                   setDocumentUrl(
-                    ViewDetailsData?.undertakingUrl.replace("gets-dev.", "")
+                    ViewDetailsData?.undertakingUrl.replace("/getsdev1/", "/")
                   );
                   handleModalOpen();
                 }}
@@ -391,7 +391,7 @@ const AddDriverPendingApproval = ({ ViewDetailsData, SetAddDriverOpen,isView }) 
                 type="button"
                 onClick={() => {
                   setDocumentUrl(
-                    ViewDetailsData?.medicalCertUrl.replace("gets-dev.", "")
+                    ViewDetailsData?.medicalCertUrl.replace("/getsdev1/", "/")
                   );
                   handleModalOpen();
                 }}

@@ -299,20 +299,23 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
 
   const addNewVehicleDetailsSubmit = async (values) => {
     try {
+      let allValues = {...values};
+      allValues.garageGeoCode = initialValues.garageGeoCode;
+      console.log(allValues,EditVehicleData);
       if (EditVehicleData) {
-        values.id = vehicleId;
+        allValues.id = vehicleId;
         // if(vendorName === ""){
         //     alert("Enter vendor name");
         //     return;
         // }
         // values.vendorName = vendorName;
         if (driverId === "") {
-          delete values.driverId;
+          delete allValues.driverId;
         } else {
-          values.driverId = driverId;
+          allValues.driverId = driverId;
         }
         const response = await ComplianceService.updateVehicle({
-          vehicleDTO: values,
+          vehicleDTO: allValues,
         });
         if (response.status === 200) {
           setVehicleId(response.data.vehicleDTO.id);
@@ -334,7 +337,7 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
           return false;
         }
       } else {
-        var apiData = { ...values };
+        var apiData = { ...allValues };
         if (vendorName === "") {
           alert("Enter vendor name");
           return;
@@ -616,6 +619,9 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
 
   const handleGeocode = (geocode) => {
     console.log("Here in parent geocode: ", geocode);
+    let allValues = {...initialValues}
+    allValues.garageGeoCode = geocode;
+    setInitialValues(allValues);
     setCoordinates((prevValues) => ({
       ...prevValues,
       geoCode: geocode,
@@ -623,10 +629,7 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
   };
 
   const handleTextChange = (e) => {
-    console.log("Text field focused for: ", e.target.name);
-    if (e.target.name === "garageGeoCode") {
-      handleGeocodeModalOpen();
-    }
+    handleGeocodeModalOpen();
   };
 
   return (
@@ -648,7 +651,7 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
         <FormStep
           stepName="Vehicle Details"
           onSubmit={(values) => addNewVehicleDetailsSubmit(values)}
-          validationSchema={validationSchemaStepOne}
+          //validationSchema={validationSchemaStepOne}
         >
           <div style={{ display: "flex", alignItems: "center" }}>
             <TextInputField
@@ -793,11 +796,11 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
               genderList={ehsTypes}
             />
             <TextInputField
-              value={coordinates.geoCode}
+              value={initialValues.garageGeoCode}
               name="garageGeoCode"
               label="Garage Geocodes"
               onClick={handleTextChange}
-              onChange={(e) => setCoordinates({ geoCode: e.target.value })}
+              // onChange={(e) => setCoordinates({ geoCode: e.target.value })}
             />
             <Modal
               open={openGeocodeModal}
@@ -905,8 +908,8 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                       onClick={() => {
                         setDocumentUrl(
                           EditVehicleData.registrationCertificateUrl.replace(
-                            "gets-dev.",
-                            ""
+                            "/getsdev1/",
+                            "/"
                           )
                         );
                         handleOpen();
@@ -958,7 +961,7 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                       type="button"
                       onClick={() => {
                         setDocumentUrl(
-                          EditVehicleData.insuranceUrl.replace("gets-dev.", "")
+                          EditVehicleData.insuranceUrl.replace("/getsdev1/", "/")
                         );
                         handleOpen();
                       }}
@@ -1010,8 +1013,8 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                       onClick={() => {
                         setDocumentUrl(
                           EditVehicleData.pollutionCertificateUrl.replace(
-                            "gets-dev.",
-                            ""
+                            "/getsdev1/",
+                            "/"
                           )
                         );
                         handleOpen();
@@ -1064,8 +1067,8 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                       onClick={() => {
                         setDocumentUrl(
                           EditVehicleData.roadTaxCertificateUrl.replace(
-                            "gets-dev.",
-                            ""
+                            "/getsdev1/",
+                            "/"
                           )
                         );
                         handleOpen();
@@ -1120,8 +1123,8 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                       onClick={() => {
                         setDocumentUrl(
                           EditVehicleData.fitnessCertificateUrl.replace(
-                            "gets-dev.",
-                            ""
+                            "/getsdev1/",
+                            "/"
                           )
                         );
                         handleOpen();
@@ -1174,8 +1177,8 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                       onClick={() => {
                         setDocumentUrl(
                           EditVehicleData.statePermitUrl.replace(
-                            "gets-dev.",
-                            ""
+                            "/getsdev1/",
+                            "/"
                           )
                         );
                         handleOpen();
@@ -1228,8 +1231,8 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                       onClick={() => {
                         setDocumentUrl(
                           EditVehicleData.nationalPermitUrl.replace(
-                            "gets-dev.",
-                            ""
+                            "/getsdev1/",
+                            "/"
                           )
                         );
                         handleOpen();
@@ -1280,18 +1283,3 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
 };
 
 export default AddNewVehicle;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

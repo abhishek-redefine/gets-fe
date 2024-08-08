@@ -187,7 +187,7 @@ const AddVehiclePendingApproval = ({ ViewDetailsData,viewVehicleOpen,isView }) =
                 type="button"
                 onClick={() => {
                   setDocumentUrl(
-                    ViewDetailsData.registrationCertificateUrl.replace("gets-dev.", "")
+                    ViewDetailsData.registrationCertificateUrl.replace("/getsdev1/", "/")
                   );
                   handleModalOpen();
                 }}
@@ -210,7 +210,7 @@ const AddVehiclePendingApproval = ({ ViewDetailsData,viewVehicleOpen,isView }) =
                 type="button"
                 onClick={() => {
                   setDocumentUrl(
-                    ViewDetailsData.insuranceUrl.replace("gets-dev.", "")
+                    ViewDetailsData.insuranceUrl.replace("/getsdev1/", "/")
                   );
                   handleModalOpen();
                 }}
@@ -233,7 +233,7 @@ const AddVehiclePendingApproval = ({ ViewDetailsData,viewVehicleOpen,isView }) =
                 type="button"
                 onClick={() => {
                   setDocumentUrl(
-                    ViewDetailsData.roadTaxCertificateUrl.replace("gets-dev.", "")
+                    ViewDetailsData.roadTaxCertificateUrl.replace("/getsdev1/", "/")
                   );
                   handleModalOpen();
                 }}
@@ -256,7 +256,7 @@ const AddVehiclePendingApproval = ({ ViewDetailsData,viewVehicleOpen,isView }) =
                 type="button"
                 onClick={() => {
                   setDocumentUrl(
-                    ViewDetailsData.pollutionCertificateUrl.replace("gets-dev.", "")
+                    ViewDetailsData.pollutionCertificateUrl.replace("/getsdev1/", "/")
                   );
                   handleModalOpen();
                 }}
@@ -279,7 +279,7 @@ const AddVehiclePendingApproval = ({ ViewDetailsData,viewVehicleOpen,isView }) =
                 type="button"
                 onClick={() => {
                   setDocumentUrl(
-                    ViewDetailsData.fitnessCertificateUrl.replace("gets-dev.", "")
+                    ViewDetailsData.fitnessCertificateUrl.replace("/getsdev1/", "/")
                   );
                   handleModalOpen();
                 }}
@@ -302,7 +302,7 @@ const AddVehiclePendingApproval = ({ ViewDetailsData,viewVehicleOpen,isView }) =
                 type="button"
                 onClick={() => {
                   setDocumentUrl(
-                    ViewDetailsData.nationalPermitUrl.replace("gets-dev.", "")
+                    ViewDetailsData.nationalPermitUrl.replace("/getsdev1/", "/")
                   );
                   handleModalOpen();
                 }}
@@ -325,7 +325,7 @@ const AddVehiclePendingApproval = ({ ViewDetailsData,viewVehicleOpen,isView }) =
                 type="button"
                 onClick={() => {
                   setDocumentUrl(
-                    ViewDetailsData.statePermitUrl.replace("gets-dev.", "")
+                    ViewDetailsData.statePermitUrl.replace("/getsdev1/", "/")
                   );
                   handleModalOpen();
                 }}

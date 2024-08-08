@@ -573,7 +573,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                                         <button
                                             type='button'
                                             onClick={()=>{
-                                                setDocumentUrl(EditDriverData.licenseUrl.replace("gets-dev.",""));
+                                                setDocumentUrl(EditDriverData.licenseUrl.replace("/getsdev1/","/"));
                                                 handleOpen();
                                             }}
                                             style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
@@ -606,7 +606,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                                         <button
                                             type='button'
                                             onClick={()=>{
-                                                setDocumentUrl(EditDriverData?.undertakingUrl.replace("gets-dev.",""));
+                                                setDocumentUrl(EditDriverData?.undertakingUrl.replace("/getsdev1/","/"));
                                                 handleOpen();
                                             }}
                                             style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
@@ -639,7 +639,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                                         <button
                                             type='button'
                                             onClick={()=>{
-                                                setDocumentUrl(EditDriverData?.bgvUrl.replace("gets-dev.",""));
+                                                setDocumentUrl(EditDriverData?.bgvUrl.replace("/getsdev1/","/"));
                                                 handleOpen();
                                             }}
                                             style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
@@ -672,7 +672,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                                         <button
                                             type='button'
                                             onClick={()=>{
-                                                setDocumentUrl(EditDriverData?.policeVerificationUrl.replace("gets-dev.",""));
+                                                setDocumentUrl(EditDriverData?.policeVerificationUrl.replace("/getsdev1/","/"));
                                                 handleOpen();
                                             }}
                                             style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
@@ -707,7 +707,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                                         <button
                                             type='button'
                                             onClick={()=>{
-                                                setDocumentUrl(EditDriverData?.photoUrl.replace("gets-dev.",""));
+                                                setDocumentUrl(EditDriverData?.photoUrl.replace("/getsdev1/","/"));
                                                 handleOpen();
                                             }}
                                             style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
@@ -740,7 +740,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                                         <button
                                             type='button'
                                             onClick={()=>{
-                                                setDocumentUrl(EditDriverData?.badgeUrl.replace("gets-dev.",""));
+                                                setDocumentUrl(EditDriverData?.badgeUrl.replace("/getsdev1/","/"));
                                                 handleOpen();
                                             }}
                                             style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
@@ -773,7 +773,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                                         <button
                                             type='button'
                                             onClick={()=>{
-                                                setDocumentUrl(EditDriverData?.driverTrainingCertUrl.replace("gets-dev.",""));
+                                                setDocumentUrl(EditDriverData?.driverTrainingCertUrl.replace("/getsdev1/","/"));
                                                 handleOpen();
                                             }}
                                             style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
@@ -806,7 +806,7 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                                         <button
                                             type='button'
                                             onClick={()=>{
-                                                setDocumentUrl(EditDriverData?.medicalCertUrl.replace("gets-dev.",""));
+                                                setDocumentUrl(EditDriverData?.medicalCertUrl.replace("/getsdev1/","/"));
                                                 handleOpen();
                                             }}
                                             style={{width: '20%',marginRight: 0,marginLeft:20,padding:'15px'}} 
