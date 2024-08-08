@@ -109,7 +109,7 @@ const VehicleProfile = () => {
 
     const [addVehicleOpen, setAddVehicleOpen] = useState(false)
     const [viewVehicleOpen, setViewVehicleOpen] = useState(false)
-    const [editVehicleData, setEditVehicleData] = useState(false)
+    const [editVehicleData, setEditVehicleData] = useState(null)
     const [vehicleData, setVehicleData] = useState()
     const [searchVendor, setSearchVendor] = useState([]);
     const [openSearchVendor, setOpenSearchVendor] = useState(false);
