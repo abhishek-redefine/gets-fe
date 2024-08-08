@@ -117,7 +117,7 @@ const withAuthLayout = (WrappedComponent) => {
           <div className='headerNavContainer'>
             <nav>
               <Link onClick={() => changeRoute('dashboard')} className={currentActiveState === 'dashboard' && 'selected' || ''} href='/dashboard'>Dashboard</Link>
-              {/* <Link onClick={() => changeRoute('helpdesk')} className={currentActiveState === 'helpdesk' && 'selected' || ''} href='/helpdesk'>Helpdesk</Link> */}
+              {getModulePermissions(MODULE_NAMES.HELPDESK) && <Link onClick={() => changeRoute('helpdesk')} className={currentActiveState === 'helpdesk' && 'selected' || ''} href='/helpdesk/search-module'>Helpdesk</Link>}
               {getModulePermissions(MODULE_NAMES.BOOKING) && <Link onClick={() => changeRoute('bookings')} className={currentActiveState === 'bookings' && 'selected' || ''} href='/bookings/search-bookings'>Bookings</Link>}
               {getModulePermissions(MODULE_NAMES.DISPATCH) && <Link onClick={() => changeRoute('dispatch')} className={currentActiveState === 'dispatch' && 'selected' || ''} href='/dispatch/routing'>Dispatch</Link>}
               {getModulePermissions(MODULE_NAMES.TRACKING) && <Link onClick={() => changeRoute('tracking')} className={currentActiveState === 'tracking' && 'selected' || ''} href='/tracking/live-tracking'>Tracking</Link>}

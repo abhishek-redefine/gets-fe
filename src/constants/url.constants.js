@@ -9,4 +9,5 @@ export const MODULE_NAMES = {
     COMPLIANCE: "C",
     DISPATCH: "D",
     TRACKING: "T",
+    HELPDESK: "H",
 };
