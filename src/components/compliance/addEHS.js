@@ -35,7 +35,7 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
             let newEditInfo = Object.assign(initialValues, EditEhsData);
             console.log(newEditInfo)
             newEditInfo.ehsAppliedOnDriver ? newEditInfo.ehsAppliedOn = "Driver" : newEditInfo.ehsAppliedOn = "Vehicle";
-            newEditInfo.officeIds = newEditInfo.officeIds[0];
+            newEditInfo.officeIds = newEditInfo.officeIds;
             setInitialValues(newEditInfo);
         }
     }, [EditEhsData]);
@@ -91,7 +91,12 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
             const response = await OfficeService.getAllOffices();
             const { data } = response || {};
             const { clientOfficeDTO } = data || {};
+            let officeList = [];
+            clientOfficeDTO.map((value,index)=>{
+                officeList.push(value.officeId);
+            })
             setOffice(clientOfficeDTO);
+            console.log(officeList);
         } catch (e) {
 
         }

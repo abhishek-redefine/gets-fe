@@ -95,8 +95,7 @@ const NodalPoint = () => {
   const [reportingTime, setReportingTime] = useState("00:00");
   const [searchValues, setSearchValues] = useState({
     officeId: "",
-    zoneName: "",
-    area: "",
+    areaName: "",
   });
   const [initialValues, setInitialValues] = useState({
     name: "",
@@ -114,6 +113,7 @@ const NodalPoint = () => {
     setOpenModal(false);
   };
   const dispatch = useDispatch();
+  const [paginationData, setPaginationData] = useState();
   const [pagination, setPagination] = useState({
     page: 0,
     size: 10,
@@ -184,22 +184,32 @@ const NodalPoint = () => {
       const { data } = response || {};
       const { clientOfficeDTO } = data || {};
       setOffice(clientOfficeDTO);
-    } catch (e) {}
+    } catch (e) { }
   };
-  const fetchAllZones = async () => {
-    try {
-      const response = await RoutingService.getAllZones();
-      const { data } = response;
-      const clientZoneDTO = data.data;
-      console.log(clientZoneDTO);
-      setZones(clientZoneDTO);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  // const fetchAllZones = async () => {
+  //   try {
+  //     const page = {
+  //       page: 0,
+  //       size: 100
+  //     }
+  //     let params = new URLSearchParams(page)
+  //     const response = await RoutingService.getAllZones(params);
+  //     const { data } = response;
+  //     const clientZoneDTO = data.data;
+  //     console.log(clientZoneDTO);
+  //     setZones(clientZoneDTO);
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
   const fetchAllAreas = async () => {
     try {
-      const response = await RoutingService.getAllArea();
+      const page = {
+        page: 0,
+        size: 100
+      }
+      let params = new URLSearchParams(page)
+      const response = await RoutingService.getAllArea(params);
       console.log(response.data);
       const areaDTO = response.data.data;
       setAreaList(areaDTO);
@@ -207,7 +217,16 @@ const NodalPoint = () => {
       console.log(err);
     }
   };
-  const fetchAllNodalPoints = async () => {
+
+  const resetFilter = () => {
+    setSearchValues({
+      officeId: "",
+      areaName: "",
+    })
+    fetchAllNodalPoints(true);
+  }
+
+  const fetchAllNodalPoints = async (search = false) => {
     try {
       let params = new URLSearchParams(pagination);
       let allSearchValues = { ...searchValues };
@@ -219,13 +238,21 @@ const NodalPoint = () => {
           delete allSearchValues[objKey];
         }
       });
-      const response = await RoutingService.getAllNodalPoints(
-        params.toString(),
+      const response = search ? await RoutingService.getAllNodalPoints(
+        params,
+        {}
+      ) 
+      :
+      await RoutingService.getAllNodalPoints(
+        params,
         allSearchValues
       );
       const { data } = response;
       console.log(data);
       setNodalPoints(data.data);
+      let localPaginationData = { ...data };
+      delete localPaginationData?.data;
+      setPaginationData(localPaginationData);
     } catch (err) {
       console.log(err);
     }
@@ -260,7 +287,7 @@ const NodalPoint = () => {
     }
   };
 
-    const handleGeocode = (geocode) => {
+  const handleGeocode = (geocode) => {
     console.log("Here in parent geocode: " + geocode);
     formik.setFieldValue("geoCode", geocode);
     setCoordinates((prevValues) => ({
@@ -271,7 +298,7 @@ const NodalPoint = () => {
 
   useEffect(() => {
     fetchAllOffices();
-    fetchAllZones();
+    // fetchAllZones();
     fetchAllAreas();
     fetchAllNodalPoints();
     fetchMasterData();
@@ -304,7 +331,7 @@ const NodalPoint = () => {
                 </Select>
               </FormControl>
             </div>
-            <div style={{ minWidth: "180px" }} className="form-control-input">
+            {/* <div style={{ minWidth: "180px" }} className="form-control-input">
               <FormControl fullWidth>
                 <InputLabel id="zoneName-label">Zone</InputLabel>
                 <Select
@@ -315,6 +342,14 @@ const NodalPoint = () => {
                   name="zoneName"
                   label="Zone Name"
                   onChange={handleFilterChange}
+                  MenuProps={{
+                    MenuListProps: {
+                      sx: {
+                        maxHeight: 200,
+                        overflowY: 'auto',
+                      },
+                    },
+                  }}
                 >
                   {!!zones?.length &&
                     zones.map((zone, idx) => (
@@ -324,18 +359,26 @@ const NodalPoint = () => {
                     ))}
                 </Select>
               </FormControl>
-            </div>
+            </div> */}
             <div style={{ minWidth: "180px" }} className="form-control-input">
               <FormControl fullWidth>
                 <InputLabel id="area-label">Area</InputLabel>
                 <Select
                   style={{ width: "180px" }}
                   labelId="area-label"
-                  id="area"
-                  value={searchValues.area}
-                  name="area"
-                  label="area"
+                  id="areaName"
+                  value={searchValues.areaName}
+                  name="areaName"
+                  label="areaName"
                   onChange={handleFilterChange}
+                  MenuProps={{
+                    MenuListProps: {
+                      sx: {
+                        maxHeight: 200,
+                        overflowY: 'auto',
+                      },
+                    },
+                  }}
                 >
                   {!!areaList?.length &&
                     areaList.map((area, idx) => (
@@ -349,10 +392,19 @@ const NodalPoint = () => {
             <div className="form-control-input" style={{ minWidth: "70px" }}>
               <button
                 type="submit"
-                onClick={() => console.log("clicked")}
+                onClick={() => fetchAllNodalPoints()}
                 className="btn btn-primary filterApplyBtn"
               >
                 Apply
+              </button>
+            </div>
+            <div className="form-control-input" style={{ minWidth: "70px" }}>
+              <button
+                type="submit"
+                onClick={() => resetFilter()}
+                className="btn btn-primary filterApplyBtn"
+              >
+                Reset
               </button>
             </div>
           </div>
@@ -420,6 +472,14 @@ const NodalPoint = () => {
                       name="areaName"
                       label="areaName"
                       onChange={handleChange}
+                      MenuProps={{
+                        MenuListProps: {
+                          sx: {
+                            maxHeight: 200,
+                            overflowY: 'auto',
+                          },
+                        },
+                      }}
                     >
                       {!!areaList?.length &&
                         areaList.map((area, idx) => (

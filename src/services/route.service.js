@@ -1,9 +1,16 @@
 import { API_PATH } from "@/constants/api.constants";
 import axiosInstance from "./../utils/axios";
 
-const getAllZones = async () => {
+const getAllZones = async (queryParams,officeId) => {
+  let url = `${API_PATH.API_VERSION}${API_PATH.ZONE}${API_PATH.ALL}`;
+  if(queryParams){
+    url += `?${queryParams}`;
+  }
+  if(officeId){
+    url += `&officeId=${officeId}`;
+  }
   return axiosInstance
-    .get(`${API_PATH.API_VERSION}${API_PATH.ZONE}${API_PATH.ALL}`)
+    .get(url)
     .then((response) => {
       return response;
     });
@@ -29,7 +36,7 @@ const enableDisableZone = async (id, flag) => {
 
 const getZonesByOfficeId = async (id) => {
   let url = `${API_PATH.API_VERSION}${API_PATH.ZONE}${API_PATH.ALL}`;
-  url += `?officeId=${id}&page=0&size=25`;
+  url += `?officeId=${id}&page=0&size=100`;
   return axiosInstance.get(url).then((response) => {
     return response;
   });
@@ -43,9 +50,13 @@ const createArea = async (values) => {
     });
 };
 
-const getAllArea = async () => {
+const getAllArea = async (queryParams,searchValue) => {
+  let url = `${API_PATH.API_VERSION}${API_PATH.AREA}${API_PATH.SEARCH_BY_BEAN}`;
+  if(queryParams){
+    url += `?${queryParams}`;
+  }
   return axiosInstance
-    .post(`${API_PATH.API_VERSION}${API_PATH.AREA}${API_PATH.SEARCH_BY_BEAN}`)
+    .post(url,searchValue)
     .then((response) => {
       return response;
     });
@@ -89,10 +100,13 @@ const enableDisableNodalPoint = async (id, flag) => {
     });
 };
 
-const getAllHomeRoutes = async (params) => {
+const getAllHomeRoutes = async (params, officeId) => {
   let url = `${API_PATH.API_VERSION}${API_PATH.HOME_ROUTE}${API_PATH.ALL}`;
   if (params != "") {
     url += `?${params}`;
+  }
+  if(officeId){
+    url += `&officeId=${officeId}`
   }
   return axiosInstance.get(url).then((response) => {
     return response;

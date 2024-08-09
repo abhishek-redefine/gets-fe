@@ -17,7 +17,7 @@ export const validationSchema = yup.object({
     penaltyActionRequired: yup.string("Enter Penalty Action Required").required("Enter Penalty Action Required")
 });
 
-const AddPenalty = ({ EditPenaltyData }) => {
+const AddPenalty = ({ EditPenaltyData, isAddPenalty }) => {
     const [initialValues, setInitialValues] = useState({
         officeId: "",
         penaltyCategory: "",
@@ -39,14 +39,19 @@ const AddPenalty = ({ EditPenaltyData }) => {
         initialValues: initialValues,
         validationSchema: validationSchema,
         onSubmit: async (values) => {
-            if (EditPenaltyData.id) {
-                values.id = EditPenaltyData.id;
-                const response = await ComplianceService.updatePenalty({ "penalty": values });
-                console.log(response)
-
-            } else {
-                const response = await ComplianceService.createPenalty({ "penalty": values })
-                console.log(response)
+            try {
+                if (EditPenaltyData.id) {
+                    values.id = EditPenaltyData.id;
+                    const response = await ComplianceService.updatePenalty({ "penalty": values });
+                    console.log(response.status);
+                    isAddPenalty();
+                } else {
+                    const response = await ComplianceService.createPenalty({ "penalty": values })
+                    console.log(response.status);
+                    isAddPenalty();
+                }
+            } catch (err) {
+                console.log(err);
             }
         }
     });
@@ -96,19 +101,19 @@ const AddPenalty = ({ EditPenaltyData }) => {
                         </FormControl>
                     </div>
                     <div className='form-control-input'>
-                    <TextField
+                        <TextField
                             error={touched.penaltyCategory && Boolean(errors.penaltyCategory)}
                             helperText={touched.penaltyCategory && errors.penaltyCategory} onChange={handleChange}
                             required id="penaltyCategory" name="penaltyCategory" value={values.penaltyCategory} label="Penalty Category" variant="outlined" />
                     </div>
                     <div className='form-control-input'>
-                    <TextField
+                        <TextField
                             error={touched.slaCategory && Boolean(errors.slaCategory)}
                             helperText={touched.slaCategory && errors.slaCategory} onChange={handleChange}
                             required id="slaCategory" name="slaCategory" value={values.slaCategory} label="SLA Category" variant="outlined" />
                     </div>
                     <div className='form-control-input'>
-                    <TextField
+                        <TextField
                             error={touched.penaltyType && Boolean(errors.penaltyType)}
                             helperText={touched.penaltyType && errors.penaltyType} onChange={handleChange}
                             required id="penaltyType" name="penaltyType" value={values.penaltyType} label="Penalty Type" variant="outlined" />
@@ -151,7 +156,7 @@ const AddPenalty = ({ EditPenaltyData }) => {
                         <button onClick={handleReset} className='btn btn-secondary'>Reset</button>
                     </div>
                     <div>
-                        <button className='btn btn-secondary'>Back</button>
+                        <button onClick={()=>isAddPenalty()} className='btn btn-secondary'>Back</button>
                         <button onClick={handleSubmit} className='btn btn-primary'>{EditPenaltyData?.id ? 'Update' : 'Create'} Penalty</button>
                     </div>
                 </div>
