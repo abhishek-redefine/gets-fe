@@ -45,7 +45,7 @@ const CreateBooking = () => {
     const [nodalPoints, setNodalPoints] = useState([]);
     const [isSubmit, setIsSubmit] = useState(false);
     const { TransportType: transportType } = useSelector((state) => state.master);
-    const [shiftType,setShiftType] = useState('');
+    const [shiftType, setShiftType] = useState('');
     const [initialValues, setInitialValues] = useState({
         bookingFromDate: "",
         bookingToDate: "",
@@ -60,19 +60,20 @@ const CreateBooking = () => {
         transportType: TRANSPORT_TYPES.CAB,
         pickUpPoint: "",
         dropPoint: "",
-        source : "Web",
+        source: "Web",
         bookingFor: "self",
-        shiftIds:[],
+        shiftIds: [],
+        bookingDate: ""
         // areaName : "",
     });
 
     const [customizedScheduledBean, setCustomizedScheduledBean] = useState([]);
     const [multiLoginTimes, setMultiLoginTimes] = useState([]);
     const [multiLogoutTimes, setMultiLogoutTimes] = useState([]);
-    const [editFlag,setEditFlag] = useState(false);
-    const [customizedShiftIdBean,setCustomizedShiftBean] = useState([]);
-    const [loginShiftId,setLoginShiftId] = useState();
-    const [logoutShiftId,setLogoutShiftId] = useState();
+    const [editFlag, setEditFlag] = useState(false);
+    const [customizedShiftIdBean, setCustomizedShiftBean] = useState([]);
+    const [loginShiftId, setLoginShiftId] = useState();
+    const [logoutShiftId, setLogoutShiftId] = useState();
     const [areaName, setAreaName] = useState("")
 
     const teamHeaders = [
@@ -92,7 +93,7 @@ const CreateBooking = () => {
         {
             key: "managerIds",
             display: "Team Manager"
-    }];
+        }];
 
     const teamUserHeaders = [
         {
@@ -111,30 +112,50 @@ const CreateBooking = () => {
         {
             key: "gender",
             display: "Gender"
-    }];
+        }];
 
-    useEffect(()=>{
-        var editBookingData = JSON.parse(localStorage.getItem('editBooking'))
-        console.log("edit booking",editBookingData);
-        if(editBookingData?.id){
+    const [editBookingdata, setEditBookingData] = useState(null);
+
+    useEffect(() => {
+        if (editBookingdata === null) {
+            var editBookingData = JSON.parse(localStorage.getItem('editBooking'))
+            setEditBookingData(editBookingData);
+        }
+
+        if (editBookingdata?.id) {
             setEditFlag(true);
-            console.log(moment(editBookingData.bookingDate).format("YYYY-MMM-DD"));
-            let newEditInfo = Object.assign(initialValues, editBookingData);
-            if(newEditInfo.bookingType === 'LOGIN'){
+            // console.log(moment(editBookingData.bookingDate).format("YYYY-MMM-DD"));
+            let newEditInfo = Object.assign(initialValues, editBookingdata);
+            setBookingFor(newEditInfo['bookingFor']);
+            if (newEditInfo.bookingType === 'LOGIN') {
                 newEditInfo['loginShift'] = newEditInfo['shiftTime'];
                 delete newEditInfo['shiftTime'];
                 setShiftType('LOGIN')
             }
-            else{
+            else {
                 newEditInfo['logoutShift'] = newEditInfo['shiftTime'];
                 delete newEditInfo['shiftTime'];
                 setShiftType('LOGOUT')
             }
+            console.log(newEditInfo);
             setInitialValues(newEditInfo);
+            if (newEditInfo.officeId && newEditInfo.transportType) {
+                if (bookingFor === 3) {
+                    fetchInOutTeamsTime(true);
+                    fetchInOutTeamsTime();
+                }
+                else {
+                    fetchInOutTimes(true);
+                    fetchInOutTimes();
+                }
+            }
+            if (newEditInfo.transportType !== TRANSPORT_TYPES.CAB && !nodalPoints?.length && newEditInfo.officeId) {
+                fetchNodalPoints();
+            }
         }
-    },[]);
+    }, [editBookingdata]);
 
-    const backHandler = () =>{
+    const backHandler = () => {
         localStorage.removeItem('editBooking');
         router.push('search-bookings');
     }
@@ -151,9 +172,9 @@ const CreateBooking = () => {
             const params = new URLSearchParams(teamPagination);
             const response = await OfficeService.getAllTeams(params.toString());
             const { data } = response || {};
-            const { paginatedResponse } = data || {};        
+            const { paginatedResponse } = data || {};
             setTeamListing(paginatedResponse?.content);
-            let localPaginationData = {...paginatedResponse};
+            let localPaginationData = { ...paginatedResponse };
             delete localPaginationData?.content;
             setTeamPaginationData(localPaginationData);
         } catch (e) {
@@ -188,7 +209,7 @@ const CreateBooking = () => {
             const response = await MasterDataService.getMasterData(type);
             const { data } = response || {};
             if (data?.length) {
-                dispatch(setMasterData({data, type}));
+                dispatch(setMasterData({ data, type }));
             }
         } catch (e) {
 
@@ -221,16 +242,16 @@ const CreateBooking = () => {
     const formik = useFormik({
         initialValues: initialValues,
         enableReinitialize: true,
-        validationSchema: ()=>{ 
+        validationSchema: () => {
             let reValidationSchema = validationSchema;
-            if(!editFlag && customiseSchRef.current.getAttribute("value") === "true") {
-              console.log('customize');
-              reValidationSchema = reValidationSchema.omit(["officeId", "logoutShift", "loginShift","pickUpPoint","dropPoint"]);
+            if (!editFlag && customiseSchRef.current.getAttribute("value") === "true") {
+                console.log('customize');
+                reValidationSchema = reValidationSchema.omit(["officeId", "logoutShift", "loginShift", "pickUpPoint", "dropPoint"]);
             }
             return reValidationSchema;
         },
         onSubmit: async (values) => {
-            let allValues = {...values};
+            let allValues = { ...values };
             if (allValues.bookingFromDate) {
                 allValues.bookingFromDate = moment(allValues.bookingFromDate).format("YYYY-MM-DD");
             }
@@ -244,20 +265,19 @@ const CreateBooking = () => {
                 if (bookingFor === 3) {
                     allValues.teamId = selectedTeamDetail.id;
                 }
-            } 
-            else 
-            {
+            }
+            else {
                 allValues.bookingFor = "self";
-                if(allValues.bookingType === "LOGIN"){
-                    allValues.logoutShift= "";
+                if (allValues.bookingType === "LOGIN") {
+                    allValues.logoutShift = "";
                 }
-                else{
-                    allValues.loginShift="";
+                else {
+                    allValues.loginShift = "";
                 }
-                if(editFlag){
+                if (editFlag) {
                     allValues.bookingEmployeeIds = [allValues.employeeId];
                 }
-                else{
+                else {
                     const userDetails = JSON.parse(localStorage.getItem("userDetails") || "{}");
                     if (userDetails?.name) {
                         allValues.bookingEmployeeIds = [userDetails.name];
@@ -272,32 +292,32 @@ const CreateBooking = () => {
                 allValues.pickUpPoint = customizedScheduledBean[0].pickUpPoint;
                 allValues.dropPoint = customizedScheduledBean[0].dropPoint;
             }
-            else{
+            else {
                 var shiftIdList = [];
-                if(allValues.bookingType === 'LOGIN'){
+                if (allValues.bookingType === 'LOGIN') {
                     shiftIdList.push(loginShiftId);
                 }
-                else if(allValues.bookingType === 'LOGOUT'){
+                else if (allValues.bookingType === 'LOGOUT') {
                     shiftIdList.push(logoutShiftId);
                 }
-                else{
+                else {
                     shiftIdList.push(loginShiftId);
                     shiftIdList.push(logoutShiftId);
                 }
                 allValues.shiftIds = shiftIdList;
             }
-            if(allValues.teamId === ""){
+            if (allValues.teamId === "") {
                 delete allValues.teamId
             }
             console.log(allValues);
             try {
-                if(editFlag){
+                if (editFlag) {
                     await BookingService.updateBooking([allValues]);
                 }
-                else{
-                    await BookingService.createBooking({booking: allValues});
+                else {
+                    await BookingService.createBooking({ booking: allValues });
                 }
-                
+
                 dispatch(toggleToast({ message: 'Booking created successfully!', type: 'success' }));
                 formik.handleReset();
                 clearData();
@@ -314,7 +334,7 @@ const CreateBooking = () => {
         try {
             const startDate = moment(formik.values.bookingFromDate).format(DATE_FORMAT);
             const endDate = moment(formik.values.bookingToDate).format(DATE_FORMAT);
-            const response = await BookingService.getLoginLogoutTimeWithDate(values.officeId, isIn, values.transportType,startDate,endDate);
+            const response = await BookingService.getLoginLogoutTimeWithDate(values.officeId, isIn, values.transportType, startDate, endDate);
             const { data } = response || {};
             console.log(data);
             if (isIn) {
@@ -327,11 +347,11 @@ const CreateBooking = () => {
         }
     };
 
-    const fetchInOutTeamsTime = async(isIn = false) =>{
+    const fetchInOutTeamsTime = async (isIn = false) => {
         try {
             const startDate = moment(formik.values.bookingFromDate).format(DATE_FORMAT);
             const endDate = moment(formik.values.bookingToDate).format(DATE_FORMAT);
-            const response = await BookingService.getTeamLoginLogoutTimes(values.officeId, isIn, values.transportType,selectedTeamDetail.id,startDate,endDate);
+            const response = await BookingService.getTeamLoginLogoutTimes(values.officeId, isIn, values.transportType, selectedTeamDetail.id, startDate, endDate);
             const { data } = response || {};
             console.log(data);
             if (isIn) {
@@ -348,7 +368,7 @@ const CreateBooking = () => {
         try {
             const startDate = moment(formik.values.bookingFromDate).format(DATE_FORMAT);
             const endDate = moment(formik.values.bookingToDate).format(DATE_FORMAT);
-            const response = await BookingService.getLoginLogoutTimeWithDate(officeId, isIn, values.transportType,startDate,endDate);
+            const response = await BookingService.getLoginLogoutTimeWithDate(officeId, isIn, values.transportType, startDate, endDate);
             const { data } = response || {};
             if (isIn) {
                 console.log(data[0]);
@@ -365,11 +385,11 @@ const CreateBooking = () => {
         }
     };
 
-    const fetchMultiInOutTeamsTimes = async (isIn, idxToSet, officeId) =>{
+    const fetchMultiInOutTeamsTimes = async (isIn, idxToSet, officeId) => {
         try {
             const startDate = moment(formik.values.bookingFromDate).format(DATE_FORMAT);
             const endDate = moment(formik.values.bookingToDate).format(DATE_FORMAT);
-            const response = await BookingService.getTeamLoginLogoutTimes(officeId, isIn, values.transportType,selectedTeamDetail.id,startDate,endDate);
+            const response = await BookingService.getTeamLoginLogoutTimes(officeId, isIn, values.transportType, selectedTeamDetail.id, startDate, endDate);
             const { data } = response || {};
             if (isIn) {
                 const allInIdxs = [...multiLoginTimes];
@@ -393,7 +413,7 @@ const CreateBooking = () => {
 
     const isSelectedDate = () => {
         //if (values?.bookingFromDate && values?.bookingToDate && values.transportType === TRANSPORT_TYPES.CAB) {
-        if (values?.bookingFromDate && values?.bookingToDate ) {
+        if (values?.bookingFromDate && values?.bookingToDate) {
             const startD = moment(values.bookingFromDate, DATE_FORMAT);
             const endD = moment(values.bookingToDate, DATE_FORMAT);
             const diff = endD.diff(startD, 'days');
@@ -409,7 +429,7 @@ const CreateBooking = () => {
         let allCustomizedShiftData = [...customizedShiftIdBean];
         const { target } = e;
         const { value, name } = target || {};
-        console.log(currentDate,">>>santosh");
+        console.log(currentDate, ">>>santosh");
         if (currentCustomizedSch[idx]) {
             if (name === "nextDayLogOutCustomize") {
                 currentCustomizedSch[idx][name] = !(value === "true");
@@ -426,65 +446,65 @@ const CreateBooking = () => {
             }
         }
         if (name === "officeId") {
-            if(bookingFor === 3){
+            if (bookingFor === 3) {
                 fetchMultiInOutTeamsTimes(true, idx, value);
                 fetchMultiInOutTeamsTimes(false, idx, value);
             }
-            else{
+            else {
                 fetchMultiInOutTimes(true, idx, value);
                 fetchMultiInOutTimes(false, idx, value);
             }
-            
+
             fetchMultiNodalPoints(value);
         }
-        if(name === "loginShift"){
+        if (name === "loginShift") {
             const targetShift = multiLoginTimes[idx].find(item => {
                 console.log("Shift Time:", item.shiftTime);
                 return item.shiftTime === value;
             });
-            if(allCustomizedShiftData[idx]){
-                if(allCustomizedShiftData[idx].shiftType === "LOGIN"){
+            if (allCustomizedShiftData[idx]) {
+                if (allCustomizedShiftData[idx].shiftType === "LOGIN") {
                     allCustomizedShiftData[idx].shiftId = targetShift.id;
                 }
-                else{
+                else {
                     allCustomizedShiftData[idx].shiftId = targetShift.id;
                     allCustomizedShiftData[idx].shiftType = targetShift.shiftType;
                 }
             }
-            else{
+            else {
                 var obj = {
-                    index : idx,
-                    shiftId : targetShift.id,
+                    index: idx,
+                    shiftId: targetShift.id,
                     shiftType: targetShift.shiftType
                 }
                 allCustomizedShiftData.push(obj);
             }
         }
-        else if(name === "logoutShift"){
+        else if (name === "logoutShift") {
             const targetShift = multiLogoutTimes[idx].find(item => {
                 console.log("Shift Time:", item.shiftTime);
                 return item.shiftTime === value;
             });
-            if(allCustomizedShiftData[idx]){
-                if(allCustomizedShiftData[idx].shiftType === "LOGOUT"){
+            if (allCustomizedShiftData[idx]) {
+                if (allCustomizedShiftData[idx].shiftType === "LOGOUT") {
                     allCustomizedShiftData[idx].shiftId = targetShift.id;
                 }
-                else{
+                else {
                     allCustomizedShiftData[idx].shiftId = targetShift.id;
                     allCustomizedShiftData[idx].shiftType = targetShift.shiftType;
                 }
             }
-            else{
+            else {
                 var obj = {
-                    index : idx,
-                    shiftId : targetShift.id,
+                    index: idx,
+                    shiftId: targetShift.id,
                     shiftType: targetShift.shiftType
                 }
                 allCustomizedShiftData.push(obj);
             }
         }
-        console.log(allCustomizedShiftData,"shift Ids for customized");
-        console.log(currentCustomizedSch,"setting custom array");
+        console.log(allCustomizedShiftData, "shift Ids for customized");
+        console.log(currentCustomizedSch, "setting custom array");
         setCustomizedScheduledBean(currentCustomizedSch);
         setCustomizedShiftBean(allCustomizedShiftData);
     };
@@ -502,117 +522,117 @@ const CreateBooking = () => {
 
     const renderMultipleDay = (date, currentIdx) => {
         //console.log(date)
-        const bookingDate =date.format(DATE_FORMAT);
+        const bookingDate = date.format(DATE_FORMAT);
         return (
             <>
-            <div key={`multiDiv${currentIdx}`} className={styles.perDateContainer}>
-                {date &&
-                    <>
-                        <span className={styles.dayAndDate}>{date.format('dddd')}</span>
-                        <span className={styles.dayAndDate}>{date.format(DATE_FORMAT)}</span>
-                    </>
-                }
-                <div className='form-control-input'>
-                    <FormControl required fullWidth>
-                        <InputLabel id="primary-office-label">Office ID</InputLabel>
-                        <Select
-                            labelId="primary-office-label"
-                            id="officeId"
-                            value={customizedScheduledBean?.[currentIdx]?.officeId || ""}
-                            error={isSubmit && !customizedScheduledBean?.[currentIdx]?.officeId}
-                            name="officeId"
-                            label="Primary Office"
-                            onChange={(e) => handleChangeMultiple(e, currentIdx, bookingDate)}
-                        >
-                            {!!offices?.length && offices.map((office, idx) => (
-                                <MenuItem key={idx} value={office.officeId}>{getFormattedLabel(office.officeId)}, {office.address}</MenuItem>
-                            ))}
-                        </Select>
-                        {isSubmit && !customizedScheduledBean?.[currentIdx]?.officeId && <FormHelperText className='errorHelperText'>Select Office</FormHelperText>}
-                    </FormControl>
-                </div>
+                <div key={`multiDiv${currentIdx}`} className={styles.perDateContainer}>
+                    {date &&
+                        <>
+                            <span className={styles.dayAndDate}>{date.format('dddd')}</span>
+                            <span className={styles.dayAndDate}>{date.format(DATE_FORMAT)}</span>
+                        </>
+                    }
+                    <div className='form-control-input'>
+                        <FormControl required fullWidth>
+                            <InputLabel id="primary-office-label">Office ID</InputLabel>
+                            <Select
+                                labelId="primary-office-label"
+                                id="officeId"
+                                value={customizedScheduledBean?.[currentIdx]?.officeId || ""}
+                                error={isSubmit && !customizedScheduledBean?.[currentIdx]?.officeId}
+                                name="officeId"
+                                label="Primary Office"
+                                onChange={(e) => handleChangeMultiple(e, currentIdx, bookingDate)}
+                            >
+                                {!!offices?.length && offices.map((office, idx) => (
+                                    <MenuItem key={idx} value={office.officeId}>{getFormattedLabel(office.officeId)}, {office.address}</MenuItem>
+                                ))}
+                            </Select>
+                            {isSubmit && !customizedScheduledBean?.[currentIdx]?.officeId && <FormHelperText className='errorHelperText'>Select Office</FormHelperText>}
+                        </FormControl>
+                    </div>
 
-                <div className='form-control-input'>
-                    <FormControl required fullWidth>
-                        <InputLabel id='shift-type-label'>Booking Type</InputLabel>
-                        <Select
-                            labelId="booking-type-label"
-                            id="bookingType"
-                            value={customizedScheduledBean?.[currentIdx]?.bookingType || ""}
-                            error={isSubmit && !customizedScheduledBean?.[currentIdx]?.bookingType}
-                            //value={values.bookingType}
-                            //error={touched.bookingType && Boolean(errors.bookingType)}
-                            name="bookingType"
-                            label="Booking Type"
-                            onChange={(e) => handleChangeMultiple(e, currentIdx, bookingDate)}
-                        >
-                            <MenuItem  value={'LOGIN'}>Login</MenuItem>
-                            <MenuItem value={'LOGOUT'}>Logout</MenuItem>
-                            {/* {!editFlag && <MenuItem value={'Both'}>Both</MenuItem>} */}
-                        </Select>
-                        {/* {touched.bookingType && errors.bookingType && <FormHelperText className='errorHelperText'>{errors.bookingType}</FormHelperText>} */}
-                    </FormControl>
-                </div>
-                {
-                    customizedScheduledBean[currentIdx]?.bookingType === 'LOGIN' &&
-                    <>
-                        <div className='form-control-input'>
-                            <FormControl required fullWidth>
-                                <InputLabel id="login-label">Login Time</InputLabel>
-                                <Select
-                                    labelId="login-label"
-                                    id="loginShift"
-                                    value={customizedScheduledBean?.[currentIdx]?.loginShift || ""}
-                                    error={isSubmit && !customizedScheduledBean?.[currentIdx]?.loginShift}
-                                    name="loginShift"
-                                    label="Login Time"
-                                    onChange={(e) => handleChangeMultiple(e, currentIdx, bookingDate)}
-                                >
-                                    {!!multiLoginTimes[currentIdx]?.length && multiLoginTimes[currentIdx].map((time, idx) => (
-                                        <MenuItem key={idx} value={time.shiftTime}>{time.shiftTime}</MenuItem>
-                                    ))}
-                                </Select>
-                                {isSubmit && !customizedScheduledBean?.[currentIdx]?.loginShift && <FormHelperText className='errorHelperText'>Select Login Time</FormHelperText>}
-                            </FormControl>
-                        </div>
-                    </>}
-                { customizedScheduledBean[currentIdx]?.bookingType === 'LOGOUT' &&
-                    (
+                    <div className='form-control-input'>
+                        <FormControl required fullWidth>
+                            <InputLabel id='shift-type-label'>Booking Type</InputLabel>
+                            <Select
+                                labelId="booking-type-label"
+                                id="bookingType"
+                                value={customizedScheduledBean?.[currentIdx]?.bookingType || ""}
+                                error={isSubmit && !customizedScheduledBean?.[currentIdx]?.bookingType}
+                                //value={values.bookingType}
+                                //error={touched.bookingType && Boolean(errors.bookingType)}
+                                name="bookingType"
+                                label="Booking Type"
+                                onChange={(e) => handleChangeMultiple(e, currentIdx, bookingDate)}
+                            >
+                                <MenuItem value={'LOGIN'}>Login</MenuItem>
+                                <MenuItem value={'LOGOUT'}>Logout</MenuItem>
+                                {/* {!editFlag && <MenuItem value={'Both'}>Both</MenuItem>} */}
+                            </Select>
+                            {/* {touched.bookingType && errors.bookingType && <FormHelperText className='errorHelperText'>{errors.bookingType}</FormHelperText>} */}
+                        </FormControl>
+                    </div>
+                    {
+                        customizedScheduledBean[currentIdx]?.bookingType === 'LOGIN' &&
                         <>
                             <div className='form-control-input'>
                                 <FormControl required fullWidth>
-                                    <InputLabel id="logout-label">Logout Time</InputLabel>
+                                    <InputLabel id="login-label">Login Time</InputLabel>
                                     <Select
-                                        labelId="logout-label"
-                                        id="logoutShift"
-                                        value={customizedScheduledBean?.[currentIdx]?.logoutShift || ""}
-                                        error={isSubmit && !customizedScheduledBean?.[currentIdx]?.logoutShift}
-                                        name="logoutShift"
-                                        label="Logout Time"
+                                        labelId="login-label"
+                                        id="loginShift"
+                                        value={customizedScheduledBean?.[currentIdx]?.loginShift || ""}
+                                        error={isSubmit && !customizedScheduledBean?.[currentIdx]?.loginShift}
+                                        name="loginShift"
+                                        label="Login Time"
                                         onChange={(e) => handleChangeMultiple(e, currentIdx, bookingDate)}
                                     >
-                                        {!!multiLogoutTimes[currentIdx]?.length && multiLogoutTimes[currentIdx].map((time, idx) => (
+                                        {!!multiLoginTimes[currentIdx]?.length && multiLoginTimes[currentIdx].map((time, idx) => (
                                             <MenuItem key={idx} value={time.shiftTime}>{time.shiftTime}</MenuItem>
                                         ))}
                                     </Select>
-                                    {isSubmit && !customizedScheduledBean?.[currentIdx]?.logoutShift && <FormHelperText className='errorHelperText'>Select Logout Time</FormHelperText>}
+                                    {isSubmit && !customizedScheduledBean?.[currentIdx]?.loginShift && <FormHelperText className='errorHelperText'>Select Login Time</FormHelperText>}
                                 </FormControl>
                             </div>
-                            <div className='form-control-input'>
-                                <FormControl required>
+                        </>}
+                    {customizedScheduledBean[currentIdx]?.bookingType === 'LOGOUT' &&
+                        (
+                            <>
+                                <div className='form-control-input'>
+                                    <FormControl required fullWidth>
+                                        <InputLabel id="logout-label">Logout Time</InputLabel>
+                                        <Select
+                                            labelId="logout-label"
+                                            id="logoutShift"
+                                            value={customizedScheduledBean?.[currentIdx]?.logoutShift || ""}
+                                            error={isSubmit && !customizedScheduledBean?.[currentIdx]?.logoutShift}
+                                            name="logoutShift"
+                                            label="Logout Time"
+                                            onChange={(e) => handleChangeMultiple(e, currentIdx, bookingDate)}
+                                        >
+                                            {!!multiLogoutTimes[currentIdx]?.length && multiLogoutTimes[currentIdx].map((time, idx) => (
+                                                <MenuItem key={idx} value={time.shiftTime}>{time.shiftTime}</MenuItem>
+                                            ))}
+                                        </Select>
+                                        {isSubmit && !customizedScheduledBean?.[currentIdx]?.logoutShift && <FormHelperText className='errorHelperText'>Select Logout Time</FormHelperText>}
+                                    </FormControl>
+                                </div>
+                                <div className='form-control-input'>
+                                    <FormControl required>
                                         <FormGroup
-                                        onChange={(e) => handleChangeMultiple(e, currentIdx, date)}
-                                        value={customizedScheduledBean?.[currentIdx]?.nextDayLogOutCustomize || false}
-                                        style={{flexDirection: "row"}}>
+                                            onChange={(e) => handleChangeMultiple(e, currentIdx, date)}
+                                            value={customizedScheduledBean?.[currentIdx]?.nextDayLogOutCustomize || false}
+                                            style={{ flexDirection: "row" }}>
                                             <FormControlLabel name="nextDayLogOutCustomize" control={<Checkbox value={customizedScheduledBean?.[currentIdx]?.nextDayLogOutCustomize || false} checked={customizedScheduledBean?.[currentIdx]?.nextDayLogOutCustomize || false} />} label="Next Day Logout" />
                                         </FormGroup>
-                                </FormControl>
-                            </div>
-                        </>
-                        
-                    )
-                }
-                {/* {
+                                    </FormControl>
+                                </div>
+                            </>
+
+                        )
+                    }
+                    {/* {
                     customizedScheduledBean[currentIdx]?.bookingType === 'Both' &&
                     <>
                         <div className='form-control-input'>
@@ -655,54 +675,54 @@ const CreateBooking = () => {
                         </div>
                     </>
                 } */}
-                {values.transportType !== TRANSPORT_TYPES.CAB && 
-                    <>
-                        <div className='form-control-input'>
-                            <FormControl required>
-                                <InputLabel id="pickUpPoint-label">Pickup Point</InputLabel>
-                                <Select
-                                    labelId="pickUpPoint-label"
-                                    id="pickUpPoint"
-                                    value={customizedScheduledBean?.[currentIdx]?.pickUpPoint || ""}
-                                    error={isSubmit && !customizedScheduledBean?.[currentIdx]?.pickUpPoint}
-                                    //value={values.pickUpPoint}
-                                    //error={touched.pickUpPoint && Boolean(errors.pickUpPoint)}
-                                    name="pickUpPoint"
-                                    label="Pickup Point"
-                                    onChange={(e) => handleChangeMultiple(e, currentIdx, bookingDate)}
-                                >
-                                    {!!nodalPoints?.length && nodalPoints.map((point, idx) => (
-                                        <MenuItem key={idx} value={point.locationName}>{point.locationName}</MenuItem>
-                                    ))}
-                                </Select>
-                                {isSubmit && !customizedScheduledBean?.[currentIdx]?.pickUpPoint && <FormHelperText className='errorHelperText'>Select Pickup Point</FormHelperText>}
-                            </FormControl>
-                        </div>
-                        <div className='form-control-input'>
-                            <FormControl required>
-                                <InputLabel id="dropPoint-label">Drop Point</InputLabel>
-                                <Select
-                                    labelId="dropPoint-label"
-                                    id="dropPoint"
-                                    value={customizedScheduledBean?.[currentIdx]?.dropPoint || ""}
-                                    error={isSubmit && !customizedScheduledBean?.[currentIdx]?.dropPoint}
-                                    //value={values.dropPoint}
-                                    //error={touched.dropPoint && Boolean(errors.dropPoint)}
-                                    name="dropPoint"
-                                    label="Drop Point"
-                                    onChange={(e) => handleChangeMultiple(e, currentIdx, bookingDate)}
-                                >
-                                    {!!nodalPoints?.length && nodalPoints.map((point, idx) => (
-                                        <MenuItem key={idx} value={point.locationName}>{point.locationName}</MenuItem>
-                                    ))}
-                                </Select>
-                                {isSubmit && !customizedScheduledBean?.[currentIdx]?.dropPoint && <FormHelperText className='errorHelperText'>Select Drop point</FormHelperText>}
-                            </FormControl>
-                        </div>
-                    </>
-                }
-            </div>
-            
+                    {values.transportType !== TRANSPORT_TYPES.CAB &&
+                        <>
+                            <div className='form-control-input'>
+                                <FormControl required>
+                                    <InputLabel id="pickUpPoint-label">Pickup Point</InputLabel>
+                                    <Select
+                                        labelId="pickUpPoint-label"
+                                        id="pickUpPoint"
+                                        value={customizedScheduledBean?.[currentIdx]?.pickUpPoint || ""}
+                                        error={isSubmit && !customizedScheduledBean?.[currentIdx]?.pickUpPoint}
+                                        //value={values.pickUpPoint}
+                                        //error={touched.pickUpPoint && Boolean(errors.pickUpPoint)}
+                                        name="pickUpPoint"
+                                        label="Pickup Point"
+                                        onChange={(e) => handleChangeMultiple(e, currentIdx, bookingDate)}
+                                    >
+                                        {!!nodalPoints?.length && nodalPoints.map((point, idx) => (
+                                            <MenuItem key={idx} value={point.locationName}>{point.locationName}</MenuItem>
+                                        ))}
+                                    </Select>
+                                    {isSubmit && !customizedScheduledBean?.[currentIdx]?.pickUpPoint && <FormHelperText className='errorHelperText'>Select Pickup Point</FormHelperText>}
+                                </FormControl>
+                            </div>
+                            <div className='form-control-input'>
+                                <FormControl required>
+                                    <InputLabel id="dropPoint-label">Drop Point</InputLabel>
+                                    <Select
+                                        labelId="dropPoint-label"
+                                        id="dropPoint"
+                                        value={customizedScheduledBean?.[currentIdx]?.dropPoint || ""}
+                                        error={isSubmit && !customizedScheduledBean?.[currentIdx]?.dropPoint}
+                                        //value={values.dropPoint}
+                                        //error={touched.dropPoint && Boolean(errors.dropPoint)}
+                                        name="dropPoint"
+                                        label="Drop Point"
+                                        onChange={(e) => handleChangeMultiple(e, currentIdx, bookingDate)}
+                                    >
+                                        {!!nodalPoints?.length && nodalPoints.map((point, idx) => (
+                                            <MenuItem key={idx} value={point.locationName}>{point.locationName}</MenuItem>
+                                        ))}
+                                    </Select>
+                                    {isSubmit && !customizedScheduledBean?.[currentIdx]?.dropPoint && <FormHelperText className='errorHelperText'>Select Drop point</FormHelperText>}
+                                </FormControl>
+                            </div>
+                        </>
+                    }
+                </div>
+
             </>
         );
     };
@@ -739,7 +759,7 @@ const CreateBooking = () => {
                             error={touched.bookingType && Boolean(errors.bookingType)}
                             name="bookingType"
                             label="Booking Type"
-                            onChange={(e)=>{handleChange(e);setShiftType(e.target.value)}}
+                            onChange={(e) => { handleChange(e); setShiftType(e.target.value) }}
                         >
                             <MenuItem value={'LOGIN'}>Login</MenuItem>
                             <MenuItem value={'LOGOUT'}>Logout</MenuItem>
@@ -753,121 +773,121 @@ const CreateBooking = () => {
                     <>
                         {
                             shiftType === 'LOGIN' ?
-                            <div className='form-control-input'>
-                                <FormControl required fullWidth>
-                                    <InputLabel id="login-label">Login Time</InputLabel>
-                                    <Select
-                                        disabled={(values.bookingFromDate != "" && values.bookingToDate != "") ? false : true}
-                                        labelId="login-label"
-                                        id="loginShift"
-                                        value={values.loginShift}
-                                        error={touched.loginShift && Boolean(errors.loginShift)}
-                                        name="loginShift"
-                                        label="Login Time"
-                                        onChange={(e)=>{handleShiftChange(e);handleChange(e)}}
-                                    >
-                                        {!!loginTimes?.length && loginTimes.map((time, idx) => (
-                                            <MenuItem key={idx} value={time.shiftTime}>{time.shiftTime}</MenuItem>
-                                        ))}
-                                    </Select>
-                                    {touched.loginShift && errors.loginShift && <FormHelperText className='errorHelperText'>{errors.loginShift}</FormHelperText>}
-                                </FormControl>
-                            </div>
-                            :
-                            (
-                                shiftType === 'LOGOUT' ?
-                                <>
-                                    <div className='form-control-input'>
-                                        <FormControl required fullWidth>
-                                            <InputLabel id="logout-label">Logout Time</InputLabel>
-                                            <Select
-                                                disabled={(values.bookingFromDate != "" && values.bookingToDate != "") ? false : true}
-                                                labelId="logout-label"
-                                                id="logoutShift"
-                                                value={values.logoutShift}
-                                                error={touched.logoutShift && Boolean(errors.logoutShift)}
-                                                name="logoutShift"
-                                                label="Logout Time"
-                                                onChange={(e)=>{handleShiftChange(e);handleChange(e)}}
-                                            >
-                                                {!!logoutTimes?.length && logoutTimes.map((time, idx) => (
-                                                    <MenuItem key={idx} value={time.shiftTime}>{time.shiftTime}</MenuItem>
-                                                ))}
-                                            </Select>
-                                            {touched.logoutShift && errors.logoutShift && <FormHelperText className='errorHelperText'>{errors.logoutShift}</FormHelperText>}
-                                        </FormControl>
-                                    </div>
-                                    <div className='form-control-input'>
-                                        <FormControl required>
-                                                <FormGroup
-                                                onChange={handleChange}
-                                                value={values.nextDayLogOut}
-                                                error={touched.nextDayLogOut && Boolean(errors.nextDayLogOut)}
-                                                style={{flexDirection: "row"}}>
-                                                    <FormControlLabel name="nextDayLogOut" value={true} control={<Checkbox />} label="Next Day Logout" />
-                                                </FormGroup>
-                                                {touched.nextDayLogOut && errors.nextDayLogOut && <FormHelperText className='errorHelperText'>{errors.nextDayLogOut}</FormHelperText>}
-                                        </FormControl>
-                                    </div>
-                                </>
+                                <div className='form-control-input'>
+                                    <FormControl required fullWidth>
+                                        <InputLabel id="login-label">Login Time</InputLabel>
+                                        <Select
+                                            disabled={(values.bookingFromDate != "" && values.bookingToDate != "") ? false : true}
+                                            labelId="login-label"
+                                            id="loginShift"
+                                            value={values.loginShift}
+                                            error={touched.loginShift && Boolean(errors.loginShift)}
+                                            name="loginShift"
+                                            label="Login Time"
+                                            onChange={(e) => { handleShiftChange(e); handleChange(e) }}
+                                        >
+                                            {!!loginTimes?.length && loginTimes.map((time, idx) => (
+                                                <MenuItem key={idx} value={time.shiftTime}>{time.shiftTime}</MenuItem>
+                                            ))}
+                                        </Select>
+                                        {touched.loginShift && errors.loginShift && <FormHelperText className='errorHelperText'>{errors.loginShift}</FormHelperText>}
+                                    </FormControl>
+                                </div>
                                 :
                                 (
-                                    <>
-                                        <div className='form-control-input'>
-                                            <FormControl required fullWidth>
-                                                <InputLabel id="login-label">Login Time</InputLabel>
-                                                <Select
-                                                    disabled={(values.bookingFromDate != "" && values.bookingToDate != "") ? false : true}
-                                                    labelId="login-label"
-                                                    id="loginShift"
-                                                    value={values.loginShift}
-                                                    error={touched.loginShift && Boolean(errors.loginShift)}
-                                                    name="loginShift"
-                                                    label="Login Time"
-                                                    onChange={(e)=>{handleShiftChange(e);handleChange(e)}}
-                                                >
-                                                    {!!loginTimes?.length && loginTimes.map((time, idx) => (
-                                                        <MenuItem key={idx} value={time.shiftTime}>{time.shiftTime}</MenuItem>
-                                                    ))}
-                                                </Select>
-                                                {touched.loginShift && errors.loginShift && <FormHelperText className='errorHelperText'>{errors.loginShift}</FormHelperText>}
-                                            </FormControl>
-                                        </div>
-                                        <div className='form-control-input'>
-                                            <FormControl required fullWidth>
-                                                <InputLabel id="logout-label">Logout Time</InputLabel>
-                                                <Select
-                                                    disabled={(values.bookingFromDate != "" && values.bookingToDate != "") ? false : true}
-                                                    labelId="logout-label"
-                                                    id="logoutShift"
-                                                    value={values.logoutShift}
-                                                    error={touched.logoutShift && Boolean(errors.logoutShift)}
-                                                    name="logoutShift"
-                                                    label="Logout Time"
-                                                    onChange={(e)=>{handleShiftChange(e);handleChange(e)}}
-                                                >
-                                                    {!!logoutTimes?.length && logoutTimes.map((time, idx) => (
-                                                        <MenuItem key={idx} value={time.shiftTime}>{time.shiftTime}</MenuItem>
-                                                    ))}
-                                                </Select>
-                                                {touched.logoutShift && errors.logoutShift && <FormHelperText className='errorHelperText'>{errors.logoutShift}</FormHelperText>}
-                                            </FormControl>
-                                        </div>
-                                        <div className='form-control-input'>
-                                            <FormControl required>
+                                    shiftType === 'LOGOUT' ?
+                                        <>
+                                            <div className='form-control-input'>
+                                                <FormControl required fullWidth>
+                                                    <InputLabel id="logout-label">Logout Time</InputLabel>
+                                                    <Select
+                                                        disabled={(values.bookingFromDate != "" && values.bookingToDate != "") ? false : true}
+                                                        labelId="logout-label"
+                                                        id="logoutShift"
+                                                        value={values.logoutShift}
+                                                        error={touched.logoutShift && Boolean(errors.logoutShift)}
+                                                        name="logoutShift"
+                                                        label="Logout Time"
+                                                        onChange={(e) => { handleShiftChange(e); handleChange(e) }}
+                                                    >
+                                                        {!!logoutTimes?.length && logoutTimes.map((time, idx) => (
+                                                            <MenuItem key={idx} value={time.shiftTime}>{time.shiftTime}</MenuItem>
+                                                        ))}
+                                                    </Select>
+                                                    {touched.logoutShift && errors.logoutShift && <FormHelperText className='errorHelperText'>{errors.logoutShift}</FormHelperText>}
+                                                </FormControl>
+                                            </div>
+                                            <div className='form-control-input'>
+                                                <FormControl required>
                                                     <FormGroup
-                                                    onChange={handleChange}
-                                                    value={values.nextDayLogOut}
-                                                    error={touched.nextDayLogOut && Boolean(errors.nextDayLogOut)}
-                                                    style={{flexDirection: "row"}}>
+                                                        onChange={handleChange}
+                                                        value={values.nextDayLogOut}
+                                                        error={touched.nextDayLogOut && Boolean(errors.nextDayLogOut)}
+                                                        style={{ flexDirection: "row" }}>
                                                         <FormControlLabel name="nextDayLogOut" value={true} control={<Checkbox />} label="Next Day Logout" />
                                                     </FormGroup>
                                                     {touched.nextDayLogOut && errors.nextDayLogOut && <FormHelperText className='errorHelperText'>{errors.nextDayLogOut}</FormHelperText>}
-                                            </FormControl>
-                                        </div>
-                                    </>
+                                                </FormControl>
+                                            </div>
+                                        </>
+                                        :
+                                        (
+                                            <>
+                                                <div className='form-control-input'>
+                                                    <FormControl required fullWidth>
+                                                        <InputLabel id="login-label">Login Time</InputLabel>
+                                                        <Select
+                                                            disabled={(values.bookingFromDate != "" && values.bookingToDate != "") ? false : true}
+                                                            labelId="login-label"
+                                                            id="loginShift"
+                                                            value={values.loginShift}
+                                                            error={touched.loginShift && Boolean(errors.loginShift)}
+                                                            name="loginShift"
+                                                            label="Login Time"
+                                                            onChange={(e) => { handleShiftChange(e); handleChange(e) }}
+                                                        >
+                                                            {!!loginTimes?.length && loginTimes.map((time, idx) => (
+                                                                <MenuItem key={idx} value={time.shiftTime}>{time.shiftTime}</MenuItem>
+                                                            ))}
+                                                        </Select>
+                                                        {touched.loginShift && errors.loginShift && <FormHelperText className='errorHelperText'>{errors.loginShift}</FormHelperText>}
+                                                    </FormControl>
+                                                </div>
+                                                <div className='form-control-input'>
+                                                    <FormControl required fullWidth>
+                                                        <InputLabel id="logout-label">Logout Time</InputLabel>
+                                                        <Select
+                                                            disabled={(values.bookingFromDate != "" && values.bookingToDate != "") ? false : true}
+                                                            labelId="logout-label"
+                                                            id="logoutShift"
+                                                            value={values.logoutShift}
+                                                            error={touched.logoutShift && Boolean(errors.logoutShift)}
+                                                            name="logoutShift"
+                                                            label="Logout Time"
+                                                            onChange={(e) => { handleShiftChange(e); handleChange(e) }}
+                                                        >
+                                                            {!!logoutTimes?.length && logoutTimes.map((time, idx) => (
+                                                                <MenuItem key={idx} value={time.shiftTime}>{time.shiftTime}</MenuItem>
+                                                            ))}
+                                                        </Select>
+                                                        {touched.logoutShift && errors.logoutShift && <FormHelperText className='errorHelperText'>{errors.logoutShift}</FormHelperText>}
+                                                    </FormControl>
+                                                </div>
+                                                <div className='form-control-input'>
+                                                    <FormControl required>
+                                                        <FormGroup
+                                                            onChange={handleChange}
+                                                            value={values.nextDayLogOut}
+                                                            error={touched.nextDayLogOut && Boolean(errors.nextDayLogOut)}
+                                                            style={{ flexDirection: "row" }}>
+                                                            <FormControlLabel name="nextDayLogOut" value={true} control={<Checkbox />} label="Next Day Logout" />
+                                                        </FormGroup>
+                                                        {touched.nextDayLogOut && errors.nextDayLogOut && <FormHelperText className='errorHelperText'>{errors.nextDayLogOut}</FormHelperText>}
+                                                    </FormControl>
+                                                </div>
+                                            </>
+                                        )
                                 )
-                            )
                         }
                     </>
                 }
@@ -893,34 +913,34 @@ const CreateBooking = () => {
         }
     };
 
-    const handleShiftChange = (e) =>{
+    const handleShiftChange = (e) => {
         const { target } = e;
         const { value, name } = target || {};
-        if(name === "loginShift"){
-            const targetShift = loginTimes.find((item)=>{
+        if (name === "loginShift") {
+            const targetShift = loginTimes.find((item) => {
                 console.log(item);
                 return item.shiftTime === value;
             })
             setLoginShiftId(targetShift?.id);
         }
-        else if(name === "logoutShift"){
-            const targetShift = logoutTimes.find((item)=>{
+        else if (name === "logoutShift") {
+            const targetShift = logoutTimes.find((item) => {
                 console.log(item);
                 return item.shiftTime === value;
             })
             setLogoutShiftId(targetShift?.id);
         }
-        console.log(e,">>>>>>>>>>>>",values.bookingType );
+        console.log(e, ">>>>>>>>>>>>", values.bookingType);
     }
 
     useEffect(() => {
         if (values.officeId && values.transportType) {
-            if(bookingFor === 3){
+            if (bookingFor === 3) {
                 fetchInOutTeamsTime(true);
                 fetchInOutTeamsTime();
             }
-            else{
-                fetchInOutTimes(true);  
+            else {
+                fetchInOutTimes(true);
                 fetchInOutTimes();
             }
         }
@@ -985,7 +1005,7 @@ const CreateBooking = () => {
         } else {
             setCustomizedScheduledBean([]);
             setMultiLoginTimes([]);
-            setMultiLogoutTimes([]);                    
+            setMultiLogoutTimes([]);
         }
     }, [values.isCustomiseSchedule]);
 
@@ -1027,7 +1047,7 @@ const CreateBooking = () => {
     };
 
     const handleTeamPageChange = (page) => {
-        let updatedPagination = {...teamPagination};
+        let updatedPagination = { ...teamPagination };
         updatedPagination.pageNo = page;
         setTeamPagination(updatedPagination);
     };
@@ -1061,7 +1081,7 @@ const CreateBooking = () => {
             const params = new URLSearchParams(tUserPagination);
             const response = await BookingService.getEmployeesByTeamId(params.toString());
             const { data } = response || {};
-            const { paginatedResponse } = data || {};        
+            const { paginatedResponse } = data || {};
             setTeamUserListing(paginatedResponse?.content);
         } catch (e) {
             console.error(e);
@@ -1085,7 +1105,7 @@ const CreateBooking = () => {
         });
         if (!isInvalid) {
             var modifiedCustomizeSchedule = [];
-            customizedScheduledBean.map((val,index)=>{
+            customizedScheduledBean.map((val, index) => {
                 val.bookingType === 'LOGOUT' && val['loginShift'] && delete val['loginShift'];
                 val.bookingType === 'LOGIN' && val['logoutShift'] && delete val['logoutShift'];
                 //this is for only login or logout if in future the booking is created for both need to update the logic
@@ -1093,7 +1113,7 @@ const CreateBooking = () => {
                 modifiedCustomizeSchedule.push(val);
             })
             setCustomizedScheduledBean(modifiedCustomizeSchedule);
-            console.log(modifiedCustomizeSchedule,">>>>>>>santosh");
+            console.log(modifiedCustomizeSchedule, ">>>>>>>santosh");
             handleSubmit();
         }
     };
@@ -1109,7 +1129,7 @@ const CreateBooking = () => {
                     {!editFlag &&
                         <FormControl>
                             <RadioGroup
-                                style={{flexDirection: "row"}}
+                                style={{ flexDirection: "row" }}
                                 value={bookingFor}
                                 name="bookingFor"
                                 onChange={handleBookingForChange}
@@ -1127,45 +1147,45 @@ const CreateBooking = () => {
                     <div className={`form-control-input ${styles.formControlInput}`}>
                         {
                             editFlag ?
-                            <>
-                                <InputLabel>Booking Date</InputLabel>
-                                <div className={styles.bookingDateRangeInnerContainer}>
-                                    <LocalizationProvider dateAdapter={AdapterMoment}>
-                                        <DatePicker 
-                                            disabled={editFlag || values.isCustomiseSchedule} 
-                                            name="bookingDate" format={'DD-MM-YYYY'} 
-                                            value={values.bookingDate ? moment(values.bookingDate) : null} 
-                                        />
-                                    </LocalizationProvider>
-                                </div>
-                            </>
-                            :
-                            <>
-                                <InputLabel>Select Date Range</InputLabel>
-                                <div className={styles.dateRangeInnerContainer}>
-                                    <LocalizationProvider dateAdapter={AdapterMoment}>
-                                        <FormControl>
-                                            <DatePicker disabled={editFlag || values.isCustomiseSchedule} name="bookingFromDate" format={'DD-MM-YYYY'} value={values.bookingFromDate ? moment(values.bookingFromDate) : null} onChange={(e) => handleDateChange(e, "bookingFromDate")} />
-                                            {touched.bookingFromDate && errors.bookingFromDate && <FormHelperText className='errorHelperText'>{errors.bookingFromDate}</FormHelperText>}
-                                        </FormControl>
-                                        <FormControl>
-                                            <DatePicker disabled={editFlag || values.isCustomiseSchedule} name="bookingToDate" format={'DD-MM-YYYY'} value={values.bookingToDate ? moment(values.bookingToDate) : null} onChange={(e) => handleDateChange(e, "bookingToDate")} />
-                                            {touched.bookingToDate && errors.bookingToDate && <FormHelperText className='errorHelperText'>{errors.bookingToDate}</FormHelperText>}
-                                        </FormControl>
-                                    </LocalizationProvider>
-                                    <div className={`form-control-input`} style={{margin: '5px 0 0 20px'}}>
-                                        <FormControl required>
-                                            <FormGroup
-                                                onChange={handleChange}
-                                                value={values.bookingOnWorkingDay}
-                                                style={{flexDirection: "row"}}>
-                                                  <FormControlLabel name="bookingOnWorkingDay" value={true} control={<Checkbox />} label="Booking on week offs" />
-                                            </FormGroup>
-                                        </FormControl>
+                                <>
+                                    <InputLabel>Booking Date</InputLabel>
+                                    <div className={styles.bookingDateRangeInnerContainer}>
+                                        <LocalizationProvider dateAdapter={AdapterMoment}>
+                                            <DatePicker
+                                                disabled={editFlag || values.isCustomiseSchedule}
+                                                name="bookingDate" format={'DD-MM-YYYY'}
+                                                value={values.bookingDate ? moment(values.bookingDate) : null}
+                                            />
+                                        </LocalizationProvider>
                                     </div>
-                                </div>
-                                
-                            </>
+                                </>
+                                :
+                                <>
+                                    <InputLabel>Select Date Range</InputLabel>
+                                    <div className={styles.dateRangeInnerContainer}>
+                                        <LocalizationProvider dateAdapter={AdapterMoment}>
+                                            <FormControl>
+                                                <DatePicker disabled={editFlag || values.isCustomiseSchedule} name="bookingFromDate" format={'DD-MM-YYYY'} value={values.bookingFromDate ? moment(values.bookingFromDate) : null} onChange={(e) => handleDateChange(e, "bookingFromDate")} />
+                                                {touched.bookingFromDate && errors.bookingFromDate && <FormHelperText className='errorHelperText'>{errors.bookingFromDate}</FormHelperText>}
+                                            </FormControl>
+                                            <FormControl>
+                                                <DatePicker disabled={editFlag || values.isCustomiseSchedule} name="bookingToDate" format={'DD-MM-YYYY'} value={values.bookingToDate ? moment(values.bookingToDate) : null} onChange={(e) => handleDateChange(e, "bookingToDate")} />
+                                                {touched.bookingToDate && errors.bookingToDate && <FormHelperText className='errorHelperText'>{errors.bookingToDate}</FormHelperText>}
+                                            </FormControl>
+                                        </LocalizationProvider>
+                                        <div className={`form-control-input`} style={{ margin: '5px 0 0 20px' }}>
+                                            <FormControl required>
+                                                <FormGroup
+                                                    onChange={handleChange}
+                                                    value={values.bookingOnWorkingDay}
+                                                    style={{ flexDirection: "row" }}>
+                                                    <FormControlLabel name="bookingOnWorkingDay" value={true} control={<Checkbox />} label="Booking on week offs" />
+                                                </FormGroup>
+                                            </FormControl>
+                                        </div>
+                                    </div>
+
+                                </>
                         }
                     </div>
                 </div>
@@ -1183,7 +1203,7 @@ const CreateBooking = () => {
                             <FormControl required>
                                 <FormLabel id="transport-type">Select Transport Type</FormLabel>
                                 <RadioGroup
-                                    style={{flexDirection: "row"}}
+                                    style={{ flexDirection: "row" }}
                                     aria-labelledby="transport-type"
                                     onChange={handleChange}
                                     value={values.transportType}
@@ -1210,51 +1230,51 @@ const CreateBooking = () => {
                         {renderDateRange()}
                     </div>
                     {values.transportType !== TRANSPORT_TYPES.CAB && !values.isCustomiseSchedule &&
-                    <div className={styles.pickAndDropContainer}>
-                        <div className='form-control-input'>
-                            <FormControl required>
-                                <InputLabel id="pickUpPoint-label">Pickup Point</InputLabel>
-                                <Select
-                                    labelId="pickUpPoint-label"
-                                    id="pickUpPoint"
-                                    value={values.pickUpPoint}
-                                    error={touched.pickUpPoint && Boolean(errors.pickUpPoint)}
-                                    name="pickUpPoint"
-                                    label="Pickup Point"
-                                    onChange={handleChange}
-                                >
-                                    {!!nodalPoints?.length && nodalPoints.map((point, idx) => (
-                                        <MenuItem key={idx} value={point.locationName}>{point.locationName}</MenuItem>
-                                    ))}
-                                </Select>
-                                {touched.pickUpPoint && errors.pickUpPoint && <FormHelperText className='errorHelperText'>{errors.pickUpPoint}</FormHelperText>}
-                            </FormControl>
-                        </div>
-                        <div className='form-control-input'>
-                            <FormControl required>
-                                <InputLabel id="dropPoint-label">Drop Point</InputLabel>
-                                <Select
-                                    labelId="dropPoint-label"
-                                    id="dropPoint"
-                                    value={values.dropPoint}
-                                    error={touched.dropPoint && Boolean(errors.dropPoint)}
-                                    name="dropPoint"
-                                    label="Drop Point"
-                                    onChange={handleChange}
-                                >
-                                    {!!nodalPoints?.length && nodalPoints.map((point, idx) => (
-                                        <MenuItem key={idx} value={point.locationName}>{point.locationName}</MenuItem>
-                                    ))}
-                                </Select>
-                                {touched.dropPoint && errors.dropPoint && <FormHelperText className='errorHelperText'>{errors.dropPoint}</FormHelperText>}
-                            </FormControl>
-                        </div>
-                    </div>}
-                    <div className='addBtnContainer' style={{paddingBottom: "20px", flexDirection: "row-reverse"}}>
+                        <div className={styles.pickAndDropContainer}>
+                            <div className='form-control-input'>
+                                <FormControl required>
+                                    <InputLabel id="pickUpPoint-label">Pickup Point</InputLabel>
+                                    <Select
+                                        labelId="pickUpPoint-label"
+                                        id="pickUpPoint"
+                                        value={values.pickUpPoint}
+                                        error={touched.pickUpPoint && Boolean(errors.pickUpPoint)}
+                                        name="pickUpPoint"
+                                        label="Pickup Point"
+                                        onChange={handleChange}
+                                    >
+                                        {!!nodalPoints?.length && nodalPoints.map((point, idx) => (
+                                            <MenuItem key={idx} value={point.locationName}>{point.locationName}</MenuItem>
+                                        ))}
+                                    </Select>
+                                    {touched.pickUpPoint && errors.pickUpPoint && <FormHelperText className='errorHelperText'>{errors.pickUpPoint}</FormHelperText>}
+                                </FormControl>
+                            </div>
+                            <div className='form-control-input'>
+                                <FormControl required>
+                                    <InputLabel id="dropPoint-label">Drop Point</InputLabel>
+                                    <Select
+                                        labelId="dropPoint-label"
+                                        id="dropPoint"
+                                        value={values.dropPoint}
+                                        error={touched.dropPoint && Boolean(errors.dropPoint)}
+                                        name="dropPoint"
+                                        label="Drop Point"
+                                        onChange={handleChange}
+                                    >
+                                        {!!nodalPoints?.length && nodalPoints.map((point, idx) => (
+                                            <MenuItem key={idx} value={point.locationName}>{point.locationName}</MenuItem>
+                                        ))}
+                                    </Select>
+                                    {touched.dropPoint && errors.dropPoint && <FormHelperText className='errorHelperText'>{errors.dropPoint}</FormHelperText>}
+                                </FormControl>
+                            </div>
+                        </div>}
+                    <div className='addBtnContainer' style={{ paddingBottom: "20px", flexDirection: "row-reverse" }}>
                         <div>
-                            { editFlag && <button onClick={backHandler} className='btn btn-secondary'>Back</button>}
+                            {editFlag && <button onClick={backHandler} className='btn btn-secondary'>Back</button>}
 
-                            <button type="submit" onClick={values.isCustomiseSchedule ? handleMultiSubmit : handleSubmit} className='btn btn-primary'>{editFlag ? 'Update': 'Create'} Booking</button>
+                            <button type="submit" onClick={values.isCustomiseSchedule ? handleMultiSubmit : handleSubmit} className='btn btn-primary'>{editFlag ? 'Update' : 'Create'} Booking</button>
                         </div>
                     </div>
                 </div>
@@ -1280,7 +1300,7 @@ const CreateBooking = () => {
                                 getOptionLabel={(rm) => `${rm.data} ${rm.empId}`}
                                 freeSolo
                                 name="reportingManager"
-                                renderInput={(params) => <TextField {...params} label="Search User"  onChange={searchForRM} />}
+                                renderInput={(params) => <TextField {...params} label="Search User" onChange={searchForRM} />}
                             />
                         </div>
                     </div>
@@ -1295,7 +1315,7 @@ const CreateBooking = () => {
                         </div>
                         <div className={styles.userDetailsContainer}>
                             <span>Gender</span>
-                            <p style={{textTransform: "capitalize"}}>{selectedOtherUserDetails.gender.toLowerCase()}</p>
+                            <p style={{ textTransform: "capitalize" }}>{selectedOtherUserDetails.gender.toLowerCase()}</p>
                         </div>
                         <div className={styles.userDetailsContainer}>
                             <span>Employee ID</span>
@@ -1324,26 +1344,26 @@ const CreateBooking = () => {
                             </div>
                         </>}
                         <div className={styles.userDetailsContainer}>
-                            <button onClick={() => setIsViewMore((previous) => !previous)} style={{width: "150px", margin: "0"}} className='btn btn-primary'>{isViewMore ? 'View Less' : 'View More'}</button>
+                            <button onClick={() => setIsViewMore((previous) => !previous)} style={{ width: "150px", margin: "0" }} className='btn btn-primary'>{isViewMore ? 'View Less' : 'View More'}</button>
                         </div>
                     </div>}
-                    <div className='addBtnContainer' style={{paddingBottom: "20px", flexDirection: "row-reverse"}}>
+                    <div className='addBtnContainer' style={{ paddingBottom: "20px", flexDirection: "row-reverse" }}>
                         <div>
                             <button disabled={!!(!selectedUsers?.length)} onClick={handleUserNext} className='btn btn-primary'>Next</button>
                         </div>
                     </div>
-                </div>    
+                </div>
             </div>}
             {currentBookingFlow === 3 && <div>
                 <div className={styles.mainBookingContainer}>
-                    <div style={{padding: "15px"}}>
+                    <div style={{ padding: "15px" }}>
                         <h3>Team Details</h3>
                     </div>
                     <div className={styles.mainBookingDataContainer}>
                         {teamFlow === 1 && <Grid onRadioClick={onTeamRadioClick} handlePageChange={handleTeamPageChange} headers={teamHeaders} listing={teamListing} pagination={teamPaginationData} />}
                         {teamFlow === 2 && <Grid onCheckboxClick={onTeamCheckboxClick} headers={teamUserHeaders} listing={teamUserListing} />}
                     </div>
-                    <div className='addBtnContainer' style={{borderTop: "0", paddingBottom: "20px", flexDirection: "row-reverse"}}>
+                    <div className='addBtnContainer' style={{ borderTop: "0", paddingBottom: "20px", flexDirection: "row-reverse" }}>
                         <div>
                             <button onClick={handleTeamNext} className='btn btn-primary'>Next</button>
                         </div>

@@ -135,7 +135,7 @@ const SearchBookings = () => {
             const teams = await getAllTeams();
             var modifiedPageinationResponse = [];
             paginatedResponse.map((obj,index)=>{
-                const shiftKey = obj.loginShift ? 'loginShift' : 'logoutShift';
+                const shiftKey = obj.bookingType === "LOGIN" ? 'loginShift' : 'logoutShift';
                 obj.shiftTime = obj[shiftKey];
                 delete obj[shiftKey];
                 const team = teams.find(val => obj.teamId === val.id);
