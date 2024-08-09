@@ -44,10 +44,28 @@ const Penalty = () => {
     const [penaltyListing, setPenaltyListing] = useState();
     const [editPenaltyData, setEditPenaltyData] = useState({});
 
+    const [paginationData, setPaginationData] = useState();
+    const [pagination,setPagination] = useState({
+        pageNo : 0,
+        pageSize : 10,
+    })
+    const handlePageChange = (page) => {
+        console.log(page);
+        let updatedPagination = {...pagination};
+        updatedPagination.pageNo = page;
+        setPagination(updatedPagination);
+    };
+
     const fetchAllPenalties = async () => {
         try {
-            const response = await ComplianceService.getAllPenalty();
+            const params = new URLSearchParams(pagination)
+            const response = await ComplianceService.getAllPenalty(params);
             setPenaltyListing(response.data.paginatedResponse.content);
+
+            const data = response.data;
+            let localPaginationData = {...data};
+            delete localPaginationData?.paginatedResponse.contents;
+            setPaginationData(localPaginationData.paginatedResponse);
         } catch (e) {
             console.error(e);
         }
@@ -55,7 +73,7 @@ const Penalty = () => {
 
     useEffect(() => {
         fetchAllPenalties();
-    }, []);
+    }, [pagination]);
 
     const onMenuItemClick = (key, values) => {
         if (key === "edit") {
@@ -74,13 +92,20 @@ const Penalty = () => {
                         </div>
                     </div>
                     <div className='gridContainer'>
-                        <Grid onMenuItemClick={onMenuItemClick} headers={headers} listing={penaltyListing} />
+                        <Grid 
+                            onMenuItemClick={onMenuItemClick} 
+                            headers={headers} 
+                            listing={penaltyListing} 
+                            pageNoText="pageNo"
+                            handlePageChange={handlePageChange}
+                            pagination={paginationData}    
+                        />
                     </div>
                 </div>
             }
             {
                 isAddPenalty && <div>
-                    <AddPenalty EditPenaltyData={editPenaltyData} />
+                    <AddPenalty EditPenaltyData={editPenaltyData} isAddPenalty={()=>setIsAddPenalty(false)}/>
                 </div>
             }
         </div>

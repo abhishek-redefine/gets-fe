@@ -17,6 +17,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 import MasterDataService from "@/services/masterdata.service";
+import { param } from "jquery";
 
 const style = {
   position: "absolute",
@@ -92,10 +93,6 @@ const Area = ({ roleType, onSuccess }) => {
     setOpenModal(false);
   };
   const dispatch = useDispatch();
-  const [pagination, setPagination] = useState({
-    page: 0,
-    size: 10,
-  });
 
   const formik = useFormik({
     initialValues: initialValues,
@@ -178,7 +175,12 @@ const Area = ({ roleType, onSuccess }) => {
   };
   const fetchAllZones = async () => {
     try {
-      const response = await RoutingService.getAllZones();
+      const page = {
+        page : 0,
+        size : 100
+      }
+      let params = new URLSearchParams(page);
+      const response = await RoutingService.getAllZones(params);
       const { data } = response;
       const clientZoneDTO = data.data;
       console.log(clientZoneDTO);
@@ -202,16 +204,49 @@ const Area = ({ roleType, onSuccess }) => {
     }
   };
 
-  const fetchAllArea = async () => {
+
+  const [paginationData, setPaginationData] = useState();
+  const [pagination, setPagination] = useState({
+    page: 0,
+    size: 10,
+  })
+  const handlePageChange = (page) => {
+    console.log(page);
+    let updatedPagination = { ...pagination };
+    updatedPagination.pageNo = page;
+    setPagination(updatedPagination);
+  };
+
+  const fetchAllArea = async (search = false) => {
     try {
-      const response = await RoutingService.getAllArea();
+      let params = new URLSearchParams(pagination);
+      let allSearchValues = {...searchValues};
+      Object.keys(allSearchValues).map((objKey)=>{
+        if (allSearchValues[objKey] === null || allSearchValues[objKey] === "") {
+          delete allSearchValues[objKey];
+        }
+      })
+      const response = search ? await RoutingService.getAllArea(params,allSearchValues) : await RoutingService.getAllArea(params);
       console.log(response.data);
       const areaDTO = response.data.data;
       setAreaList(areaDTO);
+
+      const data = response;
+      let localPaginationData = { ...data };
+      delete localPaginationData?.data;
+      setPaginationData(localPaginationData);
     } catch (err) {
       console.log(err);
     }
   };
+
+  const resetFilter = () =>{
+    setSearchValues({
+      officeId: "",
+      zoneName: "",
+    });
+    fetchAllArea();
+  }
 
   const enableDisableArea = async (id, flag) => {
     try {
@@ -228,7 +263,7 @@ const Area = ({ roleType, onSuccess }) => {
     fetchMasterData();
     fetchAllZones();
     fetchAllArea();
-  }, []);
+  }, [pagination]);
 
   return (
     <div className="internalSettingContainer">
@@ -267,6 +302,14 @@ const Area = ({ roleType, onSuccess }) => {
                   name="zoneName"
                   label="Zone Name"
                   onChange={handleFilterChange}
+                  MenuProps={{
+                    MenuListProps: {
+                      sx: {
+                        maxHeight: 200,
+                        overflowY: 'auto',
+                      },
+                    },
+                  }}
                 >
                   {!!zones?.length &&
                     zones.map((zone, idx) => (
@@ -280,10 +323,19 @@ const Area = ({ roleType, onSuccess }) => {
             <div className="form-control-input" style={{ minWidth: "70px" }}>
               <button
                 type="submit"
-                onClick={() => console.log("clicked")}
+                onClick={() => fetchAllArea(true)}
                 className="btn btn-primary filterApplyBtn"
               >
                 Apply
+              </button>
+            </div>
+            <div className="form-control-input" style={{ minWidth: "70px" }}>
+              <button
+                type="submit"
+                onClick={() => resetFilter()}
+                className="btn btn-primary filterApplyBtn"
+              >
+                Reset
               </button>
             </div>
           </div>
@@ -300,6 +352,9 @@ const Area = ({ roleType, onSuccess }) => {
           listing={areaList}
           onMenuItemClick={onMenuItemClick}
           enableDisableRow={true}
+          pageNoText="pageNumber"
+          handlePageChange={handlePageChange}
+          pagination={paginationData}
         />
         <Modal
           open={openModal}
@@ -349,6 +404,14 @@ const Area = ({ roleType, onSuccess }) => {
                       name="zoneName"
                       label="Zone Name"
                       onChange={handleChange}
+                      MenuProps={{
+                        MenuListProps: {
+                          sx: {
+                            maxHeight: 200,
+                            overflowY: 'auto',
+                          },
+                        },
+                      }}
                     >
                       {!!zoneList?.length &&
                         zoneList.map((zone, idx) => (

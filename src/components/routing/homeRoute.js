@@ -4,6 +4,7 @@ import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import OfficeService from "@/services/office.service";
 import { getFormattedLabel } from "@/utils/utils";
 import RoutingService from "@/services/route.service";
+import { object } from "yup";
 
 const HomeRoute = () => {
   const headers = [
@@ -91,10 +92,24 @@ const HomeRoute = () => {
     }
   };
 
-  const fetchAllHomeRoutes = async () => {
+  const resetFilter = () =>{
+    setSearchValues({
+      officeId : ""
+    })
+    fetchAllHomeRoutes(true);
+  }
+
+  const fetchAllHomeRoutes = async (search=false) => {
     try {
       const params = new URLSearchParams(pagination);
-      const response = await RoutingService.getAllHomeRoutes(params.toString());
+      console.log(searchValues);
+      let allSearchValues = {...searchValues};
+      Object.keys(allSearchValues).map((objKey)=>{
+        if (allSearchValues[objKey] === null || allSearchValues[objKey] === "") {
+          delete allSearchValues[objKey];
+        }
+      })
+      const response = searchValues.officeId !== "" && !search ? await RoutingService.getAllHomeRoutes(params.toString(),searchValues.officeId) : await RoutingService.getAllHomeRoutes(params.toString());
       console.log(response);
       const { data } = response || {};
       const homeRouteDTO = response.data.data;
@@ -144,7 +159,7 @@ const HomeRoute = () => {
             <div className="form-control-input" style={{ minWidth: "70px" }}>
               <button
                 type="submit"
-                onClick={() => console.log("clicked")}
+                onClick={() => fetchAllHomeRoutes()}
                 className="btn btn-primary filterApplyBtn"
               >
                 Apply
@@ -153,7 +168,7 @@ const HomeRoute = () => {
             <div className="form-control-input" style={{ minWidth: "70px" }}>
               <button
                 type="submit"
-                onClick={() => console.log("clicked")}
+                onClick={() => resetFilter()}
                 className="btn btn-primary filterApplyBtn"
               >
                 Reset
