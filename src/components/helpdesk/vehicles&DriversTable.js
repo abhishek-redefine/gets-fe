@@ -6,39 +6,52 @@ import {
 
 
 
-const VehiclesNDriversTable = ({list}) => {
+const VehiclesNDriversTable = ({list, vehicleTripIdClicked }) => {
   const [data, setData] = useState([]);
+
+  const handleTripClick = () => {
+    console.log("Vehicles & Drivers trip clicked");
+    vehicleTripIdClicked();
+  };
 
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'id', 
+        accessorKey: 'id',
         header: 'Trip ID',
         size: 150,
         Cell: ({ cell }) => {
-          return <div>TRIP-{cell.getValue()}</div>;
+          const tripId = cell.getValue();
+          return (
+            <a
+              onClick={handleTripClick}
+              style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
+            >
+              TRIP-{tripId}
+            </a>
+          );
         },
       },
-    //   {
-    //     accessorKey: 'empIds',
-    //     header: 'Trip Status',
-    //     size: 150,
-    //   },
+      {
+        accessorKey: 'tripState',
+        header: 'Trip Status',
+        size: 150,
+      },
       {
         accessorKey: 'shiftTime', 
         header: 'Shift Time',
         size: 150,
       },
-    //   {
-    //     accessorKey: 'firstPickupLastDrop',
-    //     header: 'First Pickup / Last Drop',
-    //     size: 150,
-    //   },
-    //   {
-    //     accessorKey: 'tripDistance',
-    //     header: 'Trip Distance',
-    //     size: 150,
-    //   },
+      {
+        accessorKey: 'firstPickupLastDrop',
+        header: 'First Pickup / Last Drop',
+        size: 150,
+      },
+      {
+        accessorKey: 'tripDistance',
+        header: 'Trip Distance',
+        size: 150,
+      },
       {
         accessorKey: 'officeId',
         header: 'Office ID',

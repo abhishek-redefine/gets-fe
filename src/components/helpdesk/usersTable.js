@@ -6,24 +6,38 @@ import {
 
 
 
-const UsersTable = ({list}) => {
+const UsersTable = ({list, usersTripIdClicked }) => {
   const [data, setData] = useState([]);
+
+
+  const handleTripClick = () => {
+    console.log("Users trip clicked");
+    usersTripIdClicked();
+  };
 
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'id', 
+        accessorKey: 'id',
         header: 'Trip ID',
         size: 150,
         Cell: ({ cell }) => {
-          return <div>TRIP-{cell.getValue()}</div>;
+          const tripId = cell.getValue();
+          return (
+            <a
+              onClick={handleTripClick}
+              style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
+            >
+              TRIP-{tripId}
+            </a>
+          );
         },
       },
-    //   {
-    //     accessorKey: 'empIds',
-    //     header: 'Trip Status',
-    //     size: 150,
-    //   },
+      {
+        accessorKey: 'tripState',
+        header: 'Trip Status',
+        size: 150,
+      },
       {
         accessorKey: 'shiftTime', 
         header: 'Shift Time',
@@ -39,16 +53,16 @@ const UsersTable = ({list}) => {
         header: 'Cab Details',
         size: 150,
       },
-    //   {
-    //     accessorKey: 'pickupTime',
-    //     header: 'Sign In',
-    //     size: 100,
-    //   },
-    //   {
-    //     accessorKey: 'pickupPoint',
-    //     header: 'Sign Out',
-    //     size: 100,
-    //   },
+      {
+        accessorKey: 'signIn',
+        header: 'Sign In',
+        size: 100,
+      },
+      {
+        accessorKey: 'signOut',
+        header: 'Sign Out',
+        size: 100,
+      },
     ],
     [],
   );
