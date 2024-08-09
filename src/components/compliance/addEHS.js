@@ -45,28 +45,34 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
         validationSchema: validationSchema,
         onSubmit: async (values) => {
             console.log(values)
-            if (EditEhsData?.id) {
-                values.ehsAppliedOn === "Driver" ? values.ehsAppliedOnDriver = true : values.ehsAppliedOnDriver = false;
-                values.officeIds = [values.officeIds];
-                const response = await ComplianceService.updateEHS({ "ehs": values })
-                if (response.status === 200) {
-                    dispatch(toggleToast({ message: 'EHS details updated successfully!', type: 'success' }));
-                    SetIsAddEhs(false);
-                } else if (response.status === 500) {
-                    dispatch(toggleToast({ message: 'EHS details not updated. Please try again later!', type: 'error' }));
-                    SetIsAddEhs(false);
+            try {
+                if (EditEhsData?.id) {
+                    values.ehsAppliedOn === "Driver" ? values["ehsAppliedOnDriver"] = true : values["ehsAppliedOnDriver"] = false;
+                    values.officeIds = [values.officeIds];
+                    const response = await ComplianceService.updateEHS({ "ehs": values })
+                    if (response.status === 200) {
+                        dispatch(toggleToast({ message: 'EHS details updated successfully!', type: 'success' }));
+                        SetIsAddEhs(false);
+                    } else if (response.status === 500) {
+                        dispatch(toggleToast({ message: 'EHS details not updated. Please try again later!', type: 'error' }));
+                        SetIsAddEhs(false);
+                    }
+                } else {
+                    values.ehsAppliedOn === "Driver" ? values["ehsAppliedOnDriver"] = true : values["ehsAppliedOnDriver"] = false;
+                    values.officeIds = [values.officeIds]
+                    const response = await ComplianceService.createEHS({ "ehs": values })
+                    if (response.status === 201) {
+                        dispatch(toggleToast({ message: 'EHS details added successfully!', type: 'success' }));
+                        SetIsAddEhs(false);
+                    } else if (response.status === 500) {
+                        dispatch(toggleToast({ message: 'EHS details not added. Please try again later!', type: 'error' }));
+                        SetIsAddEhs(false);
+                    }
                 }
-            } else {
-                values.ehsAppliedOn === "Driver" ? values.ehsAppliedOnDriver = true : values.ehsAppliedOnDriver = false;
-                values.officeIds = [values.officeIds]
-                const response = await ComplianceService.createEHS({ "ehs": values })
-                if (response.status === 201) {
-                    dispatch(toggleToast({ message: 'EHS details added successfully!', type: 'success' }));
-                    SetIsAddEhs(false);
-                } else if (response.status === 500) {
-                    dispatch(toggleToast({ message: 'EHS details not added. Please try again later!', type: 'error' }));
-                    SetIsAddEhs(false);
-                }
+            } catch (err) {
+                dispatch(toggleToast({ message: 'EHS details not added. Please try again later!', type: 'error' }));
+                values.officeIds = values.officeIds[0];
+                console.log(err);
             }
         }
     });
@@ -77,7 +83,7 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
     const [ehsCategoryList, setEhsCategoryList] = useState([]);
     const [ehsMandate, setEhsMandate] = useState([]);
     const [ehsFrequency, setEhsFrequency] = useState([]);
-    const [transportTypes,setTransportTypes] = useState([]);
+    const [transportTypes, setTransportTypes] = useState([]);
     const dispatch = useDispatch();
 
     const fetchAllOffices = async () => {
@@ -91,8 +97,8 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
         }
     };
 
-    const fetchAllMasterData = async() =>{
-        try{
+    const fetchAllMasterData = async () => {
+        try {
             const EhsCategoryResponse = await ComplianceService.getMasterData('EhsCategory');
             const EhsFrequencyResponse = await ComplianceService.getMasterData('EhsFrequency');
             const EhsMandateResponse = await ComplianceService.getMasterData('EhsMandate');
@@ -102,7 +108,7 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
             setEhsMandate(EhsMandateResponse.data);
             setTransportTypes(TransportTypeResponse.data);
         }
-        catch(err){
+        catch (err) {
             console.log(err);
         }
     }
@@ -214,7 +220,7 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
                     <div className='form-control-input'>
                         <TextField
                             error={touched.days && Boolean(errors.days)}
-                            helperText={touched.days && errors.days} onChange={handleChange}  type="number"
+                            helperText={touched.days && errors.days} onChange={handleChange} type="number"
                             required id="days" name="days" value={values.days} label="EHS Frequency" variant="outlined" />
                     </div>
                 </div>
@@ -240,26 +246,26 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
                     values.ehsAppliedOn === 'Vehicle' &&
                     <div>
                         <div className='form-control-input'>
-                        <FormControl required fullWidth>
-                            <InputLabel id="vehicleType-label">Vehicle Type</InputLabel>
-                            <Select
-                                labelId="vehicleType-label"
-                                id="vehicleType"
-                                name="vehicleType"
-                                value={values.ehsStatus}
-                                label="vehicleType"
-                                error={touched.vehicleType && Boolean(errors.vehicleType)}
-                                helperText={touched.vehicleType && errors.vehicleType}
-                                onChange={handleChange}
+                            <FormControl required fullWidth>
+                                <InputLabel id="vehicleType-label">Vehicle Type</InputLabel>
+                                <Select
+                                    labelId="vehicleType-label"
+                                    id="vehicleType"
+                                    name="vehicleType"
+                                    value={values.ehsStatus}
+                                    label="vehicleType"
+                                    error={touched.vehicleType && Boolean(errors.vehicleType)}
+                                    helperText={touched.vehicleType && errors.vehicleType}
+                                    onChange={handleChange}
                                 >
-                                {transportTypes.map((g, idx) => (
-                                    <MenuItem key={idx} value={g.value}>
-                                        {g.value}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                        {/* <TextField
+                                    {transportTypes.map((g, idx) => (
+                                        <MenuItem key={idx} value={g.value}>
+                                            {g.value}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                            {/* <TextField
                             error={touched.vehicleType && Boolean(errors.vehicleType)}
                             helperText={touched.vehicleType && errors.vehicleType} onChange={handleChange}
                             required id="vehicleType" name="vehicleType" value={values.vehicleType} label="Vehicle Type" variant="outlined" /> */}
@@ -271,7 +277,7 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
                         <button onClick={handleReset} className='btn btn-secondary'>Reset</button>
                     </div>
                     <div>
-                        <button onClick={()=>SetIsAddEhs(false)} className='btn btn-secondary'>Back</button>
+                        <button onClick={() => SetIsAddEhs(false)} className='btn btn-secondary'>Back</button>
                         <button type="submit" onClick={handleSubmit} className='btn btn-primary'>{EditEhsData?.id ? 'Update' : 'Create'} EHS</button>
                     </div>
                 </div>
