@@ -152,16 +152,35 @@ const Zone = ({ roleType, onSuccess }) => {
       const { data } = response || {};
       const { clientOfficeDTO } = data || {};
       setOffice(clientOfficeDTO);
-    } catch (e) {}
+    } catch (e) { }
   };
 
-  const fetchAllZones = async () => {
+
+  const [paginationData, setPaginationData] = useState();
+  const [pagination, setPagination] = useState({
+    page: 0,
+    size: 10,
+  })
+  const handlePageChange = (page) => {
+    console.log(page);
+    let updatedPagination = { ...pagination };
+    updatedPagination.pageNo = page;
+    setPagination(updatedPagination);
+  };
+
+  const fetchAllZones = async (search=false) => {
     try {
-      const response = await RoutingService.getAllZones();
+      console.log(search);
+      let params = new URLSearchParams(pagination);
+      const response = search ? await RoutingService.getAllZones(params,searchValues.officeId) : await RoutingService.getAllZones(params);
       const { data } = response;
       const clientZoneDTO = data.data;
       console.log(clientZoneDTO);
       setZones(clientZoneDTO);
+
+      let localPaginationData = { ...data };
+      delete localPaginationData?.data;
+      setPaginationData(localPaginationData);
     } catch (err) {
       console.log(err);
     }
@@ -170,7 +189,7 @@ const Zone = ({ roleType, onSuccess }) => {
   useEffect(() => {
     fetchAllOffices();
     fetchAllZones();
-  }, []);
+  }, [pagination]);
 
   return (
     <div className="internalSettingContainer">
@@ -201,7 +220,7 @@ const Zone = ({ roleType, onSuccess }) => {
             <div className="form-control-input" style={{ minWidth: "70px" }}>
               <button
                 type="submit"
-                onClick={() => console.log("clicked")}
+                onClick={() => fetchAllZones(true)}
                 className="btn btn-primary filterApplyBtn"
               >
                 Apply
@@ -221,6 +240,9 @@ const Zone = ({ roleType, onSuccess }) => {
           listing={zones}
           onMenuItemClick={onMenuItemClick}
           enableDisableRow={true}
+          pageNoText="pageNumber"
+          handlePageChange={handlePageChange}
+          pagination={paginationData}
         />
         <Modal
           open={openModal}

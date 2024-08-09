@@ -29,7 +29,7 @@ const EHS = () => {
         },
         {
             key: 'updatedAt',
-            display:'Updated At'
+            display: 'Updated At'
         },
         {
             key: "vehicleType",
@@ -52,16 +52,29 @@ const EHS = () => {
     const [isAddEHS, setIsAddEHS] = useState(false);
     const [ehsListing, setEhsListing] = useState();
     const [editEhsData, setEditEhsData] = useState({});
-    const [pagination ,setPagination] = useState({
+
+    const [paginationData, setPaginationData] = useState();
+    const [pagination,setPagination] = useState({
         pageNo : 0,
-        pageSize : 10
+        pageSize : 10,
     })
+    const handlePageChange = (page) => {
+        console.log(page);
+        let updatedPagination = {...pagination};
+        updatedPagination.pageNo = page;
+        setPagination(updatedPagination);
+    };
 
     const fetchAllEHS = async () => {
         try {
             let params = new URLSearchParams(pagination);
             const response = await ComplianceService.getAllEHS(params, {});
             setEhsListing(response.data.data);
+
+            const data = response.data;
+            let localPaginationData = {...data};
+            delete localPaginationData?.data;
+            setPaginationData(localPaginationData);
         } catch (e) {
             console.error(e);
         }
@@ -69,7 +82,7 @@ const EHS = () => {
 
     useEffect(() => {
         fetchAllEHS();
-    }, [isAddEHS]);
+    }, [isAddEHS,pagination]);
 
     const onMenuItemClick = (key, values) => {
         if (key === "edit") {
@@ -87,7 +100,14 @@ const EHS = () => {
                     </div>
                 </div>
                 <div className='gridContainer'>
-                    <Grid onMenuItemClick={onMenuItemClick} headers={headers} listing={ehsListing} />
+                    <Grid
+                        onMenuItemClick={onMenuItemClick}
+                        headers={headers}
+                        listing={ehsListing}
+                        pageNoText="pageNumber"
+                        handlePageChange={handlePageChange}
+                        pagination={paginationData}
+                    />
                 </div>
             </div>}
             {
