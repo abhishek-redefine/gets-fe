@@ -123,6 +123,7 @@ const withAuthLayout = (WrappedComponent) => {
               {getModulePermissions(MODULE_NAMES.TRACKING) && <Link onClick={() => changeRoute('tracking')} className={currentActiveState === 'tracking' && 'selected' || ''} href='/tracking/live-tracking'>Tracking</Link>}
               {/* <Link onClick={() => changeRoute('tracking')} className={currentActiveState === 'tracking' && 'selected' || ''} href='/tracking'>Tracking</Link> */}
               {/*<Link onClick={() => changeRoute('billing')} className={currentActiveState === 'billing' && 'selected' || ''} href='/billing'>Billing</Link> */}
+              {getModulePermissions(MODULE_NAMES.COMPLIANCE) && <Link onClick={() => changeRoute('billing')} className={currentActiveState === 'billing' && 'selected' || ''} href='/billing/billing-issues'>Billing</Link>}
               {getModulePermissions(MODULE_NAMES.COMPLIANCE) && <Link onClick={() => changeRoute('compliance')} className={currentActiveState === 'compliance' && 'selected' || ''} href='/compliance/driver-profile'>Compliance</Link>}
               {getModulePermissions(MODULE_NAMES.ADMIN_SETTINGS) && <Link onClick={() => changeRoute('admin-settings')} className={currentActiveState === 'admin-settings' && 'selected' || ''} href='/admin-settings/access-control'>Admin Settings</Link>}
               {/* <Link onClick={() => changeRoute('configurations')} className={currentActiveState === 'configurations' && 'selected' || ''} href='/configurations'>Configurations</Link> */}
