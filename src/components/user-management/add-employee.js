@@ -34,6 +34,7 @@ import { toggleToast } from "@/redux/company.slice";
 import moment from "moment";
 import RoutingService from "@/services/route.service";
 import GeocodeModal from "./geocodeModal";
+import LoaderComponent from "../common/loading";
 
 const style = {
   position: "absolute",
@@ -85,6 +86,7 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
     pickupTime: null,
   });
   const [defaultRM, setDefaultRM] = useState({});
+  const [loading, setLoading] = useState(false);
 
   useState(() => {
     if (editEmployeeData?.id) {
@@ -137,6 +139,7 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
         }
       });
       try {
+        setLoading(true);
         var transportString = "";
         allValues.transportEligibilities.map((item) => {
           transportString += item + ",";
@@ -206,6 +209,8 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
             type: "error",
           })
         );
+      } finally {
+        setLoading(false);
       }
     },
   });
@@ -229,38 +234,48 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
   const [openModal, setOpenModal] = useState(false);
   const handleModalOpen = () => setOpenModal(true);
   const handleModalClose = () => {
-    console.log("in close")
+    console.log("in close");
     setOpenModal(false);
-  }
+  };
   const [coordinates, setCoordinates] = useState({ geoCode: "" });
-
-
 
   const fetchMasterData = async (type) => {
     try {
+      setLoading(true);
       const response = await MasterDataService.getMasterData(type);
       const { data } = response || {};
       if (data?.length) {
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getAllRolesByType = async () => {
     try {
+      setLoading(true);
       const response = await RoleService.getRolesByType(roleType);
       const { data } = response || {};
       setRoles(data);
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchAllOffices = async () => {
     try {
+      setLoading(true);
       const response = await OfficeService.getAllOffices();
       const { data } = response || {};
       const { clientOfficeDTO } = data || {};
       setOffice(clientOfficeDTO);
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -293,6 +308,7 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
 
   const searchForTeam = async (e) => {
     try {
+      setLoading(true);
       if (e.target.value) {
         const response = await OfficeService.searchTeam(e.target.value);
         const { data } = response || {};
@@ -302,11 +318,14 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
   const searchForRM = async (e) => {
     try {
+      setLoading(true);
       if (e.target.value) {
         const response = await OfficeService.searchRM(e.target.value);
         const { data } = response || {};
@@ -316,11 +335,14 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
   const searchForZone = async (e) => {
     try {
+      setLoading(true);
       if (e.target.value) {
         const response = await RoutingService.autoSuggestZone(e.target.value);
         const { data } = response || {};
@@ -330,11 +352,14 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
   const searchForArea = async (e) => {
     try {
+      setLoading(true);
       if (e.target.value) {
         const response = await RoutingService.autoSuggestArea(
           e.target.value,
@@ -347,6 +372,8 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -354,6 +381,7 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
     const { target } = event;
     const { value } = target;
     try {
+      setLoading(true);
       const response = await RoutingService.autoSuggestNodalPoints(
         value,
         values.areaName
@@ -363,6 +391,8 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
       setSearchedNodalPoints(data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -635,11 +665,13 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
               aria-describedby="modal-modal-description"
             >
               <Box sx={style}>
-                <GeocodeModal  geocode={handleGeocode} onClose={handleModalClose} />
+                <GeocodeModal
+                  geocode={handleGeocode}
+                  onClose={handleModalClose}
+                />
               </Box>
             </Modal>
           </div>
-          
         </div>
         <div>
           <div className="form-control-input">
@@ -1061,6 +1093,21 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
           </div>
         </div>
       </div>
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import { Box, FormControl, MenuItem, TextField } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
+import LoaderComponent from "../common/loading";
 
 const GeocodeModal = ({ geocode, onClose }) => {
   const [loading, setLoading] = useState(true);
@@ -11,10 +12,9 @@ const GeocodeModal = ({ geocode, onClose }) => {
   const [searchText, setSearchText] = useState("");
   const searchTextFieldRef = useRef(null);
 
-
   const mapDetails = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       setLat(28.61266);
       setLng(77.36105);
     } catch (error) {
@@ -28,10 +28,7 @@ const GeocodeModal = ({ geocode, onClose }) => {
     mapDetails();
   }, []);
 
-
-
   const initializeMap = async () => {
-    
     const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 
     const newMap = new window.google.maps.Map(document.getElementById("map"), {
@@ -47,17 +44,15 @@ const GeocodeModal = ({ geocode, onClose }) => {
       title: "This marker is draggable.",
     });
 
-    newMarker.addListener('dragend', (event) => {
+    newMarker.addListener("dragend", (event) => {
       setLat(event.latLng.lat());
       setLng(event.latLng.lng());
     });
-  
+
     setMap(newMap);
     setMarker(newMarker);
     setLoading(false);
   };
-
-
 
   useEffect(() => {
     const loadMapScript = () => {
@@ -90,7 +85,10 @@ const GeocodeModal = ({ geocode, onClose }) => {
     const service = new window.google.maps.places.AutocompleteService();
 
     service.getPlacePredictions({ input }, (predictions, status) => {
-      if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
+      if (
+        status === window.google.maps.places.PlacesServiceStatus.OK &&
+        predictions
+      ) {
         setPredictions(predictions);
       } else {
         setPredictions([]);
@@ -111,7 +109,10 @@ const GeocodeModal = ({ geocode, onClose }) => {
   const handlePlaceSelect = (placeId) => {
     const service = new window.google.maps.places.PlacesService(map);
     service.getDetails({ placeId }, (place, status) => {
-      if (status === window.google.maps.places.PlacesServiceStatus.OK && place.geometry) {
+      if (
+        status === window.google.maps.places.PlacesServiceStatus.OK &&
+        place.geometry
+      ) {
         const location = place.geometry.location;
         setLat(location.lat());
         setLng(location.lng());
@@ -123,42 +124,41 @@ const GeocodeModal = ({ geocode, onClose }) => {
           map.panTo(location);
         }
         setPredictions([]);
-        setSearchText(''); 
+        setSearchText("");
       }
     });
   };
 
   const handleSave = () => {
-    if (typeof geocode === 'function') {
-      console.log('in geocode');
+    if (typeof geocode === "function") {
+      console.log("in geocode");
       geocode(`${lat}, ${lng}`);
     }
     onClose();
-    console.log("lat: ", lat, "lng :", lng)
+    console.log("lat: ", lat, "lng :", lng);
   };
 
-
-
   return (
-    <div
-      style={{
-        padding: "30px",
-        backgroundColor: "#FFF",
-        borderRadius: 10,
-        fontFamily: "DM Sans",
-      }}
-    >
-      {/* Address autocomplete */}
+    <div>
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "20px",
-          // backgroundColor: "yellow"
+          padding: "30px",
+          backgroundColor: "#FFF",
+          borderRadius: 10,
+          fontFamily: "DM Sans",
         }}
       >
-        <h3>Geocode</h3>
+        {/* Address autocomplete */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "20px",
+            // backgroundColor: "yellow"
+          }}
+        >
+          <h3>Geocode</h3>
           <FormControl
             style={{
               fontFamily: "DM Sans",
@@ -171,7 +171,11 @@ const GeocodeModal = ({ geocode, onClose }) => {
               size="small"
               fullWidth
               value={searchText}
-              style={{ backgroundColor: "white", height: "40px", fontSize: "15px", }}
+              style={{
+                backgroundColor: "white",
+                height: "40px",
+                fontSize: "15px",
+              }}
               inputRef={searchTextFieldRef}
               onChange={handleInputChange}
             />
@@ -201,39 +205,51 @@ const GeocodeModal = ({ geocode, onClose }) => {
               </Box>
             )}
           </FormControl>
-      </div>
-      <Box
-        style={{
-          width: "100%",
-          height: "400px",
-        }}
-      >
-        {loading ? (
-          <div>Loading...</div>
-        ) : (
-          <div id="map" style={{ width: "100%", height: "100%" }}></div>
-        )}
-      </Box>
-
-      {/* Save Button */}
-      <div style={{ display: "flex", justifyContent: "center" }}>
-        <button
-          type="button"
+        </div>
+        <Box
           style={{
-            backgroundColor: "#f6ce47",
-            color: "black",
-            border: "none",
-            borderRadius: "6px",
-            fontSize: "15px",
-            padding: "13px 50px",
-            cursor: "pointer",
-            marginTop: "20px",
+            width: "100%",
+            height: "400px",
           }}
-          onClick={handleSave}
         >
-          Save
-        </button>
+          <div id="map" style={{ width: "100%", height: "100%" }}></div>
+        </Box>
+
+        {/* Save Button */}
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <button
+            type="button"
+            style={{
+              backgroundColor: "#f6ce47",
+              color: "black",
+              border: "none",
+              borderRadius: "6px",
+              fontSize: "15px",
+              padding: "13px 50px",
+              cursor: "pointer",
+              marginTop: "20px",
+            }}
+            onClick={handleSave}
+          >
+            Save
+          </button>
+        </div>
       </div>
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

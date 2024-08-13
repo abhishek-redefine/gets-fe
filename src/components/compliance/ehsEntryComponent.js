@@ -15,6 +15,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import ComplianceService from "@/services/compliance.service";
+import LoaderComponent from "../common/loading";
 
 const EhsEntryComponent = ({ listing, ehsStatusList, type }) => {
   const dispatch = useDispatch();
@@ -29,6 +30,8 @@ const EhsEntryComponent = ({ listing, ehsStatusList, type }) => {
   });
   const [ehsStatus, setEhsStatus] = useState(initialValues.ehsStatus);
   const [remark, setRemark] = useState(initialValues.remark);
+
+  const [loading, setLoading] = useState(false);
 
   const UpdateEhs = (value, name) => {
     console.log(value);
@@ -64,6 +67,7 @@ const EhsEntryComponent = ({ listing, ehsStatusList, type }) => {
 
   const updateEhsVehicle = async (data) => {
     try {
+      setLoading(true);
       const response = await ComplianceService.updateVehicleEhs(data);
       if (response.status === 200) {
         dispatch(
@@ -83,11 +87,14 @@ const EhsEntryComponent = ({ listing, ehsStatusList, type }) => {
       }
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const uploadHandler = async (file) => {
     try {
+      setLoading(true);
       var jsonData = initialValues;
       jsonData.remarks = remark;
       var formData = new FormData();
@@ -103,11 +110,14 @@ const EhsEntryComponent = ({ listing, ehsStatusList, type }) => {
       }
     } catch (er) {
       console.log(er);
+    } finally {
+      setLoading(false);
     }
   };
 
   const updateEhsDriver = async (formData) => {
     try {
+      setLoading(true);
       const response = await ComplianceService.updateDriverEhs(formData);
       if (response.status === 200) {
         dispatch(
@@ -127,6 +137,8 @@ const EhsEntryComponent = ({ listing, ehsStatusList, type }) => {
       }
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -142,113 +154,130 @@ const EhsEntryComponent = ({ listing, ehsStatusList, type }) => {
   // useEffect(() => {}, [listing]);
 
   return (
-    <tr key={listing?.id}>
-      <td style={{ width: 210 }}>
-        <FormControl fullWidth>
-          <InputLabel style={{ color: "black" }}>
-            {initialValues.ehsTitle}
-          </InputLabel>
-        </FormControl>
-      </td>
-      <td style={{ width: 175 }}>
-        <FormControl fullWidth>
-          <InputLabel style={{ color: "black" }}>
-            {initialValues.ehsMandatoryStatus.replace("_", " ")}
-          </InputLabel>
-        </FormControl>
-      </td>
-      <td>
-        <FormControl fullWidth>
-          <InputLabel style={{ color: "black" }}>
-            {initialValues.ehsFrequency}
-          </InputLabel>
-        </FormControl>
-      </td>
-      <td>
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <DatePicker
-            name="DueDate"
-            value={dayjs(initialValues.ehsDueDate)}
-            format={"DD-MM-YYYY"}
-            minDate={dayjs()}
-            onChange={(e) => {
-              var date = dayjs(e).format("YYYY-MM-DD");
-              //console.log(date);
-              UpdateEhs(date, "DueDate");
+    <div>
+      <tr key={listing?.id}>
+        <td style={{ width: 210 }}>
+          <FormControl fullWidth>
+            <InputLabel style={{ color: "black" }}>
+              {initialValues.ehsTitle}
+            </InputLabel>
+          </FormControl>
+        </td>
+        <td style={{ width: 175 }}>
+          <FormControl fullWidth>
+            <InputLabel style={{ color: "black" }}>
+              {initialValues.ehsMandatoryStatus.replace("_", " ")}
+            </InputLabel>
+          </FormControl>
+        </td>
+        <td>
+          <FormControl fullWidth>
+            <InputLabel style={{ color: "black" }}>
+              {initialValues.ehsFrequency}
+            </InputLabel>
+          </FormControl>
+        </td>
+        <td>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+              name="DueDate"
+              value={dayjs(initialValues.ehsDueDate)}
+              format={"DD-MM-YYYY"}
+              minDate={dayjs()}
+              onChange={(e) => {
+                var date = dayjs(e).format("YYYY-MM-DD");
+                //console.log(date);
+                UpdateEhs(date, "DueDate");
+              }}
+            />
+          </LocalizationProvider>
+          <InputLabel>{initialValues.checkedDueDate}</InputLabel>
+        </td>
+        <td>
+          <div className="form-control">
+            <FormControl required fullWidth>
+              <InputLabel id="ehsStatus-label">Ehs Status</InputLabel>
+              <Select
+                labelId="ehsStatus-label"
+                id="ehsStatus"
+                name="ehsStatus"
+                value={initialValues.ehsStatus}
+                label="ehsStatus"
+                onChange={(e) => {
+                  var allValue = { ...initialValues };
+                  allValue.ehsStatus = e.target.value;
+                  setInitialValues(allValue);
+                  setEhsStatus(e.target.value);
+                  UpdateEhs(e.target.value, "ehsStatus");
+                }}
+              >
+                {ehsStatusList &&
+                  ehsStatusList.map((g, idx) => (
+                    <MenuItem key={idx} value={g.value}>
+                      {g.value}
+                    </MenuItem>
+                  ))}
+              </Select>
+            </FormControl>
+          </div>
+        </td>
+        <td>
+          <div>
+            <TextField
+              value={remark}
+              onChange={(e) => setRemark(e.target.value)}
+              required
+              id="remark"
+              name="remark"
+              label="remark"
+              variant="outlined"
+              onBlur={() => UpdateEhs(remark, "remark")}
+            />
+          </div>
+          <InputLabel>{initialValues.remark}</InputLabel>
+        </td>
+        <td>
+          <TextField
+            id="outlined-basic"
+            type="file"
+            inputProps={{
+              accept: ".jpeg, .pdf, .gif, .png, .jpg",
+            }}
+            onChange={(event) => {
+              const files = event.target.files;
+              if (files.length > 0) {
+                const file = files[0];
+                if (file.size > 2 * 1024 * 1024) {
+                  alert("File size exceeds 2MB limit.");
+                } else {
+                  uploadHandler(file);
+                }
+              }
             }}
           />
-        </LocalizationProvider>
-        <InputLabel>{initialValues.checkedDueDate}</InputLabel>
-      </td>
-      <td>
-        <div className="form-control">
-          <FormControl required fullWidth>
-            <InputLabel id="ehsStatus-label">Ehs Status</InputLabel>
-            <Select
-              labelId="ehsStatus-label"
-              id="ehsStatus"
-              name="ehsStatus"
-              value={initialValues.ehsStatus}
-              label="ehsStatus"
-              onChange={(e) => {
-                var allValue = { ...initialValues };
-                allValue.ehsStatus = e.target.value;
-                setInitialValues(allValue);
-                setEhsStatus(e.target.value);
-                UpdateEhs(e.target.value, "ehsStatus");
-              }}
-            >
-              {ehsStatusList &&
-                ehsStatusList.map((g, idx) => (
-                  <MenuItem key={idx} value={g.value}>
-                    {g.value}
-                  </MenuItem>
-                ))}
-            </Select>
-          </FormControl>
-        </div>
-      </td>
-      <td>
-        <div>
-          <TextField
-            value={remark}
-            onChange={(e) => setRemark(e.target.value)}
-            required
-            id="remark"
-            name="remark"
-            label="remark"
-            variant="outlined"
-            onBlur={() => UpdateEhs(remark, "remark")}
-          />
-        </div>
-        <InputLabel>{initialValues.remark}</InputLabel>
-      </td>
-      <td>
-        <TextField
-          id="outlined-basic"
-          type="file"
-          inputProps={{
-            accept: ".jpeg, .pdf, .gif, .png, .jpg",
-          }}
-          onChange={(event) => {
-            const files = event.target.files;
-            if (files.length > 0) {
-              const file = files[0];
-              if (file.size > 2 * 1024 * 1024) {
-                alert("File size exceeds 2MB limit.");
-              } else {
-                uploadHandler(file);
-              }
-            }
-          }}
-        />
-        {/* <input
+          {/* <input
           type="file"
           accept="image/jpeg,image/gif,image/png,application/pdf,image/x-eps"
         /> */}
-        <InputLabel>{initialValues.file}</InputLabel>
-      </td>
-    </tr>
+          <InputLabel>{initialValues.file}</InputLabel>
+        </td>
+      </tr>
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
+    </div>
   );
 };
 

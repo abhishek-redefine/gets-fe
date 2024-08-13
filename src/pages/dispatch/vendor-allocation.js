@@ -1,26 +1,19 @@
 import dispatch from "@/layouts/dispatch";
-import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-} from "@mui/material";
+import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { useEffect, useState } from "react";
 import { getFormattedLabel } from "@/utils/utils";
 import OfficeService from "@/services/office.service";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
-import {
-  DATE_FORMAT,
-  MASTER_DATA_TYPES,
-} from "@/constants/app.constants.";
+import { DATE_FORMAT, MASTER_DATA_TYPES } from "@/constants/app.constants.";
 import { useDispatch, useSelector } from "react-redux";
 import MasterDataService from "@/services/masterdata.service";
 import GridNew from "@/components/gridNew";
 import DispatchService from "@/services/dispatch.service";
 import { setMasterData } from "@/redux/master.slice";
 import AllocateVendor from "@/components/dispatch/allocate-vendors";
+import LoaderComponent from "@/components/common/loading";
 
 const MainComponent = () => {
   const headers = [
@@ -30,7 +23,8 @@ const MainComponent = () => {
     { field: "bookingCount" },
     { field: "routingStatus" },
     { field: "dispatchStatus" },
-    { field: "tripCount",
+    {
+      field: "tripCount",
       cellRenderer: (params) => {
         const tripCount = params.value;
 
@@ -40,16 +34,23 @@ const MainComponent = () => {
         };
 
         return (
-          <div style={{ cursor: 'pointer', textDecoration: 'underline', color: "blue"}} onClick={handleClick}>
+          <div
+            style={{
+              cursor: "pointer",
+              textDecoration: "underline",
+              color: "blue",
+            }}
+            onClick={handleClick}
+          >
             {tripCount}
           </div>
         );
-      }
+      },
     },
     { field: "allocatedVendorCount" },
     { field: "allocatedCabCount" },
     { field: "fleetMix" },
-    { field: "escortTrip"},
+    { field: "escortTrip" },
     { field: "allocatedEscortCount" },
     { field: "backToBackCount" },
     { field: "smsSent" },
@@ -63,31 +64,34 @@ const MainComponent = () => {
     transportType: "",
   });
 
-
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
   const [showAction, setShowAction] = useState(false);
   const [data, setData] = useState([]);
   const [selectedRow, setSelectedRow] = useState([]);
   const [allocateVendorShow, setAllocateVendorShow] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(moment().format("YYYY-MM-DD"));
-  const [shiftId,setShiftId] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(
+    moment().format("YYYY-MM-DD")
+  );
+  const [shiftId, setShiftId] = useState(null);
   const [tripList, setTripList] = useState([]);
+
+  const [loading, setLoading] = useState(false);
 
   const handleFilterChange = (e) => {
     const { target } = e;
     const { value, name } = target;
     let newSearchValues = { ...searchValues };
-    if (name === "date"){ 
+    if (name === "date") {
       newSearchValues[name] = value.format("YYYY-MM-DD");
       setSelectedDate(value.format("YYYY-MM-DD"));
-    }
-    else newSearchValues[name] = value;
+    } else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
-  }; 
+  };
 
   const fetchAllOffices = async () => {
     try {
+      setLoading(true);
       const response = await OfficeService.getAllOffices();
       const { data } = response || {};
       const { clientOfficeDTO } = data || {};
@@ -97,37 +101,50 @@ const MainComponent = () => {
         (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchMasterData = async (type) => {
     try {
+      setLoading(true);
       const response = await MasterDataService.getMasterData(type);
       const { data } = response || {};
       if (data?.length) {
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const allocateVendorHanlder = async() =>{
-    try{
+  const allocateVendorHanlder = async () => {
+    try {
+      setLoading(true);
       const queryParams = {
         shiftId: shiftId,
         tripDate: selectedDate,
       };
       const params = new URLSearchParams(queryParams);
-      const response = await DispatchService.getTripByShiftIdAndTripDate(params);
+      const response = await DispatchService.getTripByShiftIdAndTripDate(
+        params
+      );
       setTripList(response.data);
       console.log(response.data);
       setAllocateVendorShow(true);
-    }catch(err){
+    } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   const fetchSummary = async () => {
     try {
+      setLoading(true);
       console.log("search values>>>>>", searchValues);
       let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
@@ -143,6 +160,8 @@ const MainComponent = () => {
       setData(response.data);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -172,15 +191,16 @@ const MainComponent = () => {
     <div>
       {!allocateVendorShow ? (
         <div className="gridContainer">
-          <div className="filterContainer" style={{backgroundColor: '#f9f9f9', borderRadius: '10px'}}>
+          <div
+            className="filterContainer"
+            style={{ backgroundColor: "#f9f9f9", borderRadius: "10px" }}
+          >
             {office.length > 0 && (
               <div style={{ minWidth: "180px" }} className="form-control-input">
                 <FormControl fullWidth>
-                  <InputLabel id="primary-office-label">
-                    Office ID
-                  </InputLabel>
+                  <InputLabel id="primary-office-label">Office ID</InputLabel>
                   <Select
-                    style={{ width: "180px", backgroundColor: 'white', }}
+                    style={{ width: "180px", backgroundColor: "white" }}
                     labelId="primary-office-label"
                     id="officeId"
                     value={searchValues.officeId}
@@ -190,7 +210,7 @@ const MainComponent = () => {
                   >
                     {!!office?.length &&
                       office.map((office, idx) => (
-                        <MenuItem key={idx} value={office.officeId} >
+                        <MenuItem key={idx} value={office.officeId}>
                           {getFormattedLabel(office.officeId)}, {office.address}
                         </MenuItem>
                       ))}
@@ -199,9 +219,14 @@ const MainComponent = () => {
               </div>
             )}
 
-            <div className="form-control-input" style={{backgroundColor: 'white'}}>
-              <InputLabel style={{backgroundColor: '#f9f9f9'}} htmlFor="date">Date</InputLabel>
-              <LocalizationProvider dateAdapter={AdapterMoment} >
+            <div
+              className="form-control-input"
+              style={{ backgroundColor: "white" }}
+            >
+              <InputLabel style={{ backgroundColor: "#f9f9f9" }} htmlFor="date">
+                Date
+              </InputLabel>
+              <LocalizationProvider dateAdapter={AdapterMoment}>
                 <DatePicker
                   name="date"
                   format={DATE_FORMAT}
@@ -218,7 +243,7 @@ const MainComponent = () => {
               <FormControl fullWidth>
                 <InputLabel id="shiftType-label">Shift Type</InputLabel>
                 <Select
-                  style={{ width: "160px", backgroundColor: 'white', }}
+                  style={{ width: "160px", backgroundColor: "white" }}
                   labelId="shiftType-label"
                   id="shiftType"
                   name="shiftType"
@@ -273,15 +298,22 @@ const MainComponent = () => {
               </button>
             </div>
           </div>
-          
-          <div className="commonTable"
-           style={{backgroundColor: '#f9f9f9', marginTop: '20px'}}
+
+          <div
+            className="commonTable"
+            style={{ backgroundColor: "#f9f9f9", marginTop: "20px" }}
           >
             <div
               className="d-flex"
-              style={{ margin: "15px 0", justifyContent: "space-between", backgroundColor: 'white', padding: '15px 10px', borderRadius: '10px'  }}
+              style={{
+                margin: "15px 0",
+                justifyContent: "space-between",
+                backgroundColor: "white",
+                padding: "15px 10px",
+                borderRadius: "10px",
+              }}
             >
-              <div className="d-flex" style={{ alignItems: "center"}}>
+              <div className="d-flex" style={{ alignItems: "center" }}>
                 <h3 style={{ paddingLeft: 10 }}>Routing Details</h3>
               </div>
               {showAction && (
@@ -299,19 +331,21 @@ const MainComponent = () => {
                   </div>
                   <div style={{ minWidth: "180px" }} className="mx-4">
                     <div className="dropdown">
-                    {showAction && (
-                      <button 
-                       onClick={() => allocateVendorHanlder()}
-                        className="dropbtn"
-                      >
-                        Allocate Vendors
-                      </button>
-                    )}
+                      {showAction && (
+                        <button
+                          onClick={() => allocateVendorHanlder()}
+                          className="dropbtn"
+                        >
+                          Allocate Vendors
+                        </button>
+                      )}
                     </div>
                   </div>
                   <div style={{ minWidth: "180px" }} className="mx-4">
                     <div className="dropdown">
-                      <button className="dropbtn">Pending Vendor Allocation</button>
+                      <button className="dropbtn">
+                        Pending Vendor Allocation
+                      </button>
                     </div>
                   </div>
                   {/* <div style={{ minWidth: "180px" }} className="mx-4">
@@ -338,17 +372,30 @@ const MainComponent = () => {
               data={data}
               headers={headers}
               setShowAction={(flag, row) => selectedRowHandler(flag, row)}
-              
             />
           </div>
         </div>
       ) : (
-        <div style={{margin:'20px 0', boxShadow:'none',}}>
-        <AllocateVendor tripList={tripList}/>
+        <div style={{ margin: "20px 0", boxShadow: "none" }}>
+          <AllocateVendor tripList={tripList} />
         </div>
-      )}    
+      )}
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
-    
   );
 };
 

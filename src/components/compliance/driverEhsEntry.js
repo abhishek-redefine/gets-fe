@@ -12,6 +12,7 @@ import ComplianceService from "@/services/compliance.service";
 import MasterDataService from "@/services/masterdata.service";
 import { useDispatch } from "react-redux";
 import EhsEntryComponent from "./ehsEntryComponent";
+import LoaderComponent from "../common/loading";
 
 const DriverEhsEntry = () => {
   const headers = [
@@ -56,21 +57,29 @@ const DriverEhsEntry = () => {
   });
   const [firstEhs, setFirstEhs] = useState(true);
 
+  const [loading, setLoading] = useState(false);
+
   const onChangeDriverHandler = (newValue, name, key) => {
     console.log("on change handler", newValue);
     setDriverId(newValue?.driverId);
   };
+
   const searchDriverEhs = async (id) => {
     try {
+      setLoading(true);
       const response = await ComplianceService.getSelectedDriverEHS(id);
-      const {data} = response || {};
+      const { data } = response || {};
       console.log(data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
+
   const searchForDriver = async (e) => {
     try {
+      setLoading(true);
       if (e.target.value) {
         console.log("searchForDriver", e.target.value);
         const response = await ComplianceService.searchDriver(e.target.value);
@@ -82,10 +91,14 @@ const DriverEhsEntry = () => {
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
+
   const searchDriverById = async () => {
     try {
+      setLoading(true);
       if (driverId && driverId != "") {
         const response = await ComplianceService.getDriverById(driverId);
         console.log(response.data);
@@ -98,21 +111,28 @@ const DriverEhsEntry = () => {
       }
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
+
   const getAllEhsByDriverId = async (driverId) => {
     try {
+      setLoading(true);
       const response = await ComplianceService.getAllEHSByDriverId(driverId);
       const { data } = response || {};
       console.log(data.driverEhsDTO);
       setEhsList(data.driverEhsDTO);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchMasterData = async (type) => {
     try {
+      setLoading(true);
       const response = await MasterDataService.getMasterData(type);
       const { data } = response || {};
       if (data?.length) {
@@ -121,6 +141,8 @@ const DriverEhsEntry = () => {
       }
     } catch (e) {
       console.log(e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -129,88 +151,89 @@ const DriverEhsEntry = () => {
   }, []);
 
   return (
-    <div className="internalSettingContainer">
-      <div style={{ display: "flex" }}>
-        <div className="form-control-input">
-          <FormControl variant="outlined">
-            <Autocomplete
-              disablePortal
-              id="search-driver"
-              options={searchedDriver}
-              autoComplete
-              open={openSearchDriver}
-              onOpen={() => {
-                setOpenSearchDriver(true);
-              }}
-              onClose={() => {
-                setOpenSearchDriver(false);
-              }}
-              onChange={(e, val) =>
-                onChangeDriverHandler(val, "driver", "driverId")
-              }
-              getOptionKey={(driver) => driver.driverId}
-              getOptionLabel={(driver) => driver.driverName}
-              freeSolo
-              name="driver"
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Search Driver"
-                  onChange={searchForDriver}
-                />
-              )}
-            />
-          </FormControl>
+    <div>
+      <div className="internalSettingContainer">
+        <div style={{ display: "flex" }}>
+          <div className="form-control-input">
+            <FormControl variant="outlined">
+              <Autocomplete
+                disablePortal
+                id="search-driver"
+                options={searchedDriver}
+                autoComplete
+                open={openSearchDriver}
+                onOpen={() => {
+                  setOpenSearchDriver(true);
+                }}
+                onClose={() => {
+                  setOpenSearchDriver(false);
+                }}
+                onChange={(e, val) =>
+                  onChangeDriverHandler(val, "driver", "driverId")
+                }
+                getOptionKey={(driver) => driver.driverId}
+                getOptionLabel={(driver) => driver.driverName}
+                freeSolo
+                name="driver"
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Search Driver"
+                    onChange={searchForDriver}
+                  />
+                )}
+              />
+            </FormControl>
+          </div>
+          <div className="form-control-input" style={{ minWidth: "70px" }}>
+            <button
+              type="button"
+              onClick={searchDriverById}
+              className="btn btn-primary filterApplyBtn"
+            >
+              Search
+            </button>
+          </div>
         </div>
-        <div className="form-control-input" style={{ minWidth: "70px" }}>
-          <button
-            type="button"
-            onClick={searchDriverById}
-            className="btn btn-primary filterApplyBtn"
-          >
-            Search
-          </button>
-        </div>
-      </div>
-      {driverData.length > 0 &&
-        driverData.map((driver, index) => {
-          return (
-            <div className="driverDataDiv " key={index}>
-              <div className="driverInfo gridContainer commonTable">
-                <div style={{ display: "flex" }}>
-                  <div style={{ margin: "0 30px" }}>
-                    <p style={{ fontWeight: "bold" }}>
-                      DriverId:{" "}
-                      <span style={{ fontWeight: "normal", marginLeft: 10 }}>
-                        {driver.id}
-                      </span>
-                    </p>
-                  </div>
-                  <div style={{ margin: "0 30px" }}>
-                    <p style={{ fontWeight: "bold" }}>
-                      Driver Name:{" "}
-                      <span style={{ fontWeight: "normal", marginLeft: 10 }}>
-                        {driver.name}
-                      </span>
-                    </p>
-                  </div>
-                  <div style={{ margin: "0 30px" }}>
-                    <p style={{ fontWeight: "bold" }}>
-                      Vendor:{" "}
-                      <span style={{ fontWeight: "normal", marginLeft: 10 }}>
-                        {driver.vendorName}
-                      </span>
-                    </p>
-                  </div>
-                  <div style={{ margin: "0 30px" }}>
-                    <p style={{ fontWeight: "bold" }}>
-                      Phone:{" "}
-                      <span style={{ fontWeight: "normal", marginLeft: 10 }}>
-                        {driver.mobile}
-                      </span>
-                    </p>
-                  </div>
-                  {/* <div style={{ margin: "0 30px" }}>
+        {driverData.length > 0 &&
+          driverData.map((driver, index) => {
+            return (
+              <div className="driverDataDiv " key={index}>
+                <div className="driverInfo gridContainer commonTable">
+                  <div style={{ display: "flex" }}>
+                    <div style={{ margin: "0 30px" }}>
+                      <p style={{ fontWeight: "bold" }}>
+                        DriverId:{" "}
+                        <span style={{ fontWeight: "normal", marginLeft: 10 }}>
+                          {driver.id}
+                        </span>
+                      </p>
+                    </div>
+                    <div style={{ margin: "0 30px" }}>
+                      <p style={{ fontWeight: "bold" }}>
+                        Driver Name:{" "}
+                        <span style={{ fontWeight: "normal", marginLeft: 10 }}>
+                          {driver.name}
+                        </span>
+                      </p>
+                    </div>
+                    <div style={{ margin: "0 30px" }}>
+                      <p style={{ fontWeight: "bold" }}>
+                        Vendor:{" "}
+                        <span style={{ fontWeight: "normal", marginLeft: 10 }}>
+                          {driver.vendorName}
+                        </span>
+                      </p>
+                    </div>
+                    <div style={{ margin: "0 30px" }}>
+                      <p style={{ fontWeight: "bold" }}>
+                        Phone:{" "}
+                        <span style={{ fontWeight: "normal", marginLeft: 10 }}>
+                          {driver.mobile}
+                        </span>
+                      </p>
+                    </div>
+                    {/* <div style={{ margin: "0 30px" }}>
                     <p style={{ fontWeight: "bold" }}>
                       EHS Status:{" "}
                       <span style={{ fontWeight: "normal", marginLeft: 10 }}>
@@ -218,32 +241,55 @@ const DriverEhsEntry = () => {
                       </span>
                     </p>
                   </div> */}
+                  </div>
+                </div>
+                <div className="gridContainer" style={{ marginTop: 20 }}>
+                  <table className="commonTable">
+                    <thead>
+                      <tr>
+                        {headers.map((header, idx) => {
+                          let tdHeader;
+                          tdHeader = (
+                            <td key={`${idx}tdfirst`}>{header.display}</td>
+                          );
+                          return tdHeader;
+                        })}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ehsList.length > 0 &&
+                        ehsList.map((item, i) => {
+                          return (
+                            <EhsEntryComponent
+                              listing={item}
+                              key={i}
+                              ehsStatusList={ehsStatusList}
+                              type={"driver"}
+                            />
+                          );
+                        })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-              <div className="gridContainer" style={{ marginTop: 20 }}>
-                <table className="commonTable">
-                  <thead>
-                    <tr>
-                      {headers.map((header, idx) => {
-                        let tdHeader;
-                        tdHeader = (
-                          <td key={`${idx}tdfirst`}>{header.display}</td>
-                        );
-                        return tdHeader;
-                      })}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ehsList.length > 0 &&
-                      ehsList.map((item, i) => {
-                        return <EhsEntryComponent listing={item} key={i} ehsStatusList={ehsStatusList} type={"driver"}/>;
-                      })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+      </div>
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

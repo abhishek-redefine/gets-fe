@@ -12,6 +12,7 @@ import ComplianceService from "@/services/compliance.service";
 import MasterDataService from "@/services/masterdata.service";
 import { useDispatch } from "react-redux";
 import EhsEntryComponent from "./ehsEntryComponent";
+import LoaderComponent from "../common/loading";
 
 const VehicleEhsEntry = () => {
   const headers = [
@@ -55,12 +56,16 @@ const VehicleEhsEntry = () => {
     pageSize: 100,
   });
 
+  const [loading, setLoading] = useState(false);
+
   const onChangeVehicleHandler = (newValue, name, key) => {
     console.log("on change handler", newValue);
     setVehicleId(newValue?.vehicleId);
   };
+
   const searchForVehicle = async (e) => {
     try {
+      setLoading(true);
       if (e.target.value) {
         console.log("searchForVehicle", e.target.value);
         const response = await ComplianceService.searchVehicle(e.target.value);
@@ -72,10 +77,14 @@ const VehicleEhsEntry = () => {
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
+
   const searchVehicleById = async () => {
     try {
+      setLoading(true);
       if (vehicleId && vehicleId != "") {
         const response = await ComplianceService.getVehicleById(vehicleId);
         console.log(response.data);
@@ -85,21 +94,28 @@ const VehicleEhsEntry = () => {
       }
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
+
   const getAllEhsByVehicleId = async (vehicleId) => {
     try {
+      setLoading(true);
       const response = await ComplianceService.getAllEhsByVehicleId(vehicleId);
       const { data } = response || {};
       console.log(data.vehicleEhsDTO);
       setEhsList(data.vehicleEhsDTO);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchMasterData = async (type) => {
     try {
+      setLoading(true);
       const response = await MasterDataService.getMasterData(type);
       const { data } = response || {};
       if (data?.length) {
@@ -108,6 +124,8 @@ const VehicleEhsEntry = () => {
       }
     } catch (e) {
       console.log(e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -116,120 +134,137 @@ const VehicleEhsEntry = () => {
   }, []);
 
   return (
-    <div className="internalSettingContainer">
-      <div style={{ display: "flex" }}>
-        <div className="form-control-input">
-          <FormControl variant="outlined">
-            <Autocomplete
-              disablePortal
-              id="search-vehicle"
-              options={searchedVehicle}
-              autoComplete
-              open={openSearchVehicle}
-              onOpen={() => {
-                setOpenSearchVehicle(true);
-              }}
-              onClose={() => {
-                setOpenSearchVehicle(false);
-              }}
-              onChange={(e, val) =>
-                onChangeVehicleHandler(val, "vehicle", "vehicleId")
-              }
-              getOptionKey={(vehicle) => vehicle.vehicleId}
-              getOptionLabel={(vehicle) => vehicle.vehicleRegistrationNumber}
-              freeSolo
-              name="vehicle"
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Search Vehicle"
-                  onChange={searchForVehicle}
-                />
-              )}
-            />
-          </FormControl>
+    <div>
+      <div className="internalSettingContainer">
+        <div style={{ display: "flex" }}>
+          <div className="form-control-input">
+            <FormControl variant="outlined">
+              <Autocomplete
+                disablePortal
+                id="search-vehicle"
+                options={searchedVehicle}
+                autoComplete
+                open={openSearchVehicle}
+                onOpen={() => {
+                  setOpenSearchVehicle(true);
+                }}
+                onClose={() => {
+                  setOpenSearchVehicle(false);
+                }}
+                onChange={(e, val) =>
+                  onChangeVehicleHandler(val, "vehicle", "vehicleId")
+                }
+                getOptionKey={(vehicle) => vehicle.vehicleId}
+                getOptionLabel={(vehicle) => vehicle.vehicleRegistrationNumber}
+                freeSolo
+                name="vehicle"
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Search Vehicle"
+                    onChange={searchForVehicle}
+                  />
+                )}
+              />
+            </FormControl>
+          </div>
+          <div className="form-control-input" style={{ minWidth: "70px" }}>
+            <button
+              type="button"
+              onClick={searchVehicleById}
+              className="btn btn-primary filterApplyBtn"
+            >
+              Search
+            </button>
+          </div>
         </div>
-        <div className="form-control-input" style={{ minWidth: "70px" }}>
-          <button
-            type="button"
-            onClick={searchVehicleById}
-            className="btn btn-primary filterApplyBtn"
-          >
-            Search
-          </button>
-        </div>
-      </div>
-      {vehicleData.length > 0 &&
-        vehicleData.map((vehicle, index) => {
-          return (
-            <div className="vehicleDataDiv " key={index}>
-              <div className="driverInfo gridContainer commonTable">
-                <div style={{ display: "flex" }}>
-                  <div style={{ margin: "0 30px" }}>
-                    <p style={{ fontWeight: "bold" }}>
-                      Vehicle Id:{" "}
-                      <span style={{ fontWeight: "normal", marginLeft: 10 }}>
-                        {vehicle.vehicleId}
-                      </span>
-                    </p>
-                  </div>
-                  <div style={{ margin: "0 30px" }}>
-                    <p style={{ fontWeight: "bold" }}>
-                      Vehicle Number:{" "}
-                      <span style={{ fontWeight: "normal", marginLeft: 10 }}>
-                        {vehicle.vehicleRegistrationNumber}
-                      </span>
-                    </p>
-                  </div>
-                  <div style={{ margin: "0 30px" }}>
-                    <p style={{ fontWeight: "bold" }}>
-                      Vendor:{" "}
-                      <span style={{ fontWeight: "normal", marginLeft: 10 }}>
-                        {vehicle.vendorName}
-                      </span>
-                    </p>
-                  </div>
-                  <div style={{ margin: "0 30px" }}>
-                    <p style={{ fontWeight: "bold" }}>
-                      Vehicle Model:{" "}
-                      <span style={{ fontWeight: "normal", marginLeft: 10 }}>
-                        {vehicle.vehicleModel}
-                      </span>
-                    </p>
+        {vehicleData.length > 0 &&
+          vehicleData.map((vehicle, index) => {
+            return (
+              <div className="vehicleDataDiv " key={index}>
+                <div className="driverInfo gridContainer commonTable">
+                  <div style={{ display: "flex" }}>
+                    <div style={{ margin: "0 30px" }}>
+                      <p style={{ fontWeight: "bold" }}>
+                        Vehicle Id:{" "}
+                        <span style={{ fontWeight: "normal", marginLeft: 10 }}>
+                          {vehicle.vehicleId}
+                        </span>
+                      </p>
+                    </div>
+                    <div style={{ margin: "0 30px" }}>
+                      <p style={{ fontWeight: "bold" }}>
+                        Vehicle Number:{" "}
+                        <span style={{ fontWeight: "normal", marginLeft: 10 }}>
+                          {vehicle.vehicleRegistrationNumber}
+                        </span>
+                      </p>
+                    </div>
+                    <div style={{ margin: "0 30px" }}>
+                      <p style={{ fontWeight: "bold" }}>
+                        Vendor:{" "}
+                        <span style={{ fontWeight: "normal", marginLeft: 10 }}>
+                          {vehicle.vendorName}
+                        </span>
+                      </p>
+                    </div>
+                    <div style={{ margin: "0 30px" }}>
+                      <p style={{ fontWeight: "bold" }}>
+                        Vehicle Model:{" "}
+                        <span style={{ fontWeight: "normal", marginLeft: 10 }}>
+                          {vehicle.vehicleModel}
+                        </span>
+                      </p>
+                    </div>
                   </div>
                 </div>
+                <div className="gridContainer" style={{ marginTop: 20 }}>
+                  <table className="commonTable">
+                    <thead>
+                      <tr>
+                        {headers.map((header, idx) => {
+                          let tdHeader;
+                          tdHeader = (
+                            <td key={`${idx}tdfirst`}>{header.display}</td>
+                          );
+                          return tdHeader;
+                        })}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ehsList &&
+                        ehsList.length > 0 &&
+                        ehsList.map((item, i) => {
+                          return (
+                            <EhsEntryComponent
+                              listing={item}
+                              key={i}
+                              ehsStatusList={ehsStatusList}
+                            />
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <div className="gridContainer" style={{ marginTop: 20 }}>
-                <table className="commonTable">
-                  <thead>
-                    <tr>
-                      {headers.map((header, idx) => {
-                        let tdHeader;
-                        tdHeader = (
-                          <td key={`${idx}tdfirst`}>{header.display}</td>
-                        );
-                        return tdHeader;
-                      })}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ehsList &&
-                      ehsList.length > 0 &&
-                      ehsList.map((item, i) => {
-                        return (
-                          <EhsEntryComponent
-                            listing={item}
-                            key={i}
-                            ehsStatusList={ehsStatusList}
-                          />
-                        );
-                      })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+      </div>
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

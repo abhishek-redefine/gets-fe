@@ -10,9 +10,10 @@ import {
 import React, { useEffect, useState } from "react";
 import ComplianceService from "@/services/compliance.service";
 import DispatchService from "@/services/dispatch.service";
+import LoaderComponent from "../common/loading";
 
 const IssueTypeModal = (props) => {
-  const { data,onClose } = props;
+  const { data, onClose } = props;
   const [issueData, setIssueData] = useState({
     "Vehicle Id": "",
     "Registration Id": "",
@@ -26,7 +27,9 @@ const IssueTypeModal = (props) => {
     pageNo: 0,
     pageSize: 100,
   });
-  const [remark,setRemark] = useState("");
+  const [remark, setRemark] = useState("");
+
+  const [loading, setLoading] = useState(false);
 
   const [searchValues, setSearchValues] = useState({
     issueType: data?.tripState,
@@ -52,6 +55,7 @@ const IssueTypeModal = (props) => {
 
   const fetchVehicleData = async () => {
     try {
+      setLoading(true);
       let params = new URLSearchParams(pagination);
       let vehicleData = { ...searchValues };
       Object.keys(vehicleData).forEach((objKey) => {
@@ -79,184 +83,215 @@ const IssueTypeModal = (props) => {
       setIssueData(newObject);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const addOpsIssue =async() =>{
-    try{
-      var tripState = searchValues.issueType === "Vehicle Not Assigned" ? "VECHICLE_NOT_ASSIGNED" : searchValues.issueType === "Trip Not Started" ? "TRIP_NOT_STARTED" : "TRIP_NOT_ENDED";
-      const response = await DispatchService.addOpsIssue(data.id,tripState,remark);
-      if(response.status === 200){
+  const addOpsIssue = async () => {
+    try {
+      setLoading(true);
+      var tripState =
+        searchValues.issueType === "Vehicle Not Assigned"
+          ? "VECHICLE_NOT_ASSIGNED"
+          : searchValues.issueType === "Trip Not Started"
+          ? "TRIP_NOT_STARTED"
+          : "TRIP_NOT_ENDED";
+      const response = await DispatchService.addOpsIssue(
+        data.id,
+        tripState,
+        remark
+      );
+      if (response.status === 200) {
         onClose();
       }
-    }catch(err){
+    } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     console.log("data: ", data);
-    if(data){
+    if (data) {
       data?.vehicleNumber && fetchVehicleData();
     }
   }, [data]);
 
   return (
-    <div
-      style={{
-        backgroundColor: "#FFF",
-        borderRadius: 10,
-        fontFamily: "DM Sans",
-        padding: "30px",
-      }}
-    >
-      <h3>Vehicle Information</h3>
-      <div style={{ marginTop: "25px" }}>
-        <Box
-          sx={{
-            width: "100%",
-            padding: "0 15px 20px",
-          }}
-        >
-          <Grid
-            container
-            rowSpacing={1}
-            columnSpacing={{ xs: 1, sm: 2, md: 3 }}
+    <div>
+      <div
+        style={{
+          backgroundColor: "#FFF",
+          borderRadius: 10,
+          fontFamily: "DM Sans",
+          padding: "30px",
+        }}
+      >
+        <h3>Vehicle Information</h3>
+        <div style={{ marginTop: "25px" }}>
+          <Box
+            sx={{
+              width: "100%",
+              padding: "0 15px 20px",
+            }}
           >
-            <Grid item xs={6}>
-              {Object.entries(issueData).map(([key, value], index) => (
-                <p
-                  key={index}
-                  style={{
-                    fontSize: "15px",
-                    fontWeight: "600",
-                    marginBottom: "20px",
-                  }}
-                >
-                  {key}
-                </p>
-              ))}
-            </Grid>
-            <Grid item xs={6}>
-              {Object.entries(issueData).map(([key, value], index) => {
-                return (
-                  <Grid item xs={12}>
-                    <p
-                      key={index}
-                      style={{
-                        fontSize: "15px",
-                        marginBottom: "20px",
-                      }}
-                    >
-                      {value ? value : "N/A"}
-                    </p>
-                  </Grid>
-                );
-              })}
-            </Grid>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                // backgroundColor: "pink",
-                marginTop: "15px",
-              }}
+            <Grid
+              container
+              rowSpacing={1}
+              columnSpacing={{ xs: 1, sm: 2, md: 3 }}
             >
-              <FormControl
+              <Grid item xs={6}>
+                {Object.entries(issueData).map(([key, value], index) => (
+                  <p
+                    key={index}
+                    style={{
+                      fontSize: "15px",
+                      fontWeight: "600",
+                      marginBottom: "20px",
+                    }}
+                  >
+                    {key}
+                  </p>
+                ))}
+              </Grid>
+              <Grid item xs={6}>
+                {Object.entries(issueData).map(([key, value], index) => {
+                  return (
+                    <Grid item xs={12}>
+                      <p
+                        key={index}
+                        style={{
+                          fontSize: "15px",
+                          marginBottom: "20px",
+                        }}
+                      >
+                        {value ? value : "N/A"}
+                      </p>
+                    </Grid>
+                  );
+                })}
+              </Grid>
+              <div
                 style={{
-                  margin: "0 40px 0 25px",
-                  padding: "4px 0",
-                  fontFamily: "DM Sans",
-                  width: "220px",
+                  display: "flex",
+                  alignItems: "center",
+                  // backgroundColor: "pink",
+                  marginTop: "15px",
                 }}
               >
-                <InputLabel
-                  id="reason-label"
+                <FormControl
                   style={{
-                    fontSize: "14px",
+                    margin: "0 40px 0 25px",
+                    padding: "4px 0",
+                    fontFamily: "DM Sans",
+                    width: "220px",
                   }}
                 >
-                  Ops Issue type
-                </InputLabel>
-                <Select
+                  <InputLabel
+                    id="reason-label"
+                    style={{
+                      fontSize: "14px",
+                    }}
+                  >
+                    Ops Issue type
+                  </InputLabel>
+                  <Select
+                    style={{
+                      backgroundColor: "white",
+                      height: "40px",
+                      fontSize: "15px",
+                    }}
+                    labelId="ops-issue-type-label"
+                    id="opsIssueType"
+                    name="issueType"
+                    value={searchValues.issueType}
+                    label="Ops Issue type"
+                    onChange={handleFilterChange}
+                  >
+                    {IssueType.map((item) => (
+                      <MenuItem
+                        value={item}
+                        style={{
+                          fontSize: "15px",
+                        }}
+                      >
+                        {item}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <Box
+                  component="form"
                   style={{
-                    backgroundColor: "white",
-                    height: "40px",
-                    fontSize: "15px",
+                    width: 450,
+                    height: 40,
+                    maxWidth: "100%",
+                    margin: "0 30px 0 0",
+                    //   backgroundColor: "yellow",
                   }}
-                  labelId="ops-issue-type-label"
-                  id="opsIssueType"
-                  name="issueType"
-                  value={searchValues.issueType}
-                  label="Ops Issue type"
-                  onChange={handleFilterChange}
+                  noValidate
+                  autoComplete="off"
                 >
-                  {IssueType.map((item) => (
-                    <MenuItem
-                      value={item}
-                      style={{
-                        fontSize: "15px",
-                      }}
-                    >
-                      {item}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <Box
-                component="form"
-                style={{
-                  width: 450,
-                  height: 40,
-                  maxWidth: "100%",
-                  margin: "0 30px 0 0",
-                  //   backgroundColor: "yellow",
-                }}
-                noValidate
-                autoComplete="off"
-              >
-                <TextField
-                  id="outlined-basic"
-                  label="Write your remarks"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  value={remark}
-                  //   multiline
-                  inputProps={{
-                    style: {
-                      fontFamily: "DM Sans",
-                      fontSize: 15,
-                    },
-                  }}
-                  InputLabelProps={{ style: { fontSize: 14 } }}
-                  onChange={(e)=>setRemark(e.target.value)}
-                />
-              </Box>
-            </div>
-          </Grid>
-        </Box>
+                  <TextField
+                    id="outlined-basic"
+                    label="Write your remarks"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    value={remark}
+                    //   multiline
+                    inputProps={{
+                      style: {
+                        fontFamily: "DM Sans",
+                        fontSize: 15,
+                      },
+                    }}
+                    InputLabelProps={{ style: { fontSize: 14 } }}
+                    onChange={(e) => setRemark(e.target.value)}
+                  />
+                </Box>
+              </div>
+            </Grid>
+          </Box>
+        </div>
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <button
+            type="button"
+            style={{
+              backgroundColor: "#f6ce47",
+              color: "black",
+              border: "none",
+              borderRadius: "6px",
+              fontSize: "15px",
+              padding: "13px 35px",
+              cursor: "pointer",
+              marginTop: "20px",
+              position: "absolute",
+              bottom: "50px",
+            }}
+            onClick={addOpsIssue}
+          >
+            Submit
+          </button>
+        </div>
       </div>
-      <div style={{ display: "flex", justifyContent: "center" }}>
-        <button
-          type="button"
+      {loading ? (
+        <div
           style={{
-            backgroundColor: "#f6ce47",
-            color: "black",
-            border: "none",
-            borderRadius: "6px",
-            fontSize: "15px",
-            padding: "13px 35px",
-            cursor: "pointer",
-            marginTop: "20px",
             position: "absolute",
-            bottom: "50px",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
           }}
-          onClick={addOpsIssue}
         >
-          Submit
-        </button>
-      </div>
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

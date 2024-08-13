@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Grid from "@/components/grid";
 import { DEFAULT_PAGE_SIZE } from "@/constants/api.constants";
 import BookingService from "@/services/booking.service";
+import LoaderComponent from "@/components/common/loading";
 
 const BookingLog = ({ bookingId = "" }) => {
   const headers = [
@@ -41,6 +42,8 @@ const BookingLog = ({ bookingId = "" }) => {
     size: DEFAULT_PAGE_SIZE,
   });
 
+  const [loading, setLoading] = useState(false);
+
   const onMenuItemClick = () => {};
   const handlePageChange = (page) => {
     let updatedPagination = { ...pagination };
@@ -50,6 +53,7 @@ const BookingLog = ({ bookingId = "" }) => {
 
   const getBookingHistory = async (id) => {
     try {
+      setLoading(true);
       const queryParams = `bookingId=${id}`;
       const response = await BookingService.getBookingHistory(queryParams);
       const { data } = response || {};
@@ -59,8 +63,7 @@ const BookingLog = ({ bookingId = "" }) => {
         let newObj = val;
         if (val.oldValue === "") {
           newObj.oldValue = "-";
-        }
-        else if(val.newValue === ""){
+        } else if (val.newValue === "") {
           newObj.newValue = "-";
         }
         modifiedList.push(newObj);
@@ -68,6 +71,8 @@ const BookingLog = ({ bookingId = "" }) => {
       setBookingListing(modifiedList);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -79,14 +84,31 @@ const BookingLog = ({ bookingId = "" }) => {
   }, []);
 
   return (
-    <Grid
-      pageNoText="pageNumber"
-      onMenuItemClick={onMenuItemClick}
-      headers={headers}
-      handlePageChange={handlePageChange}
-      pagination={paginationData}
-      listing={bookingListing}
-    />
+    <div>
+      <Grid
+        pageNoText="pageNumber"
+        onMenuItemClick={onMenuItemClick}
+        headers={headers}
+        handlePageChange={handlePageChange}
+        pagination={paginationData}
+        listing={bookingListing}
+      />
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
+    </div>
   );
 };
 

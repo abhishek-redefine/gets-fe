@@ -28,6 +28,7 @@ import Box from "@mui/material/Box";
 import MasterDataService from "@/services/masterdata.service";
 import dayjs from "dayjs";
 import GeocodeModal from "../user-management/geocodeModal";
+import LoaderComponent from "../common/loading";
 
 const style = {
   position: "absolute",
@@ -38,6 +39,7 @@ const style = {
   bgcolor: "background.paper",
   height: 600,
 };
+
 const styleForErrorMessage = {
   position: "absolute",
   top: "50%",
@@ -232,6 +234,8 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
   const [fuelType, setFuelTypes] = useState([]);
   const [gpsTypes, setGpsTypes] = useState([]);
 
+  const [loading, setLoading] = useState(false);
+
   const onChangeDriverHandler = (newValue, name, key) => {
     console.log("on change handler", newValue);
     var allValues = { ...initialValues };
@@ -239,6 +243,7 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
     setInitialValues(allValues);
     setDriverId(newValue?.driverId);
   };
+
   const onChangeHandler = (newValue, name, key) => {
     console.log("on change handler", newValue);
     var allValues = { ...initialValues };
@@ -249,6 +254,7 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
     console.log(initialValues);
     setVendorName(newValue?.vendorName);
   };
+
   const onChangeHandlerDropdown = (newValue) => {
     const { target } = newValue;
     const { name, value } = target;
@@ -264,8 +270,10 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
     setInitialValues(allValues);
     console.log(initialValues);
   };
+
   const searchForVendor = async (e) => {
     try {
+      setLoading(true);
       if (e.target.value) {
         const response = await ComplianceService.searchVendor(e.target.value);
         const { data } = response || {};
@@ -275,10 +283,14 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
+
   const searchForDriver = async (e) => {
     try {
+      setLoading(true);
       if (e.target.value && vendorName != "") {
         console.log("searchForDriver", e.target.value);
         const response = await ComplianceService.searchDriverWithVendor(
@@ -293,15 +305,18 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
   ////////////////////////////////////////////////////////
 
   const addNewVehicleDetailsSubmit = async (values) => {
     try {
-      let allValues = {...values};
+      setLoading(true);
+      let allValues = { ...values };
       allValues.garageGeoCode = initialValues.garageGeoCode;
-      console.log(allValues,EditVehicleData);
+      console.log(allValues, EditVehicleData);
       if (EditVehicleData) {
         allValues.id = vehicleId;
         // if(vendorName === ""){
@@ -392,12 +407,16 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
           handleShow();
         }
       }
+    } finally {
+      setLoading(false);
     }
   };
+
   function checkUniqueConstraint(message, key) {
     var result = message.search(key);
     return result != -1 ? true : false;
   }
+
   const initializer = async () => {
     var officeResponse;
 
@@ -421,6 +440,7 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
 
   const completeNewVehicleFormSubmit = () => {
     try {
+      setLoading(true);
       dispatch(
         toggleToast({
           message: EditVehicleData
@@ -429,13 +449,17 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
           type: "success",
         })
       );
-      
+
       SetAddVehicleOpen(false);
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const uploadDocumentFormSubmit = async (id, role, documentToUpload, data) => {
     try {
+      setLoading(true);
       var formData = new FormData();
       formData.append("file", data);
       const response = await ComplianceService.documentUpload(
@@ -486,7 +510,10 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
         );
         return false;
       }
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const cancelHandler = () => {
@@ -504,6 +531,7 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
       "GPSStatus",
     ];
     try {
+      setLoading(true);
       list.map(async (val) => {
         const response = await MasterDataService.getMasterData(val);
         const { data } = response || {};
@@ -537,6 +565,8 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
       return [];
     } catch (e) {
       console.log(e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -619,7 +649,7 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
 
   const handleGeocode = (geocode) => {
     console.log("Here in parent geocode: ", geocode);
-    let allValues = {...initialValues}
+    let allValues = { ...initialValues };
     allValues.garageGeoCode = geocode;
     setInitialValues(allValues);
     setCoordinates((prevValues) => ({
@@ -961,7 +991,10 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                       type="button"
                       onClick={() => {
                         setDocumentUrl(
-                          EditVehicleData.insuranceUrl.replace("/getsdev1/", "/")
+                          EditVehicleData.insuranceUrl.replace(
+                            "/getsdev1/",
+                            "/"
+                          )
                         );
                         handleOpen();
                       }}
@@ -1278,6 +1311,21 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
           </div>
         </Box>
       </Modal>
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

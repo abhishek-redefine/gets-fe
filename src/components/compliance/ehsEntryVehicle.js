@@ -20,6 +20,7 @@ import moment from "moment";
 import IframeComponent from "../iframe/Iframe";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
+import LoaderComponent from "../common/loading";
 
 const style = {
   position: "absolute",
@@ -106,11 +107,13 @@ const EhsEntryVehicle = ({
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
+  const [loading, setLoading] = useState(false);
+
   const onMenuItemClick = async (key, clickedItem) => {
     if (key === "view") {
       if (clickedItem?.ehsFileUrl != "") {
         setNoFile(false);
-        setDocumentUrl(clickedItem?.ehsFileUrl.replace("gets-dev.",""));
+        setDocumentUrl(clickedItem?.ehsFileUrl.replace("gets-dev.", ""));
         handleOpen();
       } else {
         setNoFile(true);
@@ -122,6 +125,7 @@ const EhsEntryVehicle = ({
 
   const searchEhsHistory = async (resetFlag = false) => {
     try {
+      setLoading(true);
       var date = moment(searchDate).format("YYYY-MM-DD");
       let params = new URLSearchParams(pagination);
       var filter = { ...searchBean };
@@ -146,6 +150,8 @@ const EhsEntryVehicle = ({
       setEhsVehicleData(response.data.data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -159,160 +165,177 @@ const EhsEntryVehicle = ({
   }, []);
 
   return (
-    <div className="internalSettingContainer">
-      {!editEhsEntryVehicleOpen && (
-        <div>
-          <h4 className="pageSubHeading">Vehicle Summary</h4>
-          <div className="addUpdateFormContainer">
-            <div>
-              <div className="form-control-input">
-                <div style={{ fontWeight: "700" }}>Vehicle Id</div>
-                <div>{EhsVehicleData.vehicleId}</div>
-              </div>
-              <div className="form-control-input">
-                <div style={{ fontWeight: "700" }}>Vehicle Make</div>
-                <div>{EhsVehicleData.vehicleMake}</div>
-              </div>
-              <div className="form-control-input">
-                <div style={{ fontWeight: "700" }}>Vehicle Model</div>
-                <div>{EhsVehicleData.vehicleModel}</div>
-              </div>
-              <div className="form-control-input">
-                <div style={{ fontWeight: "700" }}>Vehicle Owner Name</div>
-                <div>{EhsVehicleData.vehicleOwnerName}</div>
-              </div>
-            </div>
-            <div>
-              <div className="form-control-input">
-                <div style={{ fontWeight: "700" }}>Fuel Type</div>
-                <div>{EhsVehicleData.fuelType}</div>
-              </div>
-              <div className="form-control-input">
-                <div style={{ fontWeight: "700" }}>Induction Date</div>
-                <div>{EhsVehicleData.inductionDate}</div>
-              </div>
-              <div className="form-control-input">
-                <div style={{ fontWeight: "700" }}>Manufacturing Date</div>
-                <div>{EhsVehicleData.manufacturingDate}</div>
-              </div>
-              <div className="form-control-input">
-                <div style={{ fontWeight: "700" }}>Status</div>
-                <div>{EhsVehicleData.complianceStatus}</div>
-              </div>
-            </div>
-            <div>
-              <div className="form-control-input">
-                <div style={{ fontWeight: "700" }}>EHS Status</div>
-                <div>{EhsVehicleData.ehsStatus}</div>
-              </div>
-            </div>
-          </div>
-          <div className="filterContainer">
-            <div className="form-control-input">
-              <InputLabel>EHS Date</InputLabel>
-              <LocalizationProvider dateAdapter={AdapterMoment}>
-                <DatePicker
-                  name="ehsDate"
-                  format={"DD-MM-YYYY"}
-                  value={searchDate}
-                  onChange={(e) => {
-                    var newDate = moment(e);
-                    setSearchDate(newDate);
-                  }}
-                />
-              </LocalizationProvider>
-            </div>
-            <div style={{ minWidth: "180px" }} className="form-control-input">
-              <FormControl fullWidth>
-                <InputLabel id="ehs-status-label">EHS Status</InputLabel>
-                <Select
-                  style={{ width: "180px" }}
-                  labelId="ehs-status-label"
-                  id="ehsStatusId"
-                  value={ehsStatus}
-                  name="ehsStatusId"
-                  label="EHS Status"
-                  onChange={(e) => setEhsStatus(e.target.value)}
-                >
-                  {!!ehsStatusList?.length &&
-                    ehsStatusList.map((status, idx) => (
-                      <MenuItem key={idx} value={status.value}>
-                        {status.displayName}
-                      </MenuItem>
-                    ))}
-                </Select>
-              </FormControl>
-            </div>
-            <div className="form-control-input" style={{ minWidth: "70px" }}>
-              <button
-                type="submit"
-                onClick={searchEhsHistory}
-                className="btn btn-primary filterApplyBtn"
-              >
-                Search
-              </button>
-            </div>
-            <div className="form-control-input" style={{ minWidth: "70px" }}>
-              <button
-                type="submit"
-                onClick={() => {
-                  searchEhsHistory(true);
-                  setEhsStatus("");
-                }}
-                className="btn btn-primary filterApplyBtn"
-              >
-                Reset
-              </button>
-            </div>
-            <div className="form-control-input" style={{ minWidth: "70px" }}>
-              <button
-                type="submit"
-                onClick={() => {
-                  searchEhsHistory(true);
-                  setEhsStatus("");
-                  setEhsVehicleOpen(false);
-                }}
-                className="btn btn-primary filterApplyBtn"
-              >
-                Back
-              </button>
-            </div>
-          </div>
-          <div className="gridContainer">
-            <Grid
-              headers={headers}
-              listing={ehsVehicleData}
-              onMenuItemClick={onMenuItemClick}
-            />
-          </div>
-          <Modal
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="modal-modal-title"
-            aria-describedby="modal-modal-description"
-          >
-            <Box sx={style}>
-              {noFile ? (
-                <div>
-                  <h1>No file is present</h1>
+    <div>
+      <div className="internalSettingContainer">
+        {!editEhsEntryVehicleOpen && (
+          <div>
+            <h4 className="pageSubHeading">Vehicle Summary</h4>
+            <div className="addUpdateFormContainer">
+              <div>
+                <div className="form-control-input">
+                  <div style={{ fontWeight: "700" }}>Vehicle Id</div>
+                  <div>{EhsVehicleData.vehicleId}</div>
                 </div>
-              ) : (
-                <IframeComponent url={documentUrl} />
-              )}
-            </Box>
-          </Modal>
+                <div className="form-control-input">
+                  <div style={{ fontWeight: "700" }}>Vehicle Make</div>
+                  <div>{EhsVehicleData.vehicleMake}</div>
+                </div>
+                <div className="form-control-input">
+                  <div style={{ fontWeight: "700" }}>Vehicle Model</div>
+                  <div>{EhsVehicleData.vehicleModel}</div>
+                </div>
+                <div className="form-control-input">
+                  <div style={{ fontWeight: "700" }}>Vehicle Owner Name</div>
+                  <div>{EhsVehicleData.vehicleOwnerName}</div>
+                </div>
+              </div>
+              <div>
+                <div className="form-control-input">
+                  <div style={{ fontWeight: "700" }}>Fuel Type</div>
+                  <div>{EhsVehicleData.fuelType}</div>
+                </div>
+                <div className="form-control-input">
+                  <div style={{ fontWeight: "700" }}>Induction Date</div>
+                  <div>{EhsVehicleData.inductionDate}</div>
+                </div>
+                <div className="form-control-input">
+                  <div style={{ fontWeight: "700" }}>Manufacturing Date</div>
+                  <div>{EhsVehicleData.manufacturingDate}</div>
+                </div>
+                <div className="form-control-input">
+                  <div style={{ fontWeight: "700" }}>Status</div>
+                  <div>{EhsVehicleData.complianceStatus}</div>
+                </div>
+              </div>
+              <div>
+                <div className="form-control-input">
+                  <div style={{ fontWeight: "700" }}>EHS Status</div>
+                  <div>{EhsVehicleData.ehsStatus}</div>
+                </div>
+              </div>
+            </div>
+            <div className="filterContainer">
+              <div className="form-control-input">
+                <InputLabel>EHS Date</InputLabel>
+                <LocalizationProvider dateAdapter={AdapterMoment}>
+                  <DatePicker
+                    name="ehsDate"
+                    format={"DD-MM-YYYY"}
+                    value={searchDate}
+                    onChange={(e) => {
+                      var newDate = moment(e);
+                      setSearchDate(newDate);
+                    }}
+                  />
+                </LocalizationProvider>
+              </div>
+              <div style={{ minWidth: "180px" }} className="form-control-input">
+                <FormControl fullWidth>
+                  <InputLabel id="ehs-status-label">EHS Status</InputLabel>
+                  <Select
+                    style={{ width: "180px" }}
+                    labelId="ehs-status-label"
+                    id="ehsStatusId"
+                    value={ehsStatus}
+                    name="ehsStatusId"
+                    label="EHS Status"
+                    onChange={(e) => setEhsStatus(e.target.value)}
+                  >
+                    {!!ehsStatusList?.length &&
+                      ehsStatusList.map((status, idx) => (
+                        <MenuItem key={idx} value={status.value}>
+                          {status.displayName}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
+              </div>
+              <div className="form-control-input" style={{ minWidth: "70px" }}>
+                <button
+                  type="submit"
+                  onClick={searchEhsHistory}
+                  className="btn btn-primary filterApplyBtn"
+                >
+                  Search
+                </button>
+              </div>
+              <div className="form-control-input" style={{ minWidth: "70px" }}>
+                <button
+                  type="submit"
+                  onClick={() => {
+                    searchEhsHistory(true);
+                    setEhsStatus("");
+                  }}
+                  className="btn btn-primary filterApplyBtn"
+                >
+                  Reset
+                </button>
+              </div>
+              <div className="form-control-input" style={{ minWidth: "70px" }}>
+                <button
+                  type="submit"
+                  onClick={() => {
+                    searchEhsHistory(true);
+                    setEhsStatus("");
+                    setEhsVehicleOpen(false);
+                  }}
+                  className="btn btn-primary filterApplyBtn"
+                >
+                  Back
+                </button>
+              </div>
+            </div>
+            <div className="gridContainer">
+              <Grid
+                headers={headers}
+                listing={ehsVehicleData}
+                onMenuItemClick={onMenuItemClick}
+              />
+            </div>
+            <Modal
+              open={open}
+              onClose={handleClose}
+              aria-labelledby="modal-modal-title"
+              aria-describedby="modal-modal-description"
+            >
+              <Box sx={style}>
+                {noFile ? (
+                  <div>
+                    <h1>No file is present</h1>
+                  </div>
+                ) : (
+                  <IframeComponent url={documentUrl} />
+                )}
+              </Box>
+            </Modal>
+          </div>
+        )}
+        {editEhsEntryVehicleOpen && (
+          <AddEhsEntryVehicle
+            EditEhsEntryVehicle={editEhsEntryVehicle}
+            VehicleId={EhsVehicleData.id}
+            UpdateId={
+              editEhsEntryVehicle.specialId !== ""
+                ? editEhsEntryVehicle.specialId
+                : false
+            }
+          />
+        )}
+      </div>
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
         </div>
-      )}
-      {editEhsEntryVehicleOpen && (
-        <AddEhsEntryVehicle
-          EditEhsEntryVehicle={editEhsEntryVehicle}
-          VehicleId={EhsVehicleData.id}
-          UpdateId={
-            editEhsEntryVehicle.specialId !== ""
-              ? editEhsEntryVehicle.specialId
-              : false
-          }
-        />
+      ) : (
+        " "
       )}
     </div>
   );

@@ -6,6 +6,7 @@ import BookingService from "@/services/booking.service";
 import { toggleToast } from "@/redux/company.slice";
 import { useDispatch } from "react-redux";
 import Button from "@mui/material/Button";
+import LoaderComponent from "@/components/common/loading";
 
 const UploadBooking = ({}) => {
   const headers = [
@@ -57,18 +58,23 @@ const UploadBooking = ({}) => {
   const dispatch = useDispatch();
 
   const [bookingListing, setBookingListing] = useState();
+  const [loading, setLoading] = useState(false);
 
   const fetchAllUploadBookings = async () => {
     try {
+      setLoading(true);
       const response = await BookingService.listAllBookings();
       setBookingListing(response.data.data);
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
   const uploadFunction = async (item) => {
     try {
+      setLoading(true);
       var form = new FormData();
       form.append(
         "model",
@@ -109,6 +115,8 @@ const UploadBooking = ({}) => {
       }
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -135,17 +143,34 @@ const UploadBooking = ({}) => {
   }, []);
 
   return (
-    <div className="internalSettingContainer">
-      <div style={{ display: "flex", justifyContent: "end" }}>
-        <UploadButton uploadFunction={uploadFunction} />
+    <div>
+      <div className="internalSettingContainer">
+        <div style={{ display: "flex", justifyContent: "end" }}>
+          <UploadButton uploadFunction={uploadFunction} />
+        </div>
+        <div className="gridContainer">
+          <Grid
+            headers={headers}
+            listing={bookingListing}
+            onMenuItemClick={onMenuItemClick}
+          />
+        </div>
       </div>
-      <div className="gridContainer">
-        <Grid
-          headers={headers}
-          listing={bookingListing}
-          onMenuItemClick={onMenuItemClick}
-        />
-      </div>
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

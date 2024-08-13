@@ -16,6 +16,7 @@ import React, { useEffect, useState } from "react";
 import { toggleToast } from "@/redux/company.slice";
 import { useDispatch } from "react-redux";
 import { useFormik } from "formik";
+import LoaderComponent from "../common/loading";
 
 const ShiftTeamMapping = ({ onUserSuccess, editEmployeeData }) => {
   const dispatch = useDispatch();
@@ -29,8 +30,8 @@ const ShiftTeamMapping = ({ onUserSuccess, editEmployeeData }) => {
   });
   const [pagination, setPagination] = useState({
     page: 0,
-    size: 100,        
-});
+    size: 100,
+  });
 
   const formik = useFormik({
     initialValues: formValues,
@@ -45,9 +46,10 @@ const ShiftTeamMapping = ({ onUserSuccess, editEmployeeData }) => {
           shiftType: allValues.shiftType,
           transportType: allValues.transportType,
         },
-        shiftId : allValues.shiftTime
+        shiftId: allValues.shiftTime,
       };
       try {
+        setLoading(true);
         const response = await ShiftService.shiftTeamZoneMapping(payload);
         console.log(response);
         dispatch(
@@ -67,6 +69,8 @@ const ShiftTeamMapping = ({ onUserSuccess, editEmployeeData }) => {
         initializer();
       } catch (err) {
         console.log("Error", err);
+      } finally {
+        setLoading(false);
       }
     },
   });
@@ -81,6 +85,8 @@ const ShiftTeamMapping = ({ onUserSuccess, editEmployeeData }) => {
   const [searchedTeam, setSearchedTeam] = useState([]);
   const [openSearchTeam, setOpenSearchTeam] = useState(false);
   const [listData, setListData] = useState([]);
+
+  const [loading, setLoading] = useState(false);
 
   const handleFormSubmit = async () => {
     var data = formValues;
@@ -141,6 +147,7 @@ const ShiftTeamMapping = ({ onUserSuccess, editEmployeeData }) => {
 
   const searchForTeam = async (e) => {
     try {
+      setLoading(true);
       if (e.target.value) {
         const response = await OfficeService.searchTeam(e.target.value);
         const { data } = response || {};
@@ -150,6 +157,8 @@ const ShiftTeamMapping = ({ onUserSuccess, editEmployeeData }) => {
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -401,6 +410,21 @@ const ShiftTeamMapping = ({ onUserSuccess, editEmployeeData }) => {
           </button>
         </div>
       </div>
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

@@ -1,21 +1,31 @@
-import React, { useEffect, useState } from 'react';
-import AdminSettings from '@/layouts/admin-settings';
-import styles from '@/styles/AdminSettings.module.css';
-import { Checkbox, FormControl, FormControlLabel, InputLabel, MenuItem, Select } from '@mui/material';
-import RoleService from '@/services/role.service';
-import { PERMISSIONS } from '@/constants/app.constants.';
-import { toggleToast } from '@/redux/company.slice';
-import { useDispatch } from 'react-redux';
+import React, { useEffect, useState } from "react";
+import AdminSettings from "@/layouts/admin-settings";
+import styles from "@/styles/AdminSettings.module.css";
+import {
+  Checkbox,
+  FormControl,
+  FormControlLabel,
+  InputLabel,
+  MenuItem,
+  Select,
+} from "@mui/material";
+import RoleService from "@/services/role.service";
+import { PERMISSIONS } from "@/constants/app.constants.";
+import { toggleToast } from "@/redux/company.slice";
+import { useDispatch } from "react-redux";
+import LoaderComponent from "@/components/common/loading";
 
 const AccessControl = () => {
-
   const dispatch = useDispatch();
   const [selectedRole, setSelectedRole] = useState("");
   const [allRoles, setAllRoles] = useState();
   const [allModules, setAllModules] = useState([]);
   const [modulePermissionsByRole, setModulePermissionsByRole] = useState([]);
-  const [modulePermissionAPICalled, setModulePermissionAPICalled] = useState(false);
+  const [modulePermissionAPICalled, setModulePermissionAPICalled] =
+    useState(false);
   const [allPermissions, setAllPermissions] = useState({});
+
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     let val = e.target.value;
@@ -24,27 +34,32 @@ const AccessControl = () => {
 
   const getRoles = async () => {
     try {
+      setLoading(true);
       const response = await RoleService.getAllRoles();
       const { data } = response || {};
       setAllRoles(data);
     } catch (e) {
-
+    } finally {
+      setLoading(false);
     }
   };
 
   const getModules = async () => {
     try {
+      setLoading(true);
       const response = await RoleService.getAllModules();
       const { data } = response || {};
       const { modules } = data || {};
       setAllModules(modules);
     } catch (e) {
-
+    } finally {
+      setLoading(false);
     }
   };
 
   const getPermissionsByRole = async (role) => {
     try {
+      setLoading(true);
       const response = await RoleService.getRolePermissions(role);
       const { data } = response || {};
       setModulePermissionsByRole(data);
@@ -54,6 +69,8 @@ const AccessControl = () => {
       }
     } catch (e) {
       setModulePermissionAPICalled(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -71,38 +88,44 @@ const AccessControl = () => {
     let currentPermissions = {};
     apiModules.forEach((module) => {
       module?.submodules?.forEach((submodule) => {
-        const submodulePermissions = submodule?.functionalities?.[0]?.permissions;
+        const submodulePermissions =
+          submodule?.functionalities?.[0]?.permissions;
         if (submodulePermissions?.length) {
           if (currentPermissions[module.name]) {
-            currentPermissions[module.name][submodule.name] = submodulePermissions;
+            currentPermissions[module.name][submodule.name] =
+              submodulePermissions;
           } else {
             currentPermissions[module.name] = {
-              [submodule.name]: submodulePermissions
+              [submodule.name]: submodulePermissions,
             };
           }
         }
       });
     });
     setAllPermissions(currentPermissions);
-  }
+  };
 
   const savePermissions = async () => {
     let finalPermissions = {
       role: selectedRole,
-      modules: []
+      modules: [],
     };
-    Object.keys(allPermissions)?.length
+    Object.keys(allPermissions)?.length;
     if (Object.keys(allPermissions)?.length) {
       Object.keys(allPermissions).forEach((moduleName) => {
         const moduleDetails = {};
-        const allModuleDetails = allModules.filter((module) => module.name === moduleName)?.[0];
+        const allModuleDetails = allModules.filter(
+          (module) => module.name === moduleName
+        )?.[0];
         let currentModuleDetails = {};
         if (modulePermissionsByRole.length) {
-          const savedModuleDetails = modulePermissionsByRole.filter((savedModule) => savedModule.name === moduleName)?.[0];
+          const savedModuleDetails = modulePermissionsByRole.filter(
+            (savedModule) => savedModule.name === moduleName
+          )?.[0];
           if (savedModuleDetails) {
             currentModuleDetails = savedModuleDetails;
           }
-        } 
+        }
         if (allModuleDetails && !currentModuleDetails.id) {
           currentModuleDetails = allModuleDetails;
         }
@@ -111,20 +134,28 @@ const AccessControl = () => {
         }
         moduleDetails.name = currentModuleDetails.name;
         moduleDetails.description = currentModuleDetails.description;
-        if (allPermissions?.[moduleName] && Object.keys(allPermissions[moduleName])?.length) {
+        if (
+          allPermissions?.[moduleName] &&
+          Object.keys(allPermissions[moduleName])?.length
+        ) {
           Object.keys(allPermissions[moduleName]).forEach((subModuleName) => {
             let submoduleDetails = {};
             if (currentModuleDetails.id) {
-              const savedSubmodule = currentModuleDetails.submodules.filter((submodule) => submodule.name === subModuleName)?.[0];
+              const savedSubmodule = currentModuleDetails.submodules.filter(
+                (submodule) => submodule.name === subModuleName
+              )?.[0];
               if (savedSubmodule) {
                 submoduleDetails = savedSubmodule;
               }
-            } 
+            }
             if (!submoduleDetails?.id) {
-              submoduleDetails = allModuleDetails.submodules.filter((submodule) => submodule.name === subModuleName)?.[0];
+              submoduleDetails = allModuleDetails.submodules.filter(
+                (submodule) => submodule.name === subModuleName
+              )?.[0];
             }
             if (submoduleDetails) {
-              submoduleDetails.functionalities[0].permissions = allPermissions[moduleName][subModuleName];
+              submoduleDetails.functionalities[0].permissions =
+                allPermissions[moduleName][subModuleName];
               if (moduleDetails.submodules?.length) {
                 moduleDetails.submodules.push(submoduleDetails);
               } else {
@@ -137,6 +168,7 @@ const AccessControl = () => {
       });
     }
     try {
+      setLoading(true);
       if (!modulePermissionsByRole?.length) {
         await RoleService.saveRolePermissions(finalPermissions);
       } else {
@@ -144,9 +176,21 @@ const AccessControl = () => {
       }
       resetData();
       setSelectedRole("");
-      dispatch(toggleToast({ message: 'Permissions updated successfully', type: 'success' }));
+      dispatch(
+        toggleToast({
+          message: "Permissions updated successfully",
+          type: "success",
+        })
+      );
     } catch (e) {
-      dispatch(toggleToast({ message: 'Error saving permissions, please try again', type: 'error' }));
+      dispatch(
+        toggleToast({
+          message: "Error saving permissions, please try again",
+          type: "error",
+        })
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -166,97 +210,171 @@ const AccessControl = () => {
   };
 
   const setAllPermission = (singleModule, subModule, permission) => {
-    const currentPermissions = {...allPermissions};
+    const currentPermissions = { ...allPermissions };
     if (currentPermissions[singleModule.name]) {
       if (currentPermissions[singleModule.name]?.[subModule.name]) {
-        const idxOfPermission = currentPermissions[singleModule.name][subModule.name].indexOf(permission);
+        const idxOfPermission =
+          currentPermissions[singleModule.name][subModule.name].indexOf(
+            permission
+          );
         if (idxOfPermission > -1) {
-          currentPermissions[singleModule.name][subModule.name].splice(idxOfPermission, 1);
+          currentPermissions[singleModule.name][subModule.name].splice(
+            idxOfPermission,
+            1
+          );
         } else {
-          currentPermissions[singleModule.name][subModule.name].push(permission);
+          currentPermissions[singleModule.name][subModule.name].push(
+            permission
+          );
         }
       } else {
         currentPermissions[singleModule.name][subModule.name] = [permission];
       }
     } else {
       currentPermissions[singleModule.name] = {
-        [subModule.name]: [permission]
+        [subModule.name]: [permission],
       };
     }
     setAllPermissions(currentPermissions);
-  }
- 
+  };
+
   return (
-    <div className='mainSettingsContainer'>
-      <h2>Access Control</h2>
-      <div className={styles.roleSelectionContainer}>
-        <p>Select Role to continue</p>
-        {!!allRoles?.length && <div>
-          <FormControl fullWidth>
-              <InputLabel id="role-label">Role</InputLabel>
-              <Select
+    <div>
+      <div className="mainSettingsContainer">
+        <h2>Access Control</h2>
+        <div className={styles.roleSelectionContainer}>
+          <p>Select Role to continue</p>
+          {!!allRoles?.length && (
+            <div>
+              <FormControl fullWidth>
+                <InputLabel id="role-label">Role</InputLabel>
+                <Select
                   labelId="role-label"
                   id="demo-simple-select"
                   value={selectedRole}
                   label="Role"
                   onChange={handleChange}
+                >
+                  {allRoles.map(
+                    (role, rIdx) =>
+                      !!role?.roleName && (
+                        <MenuItem key={rIdx} value={role?.roleName}>
+                          {role?.displayName}
+                        </MenuItem>
+                      )
+                  )}
+                </Select>
+              </FormControl>
+            </div>
+          )}
+          <div>
+            <button
+              onClick={viewRole}
+              disabled={!selectedRole}
+              className="btn btn-primary"
+            >
+              View Role
+            </button>
+          </div>
+        </div>
+        {!!(selectedRole && modulePermissionAPICalled) && (
+          <div className={styles.permissionContainer}>
+            <table className="commonTable">
+              <thead>
+                <tr>
+                  <td>Module</td>
+                  <td>Sub Module</td>
+                  <td>Permissions</td>
+                </tr>
+              </thead>
+              <tbody>
+                {allModules.map((singleModule, idx) => (
+                  <tr key={idx}>
+                    <td>{singleModule?.description}</td>
+                    <td>
+                      {singleModule?.submodules?.length ? (
+                        <>
+                          {singleModule?.submodules.map((subModule, sIdx) => (
+                            <p key={sIdx}>
+                              {subModule?.description || subModule?.name}
+                            </p>
+                          ))}
+                        </>
+                      ) : (
+                        ""
+                      )}
+                    </td>
+                    <td>
+                      {singleModule?.submodules?.length ? (
+                        <>
+                          {singleModule?.submodules.map((subModule, sIdx_i) => (
+                            <p key={sIdx_i} className="pWithoutPadding">
+                              {!!subModule?.functionalities?.[0]?.permissions
+                                ?.length &&
+                                subModule?.functionalities?.[0]?.permissions?.map(
+                                  (permission, pIdx) => (
+                                    <FormControlLabel
+                                      checked={getChecked(
+                                        singleModule,
+                                        subModule,
+                                        permission
+                                      )}
+                                      key={pIdx}
+                                      control={
+                                        <Checkbox
+                                          onChange={() =>
+                                            setAllPermission(
+                                              singleModule,
+                                              subModule,
+                                              permission
+                                            )
+                                          }
+                                        />
+                                      }
+                                      label={PERMISSIONS[permission]}
+                                    />
+                                  )
+                                )}
+                            </p>
+                          ))}
+                        </>
+                      ) : (
+                        ""
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="bottomBtnContainerRescue"></div>
+            <div className="bottomBtnContainer">
+              <button
+                onClick={() => savePermissions()}
+                className="btn btn-primary btn-primary-width"
               >
-                  {allRoles.map((role, rIdx) => (
-                    !!role?.roleName && <MenuItem key={rIdx} value={role?.roleName}>{role?.displayName}</MenuItem>
-                  ))}
-              </Select>
-          </FormControl>
-        </div>}
-        <div>
-          <button onClick={viewRole} disabled={!selectedRole} className='btn btn-primary'>View Role</button>
-        </div>
+                Save
+              </button>
+            </div>
+          </div>
+        )}
       </div>
-      {!!(selectedRole && modulePermissionAPICalled) && <div className={styles.permissionContainer}>
-        <table className='commonTable'>
-          <thead>
-            <tr>
-              <td>Module</td>
-              <td>Sub Module</td>
-              <td>Permissions</td>
-            </tr>
-          </thead>
-          <tbody>
-            {allModules.map((singleModule, idx) => (
-              <tr key={idx}>
-                <td>{singleModule?.description}</td>
-                <td>
-                  {singleModule?.submodules?.length ?
-                    <>
-                      {singleModule?.submodules.map(((subModule, sIdx) => (
-                        <p key={sIdx}>{subModule?.description || subModule?.name}</p>
-                      )))}
-                    </>
-                  : ""}
-                </td>
-                <td>
-                {singleModule?.submodules?.length ?
-                  <>
-                    {singleModule?.submodules.map(((subModule, sIdx_i) => (
-                      <p key={sIdx_i} className='pWithoutPadding'>
-                        {!!(subModule?.functionalities?.[0]?.permissions?.length) && 
-                        subModule?.functionalities?.[0]?.permissions?.map((permission, pIdx) => (
-                          <FormControlLabel checked={getChecked(singleModule, subModule, permission)} key={pIdx} control={<Checkbox onChange={() => setAllPermission(singleModule, subModule, permission)} />} label={PERMISSIONS[permission]} />
-                        ))}
-                      </p>
-                    )))}
-                  </> : ""}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className='bottomBtnContainerRescue'></div>
-        <div className='bottomBtnContainer'>
-          <button onClick={() => savePermissions()} className='btn btn-primary btn-primary-width'>Save</button>
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
         </div>
-      </div>}
+      ) : (
+        " "
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default AdminSettings(AccessControl);;
+export default AdminSettings(AccessControl);

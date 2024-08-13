@@ -11,6 +11,7 @@ import tracking from "@/layouts/tracking";
 import { setMasterData } from "@/redux/master.slice";
 import MasterDataService from "@/services/masterdata.service";
 import IncidentManagementTable from "@/components/tracking/incidentManagementTable";
+import LoaderComponent from "@/components/common/loading";
 
 const MainComponent = () => {
   const [office, setOffice] = useState([]);
@@ -21,6 +22,8 @@ const MainComponent = () => {
   });
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
+
+  const [loading, setLoading] = useState(false);
 
   const handleFilterChange = (e) => {
     const { target } = e;
@@ -33,6 +36,7 @@ const MainComponent = () => {
 
   const fetchAllOffices = async () => {
     try {
+      setLoading(true);
       const response = await OfficeService.getAllOffices();
       const { data } = response || {};
       const { clientOfficeDTO } = data || {};
@@ -42,18 +46,25 @@ const MainComponent = () => {
         (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchMasterData = async (type) => {
     try {
+      setLoading(true);
       const response = await MasterDataService.getMasterData(type);
       const { data } = response || {};
       if (data?.length) {
         console.log(data);
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const resetFilter = () => {
@@ -63,6 +74,31 @@ const MainComponent = () => {
       shiftType: "",
     };
     setSearchValues(allSearchValue);
+  };
+
+  const fetchSummary = async () => {
+    try {
+      setLoading(true);
+      let params = new URLSearchParams(pagination);
+      let allSearchValues = { ...searchValues };
+      Object.keys(allSearchValues).forEach((objKey) => {
+        if (
+          allSearchValues[objKey] === null ||
+          allSearchValues[objKey] === ""
+        ) {
+          delete allSearchValues[objKey];
+        }
+      });
+      const response = await DispatchService.getTripSearchByBean(
+        params,
+        allSearchValues
+      );
+      console.log("response data", response.data.data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -229,6 +265,22 @@ const MainComponent = () => {
         </div>
         <IncidentManagementTable />
       </div>
+
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

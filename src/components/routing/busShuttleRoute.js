@@ -28,6 +28,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { TimeField } from "@mui/x-date-pickers/TimeField";
 import dayjs from "dayjs";
 import BookingService from "@/services/booking.service";
+import LoaderComponent from "../common/loading";
 
 const style = {
   position: "absolute",
@@ -189,6 +190,7 @@ const BusShuttleRoute = () => {
     size: 10,
   });
   const [busEPReportingTime, setBusEPReportingTime] = useState("00:00");
+  const [loading, setLoading] = useState(false);
 
   const addClickHandler = () => {
     setMiddlePointCount(middlePointCount - 1);
@@ -212,6 +214,7 @@ const BusShuttleRoute = () => {
     const { target } = event;
     const { value } = target;
     try {
+      setLoading(true);
       setSearchedNodalPoints([
         {
           nodalId: "1",
@@ -228,6 +231,8 @@ const BusShuttleRoute = () => {
       setSearchedNodalPoints(data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -265,6 +270,7 @@ const BusShuttleRoute = () => {
           },
         };
         try {
+          setLoading(true);
           if (step === 0) {
             console.log(values);
             console.log(busRouteDTO);
@@ -335,6 +341,7 @@ const BusShuttleRoute = () => {
         };
         console.log(shuttleRouteDTO);
         try {
+          setLoading(true);
           const response = await RoutingService.createShuttleRouting(
             shuttleRouteDTO
           );
@@ -345,6 +352,8 @@ const BusShuttleRoute = () => {
           }
         } catch (err) {
           console.log(err);
+        } finally {
+          setLoading(false);
         }
       }
     },
@@ -402,31 +411,41 @@ const BusShuttleRoute = () => {
 
   const fetchAllOffices = async () => {
     try {
+      setLoading(true);
       const response = await OfficeService.getAllOffices();
       const { data } = response || {};
       const { clientOfficeDTO } = data || {};
       setOffice(clientOfficeDTO);
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchMasterData = async () => {
     try {
+      setLoading(true);
       const shiftResponse = await MasterDataService.getMasterData("ShiftType");
       const { data } = shiftResponse || {};
       setShiftTypes(data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchAllBusRoute = async () => {
     try {
+      setLoading(true);
       const response = await RoutingService.getAllBusRoute();
       const { data } = response || {};
       setBusRoutingLisiting(data.data);
       console.log(data.data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
   const onMenuItemClick = (key, clickedItem) => {
@@ -447,22 +466,28 @@ const BusShuttleRoute = () => {
   };
   const enableDisableShuttleRoute = async (id, flag) => {
     try {
+      setLoading(true);
       const response = await RoutingService.enableDisableShuttleRoute(id, flag);
       const { data } = response || {};
       console.log(data);
       fetchAllShuttleRoute();
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
   const enableDisableBusRoute = async (id, flag) => {
     try {
+      setLoading(true);
       const response = await RoutingService.enableDisableBusRoute(id, flag);
       const { data } = response || {};
       console.log(data);
       fetchAllBusRoute();
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
   const handlePageChange = (page) => {
@@ -473,12 +498,15 @@ const BusShuttleRoute = () => {
 
   const fetchAllShuttleRoute = async () => {
     try {
+      setLoading(true);
       const response = await RoutingService.getAllShuttleRoute();
       const { data } = response || {};
       console.log(data);
       setShuttleRoutingListing(data.data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -498,6 +526,7 @@ const BusShuttleRoute = () => {
 
   const getShiftTimeInOut = async (officeId, transportType) => {
     try {
+      setLoading(true);
       const pagination = {
         page: 0,
         size: 100,
@@ -527,6 +556,8 @@ const BusShuttleRoute = () => {
       setLogoutShiftTime(responseShiftOut.data.data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -560,6 +591,7 @@ const BusShuttleRoute = () => {
 
   const fetchAllNodalPoints = async (officeId) => {
     try {
+      setLoading(true);
       const pagination = {
         page: 0,
         size: 100,
@@ -579,6 +611,8 @@ const BusShuttleRoute = () => {
       setNodalPoint(modifiedList);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -590,523 +624,536 @@ const BusShuttleRoute = () => {
   }, []);
 
   return (
-    <div className="internalSettingContainer">
-      <div className="gridContainer">
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <div className="filterContainer">
-            <div style={{ minWidth: "180px" }} className="form-control-input">
-              <FormControl fullWidth>
-                <InputLabel id="primary-office-label">Office Id</InputLabel>
-                <Select
-                  style={{ width: "180px" }}
-                  labelId="primary-office-label"
-                  id="officeId"
-                  value={searchValues.officeId}
-                  name="officeId"
-                  label="Office ID"
-                  onChange={handleFilterChange}
+    <div>
+      <div className="internalSettingContainer">
+        <div className="gridContainer">
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div className="filterContainer">
+              <div style={{ minWidth: "180px" }} className="form-control-input">
+                <FormControl fullWidth>
+                  <InputLabel id="primary-office-label">Office Id</InputLabel>
+                  <Select
+                    style={{ width: "180px" }}
+                    labelId="primary-office-label"
+                    id="officeId"
+                    value={searchValues.officeId}
+                    name="officeId"
+                    label="Office ID"
+                    onChange={handleFilterChange}
+                  >
+                    {!!offices?.length &&
+                      offices.map((office, idx) => (
+                        <MenuItem key={idx} value={office.officeId}>
+                          {getFormattedLabel(office.officeId)}, {office.address}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
+              </div>
+              <div className="form-control-input">
+                <InputLabel htmlFor="End-date">Date</InputLabel>
+                <LocalizationProvider dateAdapter={AdapterMoment}>
+                  <DatePicker
+                    name="bookingDate"
+                    format={"DD-MM-YYYY"}
+                    value={
+                      searchValues.bookingDate
+                        ? moment(searchValues.bookingDate)
+                        : null
+                    }
+                    onChange={(e) => console.log(e)}
+                  />
+                </LocalizationProvider>
+              </div>
+              <div style={{ minWidth: "180px" }} className="form-control-input">
+                <FormControl fullWidth>
+                  <InputLabel id="route-type-label">Route Type</InputLabel>
+                  <Select
+                    style={{ width: "180px" }}
+                    labelId="route-type-label"
+                    id="routeType"
+                    value={routeType}
+                    name="routeType"
+                    label="Route Type"
+                    onChange={(e) => setRouteType(e.target.value)}
+                  >
+                    {!!routeTypes?.length &&
+                      routeTypes.map((route, idx) => (
+                        <MenuItem key={idx} value={route}>
+                          {route}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
+              </div>
+              <div style={{ minWidth: "180px" }} className="form-control-input">
+                <FormControl fullWidth>
+                  <InputLabel id="shift-type-label">Shift Type</InputLabel>
+                  <Select
+                    style={{ width: "180px" }}
+                    labelId="shift-type-label"
+                    id="shiftType"
+                    value={searchValues.shiftType}
+                    name="shiftType"
+                    label="Shift Type"
+                    onChange={handleFilterChange}
+                  >
+                    {!!shiftTypes?.length &&
+                      shiftTypes.map((shift, idx) => (
+                        <MenuItem key={idx} value={shift.value}>
+                          {shift.displayName}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
+              </div>
+              <div className="form-control-input" style={{ minWidth: "70px" }}>
+                <button
+                  type="submit"
+                  onClick={() => console.log("clicked")}
+                  className="btn btn-primary filterApplyBtn"
                 >
-                  {!!offices?.length &&
-                    offices.map((office, idx) => (
-                      <MenuItem key={idx} value={office.officeId}>
-                        {getFormattedLabel(office.officeId)}, {office.address}
-                      </MenuItem>
-                    ))}
-                </Select>
-              </FormControl>
+                  Apply
+                </button>
+              </div>
+            </div>
+          </div>
+          <div style={{ display: "flex", justifyContent: "end" }}>
+            <div className="form-control-input">
+              <button onClick={busRouteHandler} className="btn btn-primary">
+                Add Bus Route
+              </button>
             </div>
             <div className="form-control-input">
-              <InputLabel htmlFor="End-date">Date</InputLabel>
-              <LocalizationProvider dateAdapter={AdapterMoment}>
-                <DatePicker
-                  name="bookingDate"
-                  format={"DD-MM-YYYY"}
-                  value={
-                    searchValues.bookingDate
-                      ? moment(searchValues.bookingDate)
-                      : null
-                  }
-                  onChange={(e) => console.log(e)}
-                />
-              </LocalizationProvider>
-            </div>
-            <div style={{ minWidth: "180px" }} className="form-control-input">
-              <FormControl fullWidth>
-                <InputLabel id="route-type-label">Route Type</InputLabel>
-                <Select
-                  style={{ width: "180px" }}
-                  labelId="route-type-label"
-                  id="routeType"
-                  value={routeType}
-                  name="routeType"
-                  label="Route Type"
-                  onChange={(e) => setRouteType(e.target.value)}
-                >
-                  {!!routeTypes?.length &&
-                    routeTypes.map((route, idx) => (
-                      <MenuItem key={idx} value={route}>
-                        {route}
-                      </MenuItem>
-                    ))}
-                </Select>
-              </FormControl>
-            </div>
-            <div style={{ minWidth: "180px" }} className="form-control-input">
-              <FormControl fullWidth>
-                <InputLabel id="shift-type-label">Shift Type</InputLabel>
-                <Select
-                  style={{ width: "180px" }}
-                  labelId="shift-type-label"
-                  id="shiftType"
-                  value={searchValues.shiftType}
-                  name="shiftType"
-                  label="Shift Type"
-                  onChange={handleFilterChange}
-                >
-                  {!!shiftTypes?.length &&
-                    shiftTypes.map((shift, idx) => (
-                      <MenuItem key={idx} value={shift.value}>
-                        {shift.displayName}
-                      </MenuItem>
-                    ))}
-                </Select>
-              </FormControl>
-            </div>
-            <div className="form-control-input" style={{ minWidth: "70px" }}>
-              <button
-                type="submit"
-                onClick={() => console.log("clicked")}
-                className="btn btn-primary filterApplyBtn"
-              >
-                Apply
+              <button onClick={shuttleRouteHandler} className="btn btn-primary">
+                Add Shuttle Route
               </button>
             </div>
           </div>
-        </div>
-        <div style={{ display: "flex", justifyContent: "end" }}>
-          <div className="form-control-input">
-            <button onClick={busRouteHandler} className="btn btn-primary">
-              Add Bus Route
-            </button>
-          </div>
-          <div className="form-control-input">
-            <button onClick={shuttleRouteHandler} className="btn btn-primary">
-              Add Shuttle Route
-            </button>
-          </div>
-        </div>
-        {routeType === "Bus Route" ? (
-          <Grid
-            headers={headers}
-            listing={busRoutingListing}
-            onMenuItemClick={onMenuItemClick}
-            handlePageChange={handlePageChange}
-            enableDisableRow={true}
-          />
-        ) : (
-          <>
+          {routeType === "Bus Route" ? (
             <Grid
-              headers={headersShuttle}
-              listing={shuttleRoutingListing}
+              headers={headers}
+              listing={busRoutingListing}
               onMenuItemClick={onMenuItemClick}
               handlePageChange={handlePageChange}
               enableDisableRow={true}
             />
-          </>
-        )}
-        <Modal
-          open={openModal}
-          onClose={handleModalClose}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
-        >
-          <Box sx={style}>
-            {routeFlag === "Bus" ? (
-              <>
-                {step === 0 && (
-                  <div style={{ padding: "20px" }}>
-                    <div style={{ margin: "20px" }}>
-                      <h4>Add Bus Route</h4>
-                    </div>
-                    <div style={{ display: "flex" }}>
-                      <div style={{ padding: "10px 20px", width: "50%" }}>
-                        <FormControl fullWidth>
-                          <InputLabel id="primary-office-label">
-                            Office Id
-                          </InputLabel>
-                          <Select
-                            required
-                            labelId="primary-office-label"
-                            id="officeId"
-                            value={values.busRouteOfficeId}
-                            error={
-                              touched.busRouteOfficeId &&
-                              Boolean(errors.busRouteOfficeId)
-                            }
-                            name="busRouteOfficeId"
-                            label="Office ID"
-                            onChange={(e) => changeOfficeHandler(e)}
-                          >
-                            {!!offices?.length &&
-                              offices.map((office, idx) => (
-                                <MenuItem key={idx} value={office.officeId}>
-                                  {getFormattedLabel(office.officeId)},{" "}
-                                  {office.address}
-                                </MenuItem>
-                              ))}
-                          </Select>
-                        </FormControl>
+          ) : (
+            <>
+              <Grid
+                headers={headersShuttle}
+                listing={shuttleRoutingListing}
+                onMenuItemClick={onMenuItemClick}
+                handlePageChange={handlePageChange}
+                enableDisableRow={true}
+              />
+            </>
+          )}
+          <Modal
+            open={openModal}
+            onClose={handleModalClose}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+          >
+            <Box sx={style}>
+              {routeFlag === "Bus" ? (
+                <>
+                  {step === 0 && (
+                    <div style={{ padding: "20px" }}>
+                      <div style={{ margin: "20px" }}>
+                        <h4>Add Bus Route</h4>
                       </div>
-                      <div style={{ padding: "10px 20px", width: "50%" }}>
-                        <FormControl fullWidth>
-                          <TextField
-                            error={
-                              touched.busRouteName &&
-                              Boolean(errors.busRouteName)
-                            }
-                            onChange={handleChange}
-                            required
-                            id="busRouteName"
-                            name="busRouteName"
-                            label="Bus Route Name"
-                            variant="outlined"
-                            value={values.busRouteName}
-                          />
-                        </FormControl>
-                      </div>
-                    </div>
-                    <div style={{ display: "flex" }}>
-                      <div style={{ padding: "10px 20px", width: "50%" }}>
-                        <FormControl fullWidth>
-                          <InputLabel id="shift-type-label">
-                            Shift Type
-                          </InputLabel>
-                          <Select
-                            disabled={initialValues.busRouteOfficeId === ""}
-                            required
-                            labelId="shift-type-label"
-                            id="busRouteShiftType"
-                            value={values.busRouteShiftType}
-                            error={
-                              touched.busRouteShiftType &&
-                              Boolean(errors.busRouteShiftType)
-                            }
-                            name="busRouteShiftType"
-                            label="Shift Type"
-                            onChange={(e) => {
-                              getShiftTime(e);
-                              setShiftTypeFlag(false);
-                            }}
-                          >
-                            {!!shiftTypes?.length &&
-                              shiftTypes.map((shift, idx) => (
-                                <MenuItem key={idx} value={shift.value}>
-                                  {shift.displayName}
-                                </MenuItem>
-                              ))}
-                          </Select>
-                        </FormControl>
-                      </div>
-                      <div style={{ padding: "10px 20px", width: "50%" }}>
-                        <FormControl fullWidth>
-                          <InputLabel id="busRouteShiftTime-label">
-                            Shift Time
-                          </InputLabel>
-                          <Select
-                            required
-                            labelId="busRouteShiftTime-label"
-                            id="busRouteShiftTime"
-                            value={values.busRouteShiftTime}
-                            error={
-                              touched.busRouteShiftTime &&
-                              Boolean(errors.busRouteShiftTime)
-                            }
-                            name="busRouteShiftTime"
-                            label="Shift Time"
-                            onChange={handleChange}
-                          >
-                            {!!shiftTime?.length &&
-                              shiftTime.map((shift, idx) => (
-                                <MenuItem key={idx} value={shift.shiftTime}>
-                                  {shift.shiftTime}
-                                </MenuItem>
-                              ))}
-                          </Select>
-                        </FormControl>
-                      </div>
-                    </div>
-                    <div style={{ display: "flex" }}>
-                      <div style={{ padding: "10px 20px", width: "50%" }}>
-                        {shiftType === "LOGOUT" ? (
+                      <div style={{ display: "flex" }}>
+                        <div style={{ padding: "10px 20px", width: "50%" }}>
                           <FormControl fullWidth>
-                            <TextField
-                              disabled={true}
-                              required
-                              id="busRouteStartingPointText"
-                              name="busRouteStartingPointText"
-                              label="Starting Point"
-                              variant="outlined"
-                              value={initialValues.busRouteOfficeId}
-                            />
-                          </FormControl>
-                        ) : (
-                          <FormControl fullWidth>
-                            <InputLabel id="busRouteStartingPoint-label">
-                              Starting Point
+                            <InputLabel id="primary-office-label">
+                              Office Id
                             </InputLabel>
                             <Select
-                              disabled={shiftTypeFlag || shiftType != "LOGIN"}
-                              labelId="busRouteStartingPoint-label"
-                              id="busRouteStartingPoint"
-                              value={busStartingPoint}
-                              error={busSPError}
-                              name="busRouteStartingPoint"
-                              label="busRouteStartingPoint"
-                              onChange={(e) =>
-                                setBusStartingPoint(e.target.value)
+                              required
+                              labelId="primary-office-label"
+                              id="officeId"
+                              value={values.busRouteOfficeId}
+                              error={
+                                touched.busRouteOfficeId &&
+                                Boolean(errors.busRouteOfficeId)
                               }
+                              name="busRouteOfficeId"
+                              label="Office ID"
+                              onChange={(e) => changeOfficeHandler(e)}
                             >
-                              {!!nodalPoint?.length &&
-                                nodalPoint.map((point, idx) => (
-                                  <MenuItem key={idx} value={point}>
-                                    {point}
+                              {!!offices?.length &&
+                                offices.map((office, idx) => (
+                                  <MenuItem key={idx} value={office.officeId}>
+                                    {getFormattedLabel(office.officeId)},{" "}
+                                    {office.address}
                                   </MenuItem>
                                 ))}
                             </Select>
                           </FormControl>
-                        )}
-                      </div>
-                      <div style={{ padding: "10px 20px", width: "50%" }}>
-                        {shiftType === "LOGIN" ? (
+                        </div>
+                        <div style={{ padding: "10px 20px", width: "50%" }}>
                           <FormControl fullWidth>
                             <TextField
-                              error={busEPError}
-                              disabled={shiftTypeFlag || shiftType != "LOGOUT"}
+                              error={
+                                touched.busRouteName &&
+                                Boolean(errors.busRouteName)
+                              }
                               onChange={handleChange}
                               required
-                              id="busRouteEndPoint"
-                              name="busRouteEndPoint"
-                              label="End Point"
+                              id="busRouteName"
+                              name="busRouteName"
+                              label="Bus Route Name"
                               variant="outlined"
-                              value={initialValues.busRouteOfficeId}
+                              value={values.busRouteName}
                             />
                           </FormControl>
-                        ) : (
+                        </div>
+                      </div>
+                      <div style={{ display: "flex" }}>
+                        <div style={{ padding: "10px 20px", width: "50%" }}>
                           <FormControl fullWidth>
-                            <InputLabel id="busRouteEndPoint-label">
-                              End Point
+                            <InputLabel id="shift-type-label">
+                              Shift Type
                             </InputLabel>
                             <Select
-                              disabled={shiftTypeFlag || shiftType != "LOGOUT"}
-                              labelId="busRouteEndPoint-label"
-                              id="busRouteEndPoint"
-                              value={busEndPoint}
-                              error={busEPError}
-                              name="busRouteEndPoint"
-                              label="busRouteEndPoint"
-                              onChange={(e) => setBusEndPoint(e.target.value)}
+                              disabled={initialValues.busRouteOfficeId === ""}
+                              required
+                              labelId="shift-type-label"
+                              id="busRouteShiftType"
+                              value={values.busRouteShiftType}
+                              error={
+                                touched.busRouteShiftType &&
+                                Boolean(errors.busRouteShiftType)
+                              }
+                              name="busRouteShiftType"
+                              label="Shift Type"
+                              onChange={(e) => {
+                                getShiftTime(e);
+                                setShiftTypeFlag(false);
+                              }}
                             >
-                              {!!nodalPoint?.length &&
-                                nodalPoint.map((point, idx) => (
-                                  <MenuItem key={idx} value={point}>
-                                    {point}
+                              {!!shiftTypes?.length &&
+                                shiftTypes.map((shift, idx) => (
+                                  <MenuItem key={idx} value={shift.value}>
+                                    {shift.displayName}
                                   </MenuItem>
                                 ))}
                             </Select>
                           </FormControl>
-                        )}
+                        </div>
+                        <div style={{ padding: "10px 20px", width: "50%" }}>
+                          <FormControl fullWidth>
+                            <InputLabel id="busRouteShiftTime-label">
+                              Shift Time
+                            </InputLabel>
+                            <Select
+                              required
+                              labelId="busRouteShiftTime-label"
+                              id="busRouteShiftTime"
+                              value={values.busRouteShiftTime}
+                              error={
+                                touched.busRouteShiftTime &&
+                                Boolean(errors.busRouteShiftTime)
+                              }
+                              name="busRouteShiftTime"
+                              label="Shift Time"
+                              onChange={handleChange}
+                            >
+                              {!!shiftTime?.length &&
+                                shiftTime.map((shift, idx) => (
+                                  <MenuItem key={idx} value={shift.shiftTime}>
+                                    {shift.shiftTime}
+                                  </MenuItem>
+                                ))}
+                            </Select>
+                          </FormControl>
+                        </div>
                       </div>
-                    </div>
-                    <div style={{ display: "flex" }}>
-                      <div style={{ padding: "10px 20px", width: "50%" }}>
-                        <FormControl fullWidth>
-                          <TextField
-                            error={
-                              touched.busRouteMiddlePointCount &&
-                              Boolean(errors.busRouteMiddlePointCount)
-                            }
-                            type="number"
-                            onChange={handleChange}
-                            required
-                            id="busRouteMiddlePointCount"
-                            name="busRouteMiddlePointCount"
-                            label="Middle Point Count"
-                            variant="outlined"
-                            value={values.busRouteMiddlePointCount}
-                            InputProps={{
-                              inputProps: {
-                                min: 0, // Optional: Set minimum value
-                              },
-                            }}
-                          />
-                        </FormControl>
-                      </div>
-                      <div style={{ padding: "10px 20px", width: "50%" }}>
-                        <FormControl fullWidth>
-                          <TextField
-                            error={
-                              touched.busRouteSeatCount &&
-                              Boolean(errors.busRouteSeatCount)
-                            }
-                            type="number"
-                            onChange={handleChange}
-                            required
-                            id="busRouteSeatCount"
-                            name="busRouteSeatCount"
-                            label="Total no. of Seats"
-                            variant="outlined"
-                            value={values.busRouteSeatCount}
-                            InputProps={{
-                              inputProps: {
-                                min: 0, // Optional: Set minimum value
-                              },
-                            }}
-                          />
-                        </FormControl>
-                      </div>
-                    </div>
-                    <div style={{ display: "flex" }}>
-                      <div style={{ padding: "10px 20px", width: "50%" }}>
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                          <TimeField
-                            fullWidth
-                            label="Starting Time"
-                            value={dayjs()
-                              .hour(
-                                Number(
-                                  initialValues.busRouteReportingTime.slice(
-                                    0,
-                                    2
-                                  )
-                                )
-                              )
-                              .minute(
-                                Number(
-                                  initialValues.busRouteReportingTime.slice(
-                                    3,
-                                    5
-                                  )
-                                )
-                              )}
-                            format="HH:mm"
-                            onChange={(e) => {
-                              var ReportingTime = e.$d
-                                .toLocaleTimeString("it-IT")
-                                .slice(0, -3);
-                              setInitialValues({
-                                ...initialValues,
-                                busRouteReportingTime: ReportingTime,
-                              });
-                              setBusReportingTime(ReportingTime);
-                            }}
-                          />
-                        </LocalizationProvider>
-                      </div>
-                    </div>
-                    <div
-                      className="form-control-input"
-                      style={{ display: "flex", justifyContent: "center" }}
-                    >
-                      <div className="form-control-input" style={{ margin: 0 }}>
-                        <button
-                          type="submit"
-                          className="btn btn-primary"
-                          onClick={handleSubmit}
-                        >
-                          Next
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {step === 1 && (
-                  <div style={{ padding: "20px" }}>
-                    <div style={{ margin: "20px" }}>
-                      <h4>Add Middle Point in Bus Route</h4>
-                    </div>
-                    <div className="d-flex">
-                      <div
-                        style={{
-                          margin: "0 20px",
-                          padding: "5px 20px",
-                          backgroundColor: "#F6CE47",
-                        }}
-                      >
-                        <h4>Route Name - {routeName}</h4>
-                      </div>
-                    </div>
-                    <p style={{ padding: "5px 20px 0 20px" }}>
-                      Midde Point Count - {middlePointCount}
-                    </p>
-                    <div className="d-flex">
-                      <div style={{ padding: "10px 20px", width: "50%" }}>
-                        <FormControl variant="outlined" fullWidth>
-                          <Autocomplete
-                            disablePortal
-                            id="search-middle-point"
-                            options={searchedNodalPoints}
-                            autoComplete
-                            open={openSearchNodalPoint}
-                            onOpen={() => {
-                              setOpenSearchNodalPoint(true);
-                            }}
-                            onClose={() => {
-                              setOpenSearchNodalPoint(false);
-                            }}
-                            onChange={(e, val) => {
-                              console.log(val?.nodalName || "");
-                              setSearchedNodalPointValue(val?.nodalName || "");
-                            }}
-                            getOptionKey={(mp) => mp.nodalId}
-                            getOptionLabel={(mp) => mp.nodalName}
-                            freeSolo
-                            name="middlePoint"
-                            renderInput={(params) => (
+                      <div style={{ display: "flex" }}>
+                        <div style={{ padding: "10px 20px", width: "50%" }}>
+                          {shiftType === "LOGOUT" ? (
+                            <FormControl fullWidth>
                               <TextField
-                                {...params}
-                                label="Search Middle Point"
-                                onChange={searchForMiddlePoint}
+                                disabled={true}
+                                required
+                                id="busRouteStartingPointText"
+                                name="busRouteStartingPointText"
+                                label="Starting Point"
+                                variant="outlined"
+                                value={initialValues.busRouteOfficeId}
                               />
-                            )}
-                          />
-                        </FormControl>
+                            </FormControl>
+                          ) : (
+                            <FormControl fullWidth>
+                              <InputLabel id="busRouteStartingPoint-label">
+                                Starting Point
+                              </InputLabel>
+                              <Select
+                                disabled={shiftTypeFlag || shiftType != "LOGIN"}
+                                labelId="busRouteStartingPoint-label"
+                                id="busRouteStartingPoint"
+                                value={busStartingPoint}
+                                error={busSPError}
+                                name="busRouteStartingPoint"
+                                label="busRouteStartingPoint"
+                                onChange={(e) =>
+                                  setBusStartingPoint(e.target.value)
+                                }
+                              >
+                                {!!nodalPoint?.length &&
+                                  nodalPoint.map((point, idx) => (
+                                    <MenuItem key={idx} value={point}>
+                                      {point}
+                                    </MenuItem>
+                                  ))}
+                              </Select>
+                            </FormControl>
+                          )}
+                        </div>
+                        <div style={{ padding: "10px 20px", width: "50%" }}>
+                          {shiftType === "LOGIN" ? (
+                            <FormControl fullWidth>
+                              <TextField
+                                error={busEPError}
+                                disabled={
+                                  shiftTypeFlag || shiftType != "LOGOUT"
+                                }
+                                onChange={handleChange}
+                                required
+                                id="busRouteEndPoint"
+                                name="busRouteEndPoint"
+                                label="End Point"
+                                variant="outlined"
+                                value={initialValues.busRouteOfficeId}
+                              />
+                            </FormControl>
+                          ) : (
+                            <FormControl fullWidth>
+                              <InputLabel id="busRouteEndPoint-label">
+                                End Point
+                              </InputLabel>
+                              <Select
+                                disabled={
+                                  shiftTypeFlag || shiftType != "LOGOUT"
+                                }
+                                labelId="busRouteEndPoint-label"
+                                id="busRouteEndPoint"
+                                value={busEndPoint}
+                                error={busEPError}
+                                name="busRouteEndPoint"
+                                label="busRouteEndPoint"
+                                onChange={(e) => setBusEndPoint(e.target.value)}
+                              >
+                                {!!nodalPoint?.length &&
+                                  nodalPoint.map((point, idx) => (
+                                    <MenuItem key={idx} value={point}>
+                                      {point}
+                                    </MenuItem>
+                                  ))}
+                              </Select>
+                            </FormControl>
+                          )}
+                        </div>
                       </div>
-                      <div style={{ padding: "10px 20px", width: "30%" }}>
-                        <button
-                          className="btn btn-primary"
-                          onClick={addClickHandler}
-                          disabled={middlePointCount === 0 ? true : false}
+                      <div style={{ display: "flex" }}>
+                        <div style={{ padding: "10px 20px", width: "50%" }}>
+                          <FormControl fullWidth>
+                            <TextField
+                              error={
+                                touched.busRouteMiddlePointCount &&
+                                Boolean(errors.busRouteMiddlePointCount)
+                              }
+                              type="number"
+                              onChange={handleChange}
+                              required
+                              id="busRouteMiddlePointCount"
+                              name="busRouteMiddlePointCount"
+                              label="Middle Point Count"
+                              variant="outlined"
+                              value={values.busRouteMiddlePointCount}
+                              InputProps={{
+                                inputProps: {
+                                  min: 0, // Optional: Set minimum value
+                                },
+                              }}
+                            />
+                          </FormControl>
+                        </div>
+                        <div style={{ padding: "10px 20px", width: "50%" }}>
+                          <FormControl fullWidth>
+                            <TextField
+                              error={
+                                touched.busRouteSeatCount &&
+                                Boolean(errors.busRouteSeatCount)
+                              }
+                              type="number"
+                              onChange={handleChange}
+                              required
+                              id="busRouteSeatCount"
+                              name="busRouteSeatCount"
+                              label="Total no. of Seats"
+                              variant="outlined"
+                              value={values.busRouteSeatCount}
+                              InputProps={{
+                                inputProps: {
+                                  min: 0, // Optional: Set minimum value
+                                },
+                              }}
+                            />
+                          </FormControl>
+                        </div>
+                      </div>
+                      <div style={{ display: "flex" }}>
+                        <div style={{ padding: "10px 20px", width: "50%" }}>
+                          <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <TimeField
+                              fullWidth
+                              label="Starting Time"
+                              value={dayjs()
+                                .hour(
+                                  Number(
+                                    initialValues.busRouteReportingTime.slice(
+                                      0,
+                                      2
+                                    )
+                                  )
+                                )
+                                .minute(
+                                  Number(
+                                    initialValues.busRouteReportingTime.slice(
+                                      3,
+                                      5
+                                    )
+                                  )
+                                )}
+                              format="HH:mm"
+                              onChange={(e) => {
+                                var ReportingTime = e.$d
+                                  .toLocaleTimeString("it-IT")
+                                  .slice(0, -3);
+                                setInitialValues({
+                                  ...initialValues,
+                                  busRouteReportingTime: ReportingTime,
+                                });
+                                setBusReportingTime(ReportingTime);
+                              }}
+                            />
+                          </LocalizationProvider>
+                        </div>
+                      </div>
+                      <div
+                        className="form-control-input"
+                        style={{ display: "flex", justifyContent: "center" }}
+                      >
+                        <div
+                          className="form-control-input"
+                          style={{ margin: 0 }}
                         >
-                          Add
-                        </button>
+                          <button
+                            type="submit"
+                            className="btn btn-primary"
+                            onClick={handleSubmit}
+                          >
+                            Next
+                          </button>
+                        </div>
                       </div>
                     </div>
-                    <div
-                      className="d-flex"
-                      style={{
-                        margin: "0 20px",
-                        padding: "10px 20px",
-                        backgroundColor: "#E4E4E4",
-                        borderRadius: "5px",
-                        width: "80%",
-                      }}
-                    >
-                      <div className="d-flex" style={{ alignItems: "center" }}>
-                        <h5>Starting Point</h5>
+                  )}
+                  {step === 1 && (
+                    <div style={{ padding: "20px" }}>
+                      <div style={{ margin: "20px" }}>
+                        <h4>Add Middle Point in Bus Route</h4>
+                      </div>
+                      <div className="d-flex">
+                        <div
+                          style={{
+                            margin: "0 20px",
+                            padding: "5px 20px",
+                            backgroundColor: "#F6CE47",
+                          }}
+                        >
+                          <h4>Route Name - {routeName}</h4>
+                        </div>
+                      </div>
+                      <p style={{ padding: "5px 20px 0 20px" }}>
+                        Midde Point Count - {middlePointCount}
+                      </p>
+                      <div className="d-flex">
+                        <div style={{ padding: "10px 20px", width: "50%" }}>
+                          <FormControl variant="outlined" fullWidth>
+                            <Autocomplete
+                              disablePortal
+                              id="search-middle-point"
+                              options={searchedNodalPoints}
+                              autoComplete
+                              open={openSearchNodalPoint}
+                              onOpen={() => {
+                                setOpenSearchNodalPoint(true);
+                              }}
+                              onClose={() => {
+                                setOpenSearchNodalPoint(false);
+                              }}
+                              onChange={(e, val) => {
+                                console.log(val?.nodalName || "");
+                                setSearchedNodalPointValue(
+                                  val?.nodalName || ""
+                                );
+                              }}
+                              getOptionKey={(mp) => mp.nodalId}
+                              getOptionLabel={(mp) => mp.nodalName}
+                              freeSolo
+                              name="middlePoint"
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  label="Search Middle Point"
+                                  onChange={searchForMiddlePoint}
+                                />
+                              )}
+                            />
+                          </FormControl>
+                        </div>
+                        <div style={{ padding: "10px 20px", width: "30%" }}>
+                          <button
+                            className="btn btn-primary"
+                            onClick={addClickHandler}
+                            disabled={middlePointCount === 0 ? true : false}
+                          >
+                            Add
+                          </button>
+                        </div>
                       </div>
                       <div
                         className="d-flex"
-                        style={{ margin: "0 30px", alignItems: "center" }}
+                        style={{
+                          margin: "0 20px",
+                          padding: "10px 20px",
+                          backgroundColor: "#E4E4E4",
+                          borderRadius: "5px",
+                          width: "80%",
+                        }}
                       >
-                        <h5>{busStartingPoint}</h5>
-                      </div>
-                      <div style={{ width: "25%" }}>
-                        <h5>
-                          {shiftType === "LOGIN"
-                            ? busReportingTime
-                            : values.busRouteShiftTime}
-                        </h5>
-                        {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <div
+                          className="d-flex"
+                          style={{ alignItems: "center" }}
+                        >
+                          <h5>Starting Point</h5>
+                        </div>
+                        <div
+                          className="d-flex"
+                          style={{ margin: "0 30px", alignItems: "center" }}
+                        >
+                          <h5>{busStartingPoint}</h5>
+                        </div>
+                        <div style={{ width: "25%" }}>
+                          <h5>
+                            {shiftType === "LOGIN"
+                              ? busReportingTime
+                              : values.busRouteShiftTime}
+                          </h5>
+                          {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
                           <TimeField
                             disabled={shiftType === "LOGOUT" ? true : false}
                             id="startingReportingTime"
@@ -1149,153 +1196,441 @@ const BusShuttleRoute = () => {
                             }}
                           ></TimeField>
                         </LocalizationProvider> */}
-                      </div>
-                    </div>
-                    <div className="d-flex" style={{ margin: "10px 20px" }}>
-                      <div
-                        style={{
-                          border: "1px solid #DEDFDF",
-                          width: "90%",
-                          borderRadius: "5px",
-                          padding: "10px 20px",
-                          height: "200px",
-                          overflowY: "scroll",
-                        }}
-                      >
-                        <div className="d-flex">
-                          <div>
-                            <h5>Middle Point</h5>
-                          </div>
-                          <div style={{ margin: "0 100px" }}>
-                            <h5>Reporting Time</h5>
-                          </div>
                         </div>
-                        {middlePoints.length > 0 &&
-                          middlePoints.map((item, index) => (
-                            <div
-                              className="d-flex"
-                              key={index}
-                              style={{ margin: "5px 0" }}
-                            >
+                      </div>
+                      <div className="d-flex" style={{ margin: "10px 20px" }}>
+                        <div
+                          style={{
+                            border: "1px solid #DEDFDF",
+                            width: "90%",
+                            borderRadius: "5px",
+                            padding: "10px 20px",
+                            height: "200px",
+                            overflowY: "scroll",
+                          }}
+                        >
+                          <div className="d-flex">
+                            <div>
+                              <h5>Middle Point</h5>
+                            </div>
+                            <div style={{ margin: "0 100px" }}>
+                              <h5>Reporting Time</h5>
+                            </div>
+                          </div>
+                          {middlePoints.length > 0 &&
+                            middlePoints.map((item, index) => (
                               <div
                                 className="d-flex"
-                                style={{ alignItems: "center", width: "150px" }}
+                                key={index}
+                                style={{ margin: "5px 0" }}
                               >
-                                <p style={{ fontSize: "0.83em" }}>
-                                  {`${index + 1}. ${item}`}
-                                </p>
-                              </div>
-                              <div style={{ margin: "0 30px", width: "25%" }}>
-                                <LocalizationProvider
-                                  dateAdapter={AdapterDayjs}
+                                <div
+                                  className="d-flex"
+                                  style={{
+                                    alignItems: "center",
+                                    width: "150px",
+                                  }}
                                 >
-                                  <TimeField
-                                    id="startingReportingTime"
-                                    format="HH:mm"
-                                    value={dayjs()
-                                      .hour(
-                                        Number(
-                                          middlePointJson[
-                                            index + 1
-                                          ].reportingTime.slice(0, 2)
+                                  <p style={{ fontSize: "0.83em" }}>
+                                    {`${index + 1}. ${item}`}
+                                  </p>
+                                </div>
+                                <div style={{ margin: "0 30px", width: "25%" }}>
+                                  <LocalizationProvider
+                                    dateAdapter={AdapterDayjs}
+                                  >
+                                    <TimeField
+                                      id="startingReportingTime"
+                                      format="HH:mm"
+                                      value={dayjs()
+                                        .hour(
+                                          Number(
+                                            middlePointJson[
+                                              index + 1
+                                            ].reportingTime.slice(0, 2)
+                                          )
                                         )
-                                      )
-                                      .minute(
-                                        Number(
-                                          middlePointJson[
-                                            index + 1
-                                          ].reportingTime.slice(3, 5)
-                                        )
-                                      )}
-                                    InputProps={{
-                                      style: {
-                                        padding: 0,
-                                      },
-                                    }}
-                                    inputProps={{
-                                      style: {
-                                        padding: "0 10px",
-                                        backgroundColor: "#FFF",
-                                        borderRadius: "4px",
-                                        //fontSize: "12px",
-                                      },
-                                      //placeholder: "Reporting Time",
-                                    }}
-                                    onChange={(e) => {
-                                      var StartingReportingTime = e.$d
-                                        .toLocaleTimeString("it-IT")
-                                        .slice(0, -3);
-                                      console.log(StartingReportingTime);
-                                      reportingTimeChangeHandler(
-                                        StartingReportingTime,
-                                        index + 1
-                                      );
-                                      // setStartingReportingTime(
-                                      //   StartingReportingTime
-                                      // );
-                                    }}
-                                  ></TimeField>
-                                </LocalizationProvider>
+                                        .minute(
+                                          Number(
+                                            middlePointJson[
+                                              index + 1
+                                            ].reportingTime.slice(3, 5)
+                                          )
+                                        )}
+                                      InputProps={{
+                                        style: {
+                                          padding: 0,
+                                        },
+                                      }}
+                                      inputProps={{
+                                        style: {
+                                          padding: "0 10px",
+                                          backgroundColor: "#FFF",
+                                          borderRadius: "4px",
+                                          //fontSize: "12px",
+                                        },
+                                        //placeholder: "Reporting Time",
+                                      }}
+                                      onChange={(e) => {
+                                        var StartingReportingTime = e.$d
+                                          .toLocaleTimeString("it-IT")
+                                          .slice(0, -3);
+                                        console.log(StartingReportingTime);
+                                        reportingTimeChangeHandler(
+                                          StartingReportingTime,
+                                          index + 1
+                                        );
+                                        // setStartingReportingTime(
+                                        //   StartingReportingTime
+                                        // );
+                                      }}
+                                    ></TimeField>
+                                  </LocalizationProvider>
+                                </div>
                               </div>
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                    <div
-                      className="d-flex"
-                      style={{
-                        margin: "0 20px",
-                        padding: "10px 20px",
-                        backgroundColor: "#E4E4E4",
-                        borderRadius: "5px",
-                        width: "80%",
-                      }}
-                    >
-                      <div className="d-flex" style={{ alignItems: "center" }}>
-                        <h5>Destination</h5>
+                            ))}
+                        </div>
                       </div>
                       <div
                         className="d-flex"
-                        style={{ margin: "0 30px", alignItems: "center" }}
+                        style={{
+                          margin: "0 20px",
+                          padding: "10px 20px",
+                          backgroundColor: "#E4E4E4",
+                          borderRadius: "5px",
+                          width: "80%",
+                        }}
                       >
-                        <h5>{busEndPoint}</h5>
+                        <div
+                          className="d-flex"
+                          style={{ alignItems: "center" }}
+                        >
+                          <h5>Destination</h5>
+                        </div>
+                        <div
+                          className="d-flex"
+                          style={{ margin: "0 30px", alignItems: "center" }}
+                        >
+                          <h5>{busEndPoint}</h5>
+                        </div>
+                        <div style={{ width: "25%" }}>
+                          {shiftType === "LOGIN" ? (
+                            <h5>{values.busRouteShiftTime}</h5>
+                          ) : (
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                              <TimeField
+                                disabled={shiftType === "LOGIN" ? true : false}
+                                id="startingReportingTime"
+                                format="HH:mm"
+                                value={dayjs()
+                                  .hour(Number(busEPReportingTime.slice(0, 2)))
+                                  .minute(
+                                    Number(busEPReportingTime.slice(3, 5))
+                                  )}
+                                InputProps={{
+                                  style: {
+                                    padding: 0,
+                                  },
+                                }}
+                                inputProps={{
+                                  style: {
+                                    padding: "0 10px",
+                                    backgroundColor: "#FFF",
+                                    borderRadius: "4px",
+                                    //fontSize: "12px",
+                                  },
+                                  //placeholder: "Reporting Time",
+                                }}
+                                onChange={(e) => {
+                                  var StartingReportingTime = e.$d
+                                    .toLocaleTimeString("it-IT")
+                                    .slice(0, -3);
+                                  console.log(StartingReportingTime);
+                                  setBusEPReportingTime(StartingReportingTime);
+                                }}
+                              ></TimeField>
+                            </LocalizationProvider>
+                          )}
+                        </div>
                       </div>
-                      <div style={{ width: "25%" }}>
-                        {shiftType === "LOGIN" ? (
-                          <h5>{values.busRouteShiftTime}</h5>
+                      <div
+                        className="form-control-input"
+                        style={{ display: "flex", justifyContent: "center" }}
+                      >
+                        <div
+                          className="form-control-input"
+                          style={{ margin: 0 }}
+                        >
+                          <button
+                            type="submit"
+                            className="btn btn-primary"
+                            onClick={handleSubmit}
+                          >
+                            Submit
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div style={{ padding: "20px" }}>
+                    <div style={{ margin: "20px" }}>
+                      <h4>Add Shuttle Route</h4>
+                    </div>
+                    <div style={{ display: "flex" }}>
+                      <div style={{ padding: "10px 20px", width: "50%" }}>
+                        <FormControl fullWidth>
+                          <InputLabel id="shuttle-primary-office-label">
+                            Office Id
+                          </InputLabel>
+                          <Select
+                            required
+                            labelId="shuttle-primary-office-label"
+                            id="shuttle-officeId"
+                            value={values.shuttleRouteOfficeId}
+                            error={
+                              touched.shuttleRouteOfficeId &&
+                              Boolean(errors.shuttleRouteOfficeId)
+                            }
+                            name="shuttleRouteOfficeId"
+                            label="Office ID"
+                            onChange={(e) => changeOfficeHandler(e)}
+                          >
+                            {!!offices?.length &&
+                              offices.map((office, idx) => (
+                                <MenuItem key={idx} value={office.officeId}>
+                                  {getFormattedLabel(office.officeId)},{" "}
+                                  {office.address}
+                                </MenuItem>
+                              ))}
+                          </Select>
+                        </FormControl>
+                      </div>
+                      <div style={{ padding: "10px 20px", width: "50%" }}>
+                        <FormControl fullWidth>
+                          <TextField
+                            error={
+                              touched.shuttleRouteName &&
+                              Boolean(errors.shuttleRouteName)
+                            }
+                            onChange={handleChange}
+                            required
+                            id="shuttleRouteName"
+                            name="shuttleRouteName"
+                            label="Shuttle Route Name"
+                            variant="outlined"
+                            value={values.shuttleRouteName}
+                          />
+                        </FormControl>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex" }}>
+                      <div style={{ padding: "10px 20px", width: "50%" }}>
+                        <FormControl fullWidth>
+                          <InputLabel id="shuttle-shift-type-label">
+                            Shift Type
+                          </InputLabel>
+                          <Select
+                            disabled={initialValues.shuttleRouteOfficeId === ""}
+                            required
+                            labelId="shuttle-shift-type-label"
+                            id="shuttleRouteShiftType"
+                            value={values.shuttleRouteShiftType}
+                            error={
+                              touched.shuttleRouteShiftType &&
+                              Boolean(errors.shuttleRouteShiftType)
+                            }
+                            name="shuttleRouteShiftType"
+                            label="Shift Type"
+                            onChange={(e) => {
+                              getShiftTime(e);
+                              setShiftTypeFlag(false);
+                            }}
+                          >
+                            {!!shiftTypes?.length &&
+                              shiftTypes.map((shift, idx) => (
+                                <MenuItem key={idx} value={shift.value}>
+                                  {shift.displayName}
+                                </MenuItem>
+                              ))}
+                          </Select>
+                        </FormControl>
+                      </div>
+                      <div style={{ padding: "10px 20px", width: "50%" }}>
+                        <FormControl fullWidth>
+                          <InputLabel id="shuttleRouteShiftTime-label">
+                            Shift Time
+                          </InputLabel>
+                          <Select
+                            required
+                            labelId="shuttleRouteShiftTime-label"
+                            id="shuttleRouteShiftTime"
+                            value={values.shuttleRouteShiftTime}
+                            error={
+                              touched.shuttleRouteShiftTime &&
+                              Boolean(errors.shuttleRouteShiftTime)
+                            }
+                            name="shuttleRouteShiftTime"
+                            label="Shift Time"
+                            onChange={handleChange}
+                          >
+                            {!!shiftTime?.length &&
+                              shiftTime.map((shift, idx) => (
+                                <MenuItem key={idx} value={shift.shiftTime}>
+                                  {shift.shiftTime}
+                                </MenuItem>
+                              ))}
+                          </Select>
+                        </FormControl>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex" }}>
+                      <div style={{ padding: "10px 20px", width: "50%" }}>
+                        {shiftType === "LOGOUT" ? (
+                          <FormControl fullWidth>
+                            <TextField
+                              error={shuttleSPError}
+                              disabled={true}
+                              onChange={handleChange}
+                              required
+                              id="shuttleRouteStartingPointText"
+                              name="shuttleRouteStartingPointText"
+                              label="Starting Point"
+                              variant="outlined"
+                              value={initialValues.shuttleRouteOfficeId}
+                            />
+                          </FormControl>
                         ) : (
-                          <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <TimeField
-                              disabled={shiftType === "LOGIN" ? true : false}
-                              id="startingReportingTime"
-                              format="HH:mm"
-                              value={dayjs()
-                                .hour(Number(busEPReportingTime.slice(0, 2)))
-                                .minute(Number(busEPReportingTime.slice(3, 5)))}
-                              InputProps={{
-                                style: {
-                                  padding: 0,
-                                },
-                              }}
-                              inputProps={{
-                                style: {
-                                  padding: "0 10px",
-                                  backgroundColor: "#FFF",
-                                  borderRadius: "4px",
-                                  //fontSize: "12px",
-                                },
-                                //placeholder: "Reporting Time",
-                              }}
-                              onChange={(e) => {
-                                var StartingReportingTime = e.$d
-                                  .toLocaleTimeString("it-IT")
-                                  .slice(0, -3);
-                                console.log(StartingReportingTime);
-                                setBusEPReportingTime(StartingReportingTime);
-                              }}
-                            ></TimeField>
-                          </LocalizationProvider>
+                          <FormControl fullWidth>
+                            <InputLabel id="shuttleRouteStartingPoint-label">
+                              Starting Point
+                            </InputLabel>
+                            <Select
+                              disabled={shiftTypeFlag || shiftType != "LOGIN"}
+                              labelId="shuttleRouteStartingPoint-label"
+                              id="shuttleRouteStartingPoint"
+                              value={shuttleStartingPoint}
+                              error={shuttleSPError}
+                              name="shuttleRouteStartingPoint"
+                              label="Shuttle Route Starting Point"
+                              onChange={(e) =>
+                                setShuttleStartingPoint(e.target.value)
+                              }
+                            >
+                              {!!nodalPoint?.length &&
+                                nodalPoint.map((point, idx) => (
+                                  <MenuItem key={idx} value={point}>
+                                    {point}
+                                  </MenuItem>
+                                ))}
+                            </Select>
+                          </FormControl>
                         )}
+                      </div>
+                      <div style={{ padding: "10px 20px", width: "50%" }}>
+                        {shiftType === "LOGIN" ? (
+                          <FormControl fullWidth>
+                            <TextField
+                              error={shuttleEPError}
+                              disabled={shiftTypeFlag || shiftType != "LOGOUT"}
+                              onChange={handleChange}
+                              required
+                              id="shuttleRouteEndPointText"
+                              name="shuttleRouteEndPointText"
+                              label="End Point"
+                              variant="outlined"
+                              value={initialValues.shuttleRouteOfficeId}
+                            />
+                          </FormControl>
+                        ) : (
+                          <FormControl fullWidth>
+                            <InputLabel id="shuttleRouteEndPoint-label">
+                              End Point
+                            </InputLabel>
+                            <Select
+                              disabled={shiftTypeFlag || shiftType != "LOGOUT"}
+                              labelId="shuttleRouteEndPoint-label"
+                              id="shuttleRouteEndPoint"
+                              value={shuttleEndPoint}
+                              error={shuttleEPError}
+                              name="shuttleRouteEndPoint"
+                              label="Shuttle Route End Point"
+                              onChange={(e) =>
+                                setShuttleEndPoint(e.target.value)
+                              }
+                            >
+                              {!!nodalPoint?.length &&
+                                nodalPoint.map((point, idx) => (
+                                  <MenuItem key={idx} value={point}>
+                                    {point}
+                                  </MenuItem>
+                                ))}
+                            </Select>
+                          </FormControl>
+                        )}
+                      </div>
+                    </div>
+                    <div style={{ display: "flex" }}>
+                      <div style={{ padding: "10px 20px", width: "50%" }}>
+                        <FormControl fullWidth>
+                          <TextField
+                            error={
+                              touched.shuttleRouteSeatCount &&
+                              Boolean(errors.shuttleRouteSeatCount)
+                            }
+                            onChange={handleChange}
+                            required
+                            id="shuttleRouteSeatCount"
+                            name="shuttleRouteSeatCount"
+                            label="Total no. of Seats"
+                            variant="outlined"
+                            value={values.shuttleRouteSeatCount}
+                            type="number"
+                            InputProps={{
+                              inputProps: {
+                                min: 0, // Optional: Set minimum value
+                              },
+                            }}
+                          />
+                        </FormControl>
+                      </div>
+                      <div style={{ padding: "10px 20px", width: "50%" }}>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                          <TimeField
+                            fullWidth
+                            label="Starting Time"
+                            value={dayjs()
+                              .hour(
+                                Number(
+                                  initialValues.shuttleRouteReportingTime.slice(
+                                    0,
+                                    2
+                                  )
+                                )
+                              )
+                              .minute(
+                                Number(
+                                  initialValues.shuttleRouteReportingTime.slice(
+                                    3,
+                                    5
+                                  )
+                                )
+                              )}
+                            format="HH:mm"
+                            onChange={(e) => {
+                              var ReportingTime = e.$d
+                                .toLocaleTimeString("it-IT")
+                                .slice(0, -3);
+                              setInitialValues({
+                                ...initialValues,
+                                shuttleRouteReportingTime: ReportingTime,
+                              });
+                              setShuttleReportingTime(ReportingTime);
+                            }}
+                          />
+                        </LocalizationProvider>
                       </div>
                     </div>
                     <div
@@ -1313,286 +1648,27 @@ const BusShuttleRoute = () => {
                       </div>
                     </div>
                   </div>
-                )}
-              </>
-            ) : (
-              <>
-                <div style={{ padding: "20px" }}>
-                  <div style={{ margin: "20px" }}>
-                    <h4>Add Shuttle Route</h4>
-                  </div>
-                  <div style={{ display: "flex" }}>
-                    <div style={{ padding: "10px 20px", width: "50%" }}>
-                      <FormControl fullWidth>
-                        <InputLabel id="shuttle-primary-office-label">
-                          Office Id
-                        </InputLabel>
-                        <Select
-                          required
-                          labelId="shuttle-primary-office-label"
-                          id="shuttle-officeId"
-                          value={values.shuttleRouteOfficeId}
-                          error={
-                            touched.shuttleRouteOfficeId &&
-                            Boolean(errors.shuttleRouteOfficeId)
-                          }
-                          name="shuttleRouteOfficeId"
-                          label="Office ID"
-                          onChange={(e) => changeOfficeHandler(e)}
-                        >
-                          {!!offices?.length &&
-                            offices.map((office, idx) => (
-                              <MenuItem key={idx} value={office.officeId}>
-                                {getFormattedLabel(office.officeId)},{" "}
-                                {office.address}
-                              </MenuItem>
-                            ))}
-                        </Select>
-                      </FormControl>
-                    </div>
-                    <div style={{ padding: "10px 20px", width: "50%" }}>
-                      <FormControl fullWidth>
-                        <TextField
-                          error={
-                            touched.shuttleRouteName &&
-                            Boolean(errors.shuttleRouteName)
-                          }
-                          onChange={handleChange}
-                          required
-                          id="shuttleRouteName"
-                          name="shuttleRouteName"
-                          label="Shuttle Route Name"
-                          variant="outlined"
-                          value={values.shuttleRouteName}
-                        />
-                      </FormControl>
-                    </div>
-                  </div>
-                  <div style={{ display: "flex" }}>
-                    <div style={{ padding: "10px 20px", width: "50%" }}>
-                      <FormControl fullWidth>
-                        <InputLabel id="shuttle-shift-type-label">
-                          Shift Type
-                        </InputLabel>
-                        <Select
-                          disabled={initialValues.shuttleRouteOfficeId === ""}
-                          required
-                          labelId="shuttle-shift-type-label"
-                          id="shuttleRouteShiftType"
-                          value={values.shuttleRouteShiftType}
-                          error={
-                            touched.shuttleRouteShiftType &&
-                            Boolean(errors.shuttleRouteShiftType)
-                          }
-                          name="shuttleRouteShiftType"
-                          label="Shift Type"
-                          onChange={(e) => {
-                            getShiftTime(e);
-                            setShiftTypeFlag(false);
-                          }}
-                        >
-                          {!!shiftTypes?.length &&
-                            shiftTypes.map((shift, idx) => (
-                              <MenuItem key={idx} value={shift.value}>
-                                {shift.displayName}
-                              </MenuItem>
-                            ))}
-                        </Select>
-                      </FormControl>
-                    </div>
-                    <div style={{ padding: "10px 20px", width: "50%" }}>
-                      <FormControl fullWidth>
-                        <InputLabel id="shuttleRouteShiftTime-label">
-                          Shift Time
-                        </InputLabel>
-                        <Select
-                          required
-                          labelId="shuttleRouteShiftTime-label"
-                          id="shuttleRouteShiftTime"
-                          value={values.shuttleRouteShiftTime}
-                          error={
-                            touched.shuttleRouteShiftTime &&
-                            Boolean(errors.shuttleRouteShiftTime)
-                          }
-                          name="shuttleRouteShiftTime"
-                          label="Shift Time"
-                          onChange={handleChange}
-                        >
-                          {!!shiftTime?.length &&
-                            shiftTime.map((shift, idx) => (
-                              <MenuItem key={idx} value={shift.shiftTime}>
-                                {shift.shiftTime}
-                              </MenuItem>
-                            ))}
-                        </Select>
-                      </FormControl>
-                    </div>
-                  </div>
-                  <div style={{ display: "flex" }}>
-                    <div style={{ padding: "10px 20px", width: "50%" }}>
-                      {shiftType === "LOGOUT" ? (
-                        <FormControl fullWidth>
-                          <TextField
-                            error={shuttleSPError}
-                            disabled={true}
-                            onChange={handleChange}
-                            required
-                            id="shuttleRouteStartingPointText"
-                            name="shuttleRouteStartingPointText"
-                            label="Starting Point"
-                            variant="outlined"
-                            value={initialValues.shuttleRouteOfficeId}
-                          />
-                        </FormControl>
-                      ) : (
-                        <FormControl fullWidth>
-                          <InputLabel id="shuttleRouteStartingPoint-label">
-                            Starting Point
-                          </InputLabel>
-                          <Select
-                            disabled={shiftTypeFlag || shiftType != "LOGIN"}
-                            labelId="shuttleRouteStartingPoint-label"
-                            id="shuttleRouteStartingPoint"
-                            value={shuttleStartingPoint}
-                            error={shuttleSPError}
-                            name="shuttleRouteStartingPoint"
-                            label="Shuttle Route Starting Point"
-                            onChange={(e) =>
-                              setShuttleStartingPoint(e.target.value)
-                            }
-                          >
-                            {!!nodalPoint?.length &&
-                              nodalPoint.map((point, idx) => (
-                                <MenuItem key={idx} value={point}>
-                                  {point}
-                                </MenuItem>
-                              ))}
-                          </Select>
-                        </FormControl>
-                      )}
-                    </div>
-                    <div style={{ padding: "10px 20px", width: "50%" }}>
-                      {shiftType === "LOGIN" ? (
-                        <FormControl fullWidth>
-                          <TextField
-                            error={shuttleEPError}
-                            disabled={shiftTypeFlag || shiftType != "LOGOUT"}
-                            onChange={handleChange}
-                            required
-                            id="shuttleRouteEndPointText"
-                            name="shuttleRouteEndPointText"
-                            label="End Point"
-                            variant="outlined"
-                            value={initialValues.shuttleRouteOfficeId}
-                          />
-                        </FormControl>
-                      ) : (
-                        <FormControl fullWidth>
-                          <InputLabel id="shuttleRouteEndPoint-label">
-                            End Point
-                          </InputLabel>
-                          <Select
-                            disabled={shiftTypeFlag || shiftType != "LOGOUT"}
-                            labelId="shuttleRouteEndPoint-label"
-                            id="shuttleRouteEndPoint"
-                            value={shuttleEndPoint}
-                            error={shuttleEPError}
-                            name="shuttleRouteEndPoint"
-                            label="Shuttle Route End Point"
-                            onChange={(e) => setShuttleEndPoint(e.target.value)}
-                          >
-                            {!!nodalPoint?.length &&
-                              nodalPoint.map((point, idx) => (
-                                <MenuItem key={idx} value={point}>
-                                  {point}
-                                </MenuItem>
-                              ))}
-                          </Select>
-                        </FormControl>
-                      )}
-                    </div>
-                  </div>
-                  <div style={{ display: "flex" }}>
-                    <div style={{ padding: "10px 20px", width: "50%" }}>
-                      <FormControl fullWidth>
-                        <TextField
-                          error={
-                            touched.shuttleRouteSeatCount &&
-                            Boolean(errors.shuttleRouteSeatCount)
-                          }
-                          onChange={handleChange}
-                          required
-                          id="shuttleRouteSeatCount"
-                          name="shuttleRouteSeatCount"
-                          label="Total no. of Seats"
-                          variant="outlined"
-                          value={values.shuttleRouteSeatCount}
-                          type="number"
-                          InputProps={{
-                            inputProps: {
-                              min: 0, // Optional: Set minimum value
-                            },
-                          }}
-                        />
-                      </FormControl>
-                    </div>
-                    <div style={{ padding: "10px 20px", width: "50%" }}>
-                      <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <TimeField
-                          fullWidth
-                          label="Starting Time"
-                          value={dayjs()
-                            .hour(
-                              Number(
-                                initialValues.shuttleRouteReportingTime.slice(
-                                  0,
-                                  2
-                                )
-                              )
-                            )
-                            .minute(
-                              Number(
-                                initialValues.shuttleRouteReportingTime.slice(
-                                  3,
-                                  5
-                                )
-                              )
-                            )}
-                          format="HH:mm"
-                          onChange={(e) => {
-                            var ReportingTime = e.$d
-                              .toLocaleTimeString("it-IT")
-                              .slice(0, -3);
-                            setInitialValues({
-                              ...initialValues,
-                              shuttleRouteReportingTime: ReportingTime,
-                            });
-                            setShuttleReportingTime(ReportingTime);
-                          }}
-                        />
-                      </LocalizationProvider>
-                    </div>
-                  </div>
-                  <div
-                    className="form-control-input"
-                    style={{ display: "flex", justifyContent: "center" }}
-                  >
-                    <div className="form-control-input" style={{ margin: 0 }}>
-                      <button
-                        type="submit"
-                        className="btn btn-primary"
-                        onClick={handleSubmit}
-                      >
-                        Submit
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-          </Box>
-        </Modal>
+                </>
+              )}
+            </Box>
+          </Modal>
+        </div>
       </div>
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

@@ -1,20 +1,12 @@
 import dispatch from "@/layouts/dispatch";
-import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-} from "@mui/material";
+import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { useEffect, useState } from "react";
 import { getFormattedLabel } from "@/utils/utils";
 import OfficeService from "@/services/office.service";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
-import {
-  DATE_FORMAT,
-  MASTER_DATA_TYPES,
-} from "@/constants/app.constants.";
+import { DATE_FORMAT, MASTER_DATA_TYPES } from "@/constants/app.constants.";
 import { useDispatch, useSelector } from "react-redux";
 import MasterDataService from "@/services/masterdata.service";
 import GridNew from "@/components/gridNew";
@@ -24,6 +16,7 @@ import DispatchService from "@/services/dispatch.service";
 import { setMasterData } from "@/redux/master.slice";
 import CabStickerModal from "@/components/dispatch/cabStickerModel";
 import AllocateCab from "@/components/dispatch/allocate-cab";
+import LoaderComponent from "@/components/common/loading";
 
 const style = {
   position: "absolute",
@@ -44,7 +37,8 @@ const MainComponent = () => {
     { field: "bookingCount" },
     { field: "routingStatus" },
     { field: "dispatchStatus" },
-    { field: "tripCount",
+    {
+      field: "tripCount",
       cellRenderer: (params) => {
         const tripCount = params.value;
 
@@ -54,11 +48,18 @@ const MainComponent = () => {
         };
 
         return (
-          <div style={{ cursor: 'pointer', textDecoration: 'underline', color: "blue"}} onClick={handleClick}>
+          <div
+            style={{
+              cursor: "pointer",
+              textDecoration: "underline",
+              color: "blue",
+            }}
+            onClick={handleClick}
+          >
             {tripCount}
           </div>
         );
-      }
+      },
     },
     { field: "allocatedVendorCount" },
     { field: "allocatedCabCount" },
@@ -75,7 +76,6 @@ const MainComponent = () => {
     transportType: "",
   });
 
-
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
   const [showAction, setShowAction] = useState(false);
@@ -87,20 +87,26 @@ const MainComponent = () => {
   const [allocateCabShow, setAllocateCabShow] = useState(false);
   const [tripList, setTripList] = useState([]);
   const [shiftId, setShiftId] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(moment().format("YYYY-MM-DD"));
+  const [selectedDate, setSelectedDate] = useState(
+    moment().format("YYYY-MM-DD")
+  );
 
+  const [loading, setLoading] = useState(false);
 
   const handleFilterChange = (e) => {
     const { target } = e;
     const { value, name } = target;
     let newSearchValues = { ...searchValues };
-    if (name === "date") { newSearchValues[name] = value.format("YYYY-MM-DD"); setSelectedDate(value.format("YYYY-MM-DD")) }
-    else newSearchValues[name] = value;
+    if (name === "date") {
+      newSearchValues[name] = value.format("YYYY-MM-DD");
+      setSelectedDate(value.format("YYYY-MM-DD"));
+    } else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
   };
 
   const fetchAllOffices = async () => {
     try {
+      setLoading(true);
       const response = await OfficeService.getAllOffices();
       const { data } = response || {};
       const { clientOfficeDTO } = data || {};
@@ -110,21 +116,29 @@ const MainComponent = () => {
         (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) { }
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchMasterData = async (type) => {
     try {
+      setLoading(true);
       const response = await MasterDataService.getMasterData(type);
       const { data } = response || {};
       if (data?.length) {
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) { }
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchSummary = async () => {
     try {
+      setLoading(true);
       console.log("search values>>>>>", searchValues);
       let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
@@ -140,24 +154,31 @@ const MainComponent = () => {
       setData(response.data);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const allocateCabHanlder = async () => {
     try {
+      setLoading(true);
       const queryParams = {
         shiftId: shiftId,
         tripDate: selectedDate,
       };
       const params = new URLSearchParams(queryParams);
-      const response = await DispatchService.getTripByShiftIdAndTripDate(params);
+      const response = await DispatchService.getTripByShiftIdAndTripDate(
+        params
+      );
       setTripList(response.data);
       console.log(response.data);
       setAllocateCabShow(true);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   const selectedRowHandler = (flag, row) => {
     setShowAction(flag);
@@ -181,9 +202,9 @@ const MainComponent = () => {
     fetchAllOffices();
   }, []);
 
-  useEffect(()=>{
-    console.log("In parent>>>>>>",tripList)
-  },[tripList]);
+  useEffect(() => {
+    console.log("In parent>>>>>>", tripList);
+  }, [tripList]);
 
   return (
     <div>
@@ -372,9 +393,28 @@ const MainComponent = () => {
           </Modal>
         </div>
       ) : (
-        <div style={{ margin: '20px 0', boxShadow: 'none', }}>
-          <AllocateCab tripList={tripList} setTripList={(list)=>setTripList(list)} allocationComplete={() => setAllocateCabShow(false)} />
+        <div style={{ margin: "20px 0", boxShadow: "none" }}>
+          <AllocateCab
+            tripList={tripList}
+            setTripList={(list) => setTripList(list)}
+            allocationComplete={() => setAllocateCabShow(false)}
+          />
         </div>
+      )}
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
       )}
     </div>
   );

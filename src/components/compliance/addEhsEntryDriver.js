@@ -115,7 +115,7 @@ const AddEhsEntryDriver = ({ EditEhsEntryDriver, DriverId, UpdateId  }) => {
                         label="File" />
                 </FormStep>
             </MultiStepForm>
-        </div >
+        </div>
     )
 }
 

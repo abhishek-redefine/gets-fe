@@ -36,6 +36,7 @@ import { useRouter } from "next/router";
 import TripEditorNew from "@/components/dispatch/tripEditorNew";
 import { toggleToast } from "@/redux/company.slice";
 import TripEditor2 from "@/components/dispatch/tripEditor2";
+import LoaderComponent from "@/components/common/loading";
 // import TripEditorManual from "@/components/dispatch/tripEditor-pq";
 
 const style = {
@@ -58,7 +59,8 @@ const Routing = () => {
     { field: "bookingCount" },
     { field: "routingStatus" },
     { field: "dispatchStatus" },
-    { field: "tripCount",
+    {
+      field: "tripCount",
       cellRenderer: (params) => {
         const tripCount = params.value;
 
@@ -68,11 +70,18 @@ const Routing = () => {
         };
 
         return (
-          <div style={{ cursor: 'pointer', textDecoration: 'underline', color: "blue"}} onClick={handleClick}>
+          <div
+            style={{
+              cursor: "pointer",
+              textDecoration: "underline",
+              color: "blue",
+            }}
+            onClick={handleClick}
+          >
             {tripCount}
           </div>
         );
-      }
+      },
     },
     { field: "allocatedVendorCount" },
     { field: "allocatedCabCount" },
@@ -87,6 +96,7 @@ const Routing = () => {
     date: moment().format("YYYY-MM-DD"),
     shiftType: "",
   });
+
   const [mrList, setMrList] = useState([
     {
       key: 1,
@@ -113,31 +123,37 @@ const Routing = () => {
       value: "Delete Trips",
     },
   ]);
+
   const [mb2b, setMb2b] = useState([
     // "Auto Generate B2B",
     "Manaual B2B Routes",
     "Delete B2B Mapping",
   ]);
+
   const [mva, setMva] = useState([
     // "Auto Vendor Allocation",
     "Allocate Vendors",
   ]);
+
   const [mca, setMca] = useState([
     "Allocate Cabs",
     "Download Cab Allocation",
     "Upload Cab Allocation",
     "Assign Cab Sticker",
   ]);
+
   const [downloadTripList, setDownloadTripList] = useState([
     "Download Tripsheet",
     "Download Trip Summary",
   ]);
+
   const [autoSuggestType, setAutoSuggestType] = useState([
     { name: "Vehicle", value: "vehicle" },
     { name: "Employee Name", value: "employee" },
     { name: "Trip Id", value: "tripId" },
     { name: "Vendor Name", value: "vendorName" },
   ]);
+
   const [searchBy, setSearchBy] = useState("vehicle");
   const [searched, setSearched] = useState([]);
   const [openSearch, setOpenSearch] = useState(false);
@@ -154,6 +170,7 @@ const Routing = () => {
   const handleModalOpen = () => setOpenModal(true);
   const handleModalClose = () => setOpenModal(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const searchByChangeHandler = (event) => {
     const { target } = event;
@@ -166,6 +183,7 @@ const Routing = () => {
     const { name, value } = target;
     console.log(value, searchBy);
     try {
+      setLoading(true);
       if (searchBy === "vehicle") {
       } else if (searchBy === "employee") {
       } else if (searchBy === "tripId") {
@@ -173,6 +191,8 @@ const Routing = () => {
       }
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -189,6 +209,7 @@ const Routing = () => {
 
   const fetchAllOffices = async () => {
     try {
+      setLoading(true);
       const response = await OfficeService.getAllOffices();
       const { data } = response || {};
       const { clientOfficeDTO } = data || {};
@@ -198,26 +219,37 @@ const Routing = () => {
         (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
+
   const fetchMasterData = async (type) => {
     try {
+      setLoading(true);
       const response = await MasterDataService.getMasterData(type);
       const { data } = response || {};
       if (data?.length) {
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
+
   const generateTripHandler = () => {
     handleModalOpen();
   };
+
   const replicateTripModal = () => {
     handleModalOpen();
   };
 
   const fetchSummary = async () => {
     try {
+      setLoading(true);
       console.log("search values>>>>>", searchValues);
       let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
@@ -233,6 +265,8 @@ const Routing = () => {
       setData(response.data);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -263,6 +297,7 @@ const Routing = () => {
 
   const getAllTrips = async () => {
     try {
+      setLoading(true);
       const queryParams = {
         shiftId: selectedRow.shiftId,
         tripDate: searchValues.date,
@@ -283,11 +318,14 @@ const Routing = () => {
       //await getTripsMember(response.data);
     } catch (er) {
       console.log(er);
+    } finally {
+      setLoading(false);
     }
   };
 
   const deleteTrip = async (tripId) => {
     try {
+      setLoading(true);
       const response = DispatchService.deleteTrip(tripId);
       console.log(response.data);
       if (response.status === 200) {
@@ -307,10 +345,14 @@ const Routing = () => {
           type: "success",
         })
       );
+    } finally {
+      setLoading(false);
     }
   };
+
   const downloadTrip = async () => {
     try {
+      setLoading(true);
       const shiftId = selectedRow.shiftId;
       const selectedDate = searchValues.date;
       console.log(shiftId, selectedDate);
@@ -335,12 +377,16 @@ const Routing = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
+
   const selectedRowHandler = (flag, row) => {
     setShowAction(flag);
     setSelectedRow(row);
   };
+
   const resetFilter = () => {
     let allSearchValue = {
       officeId: offices[0].officeId,
@@ -703,6 +749,21 @@ const Routing = () => {
           selectedDate={searchValues.date}
         />
         // <TripEditorManual/>
+      )}
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
       )}
     </div>
   );

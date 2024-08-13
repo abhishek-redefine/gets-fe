@@ -10,27 +10,38 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { TimeField } from "@mui/x-date-pickers/TimeField";
 import dayjs from "dayjs";
 import ConfirmationModal from "./tripGenratedSuccesModal";
+import LoaderComponent from "../common/loading";
 
-const ReplicateTripModal = ({ data, date, shiftTime, shiftType, officeId, selectedDate, onClose }) => {
+const ReplicateTripModal = ({
+  data,
+  date,
+  shiftTime,
+  shiftType,
+  officeId,
+  selectedDate,
+  onClose,
+}) => {
   const [tripIdList, setTripIdList] = useState([]);
   const [passFlag, setPassFlag] = useState(false);
   const [messageShow, setMessageShow] = useState(false);
   const [initialValues, setInitialValues] = useState({
-    "existingTripDate": "2024-07-15",
-    "replicationDate": date,
-    "shiftTime": data.shiftTime,
-    "shiftType": data.shiftType,
+    existingTripDate: "2024-07-15",
+    replicationDate: date,
+    shiftTime: data.shiftTime,
+    shiftType: data.shiftType,
     fleetMix: {
       "4s": -1,
       "6s": 1,
       "7s": 1,
       "12s": 1,
     },
-    "action": "VERIFY",
-    "officeId": data.officeId,
-    "pickupTime": "00:00",
-    "schemaVersion": "NORMAL"
+    action: "VERIFY",
+    officeId: data.officeId,
+    pickupTime: "00:00",
+    schemaVersion: "NORMAL",
   });
+
+  const [loading, setLoading] = useState(false);
 
   const formik = useFormik({
     initialValues: initialValues,
@@ -39,25 +50,26 @@ const ReplicateTripModal = ({ data, date, shiftTime, shiftType, officeId, select
       let allValues = { ...values };
       const fleetMix = [
         {
-          "noOfVehicle": allValues.fleetMix["4s"],
-          "noOfSeats": 4
+          noOfVehicle: allValues.fleetMix["4s"],
+          noOfSeats: 4,
         },
         {
-          "noOfVehicle": allValues.fleetMix["6s"],
-          "noOfSeats": 6
+          noOfVehicle: allValues.fleetMix["6s"],
+          noOfSeats: 6,
         },
         {
-          "noOfVehicle": allValues.fleetMix["7s"],
-          "noOfSeats": 7
+          noOfVehicle: allValues.fleetMix["7s"],
+          noOfSeats: 7,
         },
         {
-          "noOfVehicle": allValues.fleetMix["12s"],
-          "noOfSeats": 12
-        }
-      ]
-      allValues.fleetMix = fleetMix;;
+          noOfVehicle: allValues.fleetMix["12s"],
+          noOfSeats: 12,
+        },
+      ];
+      allValues.fleetMix = fleetMix;
       console.log(allValues);
       try {
+        setLoading(true);
         const response = await DispatchService.replicateTrip(allValues);
         console.log(response);
         if (response.status === 201) {
@@ -68,6 +80,8 @@ const ReplicateTripModal = ({ data, date, shiftTime, shiftType, officeId, select
         setMessageShow(true);
         setPassFlag(false);
         console.log(err);
+      } finally {
+        setLoading(false);
       }
     },
   });
@@ -76,6 +90,7 @@ const ReplicateTripModal = ({ data, date, shiftTime, shiftType, officeId, select
 
   const getTripDetails = async () => {
     try {
+      setLoading(true);
       console.log(data.shiftId);
       const shiftId = data.shiftId;
       const tripDate = date;
@@ -93,6 +108,8 @@ const ReplicateTripModal = ({ data, date, shiftTime, shiftType, officeId, select
       }
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -104,36 +121,39 @@ const ReplicateTripModal = ({ data, date, shiftTime, shiftType, officeId, select
     if (name === "fourSeater") {
       prev.fleetMix["4s"] = value;
       formik.setFieldValue("fleetMix.4s", value);
-    }
-    else if (name === "sixSeater") {
+    } else if (name === "sixSeater") {
       prev.fleetMix["6s"] = value;
       formik.setFieldValue("fleetMix.6s", value);
-    }
-    else if (name === "sevenSeater") {
+    } else if (name === "sevenSeater") {
       prev.fleetMix["7s"] = value;
       formik.setFieldValue("fleetMix.7s", value);
-    }
-    else if (name === "twelveSeater") {
+    } else if (name === "twelveSeater") {
       prev.fleetMix["12s"] = value;
       formik.setFieldValue("fleetMix.12s", value);
-    }
-    else {
+    } else {
       formik.setFieldValue(name, value);
     }
   };
+
   useEffect(() => {
     getTripDetails();
   }, []);
+
   return (
-    <div style={{ padding: "30px", backgroundColor: "#FFF", borderRadius: 10 }}>
-      {
-        !messageShow ?
+    <div>
+      <div
+        style={{ padding: "30px", backgroundColor: "#FFF", borderRadius: 10 }}
+      >
+        {!messageShow ? (
           <div>
             <div>
               <h3>Replicate Trips</h3>
             </div>
 
-            <div style={{ marginTop: 20, display: "flex" }} className="form-control-input">
+            <div
+              style={{ marginTop: 20, display: "flex" }}
+              className="form-control-input"
+            >
               <div
                 style={{
                   border: "2px solid #e7e7e7",
@@ -196,21 +216,30 @@ const ReplicateTripModal = ({ data, date, shiftTime, shiftType, officeId, select
               </div>
             </div>
 
-            <div style={{ display: "flex", margin: '0 20px' }}>
+            <div style={{ display: "flex", margin: "0 20px" }}>
               <div style={{ minWidth: "160px" }}>
-                <InputLabel htmlFor="existingTripDate">Existing Trip Date</InputLabel>
+                <InputLabel htmlFor="existingTripDate">
+                  Existing Trip Date
+                </InputLabel>
                 <LocalizationProvider dateAdapter={AdapterMoment}>
                   <DatePicker
                     name="existingTripDate"
                     format={"YYYY-MM-DD"}
                     maxDate={moment()}
                     value={moment(values.existingTripDate)}
-                    onChange={(e) => formik.setFieldValue("existingTripDate", (e.format("YYYY-MM-DD")))}
+                    onChange={(e) =>
+                      formik.setFieldValue(
+                        "existingTripDate",
+                        e.format("YYYY-MM-DD")
+                      )
+                    }
                   />
                 </LocalizationProvider>
               </div>
-              <div style={{ minWidth: "160px", margin: '0 20px' }}>
-                <InputLabel htmlFor="replicationDate">Replication Date</InputLabel>
+              <div style={{ minWidth: "160px", margin: "0 20px" }}>
+                <InputLabel htmlFor="replicationDate">
+                  Replication Date
+                </InputLabel>
                 <LocalizationProvider dateAdapter={AdapterMoment}>
                   <DatePicker
                     disabled={true}
@@ -227,9 +256,7 @@ const ReplicateTripModal = ({ data, date, shiftTime, shiftType, officeId, select
                     name="pickupTime"
                     value={dayjs()
                       .hour(Number(values.pickupTime?.slice(0, 2)))
-                      .minute(
-                        Number(values.pickupTime?.slice(3, 5))
-                      )}
+                      .minute(Number(values.pickupTime?.slice(3, 5)))}
                     format="HH:mm"
                     onChange={(e) => {
                       var ShiftTime = e?.$d
@@ -245,7 +272,7 @@ const ReplicateTripModal = ({ data, date, shiftTime, shiftType, officeId, select
               </div>
             </div>
 
-            <div style={{ width: '100%', display: "flex", margin: '0 20px' }}>
+            <div style={{ width: "100%", display: "flex", margin: "0 20px" }}>
               <div style={{ marginTop: 20 }}>
                 <div style={{ marginBottom: 10 }}>
                   <p>Fleet mix</p>
@@ -254,7 +281,9 @@ const ReplicateTripModal = ({ data, date, shiftTime, shiftType, officeId, select
                   className="d-flex"
                   style={{ border: "2px solid #e7e7e7", width: "100%" }}
                 >
-                  <div style={{ width: "50%", borderRight: "2px solid #e7e7e7" }}>
+                  <div
+                    style={{ width: "50%", borderRight: "2px solid #e7e7e7" }}
+                  >
                     <div
                       style={{
                         borderBottom: "2px solid #e7e7e7",
@@ -264,10 +293,18 @@ const ReplicateTripModal = ({ data, date, shiftTime, shiftType, officeId, select
                       <p style={{ textAlign: "center" }}>Vehicle Type</p>
                     </div>
                     <div>
-                      <p style={{ textAlign: "center", margin: "11px 0" }}>4s</p>
-                      <p style={{ textAlign: "center", marginBottom: 11 }}>6s</p>
-                      <p style={{ textAlign: "center", marginBottom: 11 }}>7s</p>
-                      <p style={{ textAlign: "center", marginBottom: 11 }}>12s</p>
+                      <p style={{ textAlign: "center", margin: "11px 0" }}>
+                        4s
+                      </p>
+                      <p style={{ textAlign: "center", marginBottom: 11 }}>
+                        6s
+                      </p>
+                      <p style={{ textAlign: "center", marginBottom: 11 }}>
+                        7s
+                      </p>
+                      <p style={{ textAlign: "center", marginBottom: 11 }}>
+                        12s
+                      </p>
                     </div>
                   </div>
                   <div style={{ width: "50%" }}>
@@ -338,8 +375,6 @@ const ReplicateTripModal = ({ data, date, shiftTime, shiftType, officeId, select
               </div>
             </div>
 
-
-
             <div
               className="d-flex"
               style={{
@@ -359,10 +394,29 @@ const ReplicateTripModal = ({ data, date, shiftTime, shiftType, officeId, select
               </div>
             </div>
           </div>
-          :
-          <ConfirmationModal pass={passFlag} onClose={onClose} type={'replicate'}/>
-      }
-
+        ) : (
+          <ConfirmationModal
+            pass={passFlag}
+            onClose={onClose}
+            type={"replicate"}
+          />
+        )}
+      </div>
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

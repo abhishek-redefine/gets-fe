@@ -16,6 +16,7 @@ import { useFormik } from "formik";
 import { useDispatch, useSelector } from "react-redux";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
+import LoaderComponent from "../common/loading";
 
 const style = {
   position: "absolute",
@@ -79,12 +80,15 @@ const Zone = ({ roleType, onSuccess }) => {
   };
   const dispatch = useDispatch();
 
+  const [loading, setLoading] = useState(false);
+
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: validationSchema,
     onSubmit: async (values) => {
       console.log("clicked", values);
       try {
+        setLoading(true);
         const response = await RoutingService.createZone({ zoneDTO: values });
         if (response.status === 201) {
           dispatch(
@@ -106,6 +110,8 @@ const Zone = ({ roleType, onSuccess }) => {
         handleModalClose();
       } catch (err) {
         console.log(err);
+      } finally {
+        setLoading(false);
       }
     },
   });
@@ -131,6 +137,7 @@ const Zone = ({ roleType, onSuccess }) => {
 
   const enableDisableZone = async (id, flag) => {
     try {
+      setLoading(true);
       const response = await RoutingService.enableDisableZone(id, flag);
       if (response.status === 200) {
         fetchAllZones();
@@ -143,24 +150,29 @@ const Zone = ({ roleType, onSuccess }) => {
         })
       );
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchAllOffices = async () => {
     try {
+      setLoading(true);
       const response = await OfficeService.getAllOffices();
       const { data } = response || {};
       const { clientOfficeDTO } = data || {};
       setOffice(clientOfficeDTO);
-    } catch (e) { }
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
-
 
   const [paginationData, setPaginationData] = useState();
   const [pagination, setPagination] = useState({
     page: 0,
     size: 10,
-  })
+  });
   const handlePageChange = (page) => {
     console.log(page);
     let updatedPagination = { ...pagination };
@@ -168,11 +180,14 @@ const Zone = ({ roleType, onSuccess }) => {
     setPagination(updatedPagination);
   };
 
-  const fetchAllZones = async (search=false) => {
+  const fetchAllZones = async (search = false) => {
     try {
+      setLoading(true);
       console.log(search);
       let params = new URLSearchParams(pagination);
-      const response = search ? await RoutingService.getAllZones(params,searchValues.officeId) : await RoutingService.getAllZones(params);
+      const response = search
+        ? await RoutingService.getAllZones(params, searchValues.officeId)
+        : await RoutingService.getAllZones(params);
       const { data } = response;
       const clientZoneDTO = data.data;
       console.log(clientZoneDTO);
@@ -183,6 +198,8 @@ const Zone = ({ roleType, onSuccess }) => {
       setPaginationData(localPaginationData);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -192,81 +209,22 @@ const Zone = ({ roleType, onSuccess }) => {
   }, [pagination]);
 
   return (
-    <div className="internalSettingContainer">
-      <div className="gridContainer">
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <div className="filterContainer">
-            <div style={{ minWidth: "180px" }} className="form-control-input">
-              <FormControl fullWidth>
-                <InputLabel id="primary-office-label">Office Id</InputLabel>
-                <Select
-                  style={{ width: "180px" }}
-                  labelId="primary-office-label"
-                  id="officeId"
-                  value={searchValues.officeId}
-                  name="officeId"
-                  label="Office ID"
-                  onChange={handleFilterChange}
-                >
-                  {!!offices?.length &&
-                    offices.map((office, idx) => (
-                      <MenuItem key={idx} value={office.officeId}>
-                        {getFormattedLabel(office.officeId)}, {office.address}
-                      </MenuItem>
-                    ))}
-                </Select>
-              </FormControl>
-            </div>
-            <div className="form-control-input" style={{ minWidth: "70px" }}>
-              <button
-                type="submit"
-                onClick={() => fetchAllZones(true)}
-                className="btn btn-primary filterApplyBtn"
-              >
-                Apply
-              </button>
-            </div>
-          </div>
-          <div style={{ display: "flex", justifyContent: "end" }}>
-            <div className="form-control-input">
-              <button className="btn btn-primary" onClick={handleModalOpen}>
-                Create Zone
-              </button>
-            </div>
-          </div>
-        </div>
-        <Grid
-          headers={headers}
-          listing={zones}
-          onMenuItemClick={onMenuItemClick}
-          enableDisableRow={true}
-          pageNoText="pageNumber"
-          handlePageChange={handlePageChange}
-          pagination={paginationData}
-        />
-        <Modal
-          open={openModal}
-          onClose={handleModalClose}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
-        >
-          <Box sx={style}>
-            <div style={{ padding: "20px" }}>
-              <div style={{ margin: "20px 20px 0 20px" }}>
-                <h4>Add Zone</h4>
-              </div>
-              <div style={{ padding: 20, width: "50%" }}>
+    <div>
+      <div className="internalSettingContainer">
+        <div className="gridContainer">
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div className="filterContainer">
+              <div style={{ minWidth: "180px" }} className="form-control-input">
                 <FormControl fullWidth>
                   <InputLabel id="primary-office-label">Office Id</InputLabel>
                   <Select
-                    required
+                    style={{ width: "180px" }}
                     labelId="primary-office-label"
                     id="officeId"
-                    value={values.officeId}
-                    error={touched.officeId && Boolean(errors.officeId)}
+                    value={searchValues.officeId}
                     name="officeId"
                     label="Office ID"
-                    onChange={handleChange}
+                    onChange={handleFilterChange}
                   >
                     {!!offices?.length &&
                       offices.map((office, idx) => (
@@ -277,39 +235,116 @@ const Zone = ({ roleType, onSuccess }) => {
                   </Select>
                 </FormControl>
               </div>
-              <div style={{ padding: "0 20px", width: "50%" }}>
-                <FormControl fullWidth>
-                  <TextField
-                    error={touched.name && Boolean(errors.name)}
-                    onChange={handleChange}
-                    helperText={touched.name && errors.name}
-                    required
-                    id="name"
-                    name="name"
-                    label="Name"
-                    variant="outlined"
-                    value={values.name}
-                  />
-                </FormControl>
-              </div>
-              <div
-                className="form-control-input"
-                style={{ display: "flex", justifyContent: "center" }}
-              >
-                <div className="form-control-input">
-                  <button
-                    type="submit"
-                    className="btn btn-primary"
-                    onClick={handleSubmit}
-                  >
-                    Submit
-                  </button>
-                </div>
+              <div className="form-control-input" style={{ minWidth: "70px" }}>
+                <button
+                  type="submit"
+                  onClick={() => fetchAllZones(true)}
+                  className="btn btn-primary filterApplyBtn"
+                >
+                  Apply
+                </button>
               </div>
             </div>
-          </Box>
-        </Modal>
+            <div style={{ display: "flex", justifyContent: "end" }}>
+              <div className="form-control-input">
+                <button className="btn btn-primary" onClick={handleModalOpen}>
+                  Create Zone
+                </button>
+              </div>
+            </div>
+          </div>
+          <Grid
+            headers={headers}
+            listing={zones}
+            onMenuItemClick={onMenuItemClick}
+            enableDisableRow={true}
+            pageNoText="pageNumber"
+            handlePageChange={handlePageChange}
+            pagination={paginationData}
+          />
+          <Modal
+            open={openModal}
+            onClose={handleModalClose}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+          >
+            <Box sx={style}>
+              <div style={{ padding: "20px" }}>
+                <div style={{ margin: "20px 20px 0 20px" }}>
+                  <h4>Add Zone</h4>
+                </div>
+                <div style={{ padding: 20, width: "50%" }}>
+                  <FormControl fullWidth>
+                    <InputLabel id="primary-office-label">Office Id</InputLabel>
+                    <Select
+                      required
+                      labelId="primary-office-label"
+                      id="officeId"
+                      value={values.officeId}
+                      error={touched.officeId && Boolean(errors.officeId)}
+                      name="officeId"
+                      label="Office ID"
+                      onChange={handleChange}
+                    >
+                      {!!offices?.length &&
+                        offices.map((office, idx) => (
+                          <MenuItem key={idx} value={office.officeId}>
+                            {getFormattedLabel(office.officeId)},{" "}
+                            {office.address}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  </FormControl>
+                </div>
+                <div style={{ padding: "0 20px", width: "50%" }}>
+                  <FormControl fullWidth>
+                    <TextField
+                      error={touched.name && Boolean(errors.name)}
+                      onChange={handleChange}
+                      helperText={touched.name && errors.name}
+                      required
+                      id="name"
+                      name="name"
+                      label="Name"
+                      variant="outlined"
+                      value={values.name}
+                    />
+                  </FormControl>
+                </div>
+                <div
+                  className="form-control-input"
+                  style={{ display: "flex", justifyContent: "center" }}
+                >
+                  <div className="form-control-input">
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      onClick={handleSubmit}
+                    >
+                      Submit
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </Box>
+          </Modal>
+        </div>
       </div>
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

@@ -3,23 +3,25 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
-import { allocateVendorData } from "../../sampleData/allocateVendorData";
 import { Button, Menu, MenuItem } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import Fade from "@mui/material/Fade";
 import DispatchService from "@/services/dispatch.service";
 import ComplianceService from "@/services/compliance.service";
 import { useDispatch, useSelector } from "react-redux";
-import { toggleToast } from '@/redux/company.slice';
+import { toggleToast } from "@/redux/company.slice";
+import LoaderComponent from "../common/loading";
 
 const AllocateVendor = ({ tripList }) => {
   const [data, setData] = useState([]);
   const [selectedRows, setSelectedRows] = useState({});
-  const [vendorList,setVendorList] = useState([]);
-  const [selectedVendor, setSelectedVendor] = useState('');
+  const [vendorList, setVendorList] = useState([]);
+  const [selectedVendor, setSelectedVendor] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedVendorId, setSelectedVendorId] = useState("");
   const dispatch = useDispatch();
+
+  const [loading, setLoading] = useState(false);
 
   const columns = useMemo(
     () => [
@@ -40,7 +42,7 @@ const AllocateVendor = ({ tripList }) => {
         },
       },
       {
-        accessorKey: 'routeName',
+        accessorKey: "routeName",
         header: "First Pickup/ Last Drop",
         size: 150,
       },
@@ -56,27 +58,27 @@ const AllocateVendor = ({ tripList }) => {
         },
       },
       {
-        accessorKey: 'escortStatus',
+        accessorKey: "escortStatus",
         header: "Escort Trip",
         size: 150,
       },
       {
-        accessorKey: 'special',
+        accessorKey: "special",
         header: "Special",
         size: 150,
       },
       {
-        accessorKey: 'vendorName',
+        accessorKey: "vendorName",
         header: "Vendor Name",
         size: 150,
       },
       {
-        accessorKey: 'vehicleNumber',
+        accessorKey: "vehicleNumber",
         header: "Vehicle Number",
         size: 150,
       },
       {
-        accessorKey: 'driverName',
+        accessorKey: "driverName",
         header: "Driver Name",
         size: 150,
       },
@@ -84,7 +86,7 @@ const AllocateVendor = ({ tripList }) => {
     []
   );
 
-  const handleSelectChange = (vendorName,vendorId) => {
+  const handleSelectChange = (vendorName, vendorId) => {
     setSelectedVendor(vendorName);
     setSelectedVendorId(vendorId);
     handleClose();
@@ -104,7 +106,7 @@ const AllocateVendor = ({ tripList }) => {
 
   const handleAssignVendor = () => {
     console.log("Selected Rows:", selectedRows);
-    const updatedData = data.map(item => {
+    const updatedData = data.map((item) => {
       if (selectedRows[item.id]) {
         return {
           ...item,
@@ -115,31 +117,51 @@ const AllocateVendor = ({ tripList }) => {
     });
     console.log("Updated Data:", updatedData);
     setData(updatedData);
-    setSelectedVendor('');
+    setSelectedVendor("");
     setSelectedVendorId(null);
     setSelectedRows({});
     allocateVendor(selectedRows);
   };
 
-  const allocateVendor = async(selectedRows) =>{
-    try{
+  const allocateVendor = async (selectedRows) => {
+    try {
+      setLoading(true);
       const tripIds = [];
       Object.keys(selectedRows).forEach((objKey) => {
         tripIds.push(parseInt(objKey));
-      })
+      });
       console.log(tripIds);
-      const response = await DispatchService.allocateVendor(selectedVendorId,tripIds);
-      if(response.status === 201){
-        dispatch(toggleToast({ message: 'Vendor added to the trip successfully!', type: 'success' }));
+      const response = await DispatchService.allocateVendor(
+        selectedVendorId,
+        tripIds
+      );
+      if (response.status === 201) {
+        dispatch(
+          toggleToast({
+            message: "Vendor added to the trip successfully!",
+            type: "success",
+          })
+        );
+      } else {
+        dispatch(
+          toggleToast({
+            message: "Please try again in after some time.",
+            type: "error",
+          })
+        );
       }
-      else{
-        dispatch(toggleToast({ message: 'Please try again in after some time.', type: 'error' }));
-      }
-    }catch(err){
-      dispatch(toggleToast({ message: 'Please try again in after some time.', type: 'error' }));
+    } catch (err) {
+      dispatch(
+        toggleToast({
+          message: "Please try again in after some time.",
+          type: "error",
+        })
+      );
       console.log(err);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   const tableInstance = useMaterialReactTable({
     columns,
@@ -149,32 +171,34 @@ const AllocateVendor = ({ tripList }) => {
       rowSelection: selectedRows,
     },
     onRowSelectionChange: handleRowSelection,
-    getRowId: row => row.id,
+    getRowId: (row) => row.id,
   });
 
   const getAllVendor = async () => {
     try {
+      setLoading(true);
       const response = await ComplianceService.getAllVendorCompany();
       console.log(response.data);
       var list = [];
-      response.data.paginatedResponse.content.map((val,index)=>{
+      response.data.paginatedResponse.content.map((val, index) => {
         const obj = {
-          name : val.name,
-          vendorId : val.id
-        }
+          name: val.name,
+          vendorId: val.id,
+        };
         list.push(obj);
-      })
+      });
       console.log(list);
       setVendorList(list);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     setData(tripList);
     getAllVendor();
-
   }, []);
 
   return (
@@ -216,7 +240,7 @@ const AllocateVendor = ({ tripList }) => {
                 textTransform: "unset",
               }}
             >
-              {selectedVendor || 'Vendor Name'}
+              {selectedVendor || "Vendor Name"}
             </Button>
             <Menu
               id="fade-menu"
@@ -234,8 +258,12 @@ const AllocateVendor = ({ tripList }) => {
                 fontFamily: "DM Sans",
               }}
             >
-              {vendorList.map((item,idx)=>(
-                <MenuItem onClick={() => handleSelectChange(item.name,item.vendorId)}>{item.name}</MenuItem>
+              {vendorList.map((item, idx) => (
+                <MenuItem
+                  onClick={() => handleSelectChange(item.name, item.vendorId)}
+                >
+                  {item.name}
+                </MenuItem>
               ))}
             </Menu>
             <button
@@ -283,6 +311,21 @@ const AllocateVendor = ({ tripList }) => {
       >
         <MaterialReactTable table={tableInstance} />
       </div>
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

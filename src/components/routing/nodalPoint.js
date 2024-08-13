@@ -22,6 +22,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { TimeField } from "@mui/x-date-pickers/TimeField";
 import dayjs from "dayjs";
 import GeocodeModal from "../user-management/geocodeModal";
+import LoaderComponent from "../common/loading";
 
 const style = {
   position: "absolute",
@@ -127,6 +128,8 @@ const NodalPoint = () => {
 
   const [coordinates, setCoordinates] = useState({ geoCode: "" });
 
+  const [loading, setLoading] = useState(false);
+
   const handlePageChange = (page) => {
     let updatedPagination = { ...pagination };
     updatedPagination.page = page;
@@ -148,6 +151,7 @@ const NodalPoint = () => {
       values.reportingTime = reportingTime;
       console.log("clicked", values);
       try {
+        setLoading(true);
         const response = await RoutingService.createNodalPoint({
           nodalDTO: values,
         });
@@ -171,6 +175,8 @@ const NodalPoint = () => {
         handleModalClose();
       } catch (err) {
         console.log(err);
+      } finally {
+        setLoading(false);
       }
     },
   });
@@ -180,11 +186,15 @@ const NodalPoint = () => {
 
   const fetchAllOffices = async () => {
     try {
+      setLoading(true);
       const response = await OfficeService.getAllOffices();
       const { data } = response || {};
       const { clientOfficeDTO } = data || {};
       setOffice(clientOfficeDTO);
-    } catch (e) { }
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
   // const fetchAllZones = async () => {
   //   try {
@@ -204,17 +214,20 @@ const NodalPoint = () => {
   // };
   const fetchAllAreas = async () => {
     try {
+      setLoading(true);
       const page = {
         page: 0,
-        size: 100
-      }
-      let params = new URLSearchParams(page)
+        size: 100,
+      };
+      let params = new URLSearchParams(page);
       const response = await RoutingService.getAllArea(params);
       console.log(response.data);
       const areaDTO = response.data.data;
       setAreaList(areaDTO);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -222,12 +235,13 @@ const NodalPoint = () => {
     setSearchValues({
       officeId: "",
       areaName: "",
-    })
+    });
     fetchAllNodalPoints(true);
-  }
+  };
 
   const fetchAllNodalPoints = async (search = false) => {
     try {
+      setLoading(true);
       let params = new URLSearchParams(pagination);
       let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
@@ -238,15 +252,9 @@ const NodalPoint = () => {
           delete allSearchValues[objKey];
         }
       });
-      const response = search ? await RoutingService.getAllNodalPoints(
-        params,
-        {}
-      ) 
-      :
-      await RoutingService.getAllNodalPoints(
-        params,
-        allSearchValues
-      );
+      const response = search
+        ? await RoutingService.getAllNodalPoints(params, {})
+        : await RoutingService.getAllNodalPoints(params, allSearchValues);
       const { data } = response;
       console.log(data);
       setNodalPoints(data.data);
@@ -255,6 +263,8 @@ const NodalPoint = () => {
       setPaginationData(localPaginationData);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -269,21 +279,27 @@ const NodalPoint = () => {
 
   const enableDisableNodalPoint = async (id, flag) => {
     try {
+      setLoading(true);
       const response = await RoutingService.enableDisableNodalPoint(id, flag);
       console.log(response);
       fetchAllNodalPoints();
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchMasterData = async () => {
     try {
+      setLoading(true);
       const shiftResponse = await MasterDataService.getMasterData("ShiftType");
       const { data } = shiftResponse || {};
       setShiftTypes(data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -306,32 +322,33 @@ const NodalPoint = () => {
   }, []);
 
   return (
-    <div className="internalSettingContainer">
-      <div className="gridContainer">
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <div className="filterContainer">
-            <div style={{ minWidth: "180px" }} className="form-control-input">
-              <FormControl fullWidth>
-                <InputLabel id="primary-office-label">Office Id</InputLabel>
-                <Select
-                  style={{ width: "180px" }}
-                  labelId="primary-office-label"
-                  id="officeId"
-                  value={searchValues.officeId}
-                  name="officeId"
-                  label="Office ID"
-                  onChange={handleFilterChange}
-                >
-                  {!!offices?.length &&
-                    offices.map((office, idx) => (
-                      <MenuItem key={idx} value={office.officeId}>
-                        {getFormattedLabel(office.officeId)}, {office.address}
-                      </MenuItem>
-                    ))}
-                </Select>
-              </FormControl>
-            </div>
-            {/* <div style={{ minWidth: "180px" }} className="form-control-input">
+    <div>
+      <div className="internalSettingContainer">
+        <div className="gridContainer">
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div className="filterContainer">
+              <div style={{ minWidth: "180px" }} className="form-control-input">
+                <FormControl fullWidth>
+                  <InputLabel id="primary-office-label">Office Id</InputLabel>
+                  <Select
+                    style={{ width: "180px" }}
+                    labelId="primary-office-label"
+                    id="officeId"
+                    value={searchValues.officeId}
+                    name="officeId"
+                    label="Office ID"
+                    onChange={handleFilterChange}
+                  >
+                    {!!offices?.length &&
+                      offices.map((office, idx) => (
+                        <MenuItem key={idx} value={office.officeId}>
+                          {getFormattedLabel(office.officeId)}, {office.address}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
+              </div>
+              {/* <div style={{ minWidth: "180px" }} className="form-control-input">
               <FormControl fullWidth>
                 <InputLabel id="zoneName-label">Zone</InputLabel>
                 <Select
@@ -360,252 +377,270 @@ const NodalPoint = () => {
                 </Select>
               </FormControl>
             </div> */}
-            <div style={{ minWidth: "180px" }} className="form-control-input">
-              <FormControl fullWidth>
-                <InputLabel id="area-label">Area</InputLabel>
-                <Select
-                  style={{ width: "180px" }}
-                  labelId="area-label"
-                  id="areaName"
-                  value={searchValues.areaName}
-                  name="areaName"
-                  label="areaName"
-                  onChange={handleFilterChange}
-                  MenuProps={{
-                    MenuListProps: {
-                      sx: {
-                        maxHeight: 200,
-                        overflowY: 'auto',
-                      },
-                    },
-                  }}
-                >
-                  {!!areaList?.length &&
-                    areaList.map((area, idx) => (
-                      <MenuItem key={idx} value={area.name}>
-                        {area.name}
-                      </MenuItem>
-                    ))}
-                </Select>
-              </FormControl>
-            </div>
-            <div className="form-control-input" style={{ minWidth: "70px" }}>
-              <button
-                type="submit"
-                onClick={() => fetchAllNodalPoints()}
-                className="btn btn-primary filterApplyBtn"
-              >
-                Apply
-              </button>
-            </div>
-            <div className="form-control-input" style={{ minWidth: "70px" }}>
-              <button
-                type="submit"
-                onClick={() => resetFilter()}
-                className="btn btn-primary filterApplyBtn"
-              >
-                Reset
-              </button>
-            </div>
-          </div>
-        </div>
-        <div style={{ display: "flex", justifyContent: "end" }}>
-          <div className="form-control-input">
-            <button className="btn btn-primary">Upload File</button>
-          </div>
-          <div className="form-control-input">
-            <button onClick={handleModalOpen} className="btn btn-primary">
-              Add Nodal Point
-            </button>
-          </div>
-        </div>
-        <Grid
-          headers={headers}
-          listing={nodalPoints}
-          onMenuItemClick={onMenuItemClick}
-          handlePageChange={handlePageChange}
-          enableDisableRow={true}
-        />
-        <Modal
-          open={openModal}
-          onClose={handleModalClose}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
-        >
-          <Box sx={style}>
-            <div style={{ padding: "20px" }}>
-              <div style={{ margin: "20px 20px 0 20px" }}>
-                <h4>Add Nodal Point</h4>
-              </div>
-              <div style={{ display: "flex" }}>
-                <div style={{ padding: "10px 20px", width: "50%" }}>
-                  <FormControl fullWidth>
-                    <InputLabel id="primary-office-label">Office Id</InputLabel>
-                    <Select
-                      required
-                      labelId="primary-office-label"
-                      id="officeId"
-                      value={values.officeId}
-                      error={touched.officeId && Boolean(errors.officeId)}
-                      name="officeId"
-                      label="Office ID"
-                      onChange={handleChange}
-                    >
-                      {!!offices?.length &&
-                        offices.map((office, idx) => (
-                          <MenuItem key={idx} value={office.officeId}>
-                            {getFormattedLabel(office.officeId)},{" "}
-                            {office.address}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                  </FormControl>
-                </div>
-                <div style={{ padding: "10px 20px", width: "50%" }}>
-                  <FormControl fullWidth>
-                    <InputLabel id="area-label">Area</InputLabel>
-                    <Select
-                      labelId="area-label"
-                      id="area"
-                      value={values.areaName}
-                      error={touched.areaName && Boolean(errors.areaName)}
-                      name="areaName"
-                      label="areaName"
-                      onChange={handleChange}
-                      MenuProps={{
-                        MenuListProps: {
-                          sx: {
-                            maxHeight: 200,
-                            overflowY: 'auto',
-                          },
+              <div style={{ minWidth: "180px" }} className="form-control-input">
+                <FormControl fullWidth>
+                  <InputLabel id="area-label">Area</InputLabel>
+                  <Select
+                    style={{ width: "180px" }}
+                    labelId="area-label"
+                    id="areaName"
+                    value={searchValues.areaName}
+                    name="areaName"
+                    label="areaName"
+                    onChange={handleFilterChange}
+                    MenuProps={{
+                      MenuListProps: {
+                        sx: {
+                          maxHeight: 200,
+                          overflowY: "auto",
                         },
-                      }}
-                    >
-                      {!!areaList?.length &&
-                        areaList.map((area, idx) => (
-                          <MenuItem key={idx} value={area.name}>
-                            {area.name}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                  </FormControl>
-                </div>
-              </div>
-              <div style={{ display: "flex" }}>
-                <div style={{ padding: "10px 20px", width: "50%" }}>
-                  <FormControl fullWidth>
-                    <InputLabel id="shift-type-label">Shift Type</InputLabel>
-                    <Select
-                      required
-                      labelId="shift-type-label"
-                      id="shiftType"
-                      value={values.shiftType}
-                      error={touched.shiftType && Boolean(errors.shiftType)}
-                      name="shiftType"
-                      label="Shift Type"
-                      onChange={handleChange}
-                    >
-                      {!!shiftTypes?.length &&
-                        shiftTypes.map((shift, idx) => (
-                          <MenuItem key={idx} value={shift.value}>
-                            {shift.displayName}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                  </FormControl>
-                </div>
-                <div style={{ padding: "10px 20px", width: "50%" }}>
-                  <FormControl fullWidth>
-                    <TextField
-                      error={touched.name && Boolean(errors.name)}
-                      onChange={handleChange}
-                      required
-                      id="name"
-                      name="name"
-                      label="Nodal Point Name"
-                      variant="outlined"
-                      value={values.name}
-                    />
-                  </FormControl>
-                </div>
-              </div>
-              <div style={{ display: "flex" }}>
-                <div style={{ padding: "10px 20px", width: "50%" }}>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <TimeField
-                      fullWidth
-                      label="Reporting Time"
-                      value={dayjs()
-                        .hour(Number(initialValues.reportingTime.slice(0, 2)))
-                        .minute(
-                          Number(initialValues.reportingTime.slice(3, 5))
-                        )}
-                      format="HH:mm"
-                      onChange={(e) => {
-                        var ReportingTime = e.$d
-                          .toLocaleTimeString("it-IT")
-                          .slice(0, -3);
-                        setInitialValues({
-                          ...initialValues,
-                          reportingTime: ReportingTime,
-                        });
-                        setReportingTime(ReportingTime);
-                      }}
-                    />
-                  </LocalizationProvider>
-                </div>
-                <div style={{ padding: "10px 20px", width: "50%" }}>
-                  <FormControl fullWidth>
-                    <TextField
-                      error={touched.geoCode && Boolean(errors.geoCode)}
-                      // onChange={handleChange}
-                      onChange={(e) => {
-                        console.log("Clicked");
-                        formik.setFieldValue("geoCode", e.target.value);
-                      }}
-                      required
-                      id="geoCode"
-                      name="geoCode"
-                      label="Geo Location"
-                      variant="outlined"
-                      // value={values.geoCode}
-                      value={values.geoCode}
-                      onClick={handleGeocodeModalOpen}
-                    />
-                    <Modal
-                      open={openGeocodeModal}
-                      onClose={handleGeocodeModalClose}
-                      aria-labelledby="modal-modal-title"
-                      aria-describedby="modal-modal-description"
-                    >
-                      <Box sx={geoCodeModalStyle}>
-                        <GeocodeModal
-                          geocode={handleGeocode}
-                          onClose={handleGeocodeModalClose}
-                        />
-                      </Box>
-                    </Modal>
-                  </FormControl>
-                </div>
-              </div>
-              <div
-                className="form-control-input"
-                style={{ display: "flex", justifyContent: "center" }}
-              >
-                <div className="form-control-input">
-                  <button
-                    type="submit"
-                    className="btn btn-primary"
-                    onClick={handleSubmit}
+                      },
+                    }}
                   >
-                    Submit
-                  </button>
-                </div>
+                    {!!areaList?.length &&
+                      areaList.map((area, idx) => (
+                        <MenuItem key={idx} value={area.name}>
+                          {area.name}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
+              </div>
+              <div className="form-control-input" style={{ minWidth: "70px" }}>
+                <button
+                  type="submit"
+                  onClick={() => fetchAllNodalPoints()}
+                  className="btn btn-primary filterApplyBtn"
+                >
+                  Apply
+                </button>
+              </div>
+              <div className="form-control-input" style={{ minWidth: "70px" }}>
+                <button
+                  type="submit"
+                  onClick={() => resetFilter()}
+                  className="btn btn-primary filterApplyBtn"
+                >
+                  Reset
+                </button>
               </div>
             </div>
-          </Box>
-        </Modal>
+          </div>
+          <div style={{ display: "flex", justifyContent: "end" }}>
+            <div className="form-control-input">
+              <button className="btn btn-primary">Upload File</button>
+            </div>
+            <div className="form-control-input">
+              <button onClick={handleModalOpen} className="btn btn-primary">
+                Add Nodal Point
+              </button>
+            </div>
+          </div>
+          <Grid
+            headers={headers}
+            listing={nodalPoints}
+            onMenuItemClick={onMenuItemClick}
+            handlePageChange={handlePageChange}
+            enableDisableRow={true}
+          />
+          <Modal
+            open={openModal}
+            onClose={handleModalClose}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+          >
+            <Box sx={style}>
+              <div style={{ padding: "20px" }}>
+                <div style={{ margin: "20px 20px 0 20px" }}>
+                  <h4>Add Nodal Point</h4>
+                </div>
+                <div style={{ display: "flex" }}>
+                  <div style={{ padding: "10px 20px", width: "50%" }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="primary-office-label">
+                        Office Id
+                      </InputLabel>
+                      <Select
+                        required
+                        labelId="primary-office-label"
+                        id="officeId"
+                        value={values.officeId}
+                        error={touched.officeId && Boolean(errors.officeId)}
+                        name="officeId"
+                        label="Office ID"
+                        onChange={handleChange}
+                      >
+                        {!!offices?.length &&
+                          offices.map((office, idx) => (
+                            <MenuItem key={idx} value={office.officeId}>
+                              {getFormattedLabel(office.officeId)},{" "}
+                              {office.address}
+                            </MenuItem>
+                          ))}
+                      </Select>
+                    </FormControl>
+                  </div>
+                  <div style={{ padding: "10px 20px", width: "50%" }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="area-label">Area</InputLabel>
+                      <Select
+                        labelId="area-label"
+                        id="area"
+                        value={values.areaName}
+                        error={touched.areaName && Boolean(errors.areaName)}
+                        name="areaName"
+                        label="areaName"
+                        onChange={handleChange}
+                        MenuProps={{
+                          MenuListProps: {
+                            sx: {
+                              maxHeight: 200,
+                              overflowY: "auto",
+                            },
+                          },
+                        }}
+                      >
+                        {!!areaList?.length &&
+                          areaList.map((area, idx) => (
+                            <MenuItem key={idx} value={area.name}>
+                              {area.name}
+                            </MenuItem>
+                          ))}
+                      </Select>
+                    </FormControl>
+                  </div>
+                </div>
+                <div style={{ display: "flex" }}>
+                  <div style={{ padding: "10px 20px", width: "50%" }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="shift-type-label">Shift Type</InputLabel>
+                      <Select
+                        required
+                        labelId="shift-type-label"
+                        id="shiftType"
+                        value={values.shiftType}
+                        error={touched.shiftType && Boolean(errors.shiftType)}
+                        name="shiftType"
+                        label="Shift Type"
+                        onChange={handleChange}
+                      >
+                        {!!shiftTypes?.length &&
+                          shiftTypes.map((shift, idx) => (
+                            <MenuItem key={idx} value={shift.value}>
+                              {shift.displayName}
+                            </MenuItem>
+                          ))}
+                      </Select>
+                    </FormControl>
+                  </div>
+                  <div style={{ padding: "10px 20px", width: "50%" }}>
+                    <FormControl fullWidth>
+                      <TextField
+                        error={touched.name && Boolean(errors.name)}
+                        onChange={handleChange}
+                        required
+                        id="name"
+                        name="name"
+                        label="Nodal Point Name"
+                        variant="outlined"
+                        value={values.name}
+                      />
+                    </FormControl>
+                  </div>
+                </div>
+                <div style={{ display: "flex" }}>
+                  <div style={{ padding: "10px 20px", width: "50%" }}>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <TimeField
+                        fullWidth
+                        label="Reporting Time"
+                        value={dayjs()
+                          .hour(Number(initialValues.reportingTime.slice(0, 2)))
+                          .minute(
+                            Number(initialValues.reportingTime.slice(3, 5))
+                          )}
+                        format="HH:mm"
+                        onChange={(e) => {
+                          var ReportingTime = e.$d
+                            .toLocaleTimeString("it-IT")
+                            .slice(0, -3);
+                          setInitialValues({
+                            ...initialValues,
+                            reportingTime: ReportingTime,
+                          });
+                          setReportingTime(ReportingTime);
+                        }}
+                      />
+                    </LocalizationProvider>
+                  </div>
+                  <div style={{ padding: "10px 20px", width: "50%" }}>
+                    <FormControl fullWidth>
+                      <TextField
+                        error={touched.geoCode && Boolean(errors.geoCode)}
+                        // onChange={handleChange}
+                        onChange={(e) => {
+                          console.log("Clicked");
+                          formik.setFieldValue("geoCode", e.target.value);
+                        }}
+                        required
+                        id="geoCode"
+                        name="geoCode"
+                        label="Geo Location"
+                        variant="outlined"
+                        // value={values.geoCode}
+                        value={values.geoCode}
+                        onClick={handleGeocodeModalOpen}
+                      />
+                      <Modal
+                        open={openGeocodeModal}
+                        onClose={handleGeocodeModalClose}
+                        aria-labelledby="modal-modal-title"
+                        aria-describedby="modal-modal-description"
+                      >
+                        <Box sx={geoCodeModalStyle}>
+                          <GeocodeModal
+                            geocode={handleGeocode}
+                            onClose={handleGeocodeModalClose}
+                          />
+                        </Box>
+                      </Modal>
+                    </FormControl>
+                  </div>
+                </div>
+                <div
+                  className="form-control-input"
+                  style={{ display: "flex", justifyContent: "center" }}
+                >
+                  <div className="form-control-input">
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      onClick={handleSubmit}
+                    >
+                      Submit
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </Box>
+          </Modal>
+        </div>
       </div>
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

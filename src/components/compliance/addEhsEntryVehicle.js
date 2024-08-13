@@ -113,7 +113,7 @@ const AddEhsEntryVehicle = ({ EditEhsEntryVehicle, VehicleId, UpdateId }) => {
                         label="File" />
                 </FormStep>
             </MultiStepForm>
-        </div >
+        </div>
     )
 }
 

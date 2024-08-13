@@ -29,6 +29,7 @@ import moment from "moment";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import BookingLog from "./booking-log";
+import LoaderComponent from "@/components/common/loading";
 
 const BookingChangeLogs = () => {
   const headers = [
@@ -110,8 +111,11 @@ const BookingChangeLogs = () => {
     size: DEFAULT_PAGE_SIZE,
   });
 
+  const [loading, setLoading] = useState(false);
+
   const fetchInOutTimes = async (isIn, newSearchValues) => {
     try {
+      setLoading(true);
       const response = await BookingService.getLoginLogoutTimes(
         newSearchValues.officeId,
         isIn,
@@ -125,74 +129,100 @@ const BookingChangeLogs = () => {
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchAllBookings = async (resetFlag) => {
     try {
-        const role = JSON.parse(localStorage.getItem('userRoles'));
-        const userDetails = JSON.parse(localStorage.getItem('userDetails'));
-        const params = new URLSearchParams(pagination);
-        let allSearchValues = {...searchValues};
-        role.roleName === 'ROLE_SUPER_ADMIN' ? allSearchValues.isAdmin = true : allSearchValues.isAdmin = false ;
-        allSearchValues.empId = role.roleName != 'ROLE_SUPER_ADMIN' ? userDetails.name :"";
-        if (allSearchValues.bookingDate) {
-            allSearchValues.bookingDate = moment(allSearchValues.bookingDate).format("YYYY-MM-DD");
+      setLoading(true);
+      const role = JSON.parse(localStorage.getItem("userRoles"));
+      const userDetails = JSON.parse(localStorage.getItem("userDetails"));
+      const params = new URLSearchParams(pagination);
+      let allSearchValues = { ...searchValues };
+      role.roleName === "ROLE_SUPER_ADMIN"
+        ? (allSearchValues.isAdmin = true)
+        : (allSearchValues.isAdmin = false);
+      allSearchValues.empId =
+        role.roleName != "ROLE_SUPER_ADMIN" ? userDetails.name : "";
+      if (allSearchValues.bookingDate) {
+        allSearchValues.bookingDate = moment(
+          allSearchValues.bookingDate
+        ).format("YYYY-MM-DD");
+      }
+      Object.keys(allSearchValues).forEach((objKey) => {
+        if (
+          allSearchValues[objKey] === null ||
+          allSearchValues[objKey] === ""
+        ) {
+          delete allSearchValues[objKey];
         }
-        Object.keys(allSearchValues).forEach((objKey) => {
-            if (allSearchValues[objKey] === null || allSearchValues[objKey] === "") {
-                delete allSearchValues[objKey];
-            }
-        });
-        allSearchValues.isAdmin = true;
-        allSearchValues.isChanged = true;
-        console.log("role>>",role.roleName);
-        const response = resetFlag ? await BookingService.getAllBookings(params.toString(), {isAdmin : true, isChanged : true}) : await BookingService.getAllBookings(params.toString(), allSearchValues);
-        //const response = await BookingService.getAllBookings(params.toString(), allSearchValues);
-        const { data } = response || {};
-        const { data: paginatedResponse } = data || {};
-        console.log("bookings>>>",paginatedResponse)
-        const teams = await getAllTeams();
-        var modifiedPageinationResponse = [];
-        paginatedResponse.map((obj,index)=>{
-            const shiftKey = obj.loginShift ? 'loginShift' : 'logoutShift';
-            obj.shiftTime = obj[shiftKey];
-            delete obj[shiftKey];
-            const team = teams.find(val => obj.teamId === val.id);
-            obj.teamId = team ? team.name : '';
-            modifiedPageinationResponse.push(obj);
-        })
-        setBookingListing(modifiedPageinationResponse || []);
-        let localPaginationData = {...data};
-        delete localPaginationData?.data;
-        setPaginationData(localPaginationData);
+      });
+      allSearchValues.isAdmin = true;
+      allSearchValues.isChanged = true;
+      console.log("role>>", role.roleName);
+      const response = resetFlag
+        ? await BookingService.getAllBookings(params.toString(), {
+            isAdmin: true,
+            isChanged: true,
+          })
+        : await BookingService.getAllBookings(
+            params.toString(),
+            allSearchValues
+          );
+      //const response = await BookingService.getAllBookings(params.toString(), allSearchValues);
+      const { data } = response || {};
+      const { data: paginatedResponse } = data || {};
+      console.log("bookings>>>", paginatedResponse);
+      const teams = await getAllTeams();
+      var modifiedPageinationResponse = [];
+      paginatedResponse.map((obj, index) => {
+        const shiftKey = obj.loginShift ? "loginShift" : "logoutShift";
+        obj.shiftTime = obj[shiftKey];
+        delete obj[shiftKey];
+        const team = teams.find((val) => obj.teamId === val.id);
+        obj.teamId = team ? team.name : "";
+        modifiedPageinationResponse.push(obj);
+      });
+      setBookingListing(modifiedPageinationResponse || []);
+      let localPaginationData = { ...data };
+      delete localPaginationData?.data;
+      setPaginationData(localPaginationData);
     } catch (e) {
-        console.error(e);
+      console.error(e);
+    } finally {
+      setLoading(false);
     }
-};
+  };
 
-const getAllTeams = async() =>{
-    try{
-        const response = await OfficeService.getAllTeams();
-        const { data } = response || {}; 
-        const { content } = data.paginatedResponse || {};
-        //console.log("response>>>>",content);
-        return content;
+  const getAllTeams = async () => {
+    try {
+      setLoading(true);
+      const response = await OfficeService.getAllTeams();
+      const { data } = response || {};
+      const { content } = data.paginatedResponse || {};
+      //console.log("response>>>>",content);
+      return content;
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
     }
-    catch(error){
-        console.log(error)
-    }
-    
-}
+  };
 
   const fetchMasterData = async (type) => {
     try {
+      setLoading(true);
       const response = await MasterDataService.getMasterData(type);
       const { data } = response || {};
       if (data?.length) {
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -224,11 +254,15 @@ const getAllTeams = async() =>{
 
   const fetchAllOffices = async () => {
     try {
+      setLoading(true);
       const response = await OfficeService.getAllOffices();
       const { data } = response || {};
       const { clientOfficeDTO } = data || {};
       setOffice(clientOfficeDTO);
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleFilterChange = (e) => {
@@ -463,6 +497,21 @@ const getAllTeams = async() =>{
           </>
         )}
       </div>
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

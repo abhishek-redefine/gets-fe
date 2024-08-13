@@ -1,115 +1,154 @@
-import React, { useEffect, useState } from 'react';
-import Grid from '../grid';
-import UploadButton from '../buttons/uploadButton';
-import AddPenalty from './addPenalty';
-import ComplianceService from '@/services/compliance.service';
+import React, { useEffect, useState } from "react";
+import Grid from "../grid";
+import UploadButton from "../buttons/uploadButton";
+import AddPenalty from "./addPenalty";
+import ComplianceService from "@/services/compliance.service";
+import LoaderComponent from "../common/loading";
 
 const Penalty = () => {
-    const headers = [
+  const headers = [
     {
-        key: "officeId",
-        display: "Office Id"
+      key: "officeId",
+      display: "Office Id",
     },
     {
-        key: "penaltyCategory",
-        display: "Penalty Category"
+      key: "penaltyCategory",
+      display: "Penalty Category",
     },
     {
-        key: "penaltyName",
-        display: "Penalty Name"
+      key: "penaltyName",
+      display: "Penalty Name",
     },
     {
-        key: "penaltyType",
-        display: "Penalty Type"
+      key: "penaltyType",
+      display: "Penalty Type",
     },
     {
-        key: "penaltyAmount",
-        display: "Amount"
+      key: "penaltyAmount",
+      display: "Amount",
     },
     {
-        key: "hamburgerMenu",
-        html: <><span className="material-symbols-outlined">more_vert</span></>,
-        navigation: true,
-        menuItems: [{
-            display: "Edit",
-            key: "edit"
+      key: "hamburgerMenu",
+      html: (
+        <>
+          <span className="material-symbols-outlined">more_vert</span>
+        </>
+      ),
+      navigation: true,
+      menuItems: [
+        {
+          display: "Edit",
+          key: "edit",
         },
         {
-            display: "Deactivate",
-            key: "deactivate"
-        }]
-    }];
+          display: "Deactivate",
+          key: "deactivate",
+        },
+      ],
+    },
+  ];
 
-    const [isAddPenalty, setIsAddPenalty] = useState(false);
-    const [penaltyListing, setPenaltyListing] = useState();
-    const [editPenaltyData, setEditPenaltyData] = useState({});
+  const [isAddPenalty, setIsAddPenalty] = useState(false);
+  const [penaltyListing, setPenaltyListing] = useState();
+  const [editPenaltyData, setEditPenaltyData] = useState({});
 
-    const [paginationData, setPaginationData] = useState();
-    const [pagination,setPagination] = useState({
-        pageNo : 0,
-        pageSize : 10,
-    })
-    const handlePageChange = (page) => {
-        console.log(page);
-        let updatedPagination = {...pagination};
-        updatedPagination.pageNo = page;
-        setPagination(updatedPagination);
-    };
+  const [paginationData, setPaginationData] = useState();
+  const [pagination, setPagination] = useState({
+    pageNo: 0,
+    pageSize: 10,
+  });
 
-    const fetchAllPenalties = async () => {
-        try {
-            const params = new URLSearchParams(pagination)
-            const response = await ComplianceService.getAllPenalty(params);
-            setPenaltyListing(response.data.paginatedResponse.content);
+  const [loading, setLoading] = useState(false);
 
-            const data = response.data;
-            let localPaginationData = {...data};
-            delete localPaginationData?.paginatedResponse.contents;
-            setPaginationData(localPaginationData.paginatedResponse);
-        } catch (e) {
-            console.error(e);
-        }
-    };
+  const handlePageChange = (page) => {
+    console.log(page);
+    let updatedPagination = { ...pagination };
+    updatedPagination.pageNo = page;
+    setPagination(updatedPagination);
+  };
 
-    useEffect(() => {
-        fetchAllPenalties();
-    }, [pagination]);
+  const fetchAllPenalties = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams(pagination);
+      const response = await ComplianceService.getAllPenalty(params);
+      setPenaltyListing(response.data.paginatedResponse.content);
 
-    const onMenuItemClick = (key, values) => {
-        if (key === "edit") {
-            setEditPenaltyData(values);
-            setIsAddPenalty(true);
-        }
-    };
+      const data = response.data;
+      let localPaginationData = { ...data };
+      delete localPaginationData?.paginatedResponse.contents;
+      setPaginationData(localPaginationData.paginatedResponse);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return (
-        <div className='internalSettingContainer'>
-            {
-                !isAddPenalty && <div>
-                    <div style={{ display: 'flex', justifyContent: 'end' }}>
-                        <div className='btnContainer'>
-                            <button onClick={() => setIsAddPenalty(true)} className='btn btn-primary'>Add Penalty</button>
-                        </div>
-                    </div>
-                    <div className='gridContainer'>
-                        <Grid 
-                            onMenuItemClick={onMenuItemClick} 
-                            headers={headers} 
-                            listing={penaltyListing} 
-                            pageNoText="pageNo"
-                            handlePageChange={handlePageChange}
-                            pagination={paginationData}    
-                        />
-                    </div>
-                </div>
-            }
-            {
-                isAddPenalty && <div>
-                    <AddPenalty EditPenaltyData={editPenaltyData} isAddPenalty={()=>setIsAddPenalty(false)}/>
-                </div>
-            }
+  useEffect(() => {
+    fetchAllPenalties();
+  }, [pagination]);
+
+  const onMenuItemClick = (key, values) => {
+    if (key === "edit") {
+      setEditPenaltyData(values);
+      setIsAddPenalty(true);
+    }
+  };
+
+  return (
+    <div>
+      <div className="internalSettingContainer">
+        {!isAddPenalty && (
+          <div>
+            <div style={{ display: "flex", justifyContent: "end" }}>
+              <div className="btnContainer">
+                <button
+                  onClick={() => setIsAddPenalty(true)}
+                  className="btn btn-primary"
+                >
+                  Add Penalty
+                </button>
+              </div>
+            </div>
+            <div className="gridContainer">
+              <Grid
+                onMenuItemClick={onMenuItemClick}
+                headers={headers}
+                listing={penaltyListing}
+                pageNoText="pageNo"
+                handlePageChange={handlePageChange}
+                pagination={paginationData}
+              />
+            </div>
+          </div>
+        )}
+        {isAddPenalty && (
+          <div>
+            <AddPenalty
+              EditPenaltyData={editPenaltyData}
+              isAddPenalty={() => setIsAddPenalty(false)}
+            />
+          </div>
+        )}
+      </div>
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
         </div>
-    );
-}
+      ) : (
+        " "
+      )}
+    </div>
+  );
+};
 
 export default Penalty;

@@ -14,7 +14,7 @@ import OperationPenaltyTable from "@/components/dispatch/operation-penalty";
 import Modal from "@mui/material/Modal";
 import AddPenaltyModal from "@/components/dispatch/addPenaltyModal";
 import DispatchService from "@/services/dispatch.service";
-
+import LoaderComponent from "@/components/common/loading";
 
 const style = {
   position: "absolute",
@@ -27,42 +27,45 @@ const style = {
   borderRadius: 5,
 };
 
-
 const MainComponent = () => {
   const [office, setOffice] = useState([]);
-  const[openModal, setOpenModal] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
   const handleModalOpen = () => setOpenModal(true);
   const handleModalClose = () => {
-    console.log("handle modal close")
+    console.log("handle modal close");
     fetchSummary();
-    setOpenModal(false); 
-  }
+    setOpenModal(false);
+  };
   const [showAction, setShowAction] = useState(false);
   const [selectedRow, setSelectedRow] = useState([]);
-  const [list,setList] = useState([]);
+  const [list, setList] = useState([]);
   const [searchValues, setSearchValues] = useState({
     officeId: "",
     shiftType: "",
     tripDateStr: moment().format("YYYY-MM-DD"),
   });
-  const [pagination,setPagination] = useState({
-    page : 0,
-    size : 20,
-  })
+  const [pagination, setPagination] = useState({
+    page: 0,
+    size: 20,
+  });
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
+
+  const [loading, setLoading] = useState(false);
 
   const handleFilterChange = (e) => {
     const { target } = e;
     const { value, name } = target;
     let newSearchValues = { ...searchValues };
-    if (name === "tripDateStr") newSearchValues[name] = value.format("YYYY-MM-DD");
+    if (name === "tripDateStr")
+      newSearchValues[name] = value.format("YYYY-MM-DD");
     else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
   };
 
   const fetchAllOffices = async () => {
     try {
+      setLoading(true);
       const response = await OfficeService.getAllOffices();
       const { data } = response || {};
       const { clientOfficeDTO } = data || {};
@@ -72,22 +75,30 @@ const MainComponent = () => {
         (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchMasterData = async (type) => {
     try {
+      setLoading(true);
       const response = await MasterDataService.getMasterData(type);
       const { data } = response || {};
       if (data?.length) {
         console.log(data);
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchSummary = async () => {
     try {
+      setLoading(true);
       const params = new URLSearchParams(pagination);
       console.log("search values>>>>>", searchValues);
       let allSearchValues = { ...searchValues };
@@ -108,6 +119,8 @@ const MainComponent = () => {
       setList(response.data.data);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -122,7 +135,7 @@ const MainComponent = () => {
 
   const onRowSelect = (row) => {
     setSelectedRow(row);
-    console.log("slected",row)
+    console.log("slected", row);
   };
 
   useEffect(() => {
@@ -178,7 +191,11 @@ const MainComponent = () => {
             <DatePicker
               name="tripDateStr"
               format={DATE_FORMAT}
-              value={searchValues.tripDateStr ? moment(searchValues.tripDateStr) : null}
+              value={
+                searchValues.tripDateStr
+                  ? moment(searchValues.tripDateStr)
+                  : null
+              }
               onChange={(e) =>
                 handleFilterChange({
                   target: { name: "tripDateStr", value: e },
@@ -237,19 +254,19 @@ const MainComponent = () => {
           fontFamily: "DM Sans, sans-serif",
         }}
       >
-        <div 
+        <div
           style={{
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             backgroundColor: "#FFF",
             margin: "0 20px",
-            borderRadius: ' 15px 15px 0 0',
-            padding: '15px 25px'
+            borderRadius: " 15px 15px 0 0",
+            padding: "15px 25px",
           }}
         >
-          <h3 style={{ }}>Operation Penalty</h3>
-          <div style={{ minWidth: "90px", }}>
+          <h3 style={{}}>Operation Penalty</h3>
+          <div style={{ minWidth: "90px" }}>
             <button
               type="add-penalty"
               style={{
@@ -271,18 +288,34 @@ const MainComponent = () => {
       </div>
 
       <Modal
-            open={openModal}
-            onClose={handleModalClose}
-            aria-labelledby="modal-modal-title"
-            aria-describedby="modal-modal-description"
-          >
-            <Box sx={style}>
-              <AddPenaltyModal
-                data={selectedRow}
-                onClose={()=>handleModalClose()}
-              />
-            </Box>
-          </Modal>
+        open={openModal}
+        onClose={handleModalClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <AddPenaltyModal
+            data={selectedRow}
+            onClose={() => handleModalClose()}
+          />
+        </Box>
+      </Modal>
+
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

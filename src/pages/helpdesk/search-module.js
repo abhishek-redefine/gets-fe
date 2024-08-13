@@ -22,6 +22,7 @@ import UsersTable from "@/components/helpdesk/usersTable";
 import TripsTable from "@/components/helpdesk/tripsTable";
 import VehiclesNDriversTable from "@/components/helpdesk/vehicles&DriversTable";
 import TripDetails from "@/components/helpdesk/tripDetails";
+import LoaderComponent from "@/components/common/loading";
 
 const MainComponent = () => {
   const [office, setOffice] = useState([]);
@@ -35,9 +36,9 @@ const MainComponent = () => {
   const [list, setList] = useState([]);
   const [selectedTripId, setSelectedTripId] = useState(false);
   const handleTripInfoScreenClose = () => {
-    console.log("Screen closed")
-    setSelectedTripId(false); 
-  }
+    console.log("Screen closed");
+    setSelectedTripId(false);
+  };
 
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
@@ -45,6 +46,8 @@ const MainComponent = () => {
     page: 0,
     size: 100,
   });
+
+  const [loading, setLoading] = useState(false);
 
   const [userData, setUserData] = useState({
     Name: "Vikram Singh",
@@ -73,6 +76,7 @@ const MainComponent = () => {
 
   const fetchAllOffices = async () => {
     try {
+      setLoading(true);
       const response = await OfficeService.getAllOffices();
       const { data } = response || {};
       const { clientOfficeDTO } = data || {};
@@ -82,18 +86,25 @@ const MainComponent = () => {
         (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchMasterData = async (type) => {
     try {
+      setLoading(true);
       const response = await MasterDataService.getMasterData(type);
       const { data } = response || {};
       if (data?.length) {
         console.log(data);
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const resetFilter = () => {
@@ -107,6 +118,11 @@ const MainComponent = () => {
 
   const fetchSummary = async () => {
     try {
+      setLoading(true);
+      console.log("loader is working!", loading);
+      /*---------------- temporarily -----------------*/
+      // await new Promise((resolve) => setTimeout(resolve, 10000));
+      /*---------------------------------------------*/
       let params = new URLSearchParams(pagination);
       let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
@@ -137,6 +153,8 @@ const MainComponent = () => {
       setList(data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -158,7 +176,7 @@ const MainComponent = () => {
   return (
     <div>
       {selectedTripId ? (
-        <TripDetails onClose={handleTripInfoScreenClose}/>
+        <TripDetails onClose={handleTripInfoScreenClose} />
       ) : (
         <div>
           <div
@@ -292,7 +310,6 @@ const MainComponent = () => {
               style={{ margin: "0 10px 0 25px" }}
               checked={selectFormat === "Users"}
               onChange={handleFormatChange}
-              onClick={fetchSummary}
             />
             <label for="users" style={{ marginRight: "15px" }}>
               Users
@@ -306,7 +323,6 @@ const MainComponent = () => {
               style={{ margin: "0 10px 0 25px" }}
               checked={selectFormat === "Trips"}
               onChange={handleFormatChange}
-              onClick={fetchSummary}
             />
             <label for="trips" style={{ marginRight: "15px" }}>
               Trips
@@ -320,7 +336,6 @@ const MainComponent = () => {
               style={{ margin: "0 10px 0 25px" }}
               checked={selectFormat === "Vehicle & Drivers"}
               onChange={handleFormatChange}
-              onClick={fetchSummary}
             />
             <label for="vehicles&Drives" style={{ marginRight: "15px" }}>
               Vehicle & Drivers
@@ -519,7 +534,7 @@ const MainComponent = () => {
               >
                 <h3>Booking Summary</h3>
               </div>
-              <TripsTable list={list} tripsTripIdClicked={handleTripClick}/>
+              <TripsTable list={list} tripsTripIdClicked={handleTripClick} />
             </div>
           )}
           {selectFormat === "Vehicle & Drivers" && (
@@ -596,8 +611,26 @@ const MainComponent = () => {
               >
                 <h3>Booking Summary</h3>
               </div>
-              <VehiclesNDriversTable list={list} vehicleTripIdClicked={handleTripClick}/>
+              <VehiclesNDriversTable
+                list={list}
+                vehicleTripIdClicked={handleTripClick}
+              />
             </div>
+          )}
+          {loading ? (
+            <div
+              style={{
+                position: "absolute",
+                // backgroundColor: "pink",
+                zIndex: "1",
+                top: "55%",
+                left: "50%",
+              }}
+            >
+              <LoaderComponent />
+            </div>
+          ) : (
+            " "
           )}
         </div>
       )}

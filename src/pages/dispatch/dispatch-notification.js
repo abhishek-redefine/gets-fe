@@ -24,6 +24,7 @@ import { setMasterData } from "@/redux/master.slice";
 import MasterDataService from "@/services/masterdata.service";
 import DispatchNotificationTable from "@/components/dispatch/dispatch-notifications";
 import DispatchService from "@/services/dispatch.service";
+import LoaderComponent from "@/components/common/loading";
 
 const MainComponent = () => {
   const [office, setOffice] = useState([]);
@@ -39,19 +40,23 @@ const MainComponent = () => {
     page: 0,
     size: 100,
   });
-  const [list,setList] = useState([]);
+  const [list, setList] = useState([]);
+
+  const [loading, setLoading] = useState(false);
 
   const handleFilterChange = (e) => {
     const { target } = e;
     const { value, name } = target;
     let newSearchValues = { ...searchValues };
-    if (name === "tripDateStr") newSearchValues[name] = value.format("YYYY-MM-DD");
+    if (name === "tripDateStr")
+      newSearchValues[name] = value.format("YYYY-MM-DD");
     else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
   };
 
   const fetchAllOffices = async () => {
     try {
+      setLoading(true);
       const response = await OfficeService.getAllOffices();
       const { data } = response || {};
       const { clientOfficeDTO } = data || {};
@@ -61,18 +66,25 @@ const MainComponent = () => {
         (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchMasterData = async (type) => {
     try {
+      setLoading(true);
       const response = await MasterDataService.getMasterData(type);
       const { data } = response || {};
       if (data?.length) {
         console.log(data);
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const resetFilter = () => {
@@ -84,10 +96,11 @@ const MainComponent = () => {
     setSearchValues(allSearchValue);
   };
 
-  const fetchSummary = async() =>{
-    try{
+  const fetchSummary = async () => {
+    try {
+      setLoading(true);
       let params = new URLSearchParams(pagination);
-      let allSearchValues = {...searchValues};
+      let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
         if (
           allSearchValues[objKey] === null ||
@@ -102,11 +115,12 @@ const MainComponent = () => {
       );
       console.log(response.data.data);
       setList(response.data.data);
-    }catch(err){
+    } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
-  }
-
+  };
 
   useEffect(() => {
     if (!shiftTypes?.length) {
@@ -114,7 +128,6 @@ const MainComponent = () => {
     }
     fetchAllOffices();
   }, []);
-
 
   return (
     <div>
@@ -162,7 +175,11 @@ const MainComponent = () => {
             <DatePicker
               name="tripDateStr"
               format={DATE_FORMAT}
-              value={searchValues.tripDateStr ? moment(searchValues.tripDateStr) : null}
+              value={
+                searchValues.tripDateStr
+                  ? moment(searchValues.tripDateStr)
+                  : null
+              }
               onChange={(e) =>
                 handleFilterChange({
                   target: { name: "tripDateStr", value: e },
@@ -238,8 +255,24 @@ const MainComponent = () => {
           fontFamily: "DM Sans, sans-serif",
         }}
       >
-        <DispatchNotificationTable list={list}/>
+        <DispatchNotificationTable list={list} />
       </div>
+
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "1",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

@@ -26,6 +26,7 @@ import { setMasterData } from "@/redux/master.slice";
 import DispatchService from "@/services/dispatch.service";
 import MasterDataService from "@/services/masterdata.service";
 import { toggleToast } from "@/redux/company.slice";
+import LoaderComponent from "@/components/common/loading";
 
 const MainComponent = () => {
   const [selectedLogoutTrips, setSelectedLogoutTrips] = useState([]);
@@ -65,6 +66,8 @@ const MainComponent = () => {
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
 
+  const [loading, setLoading] = useState(false);
+
   const resetFilter = () => {
     let allSearchValue = {
       officeIdForLogin: office[0].officeId,
@@ -82,17 +85,22 @@ const MainComponent = () => {
 
   const fetchMasterData = async (type) => {
     try {
+      setLoading(true);
       const response = await MasterDataService.getMasterData(type);
       const { data } = response || {};
       if (data?.length) {
         console.log(data);
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) { }
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchAllOffices = async () => {
     try {
+      setLoading(true);
       const response = await OfficeService.getAllOffices();
       const { data } = response || {};
       const { clientOfficeDTO } = data || {};
@@ -108,11 +116,15 @@ const MainComponent = () => {
           clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) { }
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getTrips = async () => {
     try {
+      setLoading(true);
       let params = new URLSearchParams(pagination);
       let searchValues = {
         officeId: searchValuesForLogin.officeIdForLogin,
@@ -136,11 +148,14 @@ const MainComponent = () => {
       setLogoutTripList(logoutResponse.data.data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const deleteB2b = async () => {
     try {
+      setLoading(true);
       const response = await DispatchService.deleteB2B(selectedB2bId);
       console.log(response.data);
       if (response.status === 200) {
@@ -152,11 +167,14 @@ const MainComponent = () => {
       }
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const getB2BTrips = async () => {
     try {
+      setLoading(true);
       const response = await DispatchService.getAllB2B();
       var data = response.data.data;
       var tempLogin = [];
@@ -181,6 +199,8 @@ const MainComponent = () => {
       setB2bPair(tempPair);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -223,7 +243,13 @@ const MainComponent = () => {
   };
 
   const handleUnpairTrips = () => {
-    console.log("entered", pairedTrips, pairedTripIds, autoSelectLogin, autoSelectLogout);
+    console.log(
+      "entered",
+      pairedTrips,
+      pairedTripIds,
+      autoSelectLogin,
+      autoSelectLogout
+    );
 
     let tempPairedTrips = [...pairedTrips];
     let tempPairedTripIds = [...pairedTripIds];
@@ -239,12 +265,16 @@ const MainComponent = () => {
     setPairedTrips(tempPairedTrips);
     console.log("setPairedTrips>> " + tempPairedTrips);
 
-    const findTripIdsIndex = tempPairedTripIds.findIndex((id) => id === `TRIP-${autoSelectLogout}-TRIP-${autoSelectLogin}`);
+    const findTripIdsIndex = tempPairedTripIds.findIndex(
+      (id) => id === `TRIP-${autoSelectLogout}-TRIP-${autoSelectLogin}`
+    );
     tempPairedTripIds.splice(findTripIdsIndex, 1);
     // console.log("tempPairedTripIds: " +tempPairedTripIds);
     setPairedTripIds(tempPairedTripIds);
 
-    const findAllIdsIndex = tempAllIdsPairedAndB2bList.findIndex((id) => id.logoutId === autoSelectLogout);
+    const findAllIdsIndex = tempAllIdsPairedAndB2bList.findIndex(
+      (id) => id.logoutId === autoSelectLogout
+    );
     tempAllIdsPairedAndB2bList.splice(findAllIdsIndex, 1);
     // console.log("tempAllIdsPairedAndB2bList: " +tempAllIdsPairedAndB2bList);
     setAllIdsPairedAndB2bList(tempAllIdsPairedAndB2bList);
@@ -252,9 +282,9 @@ const MainComponent = () => {
     setAutoSelectLogin(null);
   };
 
-
   const generateB2B = async () => {
     try {
+      setLoading(true);
       console.log(pairedTripIds);
       const b2BTripDTO = {
         b2BTripDTO: [],
@@ -278,6 +308,8 @@ const MainComponent = () => {
       }
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -780,6 +812,22 @@ const MainComponent = () => {
           </p>
         </div>
       </div>
+
+      {loading ? (
+        <div
+          style={{
+            position: "absolute",
+            // backgroundColor: "pink",
+            zIndex: "10",
+            top: "55%",
+            left: "50%",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };
