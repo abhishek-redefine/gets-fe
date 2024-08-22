@@ -92,10 +92,6 @@ const Area = ({ roleType, onSuccess }) => {
     setOpenModal(false);
   };
   const dispatch = useDispatch();
-  const [pagination, setPagination] = useState({
-    page: 0,
-    size: 10,
-  });
 
   const formik = useFormik({
     initialValues: initialValues,
@@ -202,12 +198,29 @@ const Area = ({ roleType, onSuccess }) => {
     }
   };
 
-  const fetchAllArea = async () => {
+  const [paginationData, setPaginationData] = useState();
+  const [pagination, setPagination] = useState({
+    page: 0,
+    size: 10,
+  });
+  const handlePageChange = (page) => {
+    console.log(page);
+    let updatedPagination = { ...pagination };
+    updatedPagination.page = page;
+    setPagination(updatedPagination);
+  };
+
+  const fetchAllArea = async (search = false) => {
     try {
       const response = await RoutingService.getAllArea();
       console.log(response.data);
       const areaDTO = response.data.data;
       setAreaList(areaDTO);
+
+      const data = response.data;
+      let localPaginationData = { ...data };
+      delete localPaginationData?.data;
+      setPaginationData(localPaginationData);
     } catch (err) {
       console.log(err);
     }

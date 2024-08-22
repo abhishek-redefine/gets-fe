@@ -155,7 +155,19 @@ const Zone = ({ roleType, onSuccess }) => {
     } catch (e) {}
   };
 
-  const fetchAllZones = async () => {
+  const [paginationData, setPaginationData] = useState();
+  const [pagination, setPagination] = useState({
+    page: 0,
+    size: 10,
+  });
+  const handlePageChange = (page) => {
+    console.log(page);
+    let updatedPagination = { ...pagination };
+    updatedPagination.page = page;
+    setPagination(updatedPagination);
+  };
+
+  const fetchAllZones = async (search = false) => {
     try {
       const response = await RoutingService.getAllZones();
       const { data } = response;
