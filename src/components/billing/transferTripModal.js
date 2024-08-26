@@ -1,67 +1,152 @@
-import {
-  Autocomplete,
-  Box,
-  Grid,
-  TextField,
-} from "@mui/material";
+import { Autocomplete, Box, Grid, TextField } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import OfficeService from "@/services/office.service";
+import DispatchService from "@/services/dispatch.service";
+import { useDispatch } from "react-redux";
 
 const TransferTripModal = (props) => {
-  const { data, onClose } = props;
-  const [pagination, setPagination] = useState({
-    pageNo: 0,
-    pageSize: 100,
-  });
-
-  const [selectedUsers, setSelectedUsers] = useState([]);
-  //   const [selectedOtherUserDetails, setSelectedOtherUserDetails] = useState();
-  const [searchedUsers, setSearchedUsers] = useState([]);
-  const [isSearchUser, setIsSearchUser] = useState(false);
-
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
+  const { onClose } = props;
+  const dispatch = useDispatch();
+  const [selectedVehicle, setSelectedVehicle] = useState();
+  const [searchedVehicle, setSearchedvehicle] = useState([]);
 
   const TransferDutyInfo = {
     "Vehicle ID": "VC-0878-QW",
     "Vehicle Registration": "RG-9382-QWE",
   };
 
-  const getOtherUserDetails = async (id) => {
-    try {
-      const response = await OfficeService.getEmployeeDetails(id);
-      const { data } = response;
-      console.log(data.areaName);
-      // setSelectedOtherUserDetails(data);
-      setAreaName(data?.areaName);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const onChangeHandler = (val) => {
-    console.log(val);
-    if (val?.empId) {
-      setSelectedUsers([val.data]);
-      // getOtherUserDetails(val.empId);
-      setSelectedEmployeeId(val.empId); 
-      console.log("Saved Employee ID:", selectedEmployeeId);
-    } else {
-      setSelectedUsers([]);
-      //   setSelectedOtherUserDetails(null);
-    }
-  };
-
   const onSubmitHandler = () => {
     onClose();
-  }
+  };
 
-  const searchForRM = async (e) => {
+  const VehicleNumberCell = ({}) => {
+    const [localSearchedVehicle, setLocalSearchedVehicle] = useState([]);
+    const [openSearchVN, setOpenSearchVN] = useState(false);
+    const getAutoSuggestVehicle = async (event) => {
+      try {
+        const text = event.target.value;
+        console.log("text: ", text);
+        if (text) {
+          // console.log(rowData.original);
+          // setSelectedRows(rowData.original.id);
+          // const vendorName = rowData.original.vendorName;
+          // console.log(vendorName);
+          const response = await DispatchService.autoSuggestVehicleByVendor(
+            vendorName,
+            text
+          );
+          console.log(response.data);
+          const { data } = response || {};
+          setSearchedvehicle(data);
+          setLocalSearchedVehicle(data);
+        } else {
+          setSearchedvehicle([]);
+          setLocalSearchedVehicle([]);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    const VehicleChangeHandler = (event, value) => {
+      // console.log("tripId>>>>>>>>>>>>", rowData.original.id, "vehicleId");
+      console.log(value?.vehicleId);
+      setSelectedVehicle(value?.vehicleNumber);
+      if (value?.vehicleId) {
+        handleAssignVehicle(
+          // rowData.original.id,
+          value?.vehicleId,
+          value?.vehicleRegistrationNumber
+        );
+      }
+      setOpenSearchVN(false);
+      setLocalSearchedVehicle([]);
+    };
+
+    return (
+      <Autocomplete
+        fullWidth
+        id="search-vehicle-number"
+        options={localSearchedVehicle}
+        autoComplete
+        open={openSearchVN}
+        onOpen={() => {
+          setOpenSearchVN(true);
+        }}
+        onClose={() => {
+          setOpenSearchVN(false);
+        }}
+        getOptionKey={(vehicle) => vehicle.vehicleId}
+        getOptionLabel={(vehicle) => vehicle.vehicleRegistrationNumber}
+        freeSolo
+        onChange={(e, value) => VehicleChangeHandler(e, value)}
+        renderInput={(params) => (
+          <TextField
+            label="Search by vehicle number"
+            {...params}
+            onChange={getAutoSuggestVehicle}
+            InputProps={{
+              ...params.InputProps,
+              sx: { fontSize: "15px", fontFamily: "DM Sans" },
+            }}
+            InputLabelProps={{
+              sx: { fontSize: "15px", fontFamily: "DM Sans" },
+            }}
+          />
+        )}
+      />
+    );
+  };
+
+  const handleAssignVehicle = async (tripId, vehicleId, vehicleNumber) => {
     try {
-      const response = await OfficeService.searchRM(e.target.value);
-      const { data } = response || {};
-      setSearchedUsers(data);
-    } catch (e) {
-      console.error(e);
+      console.log("Data before updating >>>>>>>", tripList);
+      const response = await DispatchService.allocateVehicle(tripId, vehicleId);
+      console.log(response);
+
+      if (response.status === 201) {
+        dispatch(
+          toggleToast({
+            message: "Cab allocated to the trip successfully!",
+            type: "success",
+          })
+        );
+      }
+
+      if (vehicleNumber && response.data?.driverName) {
+        setTripList((prevTripList) => {
+          if (Array.isArray(prevTripList)) {
+            const updatedData = prevTripList.map((item) => {
+              if (tripId === item.id) {
+                return {
+                  ...item,
+                  vehicleNumber: vehicleNumber,
+                  driverName: response.data.driverName,
+                };
+              }
+              return item;
+            });
+
+            console.log("Updated Data:", updatedData);
+
+            // Update state
+            return updatedData;
+          } else {
+            console.error("Invalid data or missing values.");
+            return prevTripList;
+          }
+        });
+      }
+
+      setSearchedvehicle([]);
+      setSelectedRows({});
+    } catch (err) {
+      dispatch(
+        toggleToast({
+          message: "Please try again after some time.",
+          type: "error",
+        })
+      );
+      console.log(err);
     }
   };
 
@@ -136,7 +221,7 @@ const TransferTripModal = (props) => {
         >
           Trip transfer to vehicle
         </p>
-        <Autocomplete
+        {/* <Autocomplete
           fullWidth
           disablePortal
           id="search-user"
@@ -162,7 +247,8 @@ const TransferTripModal = (props) => {
               size="small"
             />
           )}
-        />
+        /> */}
+        <VehicleNumberCell />
       </div>
       <div style={{ display: "flex", justifyContent: "center" }}>
         <button

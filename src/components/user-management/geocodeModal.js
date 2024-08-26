@@ -62,7 +62,7 @@ const GeocodeModal = ({ geocode, onClose }) => {
   useEffect(() => {
     const loadMapScript = () => {
       const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyC3XA5d-1ff6W3bK_NDxqKSb05ovVtQk68&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCjCSA_F-jzjEfZ6UbJteUHICgmGguuGUA&libraries=places`;
       script.async = true;
       script.onload = () => {
         initializeMap();

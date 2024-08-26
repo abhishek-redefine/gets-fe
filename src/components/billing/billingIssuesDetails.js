@@ -1,19 +1,67 @@
 import {
   Box,
   FormControl,
-  InputLabel,
   MenuItem,
+  Modal,
   Select,
   TextField,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import BillingIssuesDetailsTable from "./billingIssuesDetailsTable";
+import ViewMapModal from "./viewMapModal";
+import TripHistoryModal from "./tripHistoryModal";
+import AddEmployeeModal from "./addEmployeeModal";
+import { issueTypeData } from "@/sampleData/travelledEmployeesInfoData";
+
+const style = {
+  position: "absolute",
+  top: "45%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 650,
+  bgcolor: "background.paper",
+  height: 400,
+  borderRadius: 5,
+};
 
 const BillingIssuesDetails = ({ onClose }) => {
+  const [data, setData] = useState(issueTypeData);
+  const [selectedRow, setSelectedRow] = useState(null);
+
   const [searchValues, setSearchValues] = useState({
     issueType: "",
   });
+
+  const [openViewMapModal, setOpenViewMapModal] = useState(false);
+  const handleViewMapModalOpen = () => {
+    console.log("View map modal open");
+    setOpenViewMapModal(true);
+  };
+  const handleViewMapModalClose = () => {
+    console.log("View map modal close");
+    setOpenViewMapModal(false);
+  };
+
+  const [openTripHistoryModal, setOpenTripHistoryModal] = useState(false);
+  const handleTripHistoryModalOpen = () => {
+    console.log("Trip History modal open");
+    setOpenTripHistoryModal(true);
+  };
+  const handleTripHistoryModalClose = () => {
+    console.log("Trip History modal close");
+    setOpenTripHistoryModal(false);
+  };
+
+  const [openAddEmployeeModal, setOpenAddEmployeeModal] = useState(false);
+  const handleAddEmployeeModalOpen = () => {
+    console.log("Add Employee modal open");
+    setOpenAddEmployeeModal(true);
+  };
+  const handleAddEmployeeModalClose = () => {
+    console.log("Add Employee modal close");
+    setOpenAddEmployeeModal(false);
+  };
 
   const handleFilterChange = (e) => {
     const { target } = e;
@@ -27,6 +75,40 @@ const BillingIssuesDetails = ({ onClose }) => {
     console.log("cross icon clicked");
     onClose();
   };
+
+  const handleRowsSelected = (selectedRowId) => {
+    setSelectedRow(selectedRowId);
+    console.log("slected row id: ", selectedRowId.empId);
+  };
+
+  const handleDelete = () => {
+    console.log("delete button clicked");
+    let updatedData = data
+    if (selectedRow) {
+      console.log("data: ", data);
+      console.log("selectedRow: ", selectedRow);
+
+      updatedData = data.filter((row) => row.empId !== selectedRow.empId);
+
+    }
+    setData(updatedData);
+    console.log("updatedData: ", updatedData);
+    setSelectedRow(null);
+    console.log("Selected row deleted");
+  };
+
+  const handleNoShow = () => {
+    console.log("No show >>> slected row Data: ", selectedRow);
+  }
+
+  const handleUndoNoShow = () => {
+    console.log("Undo No Show >>> slected row Data: ", selectedRow);
+  }
+
+  const handleSaveTableData = () => {
+    setData(data);
+    console.log("updatedDataAfterDeletion: ", data);
+  }
 
   const IssueType = [
     "Vehicle Not Assigned",
@@ -80,6 +162,10 @@ const BillingIssuesDetails = ({ onClose }) => {
     "Delay Reason": "NA",
     "Trip Remarks": "Good",
   };
+
+  useEffect(() => {
+    console.log("selcted row: ", selectedRow);
+  }, [selectedRow]);
 
   return (
     <div
@@ -236,9 +322,20 @@ const BillingIssuesDetails = ({ onClose }) => {
                       padding: "10px",
                       margin: "0 10px",
                     }}
+                    onClick={handleViewMapModalOpen}
                   >
                     View Map
                   </button>
+                  <Modal
+                    open={openViewMapModal}
+                    onClose={handleViewMapModalClose}
+                    aria-labelledby="modal-modal-title"
+                    aria-describedby="modal-modal-description"
+                  >
+                    <Box sx={style}>
+                      <ViewMapModal onClose={() => handleViewMapModalClose()} />
+                    </Box>
+                  </Modal>
                   <button
                     className="btn btn-primary"
                     style={{
@@ -246,9 +343,22 @@ const BillingIssuesDetails = ({ onClose }) => {
                       padding: "10px",
                       margin: "0 10px",
                     }}
+                    onClick={handleTripHistoryModalOpen}
                   >
                     Trip History
                   </button>
+                  <Modal
+                    open={openTripHistoryModal}
+                    onClose={handleTripHistoryModalClose}
+                    aria-labelledby="modal-modal-title"
+                    aria-describedby="modal-modal-description"
+                  >
+                    <Box sx={style}>
+                      <TripHistoryModal
+                        onClose={() => handleTripHistoryModalClose()}
+                      />
+                    </Box>
+                  </Modal>
                   <button
                     className="btn btn-primary"
                     style={{
@@ -256,9 +366,22 @@ const BillingIssuesDetails = ({ onClose }) => {
                       padding: "10px",
                       margin: "0 10px",
                     }}
+                    onClick={handleAddEmployeeModalOpen}
                   >
                     + Add Employee
                   </button>
+                  <Modal
+                    open={openAddEmployeeModal}
+                    onClose={handleAddEmployeeModalClose}
+                    aria-labelledby="modal-modal-title"
+                    aria-describedby="modal-modal-description"
+                  >
+                    <Box sx={style}>
+                      <AddEmployeeModal
+                        onClose={() => handleAddEmployeeModalClose()}
+                      />
+                    </Box>
+                  </Modal>
                   <button
                     className="btn btn-primary"
                     style={{
@@ -266,6 +389,7 @@ const BillingIssuesDetails = ({ onClose }) => {
                       padding: "10px",
                       margin: "0 10px",
                     }}
+                    onClick={handleSaveTableData}
                   >
                     Save
                   </button>
@@ -286,6 +410,7 @@ const BillingIssuesDetails = ({ onClose }) => {
                       padding: "10px",
                       margin: "0 10px",
                     }}
+                    onClick={handleDelete}
                   >
                     Delete
                   </button>
@@ -296,6 +421,7 @@ const BillingIssuesDetails = ({ onClose }) => {
                       padding: "10px",
                       margin: "0 10px",
                     }}
+                    onClick={handleNoShow}
                   >
                     No-Show
                   </button>
@@ -306,12 +432,18 @@ const BillingIssuesDetails = ({ onClose }) => {
                       padding: "10px",
                       margin: "0 10px",
                     }}
+                    onClick={handleUndoNoShow}
                   >
                     Undo No-Show
                   </button>
                 </div>
                 <div>
-                  <BillingIssuesDetailsTable />
+                  <BillingIssuesDetailsTable
+                    issueTypeData={data}
+                    setIssueTypeData={(newData) => setData(newData)}
+                    // setIssueTypeData={(newData) => console.log("newData: ", newData)}
+                    onRowsSelected={handleRowsSelected}
+                  />
                 </div>
               </div>
             </div>
