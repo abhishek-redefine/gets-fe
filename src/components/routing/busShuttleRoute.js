@@ -184,6 +184,8 @@ const BusShuttleRoute = () => {
   const [busRouteId, setBusRouteId] = useState();
   const [busRoutingListing, setBusRoutingLisiting] = useState([]);
   const [shuttleRoutingListing, setShuttleRoutingListing] = useState([]);
+  const [paginationDataBus, setPaginationDataBus] = useState();
+  const [paginationDataShuttle, setPaginationDataShuttle] = useState()
   const [pagination, setPagination] = useState({
     page: 0,
     size: 10,
@@ -424,7 +426,7 @@ const BusShuttleRoute = () => {
       const response = await RoutingService.getAllBusRoute();
       const { data } = response || {};
       setBusRoutingLisiting(data.data);
-      console.log(data.data);
+      console.log(data);
     } catch (err) {
       console.log(err);
     }
@@ -475,6 +477,7 @@ const BusShuttleRoute = () => {
     try {
       const response = await RoutingService.getAllShuttleRoute();
       const { data } = response || {};
+      console.log(data);
       console.log(data);
       setShuttleRoutingListing(data.data);
     } catch (err) {
@@ -702,6 +705,7 @@ const BusShuttleRoute = () => {
             onMenuItemClick={onMenuItemClick}
             handlePageChange={handlePageChange}
             enableDisableRow={true}
+            pagination={paginationDataBus}
           />
         ) : (
           <>
@@ -711,6 +715,7 @@ const BusShuttleRoute = () => {
               onMenuItemClick={onMenuItemClick}
               handlePageChange={handlePageChange}
               enableDisableRow={true}
+              pagination={paginationDataShuttle}
             />
           </>
         )}

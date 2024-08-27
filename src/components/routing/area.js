@@ -213,7 +213,7 @@ const Area = ({ roleType, onSuccess }) => {
   const handlePageChange = (page) => {
     console.log(page);
     let updatedPagination = { ...pagination };
-    updatedPagination.pageNo = page;
+    updatedPagination.page = page;
     setPagination(updatedPagination);
   };
 
@@ -232,7 +232,7 @@ const Area = ({ roleType, onSuccess }) => {
       setAreaList(areaDTO);
 
       const data = response;
-      let localPaginationData = { ...data };
+      let localPaginationData = { ...data.data };
       delete localPaginationData?.data;
       setPaginationData(localPaginationData);
     } catch (err) {

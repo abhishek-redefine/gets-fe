@@ -164,7 +164,7 @@ const Zone = ({ roleType, onSuccess }) => {
   const handlePageChange = (page) => {
     console.log(page);
     let updatedPagination = { ...pagination };
-    updatedPagination.pageNo = page;
+    updatedPagination.page = page;
     setPagination(updatedPagination);
   };
 
@@ -175,7 +175,6 @@ const Zone = ({ roleType, onSuccess }) => {
       const response = search ? await RoutingService.getAllZones(params,searchValues.officeId) : await RoutingService.getAllZones(params);
       const { data } = response;
       const clientZoneDTO = data.data;
-      console.log(clientZoneDTO);
       setZones(clientZoneDTO);
 
       let localPaginationData = { ...data };
