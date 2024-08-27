@@ -425,6 +425,7 @@ const NodalPoint = () => {
           onMenuItemClick={onMenuItemClick}
           handlePageChange={handlePageChange}
           enableDisableRow={true}
+          pagination={paginationData}
         />
         <Modal
           open={openModal}

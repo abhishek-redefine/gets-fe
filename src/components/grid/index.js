@@ -6,7 +6,7 @@ import {
   Pagination,
 } from "@mui/material";
 import moment from "moment";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const Grid = ({
   headers,
@@ -100,7 +100,9 @@ const Grid = ({
     return listItem[header.key];
   };
 
-  const changeRadio = () => {};
+  useEffect(()=>{
+    console.log(pagination)
+  },[pagination]);
 
   return (
     <div>
