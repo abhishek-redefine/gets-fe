@@ -10,6 +10,7 @@ import AuthService from '@/services/auth.service';
 import RoleService from '@/services/role.service';
 import { setAllUserPermissions } from '@/redux/user.slice';
 import { MODULE_NAMES } from '@/constants/url.constants';
+import Script from 'next/script'
 
 const withAuthLayout = (WrappedComponent) => {
 
@@ -96,7 +97,7 @@ const withAuthLayout = (WrappedComponent) => {
       if (module === MODULE_NAMES.ADMIN_SETTINGS) {
         return isSuperAdmin;
       } else {
-        console.log('auth', Object.keys(allUserPermissions))
+        // console.log('auth', Object.keys(allUserPermissions))
         return isSuperAdmin || Object.keys(allUserPermissions).includes(module);
       }
     };
@@ -109,6 +110,7 @@ const withAuthLayout = (WrappedComponent) => {
           <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0" />
           <link rel="icon" href="/favicon.ico" />
           <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.3/themes/base/jquery-ui.min.css" integrity="sha512-8PjjnSP8Bw/WNPxF6wkklW6qlQJdWJc/3w/ZQPvZ/1bjVDkrrSqLe9mfPYrMxtnzsXFPc434+u4FHLnLjXTSsg==" crossorigin="anonymous" referrerpolicy="no-referrer" /> 
+          <Script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js" />
         </Head>
         <header>
           <div className='headerLogoContainer'>

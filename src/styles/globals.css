@@ -361,7 +361,7 @@ button:disabled,
 }
 .btnContainer {
   display: flex;
-  justify-content: end;
+  justify-content: flex-end;
 }
 .btnContainerWithLeftContent {
   display: flex;
@@ -482,7 +482,7 @@ button:disabled,
 }
 .filterContainer {
   display: flex;
-  align-items: end;
+  align-items: flex-end;
 }
 .filterApplyBtn {
   width: 100px;

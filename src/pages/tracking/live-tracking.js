@@ -11,6 +11,37 @@ import tracking from "@/layouts/tracking";
 import { setMasterData } from "@/redux/master.slice";
 import MasterDataService from "@/services/masterdata.service";
 import LiveTrackingTable from "@/components/tracking/liveTrackingTable";
+import SockJS from "sockjs-client";
+import { Stomp } from "@stomp/stompjs";
+
+const joinSockJs = () =>{
+  var socket = new SockJS(`/trackVehicle`);
+  var stompClient = Stomp.over(socket);
+  let accessToken = localStorage.getItem('accessToken');
+
+  try{
+    stompClient.connect({},
+      (frame)=> {
+          console.log('Connected: ' + frame);
+          stompClient.subscribe('/topic/vehicleLocation', function(location) {
+              showCarLocation(JSON.parse(location.body));
+          });
+      },
+      (error) => {
+        console.error('Connection error: ', error);
+      }
+    );
+    function sendVehicleLocation(vehicle) {
+        stompClient.send("/app/trackVehicle", {}, JSON.stringify(vehicle));
+    }    
+  
+    function showCarLocation(location) {
+        console.log(location);
+    }
+  }catch(err){
+    console.log(err);
+  }
+}
 
 const MainComponent = () => {
   const [office, setOffice] = useState([]);
@@ -74,14 +105,15 @@ const MainComponent = () => {
 
   useEffect(() => {
     if (!shiftTypes?.length) {
-      fetchMasterData(MASTER_DATA_TYPES.SHIFT_TYPE);
+      // fetchMasterData(MASTER_DATA_TYPES.SHIFT_TYPE);
     }
-    fetchAllOffices();
+    // fetchAllOffices();
+    joinSockJs();
   }, []);
 
   return (
     <div>
-      <div
+      {/* <div
         className="filterContainer"
         style={{
           backgroundColor: "#f9f9f9",
@@ -154,26 +186,6 @@ const MainComponent = () => {
             </Select>
           </FormControl>
         </div>
-        {/* <div style={{ minWidth: "160px", backgroundColor: 'white', }} className="form-control-input">
-              <FormControl fullWidth>
-                <InputLabel id="shiftType-label">Shift Time</InputLabel>
-                <Select
-                  style={{ width: "160px" }}
-                  labelId="shiftType-label"
-                  id="shiftType"
-                  name="shiftType"
-                  value={searchValues.shiftType}
-                  label="Shift Type"
-                  onChange={handleFilterChange}
-                >
-                  {shiftTypes.map((sT, idx) => (
-                    <MenuItem key={idx} value={sT.value}>
-                      {getFormattedLabel(sT.value)}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </div> */}
         <div
           style={{ minWidth: "160px", backgroundColor: "white" }}
           className="form-control-input"
@@ -321,7 +333,8 @@ const MainComponent = () => {
           </div>
         </div>
         <LiveTrackingTable />
-      </div>
+      </div> */}
+      <p>Hello world</p>
     </div>
   );
 };
