@@ -13,37 +13,23 @@ import MasterDataService from "@/services/masterdata.service";
 import LiveTrackingTable from "@/components/tracking/liveTrackingTable";
 import SockJS from "sockjs-client";
 import { Stomp } from "@stomp/stompjs";
-
-const joinSockJs = () =>{
-  var socket = new SockJS(`/trackVehicle`);
-  var stompClient = Stomp.over(socket);
-  let accessToken = localStorage.getItem('accessToken');
-
-  try{
-    stompClient.connect({},
-      (frame)=> {
-          console.log('Connected: ' + frame);
-          stompClient.subscribe('/topic/vehicleLocation', function(location) {
-              showCarLocation(JSON.parse(location.body));
-          });
-      },
-      (error) => {
-        console.error('Connection error: ', error);
-      }
-    );
-    function sendVehicleLocation(vehicle) {
-        stompClient.send("/app/trackVehicle", {}, JSON.stringify(vehicle));
-    }    
-  
-    function showCarLocation(location) {
-        console.log(location);
-    }
-  }catch(err){
-    console.log(err);
-  }
-}
+import useSocket from "@/hooks/useSocket";
 
 const MainComponent = () => {
+  const socket = useSocket('http://localhost:9092');
+
+  useEffect(() => {
+    if (socket) {
+      socket.on('message', (data) => {
+        console.log('Message received from server:', data);
+      });
+
+      // Send a message to the server
+      socket.emit('message', 'Hello from Next.js!');
+    }
+  }, [socket]);
+
+
   const [office, setOffice] = useState([]);
   const [searchValues, setSearchValues] = useState({
     officeId: "",
@@ -80,7 +66,7 @@ const MainComponent = () => {
         (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const fetchMasterData = async (type) => {
@@ -91,7 +77,7 @@ const MainComponent = () => {
         console.log(data);
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const resetFilter = () => {
@@ -108,7 +94,6 @@ const MainComponent = () => {
       // fetchMasterData(MASTER_DATA_TYPES.SHIFT_TYPE);
     }
     // fetchAllOffices();
-    joinSockJs();
   }, []);
 
   return (
