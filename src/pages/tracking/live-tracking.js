@@ -16,7 +16,7 @@ import { Stomp } from "@stomp/stompjs";
 import useSocket from "@/hooks/useSocket";
 
 const MainComponent = () => {
-  const socket = useSocket('http://localhost:9092');
+  const socket = useSocket(process.env.NEXT_PUBLIC_SOCKET_IO_URL);
 
   useEffect(() => {
     if (socket) {
