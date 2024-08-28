@@ -9,11 +9,6 @@ const nextConfig = {
         // destination: 'http://164.52.196.123:8010/api/:path*',
         destination: 'http://localhost:8010/api/:path*',
       },
-      {
-        source: '/trackVehicle/:path*',
-        // destination: 'http://164.52.196.123:8010/api/:path*',
-        destination: 'http://localhost:8010/trackVehicle/:path*',
-      }
     ]
   },
 }
