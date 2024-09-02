@@ -1,15 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Box,
-  Grid,
-  Autocomplete,
-  TextField,
-  Modal,
-} from "@mui/material";
+import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
@@ -17,23 +7,16 @@ import { getFormattedLabel } from "@/utils/utils";
 import { DATE_FORMAT, MASTER_DATA_TYPES } from "@/constants/app.constants.";
 import OfficeService from "@/services/office.service";
 import { useDispatch, useSelector } from "react-redux";
-import helpdesk from "@/layouts/helpdesk";
+import reports from "@/layouts/reports";
 import { setMasterData } from "@/redux/master.slice";
 import MasterDataService from "@/services/masterdata.service";
 import DispatchService from "@/services/dispatch.service";
-import TripFeedbackTable from "@/components/helpdesk/tripFeedbackTable";
-import TripFeedbackModal from "@/components/helpdesk/tripFeedbackModal";
-
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 650,
-  bgcolor: "background.paper",
-  height: "auto",
-  borderRadius: 5,
-};
+import OnTimeArrivalSummaryTable from "@/components/reports/otaSummaryTable";
+import OnTimeDepartureSummaryTable from "@/components/reports/otdSummaryTable";
+import OverSpeedingTable from "@/components/reports/overSpeedingTable";
+import BARawDataTable from "@/components/reports/BARawDataTable";
+import NoShowDetailedTable from "@/components/reports/noShowDetailedTable";
+import NoShowSummaryTable from "@/components/reports/noShowSummaryTable";
 
 const MainComponent = () => {
   const [office, setOffice] = useState([]);
@@ -41,8 +24,7 @@ const MainComponent = () => {
     officeId: "",
     shiftType: "",
     date: moment().format("YYYY-MM-DD"),
-    team: "",
-    rating: "",
+    reportType: "BA Raw Data Reports",
   });
   const [list, setList] = useState([]);
   const dispatch = useDispatch();
@@ -52,62 +34,17 @@ const MainComponent = () => {
   });
 
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
-  const [selectedUsers, setSelectedUsers] = useState([]);
-  const [searchedUsers, setSearchedUsers] = useState([]);
-  const [isSearchUser, setIsSearchUser] = useState(false);
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
-  const [openModal, setOpenModal] = useState(false);
-  const [selectedRow, setSelectedRow] = useState(null);
-  const [rowCurrentSatus, setRowCurrentStatus] = useState("");
 
-  const team = ["IT", "Sales", "Accounts"];
+  const [selectedTable, setSelectedTable] = useState(
+    <BARawDataTable list={list} />
+  );
+  const [reportHeading, setReportHeading] = useState("BA Raw Data Reports");
 
-  const rating = ["1", "2", "3", "4", "5"];
-
-  const onChangeHandler = (val) => {
-    console.log("val>>>", val);
-    if (val?.empId) {
-      setSelectedUsers([val.data]);
-      //   console.log("selcted users: ", [val.data]);
-      setSelectedEmployeeId(val.empId);
-      //   console.log("Saved Employee ID: ", val.empId);
-    } else {
-      setSelectedUsers([]);
-    }
-  };
-
-  const handleChangeStatusClick = () => {
-    if (selectedRow) {
-      setOpenModal(true);
-      setRowCurrentStatus(selectedRow.status);
-      console.log("Trip feedback modal is opened");
-    }
-  };
-
-  const handleModalClose = () => {
-    setOpenModal(false);
-    console.log("Trip feedback modal is closed");
-  };
-
-  const searchForRM = async (e) => {
-    try {
-      const response = await OfficeService.searchRM(e.target.value);
-      const { data } = response || {};
-      setSearchedUsers(data);
-      console.log("serched users", searchedUsers);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const onSearchHandler = () => {
-    console.log("Search button clicked");
-  };
-
-  const handleRowsSelected = (selectedRowId) => {
-    setSelectedRow(selectedRowId);
-    console.log("selected row employee ID: ", selectedRowId.empId);
-  };
+  const reports = [
+    "BA Raw Data Reports",
+    "No Show Detailed Reports",
+    "No show Summary Reports",
+  ];
 
   const handleFilterChange = (e) => {
     const { target } = e;
@@ -149,8 +86,7 @@ const MainComponent = () => {
       officeId: office[0].officeId,
       date: moment().format("YYYY-MM-DD"),
       shiftType: "",
-      team: "",
-      rating: "",
+      reportType: "",
     };
     setSearchValues(allSearchValue);
   };
@@ -172,45 +108,25 @@ const MainComponent = () => {
         allSearchValues
       );
       console.log("response data", response.data.data);
-      const data = [
-        {
-          officeId: "HCLND001",
-          empId: 1001,
-          empName: "Raja",
-          shiftType: "Login",
-          shiftTime: "09:30",
-          teamName: "IT",
-          tripId: "Trip001",
-          rating: 3,
-          status: "Pending",
-        },
-        {
-          officeId: "HCLND002",
-          empId: 1002,
-          empName: "Mohan",
-          shiftType: "Login",
-          shiftTime: "10:30",
-          teamName: "Sales",
-          tripId: "Trip002",
-          rating: 2,
-          status: "In Progress",
-        },
-        {
-          officeId: "HCLND003",
-          empId: 1003,
-          empName: "Seeta",
-          shiftType: "Login",
-          shiftTime: "11:30",
-          teamName: "Accounts",
-          tripId: "Trip003",
-          rating: 4,
-          status: "Close",
-        },
-      ];
-      //   setList(response.data.data);
-      setList(data);
-      var requestType = data[0].requestType;
-      console.log("requestType>>>", requestType);
+      // setList(data);
+      // var requestType = data[0].requestType;
+      switch (searchValues.reportType) {
+        case "BA Raw Data Reports":
+          setReportHeading("BA Raw Data Reports");
+          setSelectedTable(<BARawDataTable list={list} />);
+          break;
+        case "No Show Detailed Reports":
+          setReportHeading("No Show Detailed Reports");
+          setSelectedTable(<NoShowDetailedTable list={list} />);
+          break;
+        case "No show Summary Reports":
+          setReportHeading("No show Summary Reports");
+          setSelectedTable(<NoShowSummaryTable list={list} />);
+          break;
+        default:
+          setReportHeading("BA Raw Data Reports");
+          setSelectedTable(<BARawDataTable list={list} />);
+      }
     } catch (err) {
       console.log(err);
     }
@@ -226,14 +142,6 @@ const MainComponent = () => {
     }
     fetchAllOffices();
   }, []);
-
-  useEffect(() => {
-    console.log("selcted users: ", selectedUsers);
-  }, [selectedUsers]);
-
-  useEffect(() => {
-    console.log("Saved Employee ID: ", selectedEmployeeId);
-  }, [selectedEmployeeId]);
 
   return (
     <div>
@@ -321,44 +229,24 @@ const MainComponent = () => {
             </div>
 
             <div
-              style={{ minWidth: "160px", backgroundColor: "white" }}
+              style={{ backgroundColor: "white" }}
               className="form-control-input"
             >
               <FormControl fullWidth>
-                <InputLabel id="team-label">Team</InputLabel>
+                <InputLabel id="report-type-label">Report Type</InputLabel>
                 <Select
-                  style={{ width: "180px", backgroundColor: "white" }}
-                  labelId="team-label"
-                  id="team"
-                  name="team"
-                  value={searchValues.team}
-                  label="Team"
+                  style={{ width: "300px", backgroundColor: "white" }}
+                  labelId="report-type-label"
+                  id="report-type"
+                  name="reportType"
+                  value={searchValues.reportType}
+                  label="Report Type"
                   onChange={handleFilterChange}
                 >
-                  {team.map((item) => (
-                    <MenuItem key={item} value={item}>{item}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </div>
-
-            <div
-              style={{ minWidth: "160px", backgroundColor: "white" }}
-              className="form-control-input"
-            >
-              <FormControl fullWidth>
-                <InputLabel id="rating-label">Rating</InputLabel>
-                <Select
-                  style={{ width: "180px", backgroundColor: "white" }}
-                  labelId="rating-label"
-                  id="rating"
-                  name="rating"
-                  value={searchValues.rating}
-                  label="Rating"
-                  onChange={handleFilterChange}
-                >
-                  {rating.map((item) => (
-                    <MenuItem value={item}>{item}</MenuItem>
+                  {reports.map((item) => (
+                    <MenuItem key={item} value={item}>
+                      {item}
+                    </MenuItem>
                   ))}
                 </Select>
               </FormControl>
@@ -385,70 +273,6 @@ const MainComponent = () => {
             </div>
           </div>
         </div>
-        <div
-          className="filterContainer"
-          style={{
-            // backgroundColor: "yellow",
-            height: "120px",
-            display: "flex",
-            justifyContent: "flex-start",
-            // backgroundColor: "pink"
-          }}
-        >
-          <div
-            style={{
-              width: "300px",
-              borderRadius: "6px",
-              // backgroundColor: "pink",
-            }}
-            className="form-control-input"
-          >
-            <Autocomplete
-              fullWidth
-              disablePortal
-              id="search-user"
-              options={searchedUsers}
-              autoComplete
-              open={isSearchUser}
-              onOpen={() => {
-                setIsSearchUser(true);
-              }}
-              onClose={() => {
-                setIsSearchUser(false);
-              }}
-              onChange={(e, val) => onChangeHandler(val)}
-              getOptionKey={(rm) => rm.empId}
-              getOptionLabel={(rm) => `${rm.data} ${rm.empId}`}
-              freeSolo
-              name="reportingManager"
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  // padding: "7px 9px",
-                  // height: "54px",
-                },
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Search by employee ID / name"
-                  onChange={searchForRM}
-                  // size="medium"
-                  style={{ backgroundColor: "#fff" }}
-                />
-              )}
-            />
-          </div>
-
-          <div className="form-control-input" style={{ minWidth: "90px" }}>
-            <button
-              type="search"
-              onClick={onSearchHandler}
-              className="btn btn-primary filterApplyBtn"
-            >
-              Search
-            </button>
-          </div>
-        </div>
       </div>
 
       <div
@@ -470,7 +294,7 @@ const MainComponent = () => {
             borderRadius: "20px 20px 0 0",
           }}
         >
-          <h3>Trip Feedback Summary</h3>
+          <h3>{reportHeading}</h3>
           <div style={{ display: "flex" }}>
             <button
               className="btn btn-primary"
@@ -479,26 +303,15 @@ const MainComponent = () => {
                 padding: "10px",
                 margin: "0 10px",
               }}
-              onClick={handleChangeStatusClick}
             >
-              Change Status
+              Download File
             </button>
           </div>
-          <Modal
-            open={openModal}
-            onClose={handleModalClose}
-            aria-labelledby="modal-modal-title"
-            aria-describedby="modal-modal-description"
-          >
-            <Box sx={style}>
-              <TripFeedbackModal onClose={handleModalClose} currentStatus={rowCurrentSatus} />
-            </Box>
-          </Modal>
         </div>
-        <TripFeedbackTable list={list} onRowsSelected={handleRowsSelected} />
+        {selectedTable}
       </div>
     </div>
   );
 };
 
-export default helpdesk(MainComponent);
+export default reports(MainComponent);
