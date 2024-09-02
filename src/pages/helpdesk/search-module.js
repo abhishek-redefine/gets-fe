@@ -592,6 +592,7 @@ const MainComponent = () => {
                   margin: "25px 20px 3px",
                   padding: "20px 20px",
                   borderRadius: "20px 20px 0 0",
+                  
                 }}
               >
                 <h3>Booking Summary</h3>
