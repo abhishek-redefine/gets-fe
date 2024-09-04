@@ -51,7 +51,7 @@ const TripHistoryModal = (props) => {
       <div
         style={{
           // backgroundColor: "pink",
-          height: "350px",
+          height: "400px",
           overflow: "scroll",
           marginBottom: "10px",
         }}

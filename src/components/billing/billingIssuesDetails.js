@@ -16,18 +16,19 @@ import { issueTypeData } from "@/sampleData/travelledEmployeesInfoData";
 
 const style = {
   position: "absolute",
-  top: "45%",
+  top: "55%",
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: 650,
   bgcolor: "background.paper",
-  height: 400,
+  height: "auto",
   borderRadius: 5,
 };
 
 const BillingIssuesDetails = ({ onClose }) => {
   const [data, setData] = useState(issueTypeData);
   const [selectedRow, setSelectedRow] = useState(null);
+  const [statusHistory, setStatusHistory] = useState([]);
 
   const [searchValues, setSearchValues] = useState({
     issueType: "",
@@ -76,6 +77,34 @@ const BillingIssuesDetails = ({ onClose }) => {
     onClose();
   };
 
+  const handleAddEmployee = (employeeId) => {
+    console.log("Adding employee", employeeId);
+
+    const employeeExists = data.some((row) => row.empId === employeeId);
+    if (employeeExists) {
+      console.log("Employee already exists");
+    } else {
+      setData((prevData) => [
+        ...prevData,
+        {
+          empId: employeeId,
+          empName: "Saifali",
+          gender: "Female",
+          "pickup/dropPoint": "V3S Mall",
+          landmark: "V3S Mall",
+          vehicleReportTime: "11:00 AM",
+          signIn: "11:30 AM",
+          signOut: "06:30 PM",
+          status: "complete",
+          phoneNo: "9879865645",
+          action: "",
+        },
+      ]);
+      console.log("Updated data>>>", data);
+      handleAddEmployeeModalClose();
+    }
+  };
+
   const handleRowsSelected = (selectedRowId) => {
     setSelectedRow(selectedRowId);
     console.log("slected row id: ", selectedRowId.empId);
@@ -83,13 +112,12 @@ const BillingIssuesDetails = ({ onClose }) => {
 
   const handleDelete = () => {
     console.log("delete button clicked");
-    let updatedData = data
+    let updatedData = data;
     if (selectedRow) {
       console.log("data: ", data);
       console.log("selectedRow: ", selectedRow);
 
       updatedData = data.filter((row) => row.empId !== selectedRow.empId);
-
     }
     setData(updatedData);
     console.log("updatedData: ", updatedData);
@@ -98,17 +126,60 @@ const BillingIssuesDetails = ({ onClose }) => {
   };
 
   const handleNoShow = () => {
-    console.log("No show >>> slected row Data: ", selectedRow);
-  }
+    if (selectedRow) {
+      console.log("No show >>> selected row Status: ", selectedRow.status);
+      setStatusHistory((prevHistory) => [
+        ...prevHistory,
+        { empId: selectedRow.empId, status: selectedRow.status },
+      ]);
+      console.log("Status history: ", statusHistory);
+      let updatedData = data;
+      data.filter((row, index) => {
+        if (row.empId === selectedRow.empId) {
+          console.log("row empId", row.empId);
+          updatedData[index].status = "No show";
+        }
+      });
+      console.log("Updated Data>>>", updatedData);
+      setData([...updatedData]);
+    }
+  };
 
   const handleUndoNoShow = () => {
-    console.log("Undo No Show >>> slected row Data: ", selectedRow);
-  }
+    if (selectedRow) {
+      console.log("No show >>> selected row Status: ", selectedRow.status);
+      const previousStatus = statusHistory.find(
+        (item) => item.empId === selectedRow.empId
+      );
+
+      if (previousStatus) {
+        console.log("Previous status: ", previousStatus);
+        let updatedData = data;
+        data.filter((row, index) => {
+          if (row.empId === selectedRow.empId) {
+            console.log("row empId", row.empId);
+            updatedData[index].status = previousStatus.status;
+          }
+        });
+        console.log("Updated Data>>>", updatedData);
+        setData([...updatedData]);
+
+        setStatusHistory((prevHistory) =>
+          prevHistory.filter((item) => item.empId !== selectedRow.empId)
+        );
+        console.log("Status history after undo no show: ", statusHistory);
+      }
+    }
+    console.log(
+      "Undo no show >>> selected row status after undo no show: ",
+      selectedRow.status
+    );
+  };
 
   const handleSaveTableData = () => {
     setData(data);
     console.log("updatedDataAfterDeletion: ", data);
-  }
+  };
 
   const IssueType = [
     "Vehicle Not Assigned",
@@ -166,6 +237,10 @@ const BillingIssuesDetails = ({ onClose }) => {
   useEffect(() => {
     console.log("selcted row: ", selectedRow);
   }, [selectedRow]);
+
+  useEffect(() => {
+    console.log("Saifali>>>>>>>>>>>>> ", data);
+  }, [data]);
 
   return (
     <div
@@ -379,6 +454,7 @@ const BillingIssuesDetails = ({ onClose }) => {
                     <Box sx={style}>
                       <AddEmployeeModal
                         onClose={() => handleAddEmployeeModalClose()}
+                        onAddEmployee={handleAddEmployee}
                       />
                     </Box>
                   </Modal>

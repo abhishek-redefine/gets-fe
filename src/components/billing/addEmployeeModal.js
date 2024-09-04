@@ -1,9 +1,19 @@
-import { Autocomplete, TextField } from "@mui/material";
+import { Autocomplete, TextField, Paper } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import OfficeService from "@/services/office.service";
 
+const ScrollablePaper = (props) => (
+  <Paper
+    {...props}
+    style={{
+      maxHeight: 110,
+      overflow: "auto",
+    }}
+  />
+);
+
 const AddEmployeeModal = (props) => {
-  const {onClose } = props;
+  const { onClose, onAddEmployee } = props;
 
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [searchedUsers, setSearchedUsers] = useState([]);
@@ -15,16 +25,19 @@ const AddEmployeeModal = (props) => {
     console.log("val>>>", val);
     if (val?.empId) {
       setSelectedUsers([val.data]);
-    //   console.log("selcted users: ", [val.data]);
+      //   console.log("selcted users: ", [val.data]);
       setSelectedEmployeeId(val.empId);
-    //   console.log("Saved Employee ID: ", val.empId);
+      //   console.log("Saved Employee ID: ", val.empId);
     } else {
       setSelectedUsers([]);
     }
   };
 
-  const onSubmitHandler = () => {
+  const onSubmitHandler = (val) => {
     console.log("Submit button clicked");
+    if (selectedUsers.length > 0) {
+      onAddEmployee(selectedEmployeeId);
+    }
     onClose();
   };
 
@@ -42,7 +55,7 @@ const AddEmployeeModal = (props) => {
   useEffect(() => {
     console.log("selcted users: ", selectedUsers);
   }, [selectedUsers]);
-  
+
   useEffect(() => {
     console.log("Saved Employee ID: ", selectedEmployeeId);
   }, [selectedEmployeeId]);
@@ -56,27 +69,13 @@ const AddEmployeeModal = (props) => {
         padding: "30px 40px",
       }}
     >
-      <h3 style={{marginBottom: "50px"}}>Add Employee</h3>
+      <h3 style={{ marginBottom: "40px" }}>Add Employee</h3>
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
           width: "100%",
           padding: "0 5px",
         }}
       >
-        <p
-          style={{
-            fontFamily: "DM Sans",
-            fontSize: "15px",
-            fontWeight: "600",
-            width: "50%",
-            marginRight: "10px",
-          }}
-        >
-          Add Employee
-        </p>
         <Autocomplete
           fullWidth
           disablePortal
@@ -95,6 +94,7 @@ const AddEmployeeModal = (props) => {
           getOptionLabel={(rm) => `${rm.data} ${rm.empId}`}
           freeSolo
           name="reportingManager"
+          PaperComponent={ScrollablePaper}
           renderInput={(params) => (
             <TextField
               {...params}
@@ -116,13 +116,11 @@ const AddEmployeeModal = (props) => {
             fontSize: "15px",
             padding: "13px 35px",
             cursor: "pointer",
-            marginTop: "20px",
-            position: "absolute",
-            bottom: "50px",
+            marginTop: "50px",
           }}
           onClick={onSubmitHandler}
         >
-          Submit
+          Add Employee
         </button>
       </div>
     </div>

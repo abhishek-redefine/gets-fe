@@ -6,8 +6,10 @@ import {
 
 
 
-const TripSheetEntryTable = ({list}) => {
+const TripSheetEntryTable = ({list, onRowsSelected, selectedRow}) => {
   const [data, setData] = useState([]);
+  const [rowSelection, setRowSelection] = useState({});
+
 
   const columns = useMemo(
     () => [
@@ -78,8 +80,21 @@ const TripSheetEntryTable = ({list}) => {
     data,
     enableRowSelection: true,
     enableMultiRowSelection: false,
-    getRowId: row => row.tripId,
+    getRowId: (originalRow) => originalRow?.vehicleId,
+    state: { rowSelection },
+    onRowSelectionChange: setRowSelection,
   });
+
+  useEffect(() => {
+    tableInstance.getSelectedRowModel().flatRows[0]?.original &&
+      onRowsSelected(tableInstance.getSelectedRowModel().flatRows[0]?.original);
+  }, [rowSelection]);
+
+  useEffect(() => {
+    if (!selectedRow) {
+      setRowSelection({}); 
+    }
+  }, [selectedRow]);
 
   useEffect(()=>{
     setData(list)
@@ -87,7 +102,7 @@ const TripSheetEntryTable = ({list}) => {
 
   return (
     <div>
-        <MaterialReactTable table={tableInstance} />
+        <MaterialReactTable table={tableInstance} getRowId={(row) => row.vehicleId} />
     </div>
   );
 };
