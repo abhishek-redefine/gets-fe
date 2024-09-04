@@ -1,12 +1,65 @@
-import { Box, FormControl, MenuItem, Select, TextField } from "@mui/material";
+import {
+  Box,
+  FormControl,
+  MenuItem,
+  Modal,
+  Select,
+  TextField,
+} from "@mui/material";
 import Grid from "@mui/material/Grid";
 import React, { useState } from "react";
 import BillingAuditDetailsTable from "./billingAuditDetailsTable";
+import ViewMapModal from "./viewMapModal";
+import TripHistoryModal from "./tripHistoryModal";
+import ConfirmationModal from "./confirmationModal";
+
+const style = {
+  topModals: {
+    position: "absolute",
+    top: "55%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 650,
+    bgcolor: "background.paper",
+    height: "auto",
+    borderRadius: 5,
+  },
+  bottomModals: {
+    position: "absolute",
+    top: "48%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 650,
+    bgcolor: "background.paper",
+    height: "auto",
+    borderRadius: 5,
+  },
+};
 
 const BillingAuditDetails = ({ onClose }) => {
   const [searchValues, setSearchValues] = useState({
     issueType: "",
   });
+
+  const [openViewMapModal, setOpenViewMapModal] = useState(false);
+  const handleViewMapModalOpen = () => {
+    console.log("View map modal open");
+    setOpenViewMapModal(true);
+  };
+  const handleViewMapModalClose = () => {
+    console.log("View map modal close");
+    setOpenViewMapModal(false);
+  };
+
+  const [openTripHistoryModal, setOpenTripHistoryModal] = useState(false);
+  const handleTripHistoryModalOpen = () => {
+    console.log("Trip History modal open");
+    setOpenTripHistoryModal(true);
+  };
+  const handleTripHistoryModalClose = () => {
+    console.log("Trip History modal close");
+    setOpenTripHistoryModal(false);
+  };
 
   const handleFilterChange = (e) => {
     const { target } = e;
@@ -21,6 +74,34 @@ const BillingAuditDetails = ({ onClose }) => {
     if (onClose) {
       onClose();
     }
+  };
+
+  const [passFlag, setPassFlag] = useState(false);
+  const [failFlag, setFailFlag] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+  const handleModalOpen = () => {
+    console.log("Confirmation modal open");
+    setOpenModal(true);
+  };
+  const handleModalClose = () => {
+    console.log("Confirmation modal close");
+    setOpenModal(false);
+  };
+
+  const handleApproveClick = () => {
+    setPassFlag(true);
+    if (passFlag && failFlag) {
+      setFailFlag(true);
+      handleModalOpen();
+    } else {
+      setFailFlag(false);
+      handleModalOpen();
+    }
+  };
+
+  const handleRejectClick = () => {
+    setPassFlag(false);
+    handleModalOpen();
   };
 
   const IssueType = [
@@ -45,11 +126,11 @@ const BillingAuditDetails = ({ onClose }) => {
   const VehicleInformation = {
     "Vehicle ID": "AT-878989",
     "Registration ID": "RJ-8997-7899087",
-    "Vehicle Type": "",
-    "Vehicle Model": "",
-    "Driver Name": "",
-    "Driver Phone No.": "",
-    "Sticker No.": "",
+    "Vehicle Type": "Cab",
+    "Vehicle Model": "Maruti Ertiga",
+    "Driver Name": "Raj",
+    "Driver Phone No.": "8790356356",
+    "Sticker No.": "12",
   };
 
   const BillingInformation1 = {
@@ -221,9 +302,20 @@ const BillingAuditDetails = ({ onClose }) => {
                       padding: "10px",
                       margin: "0 10px",
                     }}
+                    onClick={handleViewMapModalOpen}
                   >
                     View Map
                   </button>
+                  <Modal
+                    open={openViewMapModal}
+                    onClose={handleViewMapModalClose}
+                    aria-labelledby="modal-modal-title"
+                    aria-describedby="modal-modal-description"
+                  >
+                    <Box sx={style.topModals}>
+                      <ViewMapModal onClose={() => handleViewMapModalClose()} />
+                    </Box>
+                  </Modal>
                   <button
                     className="btn btn-primary"
                     style={{
@@ -231,9 +323,22 @@ const BillingAuditDetails = ({ onClose }) => {
                       padding: "10px",
                       margin: "0 10px",
                     }}
+                    onClick={handleTripHistoryModalOpen}
                   >
                     Trip History
                   </button>
+                  <Modal
+                    open={openTripHistoryModal}
+                    onClose={handleTripHistoryModalClose}
+                    aria-labelledby="modal-modal-title"
+                    aria-describedby="modal-modal-description"
+                  >
+                    <Box sx={style.topModals}>
+                      <TripHistoryModal
+                        onClose={() => handleTripHistoryModalClose()}
+                      />
+                    </Box>
+                  </Modal>
                 </div>
               </div>
               <div className="">
@@ -294,20 +399,6 @@ const BillingAuditDetails = ({ onClose }) => {
                     <Grid item xs={6}>
                       {Object.keys(VehicleInformation).map((key) => (
                         <Grid item xs={12} key={key}>
-                          {VehicleInformation[key] === "" ? (
-                            <input
-                              placeholder="Enter value"
-                              style={{
-                                fontSize: "15px",
-                                marginBottom: "24px",
-                                padding: "2px 8px",
-                                fontFamily: "DM Sans",
-                                border: "0.05rem solid #b2b2b2de",
-                                borderRadius: "4px",
-                                width: "90%",
-                              }}
-                            />
-                          ) : (
                             <p
                               style={{
                                 fontSize: "15px",
@@ -316,7 +407,6 @@ const BillingAuditDetails = ({ onClose }) => {
                             >
                               {VehicleInformation[key]}
                             </p>
-                          )}
                         </Grid>
                       ))}
                     </Grid>
@@ -511,6 +601,7 @@ const BillingAuditDetails = ({ onClose }) => {
                   padding: "15px",
                   margin: "0 15px",
                 }}
+                onClick={handleApproveClick}
               >
                 Approve
               </button>
@@ -521,9 +612,24 @@ const BillingAuditDetails = ({ onClose }) => {
                   padding: "15px",
                   margin: "0 10px",
                 }}
+                onClick={handleRejectClick}
               >
                 Reject
               </button>
+              <Modal
+                open={openModal}
+                onClose={handleModalClose}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+              >
+                <Box sx={style.bottomModals}>
+                  <ConfirmationModal
+                    onClose={handleModalClose}
+                    pass={passFlag}
+                    fail={failFlag}
+                  />
+                </Box>
+              </Modal>
             </div>
           </Grid>
         </Grid>

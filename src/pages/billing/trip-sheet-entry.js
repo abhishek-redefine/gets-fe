@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { FormControl, InputLabel, Select, MenuItem, Modal, Box } from "@mui/material";
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Modal,
+  Box,
+} from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
@@ -41,6 +48,38 @@ const MainComponent = () => {
     page: 0,
     size: 100,
   });
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [selectedVehicleId, setSelectedVehicleId] = useState("");
+  const [selectedVehicleRegistrationNo, setSelectedVehicleRegistrationNo] =
+    useState("");
+
+  const handleRowsSelected = (selectedRowId) => {
+    setSelectedRow(selectedRowId);
+    console.log("Trip sheet selected row >>>: ", selectedRow);
+  };
+
+  const handleEditTripClick = () => {
+    // console.log("edit trip selected row>>", selectedRow);
+    if (selectedRow) {
+      console.log("Selected row vehicle ID: ", selectedRow.vehicleId);
+      handleTripInfoScreenOpen();
+      setSelectedRow(null);
+    }
+  };
+
+  const handleTransferTripClick = () => {
+    if (selectedRow) {
+      console.log("Selected row vehicle ID: ", selectedRow.vehicleId);
+      console.log(
+        "Selected row vehicle registration Number: ",
+        selectedRow.vehicleRegistration
+      );
+      setSelectedVehicleId(selectedRow.vehicleId);
+      setSelectedVehicleRegistrationNo(selectedRow.vehicleRegistration);
+      handleTripTransferModalOpen();
+      setSelectedRow(null);
+    }
+  };
 
   const [tripDetailsScreenOpen, setTripDetailsScreenOpen] = useState(false);
 
@@ -52,6 +91,7 @@ const MainComponent = () => {
   const handleTripInfoScreenClose = () => {
     console.log("Trip Details Screen closed");
     setTripDetailsScreenOpen(false);
+    // console.log("edit trip selected row>>", selectedRow);
   };
 
   const [openTripTransferModal, setOpenTripTransferModal] = useState(false);
@@ -59,11 +99,12 @@ const MainComponent = () => {
   const handleTripTransferModalOpen = () => {
     console.log("handle trip transfer modal open");
     setOpenTripTransferModal(true);
-  }
+  };
 
   const handleTripTransferModalClose = () => {
     console.log("handle trip transfer modal close");
     setOpenTripTransferModal(false);
+    console.log("edit trip selected row>>", selectedRow);
   };
 
   const handleFilterChange = (e) => {
@@ -148,6 +189,13 @@ const MainComponent = () => {
     }
     fetchAllOffices();
   }, []);
+
+  useEffect(() => {
+    if (!selectedRow) {
+      console.log("Row unselected");
+      // setSelectedRow(null);
+    }
+  }, [selectedRow]);
 
   return (
     <div>
@@ -296,7 +344,7 @@ const MainComponent = () => {
                     padding: "10px",
                     margin: "0 10px",
                   }}
-                  onClick={handleTripInfoScreenOpen}
+                  onClick={handleEditTripClick}
                 >
                   Edit Trip
                 </button>
@@ -307,13 +355,17 @@ const MainComponent = () => {
                     padding: "10px",
                     margin: "0 10px",
                   }}
-                  onClick={handleTripTransferModalOpen}
+                  onClick={handleTransferTripClick}
                 >
                   Transfer Trip
                 </button>
               </div>
             </div>
-            <TripSheetEntryTable list={list} />
+            <TripSheetEntryTable
+              list={list}
+              onRowsSelected={handleRowsSelected}
+              selectedRow={selectedRow}
+            />
             <Modal
               open={openTripTransferModal}
               onClose={handleTripTransferModalClose}
@@ -322,7 +374,9 @@ const MainComponent = () => {
             >
               <Box sx={style}>
                 <TransferTripModal
-                  onClose={() => handleTripTransferModalClose()}
+                  onClose={handleTripTransferModalClose}
+                  vehicleId={selectedVehicleId}
+                  vehicleRegistrationNumber={selectedVehicleRegistrationNo}
                 />
               </Box>
             </Modal>

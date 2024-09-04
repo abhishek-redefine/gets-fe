@@ -5,7 +5,11 @@ import {
 } from "material-react-table";
 // import { issueTypeData } from "@/sampleData/travelledEmployeesInfoData";
 
-const BillingIssuesDetailsTable = ({ issueTypeData, setIssueTypeData, onRowsSelected }) => {
+const BillingIssuesDetailsTable = ({
+  issueTypeData,
+  setIssueTypeData,
+  onRowsSelected,
+}) => {
   const [data, setData] = useState(issueTypeData);
   const [rowSelection, setRowSelection] = useState({});
 
@@ -118,7 +122,10 @@ const BillingIssuesDetailsTable = ({ issueTypeData, setIssueTypeData, onRowsSele
   return (
     <div>
       <div>
-        <MaterialReactTable table={tableInstance} getRowId={(row) => row.empId}/>
+        <MaterialReactTable
+          table={tableInstance}
+          getRowId={(row) => row.empId}
+        />
       </div>
     </div>
   );

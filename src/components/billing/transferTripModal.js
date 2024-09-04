@@ -4,17 +4,18 @@ import DispatchService from "@/services/dispatch.service";
 import { useDispatch } from "react-redux";
 
 const TransferTripModal = (props) => {
-  const { onClose } = props;
+  const { onClose, vehicleId, vehicleRegistrationNumber } = props;
   const dispatch = useDispatch();
   const [selectedVehicle, setSelectedVehicle] = useState();
   const [searchedVehicle, setSearchedvehicle] = useState([]);
 
   const TransferDutyInfo = {
-    "Vehicle ID": "VC-0878-QW",
-    "Vehicle Registration": "RG-9382-QWE",
+    "Vehicle ID": vehicleId,
+    "Vehicle Registration": vehicleRegistrationNumber,
   };
 
   const onSubmitHandler = () => {
+    console.log("Submitting and closing modal");
     onClose();
   };
 

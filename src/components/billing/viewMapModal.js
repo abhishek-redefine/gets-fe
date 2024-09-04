@@ -64,7 +64,7 @@ const ViewMapModal = ({ onClose }) => {
   return (
     <div
       style={{
-        padding: "30px",
+        padding: "30px 40px",
         backgroundColor: "#FFF",
         borderRadius: 10,
         fontFamily: "DM Sans",
@@ -74,7 +74,7 @@ const ViewMapModal = ({ onClose }) => {
       <Box
         style={{
           width: "100%",
-          height: "400px",
+          height: "420px",
         }}
       >
         {loading ? (
