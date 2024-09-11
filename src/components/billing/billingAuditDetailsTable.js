@@ -5,69 +5,68 @@ import {
 } from "material-react-table";
 import { issueTypeData } from "@/sampleData/travelledEmployeesInfoData";
 
-
 const BillingAuditDetailsTable = () => {
   const [data, setData] = useState(issueTypeData);
 
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'empId',
-        header: 'Employee ID',
+        accessorKey: "empId",
+        header: "Employee ID",
         size: 150,
       },
       {
-        accessorKey: 'empName', 
-        header: 'Employee Name',
+        accessorKey: "empName",
+        header: "Employee Name",
         size: 150,
       },
       {
-        accessorKey: 'gender',
-        header: 'Gender',
+        accessorKey: "gender",
+        header: "Gender",
         size: 150,
       },
       {
-        accessorKey: 'pickup/dropPoint',
-        header: 'Pickup/Drop Point',
+        accessorKey: "point",
+        header: "Pickup/Drop Point",
         size: 150,
       },
       {
-        accessorKey: 'landmark',
-        header: 'Landmark',
+        accessorKey: "landmark",
+        header: "Landmark",
         size: 150,
       },
       {
-        accessorKey: 'vehicleReportTime',
-        header: 'Vehicle Report Time',
+        accessorKey: "vehicleReportTime",
+        header: "Vehicle Report Time",
         size: 200,
       },
       {
-        accessorKey: 'signIn',
-        header: 'Sign In',
+        accessorKey: "signIn",
+        header: "Sign In",
         size: 100,
       },
       {
-        accessorKey: 'signOut',
-        header: 'sign Out',
+        accessorKey: "signOut",
+        header: "sign Out",
         size: 100,
       },
       {
-        accessorKey: 'status',
-        header: 'Status',
+        accessorKey: "status",
+        header: "Status",
         size: 150,
       },
       {
-        accessorKey: 'phoneNo',
-        header: 'Phone No.',
+        accessorKey: "phoneNo",
+        header: "Phone No.",
         size: 150,
       },
-      {
-        accessorKey: 'action',
-        header: 'Action',
-        size: 150,
-      }, 
+      // {
+      //   accessorKey: 'action',
+      //   header: 'Action',
+      //   size: 150,
+      // },
     ],
-    [],
+    []
   );
 
   const tableInstance = useMaterialReactTable({
@@ -76,15 +75,17 @@ const BillingAuditDetailsTable = () => {
     enableRowSelection: true,
     enableMultiRowSelection: false,
     enableTopToolbar: false,
-    initialState: { density: 'compact' },
+    initialState: {
+      density: "compact",
+      pagination: { pageIndex: 0, pageSize: 12 },
+    },
     muiTableBodyCellProps: {
-        sx: {
-          fontFamily: 'DM Sans',  
-          fontSize: "14px", 
-        },
+      sx: {
+        fontFamily: "DM Sans",
+        fontSize: "14px",
       },
+    },
   });
-
 
   return (
     <div>
@@ -96,7 +97,3 @@ const BillingAuditDetailsTable = () => {
 };
 
 export default BillingAuditDetailsTable;
-
-
-
-

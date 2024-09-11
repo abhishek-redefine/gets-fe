@@ -22,7 +22,6 @@ const MainComponent = () => {
     tripStatus: "",
     vendorType: "",
     issueCategory: "",
-
   });
   const [list, setList] = useState([]);
 
@@ -100,8 +99,8 @@ const MainComponent = () => {
       });
       const data = [
         {
-          vehicleId: "VH740923",
-          vehicleRegistration: "RS-DEL-001",
+          vehicleId: "4",
+          vehicleRegistration: "DL04C196",
           vehicleType: "Cab",
           vendor: "Active",
           date: "04-08-2024",
@@ -110,10 +109,11 @@ const MainComponent = () => {
           hrs: "4",
           issueType: "Km. Issue",
           shiftTime: "09:30",
-          shiftType: "Login",
+          shiftType: "LOGIN",
         },
       ];
       setList(data);
+      console.log("Table data: ", data);
     } catch (err) {
       console.log(err);
     }
@@ -133,7 +133,10 @@ const MainComponent = () => {
   return (
     <div>
       {selectedTripId ? (
-        <BillingIssuesDetails onClose={handleTripInfoScreenClose} />
+        <BillingIssuesDetails
+          onClose={handleTripInfoScreenClose}
+          tripdetails={list}
+        />
       ) : (
         <div>
           <div
@@ -217,7 +220,9 @@ const MainComponent = () => {
               className="form-control-input"
             >
               <FormControl fullWidth>
-                <InputLabel id="issue-category-label">Issue Category</InputLabel>
+                <InputLabel id="issue-category-label">
+                  Issue Category
+                </InputLabel>
                 <Select
                   style={{ width: "180px", backgroundColor: "white" }}
                   labelId="issue-category-label"

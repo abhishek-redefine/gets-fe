@@ -9,6 +9,7 @@ const BillingIssuesDetailsTable = ({
   issueTypeData,
   setIssueTypeData,
   onRowsSelected,
+  pointHeaderLabel,
 }) => {
   const [data, setData] = useState(issueTypeData);
   const [rowSelection, setRowSelection] = useState({});
@@ -31,8 +32,8 @@ const BillingIssuesDetailsTable = ({
         size: 150,
       },
       {
-        accessorKey: "pickup/dropPoint",
-        header: "Pickup/Drop Point",
+        accessorKey: "point",
+        header: pointHeaderLabel,
         size: 150,
       },
       {
@@ -65,11 +66,11 @@ const BillingIssuesDetailsTable = ({
         header: "Phone No.",
         size: 150,
       },
-      {
-        accessorKey: "action",
-        header: "Action",
-        size: 150,
-      },
+      // {
+      //   accessorKey: "action",
+      //   header: "Action",
+      //   size: 150,
+      // },
     ],
     []
   );
@@ -80,7 +81,10 @@ const BillingIssuesDetailsTable = ({
     enableRowSelection: true,
     enableMultiRowSelection: false,
     enableTopToolbar: false,
-    initialState: { density: "compact" },
+    initialState: {
+      density: "compact",
+      pagination: { pageIndex: 0, pageSize: 12 },
+    },
     muiTableBodyCellProps: {
       sx: {
         fontFamily: "DM Sans",
