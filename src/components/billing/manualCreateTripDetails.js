@@ -9,35 +9,49 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import React, { useEffect, useState } from "react";
-import BillingIssuesDetailsTable from "./billingIssuesDetailsTable";
+import TripSheetEntryDetailsTable from "./tripSheetEntryDetailsTable";
 import ViewMapModal from "./viewMapModal";
 import TripHistoryModal from "./tripHistoryModal";
 import AddEmployeeModal from "./addEmployeeModal";
-import { issueTypeData } from "@/sampleData/travelledEmployeesInfoData";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { TimeField } from "@mui/x-date-pickers/TimeField";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import dayjs from "dayjs";
 import ComplianceService from "@/services/compliance.service";
 
 const style = {
-  position: "absolute",
-  top: "55%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 650,
-  bgcolor: "background.paper",
-  height: "auto",
-  borderRadius: 5,
+  topModals: {
+    position: "absolute",
+    top: "55%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 650,
+    bgcolor: "background.paper",
+    height: "auto",
+    borderRadius: 5,
+  },
+  bottomModals: {
+    position: "absolute",
+    top: "48%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 650,
+    bgcolor: "background.paper",
+    height: "auto",
+    borderRadius: 5,
+  },
 };
 
-const BillingIssuesDetails = ({ onClose, tripdetails }) => {
-  const [data, setData] = useState(issueTypeData);
+const ManualCreateTripDetails = ({ onClose, tripdetails }) => {
+  const [data, setData] = useState([]);
   const [selectedRow, setSelectedRow] = useState(null);
-  const [remarks, setRemarks] = useState("");
   const [statusHistory, setStatusHistory] = useState([]);
+  const [remarks, setRemarks] = useState("");
   const [vehicleData, setVehicleData] = useState([]);
   const [noShowCount, setNoShowCount] = useState(0);
-  const [travelledEmployeeCount, setTravelledEmployeeCount] = useState(null);
 
   const pointHeaderLabel =
-    tripdetails[0].shiftType === "LOGIN" ? "Pickup Point" : "Drop Point";
+    tripdetails.shiftType === "LOGIN" ? "Pickup Point" : "Drop Point";
 
   const [searchValues, setSearchValues] = useState({
     issueType: "",
@@ -51,20 +65,20 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
   ];
 
   const TripInformation = {
-    "Trip Id": `Trip-${tripdetails[0].id}`,
-    "Office Id": vehicleData[0]?.officeId,
-    Date: tripdetails[0].date,
-    "Shift Type": tripdetails[0].shiftType,
-    "Shift Time": tripdetails[0].shiftTime,
-    "Trip Type": "Planned",
-    "Escort Trip": "Yes",
+    "Trip Id": "TR-001",
+    "Office Id": tripdetails.officeId,
+    Date: tripdetails.date,
+    "Shift Type": tripdetails.shiftType,
+    "Shift Time": tripdetails.shiftTime,
+    "Trip Type": tripdetails.tripType,
+    "Escort Trip": tripdetails.escortTrip,
     "Trip Status": "Completed",
     "Planned Employees": data.length,
     "Travelled Employees": data.length - noShowCount,
   };
 
   const [vehicleInformation, setVehicleInformation] = useState({
-    "Vehicle ID": tripdetails[0].vehicleId,
+    "Vehicle ID": tripdetails.vehicleNumber,
     "Registration ID": "",
     "Vehicle Type": "",
     "Vehicle Model": "",
@@ -79,18 +93,24 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
     "Planned Vehicle Type": "",
     "Vehicle Fuel Type": "",
     "Billing Zone": "",
-    Location: "Noida Sector 59",
-    "Planned Km.": "99",
-    "Actual Km.": "97",
-    "Reference Km.": "101",
+    Location: "",
+    "Planned Km.": "",
+    "Actual Km.": "",
+    "Reference Km.": "",
     "Final Km.": "",
   });
 
-  const billingInformation1Fields = ["Billing Zone", "Final Km."];
+  const billingInformation1Fields = [
+    "Billing Zone",
+    "Planned Km.",
+    "Actual Km.",
+    "Reference Km.",
+    "Final Km.",
+  ];
 
   const [billingInformation2, setBillingInformation2] = useState({
-    "Contract ID": "CID0001",
-    "Contract Type": "T&M",
+    "Contract ID": "",
+    "Contract Type": "",
     "Trip Start Time": "",
     "Trip End Time": "",
     "Trip Duration": "",
@@ -100,6 +120,8 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
   });
 
   const OnTimeStatus = ["Yes", "No"];
+
+  const timeFields = ["Trip Start Time", "Trip End Time", "Trip Duration"];
 
   const [openViewMapModal, setOpenViewMapModal] = useState(false);
   const handleViewMapModalOpen = () => {
@@ -131,37 +153,6 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
     setOpenAddEmployeeModal(false);
   };
 
-  const convertTimeToDate = (timeString) => {
-    const [time, modifier] = timeString.split(" ");
-    let [hours, minutes] = time.split(":");
-
-    if (modifier === "PM" && hours !== "12") {
-      hours = parseInt(hours, 10) + 12;
-    }
-    if (modifier === "AM" && hours === "12") {
-      hours = "00";
-    }
-
-    const date = new Date();
-    date.setHours(parseInt(hours, 10));
-    date.setMinutes(parseInt(minutes, 10));
-    return date;
-  };
-
-  const formatDuration = (minutes) => {
-    if (minutes < 60) {
-      return `${minutes} minutes`;
-    } else {
-      const hours = Math.floor(minutes / 60);
-      const remainingMinutes = minutes % 60;
-      return remainingMinutes === 0
-        ? `${hours} hour${hours > 1 ? "s" : ""}`
-        : `${hours} hour${hours > 1 ? "s" : ""} ${remainingMinutes} minute${
-            remainingMinutes > 1 ? "s" : ""
-          }`;
-    }
-  };
-
   const handleFilterChange = (e) => {
     const { target } = e;
     const { value, name } = target;
@@ -177,7 +168,7 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
 
   const handleAddEmployee = (employeeData) => {
     console.log("Adding employee Data>>", employeeData);
-    console.log(tripdetails);
+
     const employeeExists = data.some(
       (row) => row.empId === employeeData.employeeId
     );
@@ -231,16 +222,20 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
         ...prevHistory,
         { empId: selectedRow.empId, status: selectedRow.status },
       ]);
-      console.log("Status history: ", statusHistory);
-      let updatedData = data;
-      data.filter((row, index) => {
+
+      console.log("Updated Status history: ", statusHistory);
+
+      let updatedData = [...data];
+      console.log("Updated data: ", updatedData);
+      updatedData = updatedData.map((row) => {
         if (row.empId === selectedRow.empId) {
-          console.log("row empId", row.empId);
-          updatedData[index].status = "No show";
+          return { ...row, status: "No show" };
         }
+        return row;
       });
+
       console.log("Updated Data>>>", updatedData);
-      setData([...updatedData]);
+      setData(updatedData);
     }
   };
 
@@ -292,16 +287,20 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
   };
 
   const fetchVehicle = async () => {
+    //   console.log("Saifali");
     try {
       const response = await ComplianceService.getSingleVehicle(
-        tripdetails[0].vehicleId
+        tripdetails.vehicleNumber
       );
-      console.log("vehicle response: ", response.data.vehicleDTO);
+      console.log("response", response.data.vehicleDTO);
 
       const { data } = response || {};
       let fetchedVehicleData = [];
       fetchedVehicleData.push(response.data.vehicleDTO);
       setVehicleData(fetchedVehicleData);
+      // vehicleInformation["Vehicle Type"] = response?.data?.vehicleDTO?.vehicleType;
+
+      console.log("Fetched Vehicle Data: ", fetchedVehicleData);
       console.log("Vehicle Data: ", vehicleData);
     } catch (e) {
       console.error(e);
@@ -330,11 +329,11 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
   };
 
   useEffect(() => {
-    console.log("selcted row: ", selectedRow);
+    console.log("selected row: ", selectedRow);
   }, [selectedRow]);
 
   useEffect(() => {
-    // console.log("Saifali>>>>>>>>>>>>> ", data);
+    console.log("Data>>>>> ", data);
     if (data.length > 0) {
       const count = data.filter((row) => row.status === "No show").length;
       setNoShowCount(count);
@@ -344,7 +343,7 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
 
   useEffect(() => {
     const newKey =
-      tripdetails[0].shiftType === "LOGIN"
+      tripdetails.shiftType === "LOGIN"
         ? "First Pickup Location"
         : "Last Drop Location";
 
@@ -368,11 +367,11 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
         "Last Drop Location": data[data.length - 1]?.point,
       }));
     }
-  }, [tripdetails[0].shiftType, data]);
+  }, [tripdetails.shiftType, data]);
 
   useEffect(() => {
     fetchVehicle();
-  }, [tripdetails[0].vehicleId]);
+  }, [tripdetails.vehicleNumber]);
 
   useEffect(() => {
     if (vehicleData.length > 0) {
@@ -392,44 +391,6 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
       }));
     }
   }, [vehicleData]);
-
-  useEffect(() => {
-    if (data.length > 0) {
-      if (tripdetails[0].shiftType === "LOGIN") {
-        const newTripStartTime = data[0]?.signIn;
-        const newTripEndTime = data[data.length - 1]?.signIn;
-
-        const newTripStartDate = convertTimeToDate(newTripStartTime);
-        const newTripEndDate = convertTimeToDate(newTripEndTime);
-        const tripDurationInMinutes =
-          (newTripEndDate - newTripStartDate) / (1000 * 60);
-        const formattedTripDuration = formatDuration(tripDurationInMinutes);
-
-        setBillingInformation2((prev) => ({
-          ...prev,
-          "Trip Start Time": data[0]?.signIn,
-          "Trip End Time": data[data.length - 1]?.signIn,
-          "Trip Duration": formattedTripDuration,
-        }));
-      } else {
-        const newTripStartTime = data[0]?.signOut;
-        const newTripEndTime = data[data.length - 1]?.signOut;
-
-        const newTripStartDate = convertTimeToDate(newTripStartTime);
-        const newTripEndDate = convertTimeToDate(newTripEndTime);
-        const tripDurationInMinutes =
-          (newTripEndDate - newTripStartDate) / (1000 * 60);
-        const formattedTripDuration = formatDuration(tripDurationInMinutes);
-
-        setBillingInformation2((prev) => ({
-          ...prev,
-          "Trip Start Time": data[0]?.signOut,
-          "Trip End Time": data[data.length - 1]?.signOut,
-          "Trip Duration": formattedTripDuration,
-        }));
-      }
-    }
-  }, [data]);
 
   return (
     <div
@@ -521,10 +482,10 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
                             }}
                           >
                             <p
+                              key={key}
                               style={{
                                 fontSize: "15px",
                                 fontWeight: "600",
-                                margin: 0,
                               }}
                             >
                               {key}
@@ -623,7 +584,7 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
                     aria-labelledby="modal-modal-title"
                     aria-describedby="modal-modal-description"
                   >
-                    <Box sx={style}>
+                    <Box sx={style.topModals}>
                       <ViewMapModal onClose={() => handleViewMapModalClose()} />
                     </Box>
                   </Modal>
@@ -644,7 +605,7 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
                     aria-labelledby="modal-modal-title"
                     aria-describedby="modal-modal-description"
                   >
-                    <Box sx={style}>
+                    <Box sx={style.topModals}>
                       <TripHistoryModal
                         onClose={() => handleTripHistoryModalClose()}
                       />
@@ -667,7 +628,7 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
                     aria-labelledby="modal-modal-title"
                     aria-describedby="modal-modal-description"
                   >
-                    <Box sx={style}>
+                    <Box sx={style.topModals}>
                       <AddEmployeeModal
                         onClose={() => handleAddEmployeeModalClose()}
                         onAddEmployeeData={handleAddEmployee}
@@ -730,7 +691,7 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
                   </button>
                 </div>
                 <div>
-                  <BillingIssuesDetailsTable
+                  <TripSheetEntryDetailsTable
                     issueTypeData={data}
                     setIssueTypeData={(newData) => setData(newData)}
                     // setIssueTypeData={(newData) => console.log("newData: ", newData)}
@@ -870,7 +831,7 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
                             padding: "12px",
                           },
                         }}
-                        label="Issue Type *"
+                        label="Issue Type"
                         labelId="issue-type-label"
                         id="issueType"
                         name="issueType"
@@ -1083,28 +1044,47 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
                             }}
                           >
                             <Grid item xs={12} key={key}>
-                              {key === "Delay Reason" ||
-                              key === "Trip Remarks" ? (
-                                <TextField
-                                  placeholder="Enter value"
-                                  size="small"
-                                  value={billingInformation2[key]}
-                                  onChange={(e) =>
-                                    handleBillingInfo2Change(
-                                      key,
-                                      e.target.value
-                                    )
-                                  }
-                                  style={{
-                                    width: "90%",
-                                  }}
-                                  inputProps={{
-                                    style: {
-                                      fontFamily: "DM Sans",
-                                      fontSize: 15,
-                                    },
-                                  }}
-                                />
+                              {timeFields.includes(key) ? (
+                                <FormControl required>
+                                  <LocalizationProvider
+                                    dateAdapter={AdapterDayjs}
+                                  >
+                                    <TimeField
+                                      label={key}
+                                      format="HH:mm"
+                                      size="small"
+                                      value={dayjs()
+                                        .hour(
+                                          Number(
+                                            billingInformation2[key].slice(0, 2)
+                                          )
+                                        )
+                                        .minute(
+                                          Number(
+                                            billingInformation2[key].slice(3, 5)
+                                          )
+                                        )}
+                                      onChange={(e) => {
+                                        var ShiftTime = e.$d
+                                          .toLocaleTimeString("it-IT")
+                                          .slice(0, -3);
+                                        handleBillingInfo2Change(
+                                          key,
+                                          ShiftTime
+                                        );
+                                      }}
+                                      style={{
+                                        width: "90%",
+                                      }}
+                                      inputProps={{
+                                        style: {
+                                          fontFamily: "DM Sans",
+                                          fontSize: 15,
+                                        },
+                                      }}
+                                    />
+                                  </LocalizationProvider>
+                                </FormControl>
                               ) : key === "On Time Status" ? (
                                 <FormControl
                                   fullWidth
@@ -1119,6 +1099,9 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
                                   <Select
                                     sx={{
                                       width: "90%",
+                                      ".MuiSelect-select": {
+                                        // padding: "10px",
+                                      },
                                     }}
                                     label="On Time Status"
                                     labelId="onTimeStatus-label"
@@ -1147,13 +1130,27 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
                                   </Select>
                                 </FormControl>
                               ) : (
-                                <p
+                                <TextField
+                                  key={key}
+                                  placeholder="Enter value"
+                                  size="small"
+                                  value={billingInformation2[key]}
+                                  onChange={(e) =>
+                                    handleBillingInfo2Change(
+                                      key,
+                                      e.target.value
+                                    )
+                                  }
                                   style={{
-                                    fontSize: "15px",
+                                    width: "90%",
                                   }}
-                                >
-                                  {billingInformation2[key]}
-                                </p>
+                                  inputProps={{
+                                    style: {
+                                      fontFamily: "DM Sans",
+                                      fontSize: 15,
+                                    },
+                                  }}
+                                />
                               )}
                             </Grid>
                           </div>
@@ -1171,4 +1168,4 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
   );
 };
 
-export default BillingIssuesDetails;
+export default ManualCreateTripDetails;

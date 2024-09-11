@@ -1,6 +1,18 @@
-import { Autocomplete, TextField, Paper } from "@mui/material";
+import {
+  Autocomplete,
+  TextField,
+  Paper,
+  FormControl,
+  InputLabel,
+} from "@mui/material";
 import React, { useEffect, useState } from "react";
 import OfficeService from "@/services/office.service";
+import { useDispatch } from "react-redux";
+import { toggleToast } from "@/redux/company.slice";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { TimeField } from "@mui/x-date-pickers/TimeField";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import dayjs from "dayjs";
 
 const ScrollablePaper = (props) => (
   <Paper
@@ -13,32 +25,53 @@ const ScrollablePaper = (props) => (
 );
 
 const AddEmployeeModal = (props) => {
-  const { onClose, onAddEmployee } = props;
+  const { onClose, onAddEmployeeData } = props;
 
+  const dispatch = useDispatch();
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [searchedUsers, setSearchedUsers] = useState([]);
   const [isSearchUser, setIsSearchUser] = useState(false);
 
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
+  const [values, setValues] = useState({
+    employeeId: selectedEmployeeId,
+    signInTime: "",
+    signOutTime: "",
+    tripStatus: "",
+  });
+  const [error, setError] = useState(false);
 
   const onChangeHandler = (val) => {
     console.log("val>>>", val);
     if (val?.empId) {
-      setSelectedUsers([val.data]);
-      //   console.log("selcted users: ", [val.data]);
-      setSelectedEmployeeId(val.empId);
-      //   console.log("Saved Employee ID: ", val.empId);
+      const alreadySelected = selectedUsers.some((user) => user === val.empId);
+
+      if (alreadySelected) {
+        setSelectedEmployeeId(null);
+        dispatch(
+          toggleToast({
+            message: "Employee already added!",
+            type: "error",
+          })
+        );
+      } else {
+        setSelectedEmployeeId(val.empId);
+        console.log("Saved Employee ID: ", val.empId);
+        setSelectedUsers([...selectedUsers, val.empId]);
+        console.log("selecetd employee", selectedUsers);
+      }
     } else {
-      setSelectedUsers([]);
+      setSelectedEmployeeId(null);
     }
   };
 
-  const onSubmitHandler = (val) => {
-    console.log("Submit button clicked");
-    if (selectedUsers.length > 0) {
-      onAddEmployee(selectedEmployeeId);
-    }
-    onClose();
+  const handleFilterChange = (e) => {
+    const { target } = e;
+    const { value, name } = target;
+    let newValues = { ...values };
+
+    newValues[name] = value;
+    setValues(newValues);
   };
 
   const searchForRM = async (e) => {
@@ -52,8 +85,90 @@ const AddEmployeeModal = (props) => {
     }
   };
 
+  const onSubmitHandler = () => {
+    // console.log("Create trip button clicked");
+    let hasError = false;
+
+    if (!selectedEmployeeId) {
+      setError((prevError) => ({
+        ...prevError,
+        employeeId: "Employee Id is mandatory.",
+      }));
+      hasError = true;
+    } else {
+      setError((prevError) => ({ ...prevError, employeeId: "" }));
+    }
+
+    if (!values.signInTime) {
+      setError((prevError) => ({
+        ...prevError,
+        signInTime: "Sign in time is mandatory.",
+      }));
+      hasError = true;
+    } else {
+      setError((prevError) => ({ ...prevError, signInTime: "" }));
+    }
+
+    if (!values.signOutTime) {
+      setError((prevError) => ({
+        ...prevError,
+        signOutTime: "Sign out time is mandatory.",
+      }));
+      hasError = true;
+    } else {
+      setError((prevError) => ({ ...prevError, signOutTime: "" }));
+    }
+
+    //sign in time is before sign out time
+    if (values.signInTime && values.signOutTime) {
+      const signInDate = dayjs(`2024-01-01 ${values.signInTime}`);
+      const signOutDate = dayjs(`2024-01-01 ${values.signOutTime}`);
+
+      if (signInDate.isAfter(signOutDate)) {
+        setError((prevError) => ({
+          ...prevError,
+          signOutTime: "Sign out time must be after sign in time.",
+        }));
+        hasError = true;
+      } else {
+        setError((prevError) => ({ ...prevError, signOutTime: "" }));
+      }
+    }
+
+    if (!values.tripStatus) {
+      setError((prevError) => ({
+        ...prevError,
+        tripStatus: "Trip status is mandatory.",
+      }));
+      hasError = true;
+    } else {
+      setError((prevError) => ({ ...prevError, tripStatus: "" }));
+    }
+
+    if (hasError) {
+      console.log("Error: All mandatory fields must be filled");
+      return;
+    }
+
+    const employeeData = {
+      ...values,
+      employeeId: selectedEmployeeId,
+    };
+    console.log("Added employee details>>", employeeData);
+    onAddEmployeeData(employeeData);
+    setSelectedUsers([...selectedUsers, selectedEmployeeId]);
+    setError({});
+    onClose();
+    dispatch(
+      toggleToast({
+        message: "Employee added successfully!",
+        type: "success",
+      })
+    );
+  };
+
   useEffect(() => {
-    console.log("selcted users: ", selectedUsers);
+    console.log("selected users: ", selectedUsers);
   }, [selectedUsers]);
 
   useEffect(() => {
@@ -70,12 +185,7 @@ const AddEmployeeModal = (props) => {
       }}
     >
       <h3 style={{ marginBottom: "40px" }}>Add Employee</h3>
-      <div
-        style={{
-          width: "100%",
-          padding: "0 5px",
-        }}
-      >
+      <div style={{ minWidth: "180px" }} className="form-control-input">
         <Autocomplete
           fullWidth
           disablePortal
@@ -83,6 +193,7 @@ const AddEmployeeModal = (props) => {
           options={searchedUsers}
           autoComplete
           open={isSearchUser}
+          sx={{ width: "240px" }}
           onOpen={() => {
             setIsSearchUser(true);
           }}
@@ -98,12 +209,84 @@ const AddEmployeeModal = (props) => {
           renderInput={(params) => (
             <TextField
               {...params}
-              label="Search by employee ID / name"
+              label="Search by employee ID *"
               onChange={searchForRM}
-              size="small"
+              error={!!error.employeeId}
+              helperText={error.employeeId}
             />
           )}
         />
+      </div>
+      <div style={{ minWidth: "180px" }} className="form-control-input">
+        <FormControl required>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <TimeField
+              label="Sign In Time *"
+              format="HH:mm"
+              value={dayjs()
+                .hour(Number(values.signInTime.slice(0, 2)))
+                .minute(Number(values.signInTime.slice(3, 5)))}
+              onChange={(e) => {
+                var ShiftTime = e.$d.toLocaleTimeString("it-IT").slice(0, -3);
+                handleFilterChange({
+                  target: { name: "signInTime", value: ShiftTime },
+                });
+              }}
+              style={{ width: "240px" }}
+              inputProps={{
+                style: {
+                  fontFamily: "DM Sans",
+                },
+              }}
+              error={!!error.signInTime}
+              helperText={error.signInTime}
+            />
+          </LocalizationProvider>
+        </FormControl>
+      </div>
+      <div style={{ minWidth: "180px" }} className="form-control-input">
+        <FormControl required>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <TimeField
+              label="Sign Out Time *"
+              format="HH:mm"
+              value={dayjs()
+                .hour(Number(values.signOutTime.slice(0, 2)))
+                .minute(Number(values.signOutTime.slice(3, 5)))}
+              onChange={(e) => {
+                var ShiftTime = e.$d.toLocaleTimeString("it-IT").slice(0, -3);
+                handleFilterChange({
+                  target: { name: "signOutTime", value: ShiftTime },
+                });
+              }}
+              style={{ width: "240px" }}
+              inputProps={{
+                style: {
+                  fontFamily: "DM Sans",
+                },
+              }}
+              error={!!error.signOutTime}
+              helperText={error.signOutTime}
+            />
+          </LocalizationProvider>
+        </FormControl>
+      </div>
+      <div style={{ minWidth: "180px" }} className="form-control-input">
+        <FormControl variant="outlined">
+          {/* <InputLabel id="status-label">Trip Status *</InputLabel> */}
+          <TextField
+            style={{ width: "240px" }}
+            id="outlined-basic"
+            name="tripStatus"
+            label="Trip Status *"
+            value={values.tripStatus}
+            variant="outlined"
+            fullWidth
+            onChange={handleFilterChange}
+            error={!!error.tripStatus}
+            helperText={error.tripStatus}
+          />
+        </FormControl>
       </div>
       <div style={{ display: "flex", justifyContent: "center" }}>
         <button

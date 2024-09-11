@@ -9,6 +9,7 @@ const TripSheetEntryDetailsTable = ({
   issueTypeData,
   setIssueTypeData,
   onRowsSelected,
+  pointHeaderLabel,
 }) => {
   const [data, setData] = useState(issueTypeData);
   const [rowSelection, setRowSelection] = useState({});
@@ -31,8 +32,8 @@ const TripSheetEntryDetailsTable = ({
         size: 150,
       },
       {
-        accessorKey: "pickup/dropPoint",
-        header: "Pickup/Drop Point",
+        accessorKey: "point",
+        header: pointHeaderLabel,
         size: 150,
       },
       {
@@ -65,11 +66,11 @@ const TripSheetEntryDetailsTable = ({
         header: "Phone No.",
         size: 150,
       },
-      {
-        accessorKey: "action",
-        header: "Action",
-        size: 150,
-      },
+      // {
+      //   accessorKey: "action",
+      //   header: "Action",
+      //   size: 150,
+      // },
     ],
     []
   );
@@ -80,7 +81,10 @@ const TripSheetEntryDetailsTable = ({
     enableRowSelection: true,
     enableMultiRowSelection: false,
     enableTopToolbar: false,
-    initialState: { density: "compact" },
+    initialState: {
+      density: "compact",
+      pagination: { pageIndex: 0, pageSize: 12 },
+    },
     muiTableBodyCellProps: {
       sx: {
         fontFamily: "DM Sans",
@@ -122,7 +126,10 @@ const TripSheetEntryDetailsTable = ({
   return (
     <div>
       <div>
-        <MaterialReactTable table={tableInstance} getRowId={(row) => row.empId}/>
+        <MaterialReactTable
+          table={tableInstance}
+          getRowId={(row) => row.empId}
+        />
       </div>
     </div>
   );
