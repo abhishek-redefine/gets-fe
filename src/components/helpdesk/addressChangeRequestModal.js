@@ -37,7 +37,7 @@ const AddressChangeRequestModal = (props) => {
     {
       oldAddress: {
         Address: userDetails.address,
-        Landmark: userDetails.landmark, 
+        Landmark: userDetails.landMark, 
         Geocode: userDetails.geoCode,
         Zone: userDetails.zoneName,
         Area: userDetails.areaName,
@@ -45,7 +45,7 @@ const AddressChangeRequestModal = (props) => {
       },
       newAddress: {
         Address: addressRequestDetails.address,
-        Landmark: addressRequestDetails.landmark,
+        Landmark: addressRequestDetails.landMark,
         Geocode: addressRequestDetails.geoCode,
         Zone: addressRequestDetails.zoneName,
         Area: addressRequestDetails.areaName,

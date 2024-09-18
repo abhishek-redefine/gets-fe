@@ -100,8 +100,8 @@ const MainComponent = () => {
   };
 
   const handleRowsSelected = (selectedRowDetails) => {
-    setSelectedRow(selectedRowDetails);
-    console.log("selected Request ID: ", selectedRowDetails.id);
+    setSelectedRow(()=>selectedRowDetails);
+    console.log("selected Request ID: ", selectedRowDetails?.id);
   };
 
   const handleFilterChange = (e) => {
@@ -153,6 +153,7 @@ const MainComponent = () => {
       );
       console.log("change request list response data", response.data.data);
       setList(response.data.data);
+      setSelectedRow(null);
     } catch (err) {
       console.log(err);
     }
@@ -194,7 +195,6 @@ const MainComponent = () => {
       }
       console.log("updated list ", updatedList);
       setList(updatedList);
-      setSelectedRow(null);
       console.log("selected row status inside update status>>>", selectedRow);
     } catch (err) {
       console.log("Error updating feedback status", err);
@@ -395,7 +395,7 @@ const MainComponent = () => {
         <ChangeRequestTable
           list={list}
           selectedRow={selectedRow}
-          onRowsSelected={handleRowsSelected}
+          onRowsSelected={(row)=>handleRowsSelected(row)}
         />
       </div>
     </div>
