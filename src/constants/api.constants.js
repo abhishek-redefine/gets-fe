@@ -143,4 +143,10 @@ export const API_PATH = {
   APPLY_PENALTY_ON_TRIP : '/applyPenaltyOnTrip',
   UPDATE_TRIP_FOR_ISUUE : '/updateTripForIssue',
   STICKER : '/sticker',
+  SEARCH : '/search',
+  VEHICLE_DRIVER_MAPPING : '/vehicleDriverMapping',
+  FEEDBACK : '/feedback',
+  CHANGE_REQUEST: '/changeRequest',
+  PROCESS_REQUEST: "/processRequest",
+  EMP : '/emp'
 };

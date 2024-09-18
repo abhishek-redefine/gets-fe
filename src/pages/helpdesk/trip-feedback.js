@@ -5,7 +5,6 @@ import {
   Select,
   MenuItem,
   Box,
-  Grid,
   Autocomplete,
   TextField,
   Modal,
@@ -20,9 +19,9 @@ import { useDispatch, useSelector } from "react-redux";
 import helpdesk from "@/layouts/helpdesk";
 import { setMasterData } from "@/redux/master.slice";
 import MasterDataService from "@/services/masterdata.service";
-import DispatchService from "@/services/dispatch.service";
 import TripFeedbackTable from "@/components/helpdesk/tripFeedbackTable";
 import TripFeedbackModal from "@/components/helpdesk/tripFeedbackModal";
+import TripService from "@/services/trip.service";
 
 const style = {
   position: "absolute",
@@ -39,10 +38,9 @@ const MainComponent = () => {
   const [office, setOffice] = useState([]);
   const [searchValues, setSearchValues] = useState({
     officeId: "",
-    shiftType: "",
-    date: moment().format("YYYY-MM-DD"),
-    team: "",
+    tripDateStr: moment().format("YYYY-MM-DD"),
     rating: "",
+    email: "",
   });
   const [list, setList] = useState([]);
   const dispatch = useDispatch();
@@ -55,31 +53,44 @@ const MainComponent = () => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [searchedUsers, setSearchedUsers] = useState([]);
   const [isSearchUser, setIsSearchUser] = useState(false);
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
   const [rowCurrentSatus, setRowCurrentStatus] = useState("");
-
-  const team = ["IT", "Sales", "Accounts"];
+  const [selectedUserEmail, setSelectedUserEmail] = useState();
+  const [feedbackId, setFeedbackId] = useState("");
+  // const [feedbackStatus, setFeedbackStatus] = useState("");
 
   const rating = ["1", "2", "3", "4", "5"];
 
   const onChangeHandler = (val) => {
-    console.log("val>>>", val);
+    console.log(val);
     if (val?.empId) {
       setSelectedUsers([val.data]);
-      //   console.log("selcted users: ", [val.data]);
-      setSelectedEmployeeId(val.empId);
-      //   console.log("Saved Employee ID: ", val.empId);
+      const email = val.data;
+      if (email) {
+        setSearchValues((prevValues) => ({
+          ...prevValues,
+          email: email,
+        }));
+      } else {
+        console.error("Email is undefined");
+      }
+      setSelectedUserEmail(val.empId);
     } else {
       setSelectedUsers([]);
+      setSearchValues((prevValues) => ({
+        ...prevValues,
+        email: "",
+      }));
+      setSelectedUserEmail(null);
     }
   };
 
   const handleChangeStatusClick = () => {
     if (selectedRow) {
       setOpenModal(true);
-      setRowCurrentStatus(selectedRow.status);
+      setRowCurrentStatus(selectedRow.feedbackStatus);
+      console.log("current status>>>", rowCurrentSatus);
       console.log("Trip feedback modal is opened");
     }
   };
@@ -100,23 +111,22 @@ const MainComponent = () => {
     }
   };
 
-  const onSearchHandler = () => {
-    console.log("Search button clicked");
-  };
-
-  const handleRowsSelected = (selectedRowId) => {
-    setSelectedRow(selectedRowId);
-    console.log("selected row employee ID: ", selectedRowId.empId);
+  const handleRowsSelected = (selectedRow) => {
+    setSelectedRow(selectedRow);
+    console.log("selected feedback ID: ", selectedRow.id);
+    setFeedbackId(selectedRow.id);
+    // setFeedbackStatus(selectedRowId.feedbackStatus);
   };
 
   const handleFilterChange = (e) => {
     const { target } = e;
     const { value, name } = target;
     let newSearchValues = { ...searchValues };
-    if (name === "date") newSearchValues[name] = value.format("YYYY-MM-DD");
+    if (name === "tripDateStr")
+      newSearchValues[name] = value.format("YYYY-MM-DD");
     else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
-    console.log("New search values: ", JSON.stringify(newSearchValues));
+    // console.log("New search values: ", JSON.stringify(newSearchValues));
   };
 
   const fetchAllOffices = async () => {
@@ -125,10 +135,6 @@ const MainComponent = () => {
       const { data } = response || {};
       const { clientOfficeDTO } = data || {};
       console.log(clientOfficeDTO);
-      setSearchValues(
-        { ...searchValues },
-        (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
-      );
       setOffice(clientOfficeDTO);
     } catch (e) {}
   };
@@ -146,11 +152,10 @@ const MainComponent = () => {
 
   const resetFilter = () => {
     let allSearchValue = {
-      officeId: office[0].officeId,
-      date: moment().format("YYYY-MM-DD"),
-      shiftType: "",
-      team: "",
+      officeId: "",
+      tripDateStr: "",
       rating: "",
+      email: "",
     };
     setSearchValues(allSearchValue);
   };
@@ -158,6 +163,7 @@ const MainComponent = () => {
   const fetchSummary = async () => {
     try {
       let params = new URLSearchParams(pagination);
+      console.log("Search values>>>", searchValues);
       let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
         if (
@@ -167,52 +173,38 @@ const MainComponent = () => {
           delete allSearchValues[objKey];
         }
       });
-      const response = await DispatchService.getTripSearchByBean(
+      const response = await TripService.getFeedbackSearchByBean(
         params,
         allSearchValues
       );
-      console.log("response data", response.data.data);
-      const data = [
-        {
-          officeId: "HCLND001",
-          empId: 1001,
-          empName: "Raja",
-          shiftType: "Login",
-          shiftTime: "09:30",
-          teamName: "IT",
-          tripId: "Trip001",
-          rating: 3,
-          status: "Pending",
-        },
-        {
-          officeId: "HCLND002",
-          empId: 1002,
-          empName: "Mohan",
-          shiftType: "Login",
-          shiftTime: "10:30",
-          teamName: "Sales",
-          tripId: "Trip002",
-          rating: 2,
-          status: "In Progress",
-        },
-        {
-          officeId: "HCLND003",
-          empId: 1003,
-          empName: "Seeta",
-          shiftType: "Login",
-          shiftTime: "11:30",
-          teamName: "Accounts",
-          tripId: "Trip003",
-          rating: 4,
-          status: "Close",
-        },
-      ];
-      //   setList(response.data.data);
-      setList(data);
-      var requestType = data[0].requestType;
-      console.log("requestType>>>", requestType);
+      console.log("feedback response data", response.data.data);
+      setList(response.data.data);
     } catch (err) {
       console.log(err);
+    }
+  };
+
+  const updateFeedbackStatus = async (newStatus) => {
+    // console.log("New Status>>>", newStatus);
+    try {
+      console.log("New Status>>>", newStatus);
+      const response = await TripService.tripFeedbackUpdateStatus(
+        feedbackId,
+        newStatus
+      );
+      console.log("Updated status response data", response);
+
+      const updatedList = list.map((item) => {
+        if (item.id === feedbackId) {
+          return { ...item, feedbackStatus: newStatus };
+        }
+        return item;
+      });
+
+      setList(updatedList);
+      setSelectedRow(null);
+    } catch (err) {
+      console.log("Error updating feedback status", err);
     }
   };
 
@@ -231,9 +223,9 @@ const MainComponent = () => {
     console.log("selcted users: ", selectedUsers);
   }, [selectedUsers]);
 
-  useEffect(() => {
-    console.log("Saved Employee ID: ", selectedEmployeeId);
-  }, [selectedEmployeeId]);
+  // useEffect(() => {
+  //   updateFeedbackStatus();
+  // }, [selectedRow]);
 
   return (
     <div>
@@ -245,156 +237,77 @@ const MainComponent = () => {
           padding: "0 13px",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            // backgroundColor: "yellow"
-          }}
-        >
-          <div className="filterContainer" style={{}}>
-            {office.length > 0 && (
-              <div style={{ minWidth: "180px" }} className="form-control-input">
-                <FormControl fullWidth>
-                  <InputLabel id="primary-office-label">Office ID</InputLabel>
-                  <Select
-                    style={{ width: "180px", backgroundColor: "white" }}
-                    labelId="primary-office-label"
-                    id="officeId"
-                    value={searchValues.officeId}
-                    name="officeId"
-                    label="Office ID"
-                    onChange={handleFilterChange}
-                  >
-                    {!!office?.length &&
-                      office.map((office, idx) => (
-                        <MenuItem key={idx} value={office.officeId}>
-                          {getFormattedLabel(office.officeId)}, {office.address}
-                        </MenuItem>
-                      ))}
-                  </Select>
-                </FormControl>
-              </div>
-            )}
-
-            <div
-              className="form-control-input"
-              style={{ backgroundColor: "white" }}
-            >
-              <InputLabel style={{ backgroundColor: "#f9f9f9" }} htmlFor="date">
-                Date
-              </InputLabel>
-              <LocalizationProvider dateAdapter={AdapterMoment}>
-                <DatePicker
-                  name="date"
-                  format={DATE_FORMAT}
-                  value={searchValues.date ? moment(searchValues.date) : null}
-                  onChange={(e) =>
-                    handleFilterChange({
-                      target: { name: "date", value: e },
-                    })
-                  }
-                />
-              </LocalizationProvider>
-            </div>
-
-            <div style={{ minWidth: "160px" }} className="form-control-input">
+        <div className="filterContainer" style={{ flexWrap: "wrap" }}>
+          {office.length > 0 && (
+            <div style={{ minWidth: "180px" }} className="form-control-input">
               <FormControl fullWidth>
-                <InputLabel id="shiftType-label">Shift Type</InputLabel>
-                <Select
-                  style={{ width: "160px", backgroundColor: "white" }}
-                  labelId="shiftType-label"
-                  id="shiftType"
-                  name="shiftType"
-                  value={searchValues.shiftType}
-                  label="Shift Type"
-                  onChange={handleFilterChange}
-                >
-                  {shiftTypes.map((sT, idx) => (
-                    <MenuItem key={idx} value={sT.value}>
-                      {getFormattedLabel(sT.value)}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </div>
-
-            <div
-              style={{ minWidth: "160px", backgroundColor: "white" }}
-              className="form-control-input"
-            >
-              <FormControl fullWidth>
-                <InputLabel id="team-label">Team</InputLabel>
+                <InputLabel id="primary-office-label">Office ID</InputLabel>
                 <Select
                   style={{ width: "180px", backgroundColor: "white" }}
-                  labelId="team-label"
-                  id="team"
-                  name="team"
-                  value={searchValues.team}
-                  label="Team"
+                  labelId="primary-office-label"
+                  id="officeId"
+                  value={searchValues.officeId}
+                  name="officeId"
+                  label="Office ID"
                   onChange={handleFilterChange}
                 >
-                  {team.map((item) => (
-                    <MenuItem key={item} value={item}>{item}</MenuItem>
-                  ))}
+                  {!!office?.length &&
+                    office.map((office, idx) => (
+                      <MenuItem key={idx} value={office.officeId}>
+                        {getFormattedLabel(office.officeId)}, {office.address}
+                      </MenuItem>
+                    ))}
                 </Select>
               </FormControl>
             </div>
+          )}
 
-            <div
-              style={{ minWidth: "160px", backgroundColor: "white" }}
-              className="form-control-input"
-            >
-              <FormControl fullWidth>
-                <InputLabel id="rating-label">Rating</InputLabel>
-                <Select
-                  style={{ width: "180px", backgroundColor: "white" }}
-                  labelId="rating-label"
-                  id="rating"
-                  name="rating"
-                  value={searchValues.rating}
-                  label="Rating"
-                  onChange={handleFilterChange}
-                >
-                  {rating.map((item) => (
-                    <MenuItem value={item}>{item}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </div>
-
-            <div className="form-control-input" style={{ minWidth: "70px" }}>
-              <button
-                type="submit"
-                onClick={() => fetchSummary()}
-                className="btn btn-primary filterApplyBtn"
-              >
-                Apply
-              </button>
-            </div>
-
-            <div className="form-control-input" style={{ minWidth: "70px" }}>
-              <button
-                type="submit"
-                onClick={resetFilter}
-                className="btn btn-primary filterApplyBtn"
-              >
-                Reset
-              </button>
-            </div>
+          <div
+            className="form-control-input"
+            style={{ backgroundColor: "white" }}
+          >
+            <InputLabel style={{ backgroundColor: "#f9f9f9" }} htmlFor="date">
+              Date
+            </InputLabel>
+            <LocalizationProvider dateAdapter={AdapterMoment}>
+              <DatePicker
+                name="tripDateStr"
+                format={DATE_FORMAT}
+                value={
+                  searchValues.tripDateStr
+                    ? moment(searchValues.tripDateStr)
+                    : null
+                }
+                onChange={(e) =>
+                  handleFilterChange({
+                    target: { name: "tripDateStr", value: e },
+                  })
+                }
+              />
+            </LocalizationProvider>
           </div>
-        </div>
-        <div
-          className="filterContainer"
-          style={{
-            // backgroundColor: "yellow",
-            height: "120px",
-            display: "flex",
-            justifyContent: "flex-start",
-            // backgroundColor: "pink"
-          }}
-        >
+
+          <div
+            style={{ minWidth: "160px", backgroundColor: "white" }}
+            className="form-control-input"
+          >
+            <FormControl fullWidth>
+              <InputLabel id="rating-label">Rating</InputLabel>
+              <Select
+                style={{ width: "180px", backgroundColor: "white" }}
+                labelId="rating-label"
+                id="rating"
+                name="rating"
+                value={searchValues.rating}
+                label="Rating"
+                onChange={handleFilterChange}
+              >
+                {rating.map((item) => (
+                  <MenuItem value={item}>{item}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </div>
           <div
             style={{
               width: "300px",
@@ -420,7 +333,7 @@ const MainComponent = () => {
               getOptionKey={(rm) => rm.empId}
               getOptionLabel={(rm) => `${rm.data} ${rm.empId}`}
               freeSolo
-              name="reportingManager"
+              name="email"
               sx={{
                 "& .MuiOutlinedInput-root": {
                   // padding: "7px 9px",
@@ -430,7 +343,7 @@ const MainComponent = () => {
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Search by employee ID / name"
+                  label="Search employee by ID"
                   onChange={searchForRM}
                   // size="medium"
                   style={{ backgroundColor: "#fff" }}
@@ -439,13 +352,23 @@ const MainComponent = () => {
             />
           </div>
 
-          <div className="form-control-input" style={{ minWidth: "90px" }}>
+          <div className="form-control-input" style={{ minWidth: "70px" }}>
             <button
-              type="search"
-              onClick={onSearchHandler}
+              type="submit"
+              onClick={() => fetchSummary()}
               className="btn btn-primary filterApplyBtn"
             >
-              Search
+              Apply
+            </button>
+          </div>
+
+          <div className="form-control-input" style={{ minWidth: "70px" }}>
+            <button
+              type="submit"
+              onClick={resetFilter}
+              className="btn btn-primary filterApplyBtn"
+            >
+              Reset
             </button>
           </div>
         </div>
@@ -491,11 +414,19 @@ const MainComponent = () => {
             aria-describedby="modal-modal-description"
           >
             <Box sx={style}>
-              <TripFeedbackModal onClose={handleModalClose} currentStatus={rowCurrentSatus} />
+              <TripFeedbackModal
+                onClose={handleModalClose}
+                currentStatus={rowCurrentSatus}
+                statusUpdated={updateFeedbackStatus}
+              />
             </Box>
           </Modal>
         </div>
-        <TripFeedbackTable list={list} onRowsSelected={handleRowsSelected} />
+        <TripFeedbackTable
+          list={list}
+          selectedRow={selectedRow}
+          onRowsSelected={handleRowsSelected}
+        />
       </div>
     </div>
   );

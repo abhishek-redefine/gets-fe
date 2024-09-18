@@ -4,12 +4,21 @@ import {
   useMaterialReactTable,
 } from "material-react-table";
 
-const TripFeedbackTable = ({ list, onRowsSelected }) => {
+const TripFeedbackTable = ({ list, selectedRow, onRowsSelected }) => {
   const [data, setData] = useState([]);
   const [rowSelection, setRowSelection] = useState({});
 
   const columns = useMemo(
     () => [
+      {
+        accessorKey: "tripId",
+        header: "Trip ID",
+        size: 150,
+        Cell: ({ cell }) => {
+          const tripId = cell.getValue();
+          return <p>TRIP - {tripId}</p>;
+        },
+      },
       {
         accessorKey: "officeId",
         header: "Office ID",
@@ -21,7 +30,7 @@ const TripFeedbackTable = ({ list, onRowsSelected }) => {
         size: 150,
       },
       {
-        accessorKey: "empName",
+        accessorKey: "feedbackGivenBy",
         header: "Name",
         size: 150,
       },
@@ -35,25 +44,20 @@ const TripFeedbackTable = ({ list, onRowsSelected }) => {
         header: "Shift Time",
         size: 150,
       },
-      {
-        accessorKey: "teamName",
-        header: "Team",
-        size: 150,
-      },
-      {
-        accessorKey: "tripId",
-        header: "Trip ID",
-        size: 150,
-      },
+      // {
+      //   accessorKey: "teamName",
+      //   header: "Team",
+      //   size: 150,
+      // },
       {
         accessorKey: "rating",
         header: "Rating",
         size: 150,
       },
       {
-        accessorKey: "status",
+        accessorKey: "feedbackStatus",
         header: "Status",
-        size: 100,
+        size: 150,
       },
     ],
     []
@@ -64,7 +68,7 @@ const TripFeedbackTable = ({ list, onRowsSelected }) => {
     data,
     enableRowSelection: true,
     enableMultiRowSelection: false,
-    getRowId: (originalRow) => originalRow?.empId,
+    getRowId: (originalRow) => originalRow?.tripId,
     state: { rowSelection },
     onRowSelectionChange: setRowSelection,
   });
@@ -78,9 +82,21 @@ const TripFeedbackTable = ({ list, onRowsSelected }) => {
     setData(list);
   }, [list]);
 
+  useEffect(() => {
+    if (selectedRow) {
+      const newRowSelection = { [selectedRow.tripId]: true };
+      setRowSelection(newRowSelection);
+    } else {
+      setRowSelection({});
+    }
+  }, [selectedRow]);
+
   return (
     <div>
-      <MaterialReactTable table={tableInstance} getRowId={(row) => row.empId} />
+      <MaterialReactTable
+        table={tableInstance}
+        getRowId={(row) => row.tripId}
+      />
     </div>
   );
 };
