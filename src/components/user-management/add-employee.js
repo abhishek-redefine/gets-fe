@@ -167,7 +167,7 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
           specialStatus: allValues.specialStatus,
           enabled: true,
           isManager: allValues.reportingManager ? false : true,
-          landmark: allValues.landmark,
+          landMark: allValues.landmark,
           zoneName: allValues.zoneName,
           areaName: allValues.areaName,
           nodal: allValues.nodal,
