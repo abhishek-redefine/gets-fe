@@ -15,10 +15,8 @@ import moment from "moment";
 import { getFormattedLabel } from "@/utils/utils";
 import { DATE_FORMAT, MASTER_DATA_TYPES } from "@/constants/app.constants.";
 import OfficeService from "@/services/office.service";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import helpdesk from "@/layouts/helpdesk";
-import { setMasterData } from "@/redux/master.slice";
-import MasterDataService from "@/services/masterdata.service";
 import TripFeedbackTable from "@/components/helpdesk/tripFeedbackTable";
 import TripFeedbackModal from "@/components/helpdesk/tripFeedbackModal";
 import TripService from "@/services/trip.service";
@@ -48,8 +46,6 @@ const MainComponent = () => {
     page: 0,
     size: 100,
   });
-
-  const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [searchedUsers, setSearchedUsers] = useState([]);
   const [isSearchUser, setIsSearchUser] = useState(false);
@@ -92,6 +88,9 @@ const MainComponent = () => {
       setRowCurrentStatus(selectedRow.feedbackStatus);
       console.log("current status>>>", rowCurrentSatus);
       console.log("Trip feedback modal is opened");
+    } else {
+      setSelectedRow(null);
+      setRowCurrentStatus("");
     }
   };
 
@@ -111,11 +110,10 @@ const MainComponent = () => {
     }
   };
 
-  const handleRowsSelected = (selectedRow) => {
-    setSelectedRow(selectedRow);
-    console.log("selected feedback ID: ", selectedRow.id);
-    setFeedbackId(selectedRow.id);
-    // setFeedbackStatus(selectedRowId.feedbackStatus);
+  const handleRowsSelected = (selectedRowDetails) => {
+    setSelectedRow(() => selectedRowDetails);
+    console.log("selected feedback ID: ", selectedRowDetails?.id);
+    setFeedbackId(selectedRowDetails?.id);
   };
 
   const handleFilterChange = (e) => {
@@ -126,7 +124,6 @@ const MainComponent = () => {
       newSearchValues[name] = value.format("YYYY-MM-DD");
     else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
-    // console.log("New search values: ", JSON.stringify(newSearchValues));
   };
 
   const fetchAllOffices = async () => {
@@ -139,21 +136,10 @@ const MainComponent = () => {
     } catch (e) {}
   };
 
-  const fetchMasterData = async (type) => {
-    try {
-      const response = await MasterDataService.getMasterData(type);
-      const { data } = response || {};
-      if (data?.length) {
-        console.log(data);
-        dispatch(setMasterData({ data, type }));
-      }
-    } catch (e) {}
-  };
-
   const resetFilter = () => {
     let allSearchValue = {
       officeId: "",
-      tripDateStr: "",
+      tripDateStr: moment().format("YYYY-MM-DD"),
       rating: "",
       email: "",
     };
@@ -193,16 +179,17 @@ const MainComponent = () => {
         newStatus
       );
       console.log("Updated status response data", response);
-
-      const updatedList = list.map((item) => {
-        if (item.id === feedbackId) {
-          return { ...item, feedbackStatus: newStatus };
-        }
-        return item;
-      });
-
-      setList(updatedList);
-      setSelectedRow(null);
+      if (response.status === 200) {
+        fetchSummary();
+      }
+      if (response.status === 500) {
+        dispatch(
+          toggleToast({
+            message: "Failed! Try again later.",
+            type: "error",
+          })
+        );
+      }
     } catch (err) {
       console.log("Error updating feedback status", err);
     }
@@ -213,19 +200,12 @@ const MainComponent = () => {
   }, [list]);
 
   useEffect(() => {
-    if (!shiftTypes?.length) {
-      fetchMasterData(MASTER_DATA_TYPES.SHIFT_TYPE);
-    }
     fetchAllOffices();
   }, []);
 
   useEffect(() => {
-    console.log("selcted users: ", selectedUsers);
-  }, [selectedUsers]);
-
-  // useEffect(() => {
-  //   updateFeedbackStatus();
-  // }, [selectedRow]);
+    fetchSummary();
+  }, [pagination, searchValues]);
 
   return (
     <div>
@@ -424,8 +404,7 @@ const MainComponent = () => {
         </div>
         <TripFeedbackTable
           list={list}
-          selectedRow={selectedRow}
-          onRowsSelected={handleRowsSelected}
+          onRowsSelected={(row) => handleRowsSelected(row)}
         />
       </div>
     </div>

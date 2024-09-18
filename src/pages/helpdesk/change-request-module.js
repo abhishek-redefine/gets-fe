@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import { getFormattedLabel } from "@/utils/utils";
 import OfficeService from "@/services/office.service";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import helpdesk from "@/layouts/helpdesk";
 import ChangeRequestTable from "@/components/helpdesk/changeRequestTable";
 import ContactNumberChangeRequestModal from "@/components/helpdesk/contactNoChangeRequestModal";
@@ -100,7 +100,7 @@ const MainComponent = () => {
   };
 
   const handleRowsSelected = (selectedRowDetails) => {
-    setSelectedRow(()=>selectedRowDetails);
+    setSelectedRow(() => selectedRowDetails);
     console.log("selected Request ID: ", selectedRowDetails?.id);
   };
 
@@ -125,7 +125,7 @@ const MainComponent = () => {
   const resetFilter = () => {
     let allSearchValue = {
       officeId: "",
-      status: "",
+      status: "RAISED",
       empName: "",
       empEmail: "",
     };
@@ -166,35 +166,47 @@ const MainComponent = () => {
       // if (selectedRow.requestType === "mobile") {
       //   payload = {
       //     id: selectedRow.id,
+      //     attemptTime: selectedRow.attemptTime,
+      //     empId: selectedRow.empId,
+      //     empName: selectedRow.empName,
+      //     empEmail: selectedRow.empEmail,
       //     requestType: selectedRow.requestType,
+      //     mob: selectedRow.mob,
       //     status: newStatus,
+      //     officeId: selectedRow.officeId,
       //   };
       // } else if (selectedRow.requestType === "address") {
-      payload = {
-        id: selectedRow.id,
-        attemptTime: selectedRow.attemptTime,
-        empId: selectedRow.empId,
-        empName: selectedRow.empName,
-        empEmail: selectedRow.empEmail,
-        requestType: selectedRow.requestType,
-        address: selectedRow.address,
-        geoCode: selectedRow.geoCode,
-        mob: selectedRow.mob,
-        zoneName: selectedRow.zoneName,
-        areaName: selectedRow.areaName,
-        nodal: selectedRow.nodal,
-        landMark: selectedRow.landMark,
-        status: newStatus,
-        officeId: selectedRow.officeId,
-      };
+        payload = {
+          id: selectedRow.id,
+          attemptTime: selectedRow.attemptTime,
+          empId: selectedRow.empId,
+          empName: selectedRow.empName,
+          empEmail: selectedRow.empEmail,
+          requestType: selectedRow.requestType,
+          address: selectedRow.address,
+          geoCode: selectedRow.geoCode,
+          mob: selectedRow.mob,
+          zoneName: selectedRow.zoneName,
+          areaName: selectedRow.areaName,
+          nodal: selectedRow.nodal,
+          landMark: selectedRow.landMark,
+          status: newStatus,
+          officeId: selectedRow.officeId,
+        };
       // }
       const response = await TripService.changeRequestStatus(payload);
       console.log("Updated status response data", response);
-      if(response.status === 200){
+      if (response.status === 200) {
         fetchSummary();
       }
-      console.log("updated list ", updatedList);
-      setList(updatedList);
+      if (response.status === 500) {
+        dispatch(
+          toggleToast({
+            message: "Failed! Try again later.",
+            type: "error",
+          })
+        );
+      }
       console.log("selected row status inside update status>>>", selectedRow);
     } catch (err) {
       console.log("Error updating feedback status", err);
@@ -208,6 +220,10 @@ const MainComponent = () => {
   useEffect(() => {
     fetchAllOffices();
   }, []);
+
+  useEffect(() => {
+    fetchSummary();
+  }, [pagination, searchValues]);
 
   return (
     <div>
@@ -394,8 +410,7 @@ const MainComponent = () => {
         </div>
         <ChangeRequestTable
           list={list}
-          selectedRow={selectedRow}
-          onRowsSelected={(row)=>handleRowsSelected(row)}
+          onRowsSelected={(row) => handleRowsSelected(row)}
         />
       </div>
     </div>

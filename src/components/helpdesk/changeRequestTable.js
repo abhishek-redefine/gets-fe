@@ -4,7 +4,7 @@ import {
   useMaterialReactTable,
 } from "material-react-table";
 
-const ChangeRequestTable = ({ list, selectedRow, onRowsSelected }) => {
+const ChangeRequestTable = ({ list, onRowsSelected }) => {
   const [data, setData] = useState([]);
   const [rowSelection, setRowSelection] = useState({});
 
@@ -65,14 +65,6 @@ const ChangeRequestTable = ({ list, selectedRow, onRowsSelected }) => {
     setData(list);
   }, [list]);
 
-  // useEffect(() => {
-  //   if (selectedRow) {
-  //     const newRowSelection = { [selectedRow.tripId]: true };
-  //     setRowSelection(newRowSelection);
-  //   } else {
-  //     setRowSelection({});
-  //   }
-  // }, [selectedRow]);
 
   return (
     <div>
