@@ -184,7 +184,7 @@ const NodalPoint = () => {
       const { data } = response || {};
       const { clientOfficeDTO } = data || {};
       setOffice(clientOfficeDTO);
-    } catch (e) { }
+    } catch (e) {}
   };
   // const fetchAllZones = async () => {
   //   try {
@@ -206,9 +206,9 @@ const NodalPoint = () => {
     try {
       const page = {
         page: 0,
-        size: 100
-      }
-      let params = new URLSearchParams(page)
+        size: 100,
+      };
+      let params = new URLSearchParams(page);
       const response = await RoutingService.getAllArea(params);
       console.log(response.data);
       const areaDTO = response.data.data;
@@ -222,9 +222,9 @@ const NodalPoint = () => {
     setSearchValues({
       officeId: "",
       areaName: "",
-    })
+    });
     fetchAllNodalPoints(true);
-  }
+  };
 
   const fetchAllNodalPoints = async (search = false) => {
     try {
@@ -238,15 +238,9 @@ const NodalPoint = () => {
           delete allSearchValues[objKey];
         }
       });
-      const response = search ? await RoutingService.getAllNodalPoints(
-        params,
-        {}
-      ) 
-      :
-      await RoutingService.getAllNodalPoints(
-        params,
-        allSearchValues
-      );
+      const response = search
+        ? await RoutingService.getAllNodalPoints(params, {})
+        : await RoutingService.getAllNodalPoints(params, allSearchValues);
       const { data } = response;
       console.log(data);
       setNodalPoints(data.data);
@@ -289,11 +283,18 @@ const NodalPoint = () => {
 
   const handleGeocode = (geocode) => {
     console.log("Here in parent geocode: " + geocode);
-    formik.setFieldValue("geoCode", geocode);
+    let geocodeSeparate = geocode.split(",");
+    geocodeSeparate[0] = parseFloat(geocodeSeparate[0]).toFixed(5);
+    geocodeSeparate[1] = parseFloat(geocodeSeparate[1]).toFixed(5);
+    formik.setFieldValue(
+      "geoCode",
+      `${geocodeSeparate[0]}, ${geocodeSeparate[1]}`
+    );
     setCoordinates((prevValues) => ({
       ...prevValues,
-      geoCode: geocode,
+      geoCode: `${geocodeSeparate[0]}, ${geocodeSeparate[1]}`,
     }));
+    // console.log("Field value: " + coordinates.geoCode)
   };
 
   useEffect(() => {
@@ -375,7 +376,7 @@ const NodalPoint = () => {
                     MenuListProps: {
                       sx: {
                         maxHeight: 200,
-                        overflowY: 'auto',
+                        overflowY: "auto",
                       },
                     },
                   }}
@@ -477,7 +478,7 @@ const NodalPoint = () => {
                         MenuListProps: {
                           sx: {
                             maxHeight: 200,
-                            overflowY: 'auto',
+                            overflowY: "auto",
                           },
                         },
                       }}

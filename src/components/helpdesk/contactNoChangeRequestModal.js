@@ -1,14 +1,29 @@
+import TripService from "@/services/trip.service";
 import { Box, TextField } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const ContactNumberChangeRequestModal = (props) => {
-  const { onClose } = props;
+  const { onClose, phoneRequestDetails, updatedStatus } = props;
   const [remarks, setRemarks] = useState("");
   const [remarksError, setRemarksError] = useState(false);
+  const [userDetails, setUserDetails] = useState({});
+
+  const fetchUserDetails = async (e) => {
+    try {
+      const response = await TripService.getEmployeeById(
+        phoneRequestDetails.empId
+      );
+      console.log("User Details>>>", response.data);
+      setUserDetails(response.data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const handleModalClose = () => {
     console.log("modal closed");
     onClose();
+    updatedStatus("APPROVE");
   };
 
   const handleReject = () => {
@@ -17,13 +32,18 @@ const ContactNumberChangeRequestModal = (props) => {
     } else {
       console.log("Rejected with remarks:", remarks);
       setRemarksError(false);
-      handleModalClose();
+      updatedStatus("REJECT");
+      onClose();
     }
   };
 
   const requestData = [
-    { oldContactNo: "9900112543", newContactNo: "8796543478" },
+    { oldContactNo: userDetails.mob, newContactNo: phoneRequestDetails.mob },
   ];
+
+  useEffect(() => {
+    fetchUserDetails();
+  }, [phoneRequestDetails]);
 
   return (
     <div

@@ -9,20 +9,14 @@ import {
   TextField,
   Modal,
 } from "@mui/material";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
-import moment from "moment";
 import { getFormattedLabel } from "@/utils/utils";
-import { DATE_FORMAT, MASTER_DATA_TYPES } from "@/constants/app.constants.";
 import OfficeService from "@/services/office.service";
 import { useDispatch, useSelector } from "react-redux";
 import helpdesk from "@/layouts/helpdesk";
-import { setMasterData } from "@/redux/master.slice";
-import MasterDataService from "@/services/masterdata.service";
-import DispatchService from "@/services/dispatch.service";
 import ChangeRequestTable from "@/components/helpdesk/changeRequestTable";
 import ContactNumberChangeRequestModal from "@/components/helpdesk/contactNoChangeRequestModal";
 import AddressChangeRequestModal from "@/components/helpdesk/addressChangeRequestModal";
+import TripService from "@/services/trip.service";
 
 const style = {
   position: "absolute",
@@ -39,7 +33,9 @@ const MainComponent = () => {
   const [office, setOffice] = useState([]);
   const [searchValues, setSearchValues] = useState({
     officeId: "",
-    date: moment().format("YYYY-MM-DD"),
+    status: "RAISED",
+    empName: "",
+    empEmail: "",
   });
   const [list, setList] = useState([]);
   const dispatch = useDispatch();
@@ -51,30 +47,34 @@ const MainComponent = () => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [searchedUsers, setSearchedUsers] = useState([]);
   const [isSearchUser, setIsSearchUser] = useState(false);
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
   const [flag, setFlag] = useState(false);
-
+  const statusTypeOptions = ["RAISED", "APPROVE", "REJECT"];
 
   const onChangeHandler = (val) => {
     console.log("val>>>", val);
     if (val?.empId) {
       setSelectedUsers([val.data]);
-      //   console.log("selcted users: ", [val.data]);
-      setSelectedEmployeeId(val.empId);
-      //   console.log("Saved Employee ID: ", val.empId);
+      setSearchValues((prevValues) => ({
+        ...prevValues,
+        empEmail: val.data,
+      }));
     } else {
       setSelectedUsers([]);
+      setSearchValues((prevValues) => ({
+        ...prevValues,
+        empEmail: "",
+      }));
     }
   };
 
   const handleChangeStatusClick = () => {
     if (selectedRow) {
-      if (selectedRow.requestType === "Phone") {
+      if (selectedRow.requestType === "mobile") {
         setFlag(true);
         console.log("Request Type is phone");
-      } else if (selectedRow.requestType === "Address"){
+      } else if (selectedRow.requestType === "address") {
         setFlag(false);
         console.log("Request Type is address");
       }
@@ -99,21 +99,16 @@ const MainComponent = () => {
     }
   };
 
-  const onSearchHandler = () => {
-    console.log("Search button clicked");
-  };
-
-  const handleRowsSelected = (selectedRowId) => {
-    setSelectedRow(selectedRowId);
-    console.log("selected row employee ID: ", selectedRowId.empId);
+  const handleRowsSelected = (selectedRowDetails) => {
+    setSelectedRow(selectedRowDetails);
+    console.log("selected Request ID: ", selectedRowDetails.id);
   };
 
   const handleFilterChange = (e) => {
     const { target } = e;
     const { value, name } = target;
     let newSearchValues = { ...searchValues };
-    if (name === "date") newSearchValues[name] = value.format("YYYY-MM-DD");
-    else newSearchValues[name] = value;
+    newSearchValues[name] = value;
     setSearchValues(newSearchValues);
   };
 
@@ -123,36 +118,26 @@ const MainComponent = () => {
       const { data } = response || {};
       const { clientOfficeDTO } = data || {};
       console.log(clientOfficeDTO);
-      setSearchValues(
-        { ...searchValues },
-        (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
-      );
       setOffice(clientOfficeDTO);
-    } catch (e) {}
-  };
-
-  const fetchMasterData = async (type) => {
-    try {
-      const response = await MasterDataService.getMasterData(type);
-      const { data } = response || {};
-      if (data?.length) {
-        console.log(data);
-        dispatch(setMasterData({ data, type }));
-      }
     } catch (e) {}
   };
 
   const resetFilter = () => {
     let allSearchValue = {
-      officeId: office[0].officeId,
-      date: moment().format("YYYY-MM-DD"),
+      officeId: "",
+      status: "",
+      empName: "",
+      empEmail: "",
     };
     setSearchValues(allSearchValue);
+    setSelectedUsers([]);
+    setSearchedUsers([]);
   };
 
   const fetchSummary = async () => {
     try {
       let params = new URLSearchParams(pagination);
+      console.log("Search values>>>", searchValues);
       let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
         if (
@@ -162,43 +147,57 @@ const MainComponent = () => {
           delete allSearchValues[objKey];
         }
       });
-      const response = await DispatchService.getTripSearchByBean(
+      const response = await TripService.getChangeRequestSearchByBean(
         params,
         allSearchValues
       );
-      console.log("response data", response.data.data);
-      const data = [
-        {
-          empId: 1001,
-          empName: "Raja",
-          teamName: "IT",
-          phoneNo: "9988776655",
-          requestType: "Phone",
-          status: "pending",
-        },
-        {
-          empId: 1002,
-          empName: "Mohan",
-          teamName: "Sales",
-          phoneNo: "9878685848",
-          requestType: "Address",
-          status: "Approved",
-        },
-        {
-          empId: 1003,
-          empName: "Seeta",
-          teamName: "Accounts",
-          phoneNo: "9745367823",
-          requestType: "Phone",
-          status: "Rejected",
-        },
-      ];
-      //   setList(response.data.data);
-      setList(data);
-      var requestType = data[0].requestType;
-      console.log("requestType>>>", requestType);
+      console.log("change request list response data", response.data.data);
+      setList(response.data.data);
     } catch (err) {
       console.log(err);
+    }
+  };
+
+  const updateRequestStatus = async (newStatus) => {
+    try {
+      console.log("New Status>>>", newStatus);
+      let payload;
+      // if (selectedRow.requestType === "mobile") {
+      //   payload = {
+      //     id: selectedRow.id,
+      //     requestType: selectedRow.requestType,
+      //     status: newStatus,
+      //   };
+      // } else if (selectedRow.requestType === "address") {
+      payload = {
+        id: selectedRow.id,
+        attemptTime: selectedRow.attemptTime,
+        empId: selectedRow.empId,
+        empName: selectedRow.empName,
+        empEmail: selectedRow.empEmail,
+        requestType: selectedRow.requestType,
+        address: selectedRow.address,
+        geoCode: selectedRow.geoCode,
+        mob: selectedRow.mob,
+        zoneName: selectedRow.zoneName,
+        areaName: selectedRow.areaName,
+        nodal: selectedRow.nodal,
+        landMark: selectedRow.landMark,
+        status: newStatus,
+        officeId: selectedRow.officeId,
+      };
+      // }
+      const response = await TripService.changeRequestStatus(payload);
+      console.log("Updated status response data", response);
+      if(response.status === 200){
+        fetchSummary();
+      }
+      console.log("updated list ", updatedList);
+      setList(updatedList);
+      setSelectedRow(null);
+      console.log("selected row status inside update status>>>", selectedRow);
+    } catch (err) {
+      console.log("Error updating feedback status", err);
     }
   };
 
@@ -210,28 +209,17 @@ const MainComponent = () => {
     fetchAllOffices();
   }, []);
 
-  useEffect(() => {
-    console.log("selcted users: ", selectedUsers);
-  }, [selectedUsers]);
-
-  useEffect(() => {
-    console.log("Saved Employee ID: ", selectedEmployeeId);
-  }, [selectedEmployeeId]);
-
   return (
     <div>
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
           backgroundColor: "#f9f9f9",
           borderRadius: "10px",
           margin: "30px 0",
           padding: "0 13px",
         }}
       >
-        <div className="filterContainer" style={{}}>
+        <div className="filterContainer" style={{ flexWrap: "wrap" }}>
           {office.length > 0 && (
             <div style={{ minWidth: "180px" }} className="form-control-input">
               <FormControl fullWidth>
@@ -256,57 +244,32 @@ const MainComponent = () => {
             </div>
           )}
 
-          <div
-            className="form-control-input"
-            style={{ backgroundColor: "white" }}
-          >
-            <InputLabel style={{ backgroundColor: "#f9f9f9" }} htmlFor="date">
-              Date
-            </InputLabel>
-            <LocalizationProvider dateAdapter={AdapterMoment}>
-              <DatePicker
-                name="date"
-                format={DATE_FORMAT}
-                value={searchValues.date ? moment(searchValues.date) : null}
-                onChange={(e) =>
-                  handleFilterChange({
-                    target: { name: "date", value: e },
-                  })
-                }
-              />
-            </LocalizationProvider>
+          <div style={{ minWidth: "160px" }} className="form-control-input">
+            <FormControl fullWidth>
+              <InputLabel id="statusType-label">Status Type</InputLabel>
+              <Select
+                style={{ width: "160px", backgroundColor: "white" }}
+                labelId="statusType-label"
+                id="statusType"
+                name="status"
+                value={searchValues.status}
+                label="Status Type"
+                onChange={handleFilterChange}
+              >
+                {statusTypeOptions.map((item) => (
+                  <MenuItem
+                    value={item}
+                    style={{
+                      fontSize: "15px",
+                    }}
+                  >
+                    {item}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </div>
 
-          <div className="form-control-input" style={{ minWidth: "70px" }}>
-            <button
-              type="submit"
-              onClick={() => fetchSummary()}
-              className="btn btn-primary filterApplyBtn"
-            >
-              Apply
-            </button>
-          </div>
-
-          <div className="form-control-input" style={{ minWidth: "70px" }}>
-            <button
-              type="submit"
-              onClick={resetFilter}
-              className="btn btn-primary filterApplyBtn"
-            >
-              Reset
-            </button>
-          </div>
-        </div>
-        <div
-          className="filterContainer"
-          style={{
-            // backgroundColor: "yellow",
-            height: "120px",
-            display: "flex",
-            alignItems: "flex-end",
-            justifyContent: "flex-end",
-          }}
-        >
           <div
             style={{
               width: "300px",
@@ -342,7 +305,7 @@ const MainComponent = () => {
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Search by employee ID / name"
+                  label="Search by employee email"
                   onChange={searchForRM}
                   // size="medium"
                   style={{ backgroundColor: "#fff" }}
@@ -351,13 +314,23 @@ const MainComponent = () => {
             />
           </div>
 
-          <div className="form-control-input" style={{ minWidth: "90px" }}>
+          <div className="form-control-input" style={{ minWidth: "70px" }}>
             <button
-              type="search"
-              onClick={onSearchHandler}
+              type="submit"
+              onClick={() => fetchSummary()}
               className="btn btn-primary filterApplyBtn"
             >
-              Search
+              Apply
+            </button>
+          </div>
+
+          <div className="form-control-input" style={{ minWidth: "70px" }}>
+            <button
+              type="submit"
+              onClick={resetFilter}
+              className="btn btn-primary filterApplyBtn"
+            >
+              Reset
             </button>
           </div>
         </div>
@@ -404,14 +377,26 @@ const MainComponent = () => {
           >
             <Box sx={style}>
               {flag ? (
-                <ContactNumberChangeRequestModal onClose={handleModalClose} />
+                <ContactNumberChangeRequestModal
+                  onClose={handleModalClose}
+                  phoneRequestDetails={selectedRow}
+                  updatedStatus={updateRequestStatus}
+                />
               ) : (
-                <AddressChangeRequestModal onClose={handleModalClose} />
+                <AddressChangeRequestModal
+                  onClose={handleModalClose}
+                  addressRequestDetails={selectedRow}
+                  updatedStatus={updateRequestStatus}
+                />
               )}
             </Box>
           </Modal>
         </div>
-        <ChangeRequestTable list={list} onRowsSelected={handleRowsSelected} />
+        <ChangeRequestTable
+          list={list}
+          selectedRow={selectedRow}
+          onRowsSelected={handleRowsSelected}
+        />
       </div>
     </div>
   );

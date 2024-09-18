@@ -1,6 +1,7 @@
 import { Autocomplete, Box, Grid, Modal, TextField } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import VerifyGeocodeModal from "./verifyGeocodeModal";
+import TripService from "@/services/trip.service";
 
 const style = {
   position: "absolute",
@@ -14,30 +15,41 @@ const style = {
 };
 
 const AddressChangeRequestModal = (props) => {
-  const { onClose } = props;
+  const { onClose, addressRequestDetails, updatedStatus, } = props;
   const [remarks, setRemarks] = useState("");
   const [remarksError, setRemarksError] = useState(false);
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [openGeocodeModal, setOpenGeocodeModal] = useState(false);
+  const [userDetails, setUserDetails] = useState({});
+
+  const fetchUserDetails = async (e) => {
+    try {
+      const response = await TripService.getEmployeeById(addressRequestDetails.empId);
+      console.log("User Details>>>", response.data);
+      setUserDetails(response.data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const requestData = [
     {
       oldAddress: {
-        Address: "Noida Sector 59",
-        Landmark: "Near Wave Mall",
-        Geocode: "28.5586, 77.3422",
-        Zone: "Noida",
-        Area: "Sector 59",
-        "Nodal Point": "Sector 59 Metro Station",
+        Address: userDetails.address,
+        Landmark: userDetails.landmark, 
+        Geocode: userDetails.geoCode,
+        Zone: userDetails.zoneName,
+        Area: userDetails.areaName,
+        "Nodal Point": userDetails.nodal,
       },
       newAddress: {
-        Address: "Laxmi Nagar",
-        Landmark: "Near Laxmi Nagar Metro Station",
-        Geocode: "28.63107, 77.27704",
-        Zone: "Delhi",
-        Area: "Laxmi Nagar",
-        "Nodal Point": "Laxmi Nagar Metro Station",
+        Address: addressRequestDetails.address,
+        Landmark: addressRequestDetails.landmark,
+        Geocode: addressRequestDetails.geoCode,
+        Zone: addressRequestDetails.zoneName,
+        Area: addressRequestDetails.areaName,
+        "Nodal Point": addressRequestDetails.nodal,
       },
     },
   ];
@@ -45,21 +57,22 @@ const AddressChangeRequestModal = (props) => {
   const handleModalClose = () => {
     console.log("modal closed");
     onClose();
+    updatedStatus("APPROVE");
   };
 
   const handleReject = () => {
     if (remarks.trim() === "") {
       setRemarksError(true);
     } else {
-      console.log("Rejected with remarks:", remarks);
+      console.log("Rejected with remarks: ", remarks);
       setRemarksError(false);
-      handleModalClose();
+      updatedStatus("REJECT");
+      onClose();
     }
   };
 
   const handleGeocodeModalOpen = () => {
     console.log("Verify btn clicked & address modal closed");
-    console.log("Verify geocode modal open");
     setOpenGeocodeModal(true);
     console.log("lat>>>", lat, "lng>>>", lng);
   };
@@ -87,6 +100,10 @@ const AddressChangeRequestModal = (props) => {
     setLat(parseFloat(geocodeSeparate[0]));
     setLng(parseFloat(geocodeSeparate[1]));
   }, []);
+
+  useEffect(() => {
+    fetchUserDetails();
+  }, [addressRequestDetails]);
 
   return (
     <div
@@ -171,7 +188,7 @@ const AddressChangeRequestModal = (props) => {
           </p>
         </div>
 
-        <div style={{ }}>
+        <div style={{}}>
           <p
             style={{
               fontSize: "15px",
