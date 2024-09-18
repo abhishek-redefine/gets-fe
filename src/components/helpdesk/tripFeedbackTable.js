@@ -4,7 +4,7 @@ import {
   useMaterialReactTable,
 } from "material-react-table";
 
-const TripFeedbackTable = ({ list, selectedRow, onRowsSelected }) => {
+const TripFeedbackTable = ({ list, onRowsSelected }) => {
   const [data, setData] = useState([]);
   const [rowSelection, setRowSelection] = useState({});
 
@@ -74,22 +74,15 @@ const TripFeedbackTable = ({ list, selectedRow, onRowsSelected }) => {
   });
 
   useEffect(() => {
-    tableInstance.getSelectedRowModel().flatRows[0]?.original &&
-      onRowsSelected(tableInstance.getSelectedRowModel().flatRows[0]?.original);
+    tableInstance.getSelectedRowModel().flatRows[0]?.original ?
+      onRowsSelected(tableInstance.getSelectedRowModel().flatRows[0]?.original)
+      :
+      onRowsSelected(null);
   }, [rowSelection]);
 
   useEffect(() => {
     setData(list);
   }, [list]);
-
-  useEffect(() => {
-    if (selectedRow) {
-      const newRowSelection = { [selectedRow.tripId]: true };
-      setRowSelection(newRowSelection);
-    } else {
-      setRowSelection({});
-    }
-  }, [selectedRow]);
 
   return (
     <div>
