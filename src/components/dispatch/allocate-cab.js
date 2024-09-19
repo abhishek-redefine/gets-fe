@@ -417,9 +417,6 @@ const AllocateCab = ({ tripList, allocationComplete,setTripList }) => {
           return (
             <>
               {
-                row.original.vehicleNumber ?
-                  <div>{row.original.vehicleNumber}</div>
-                  :
                   <VehicleNumberCell
                     value={value}
                     rowData={row}
@@ -526,13 +523,24 @@ const AllocateCab = ({ tripList, allocationComplete,setTripList }) => {
     try {
       console.log("Data before updating >>>>>>>", tripList);
       const response = await DispatchService.allocateVehicle(tripId, vehicleId);
-      // console.log(response);
+      console.log(response.data);
+      const responseStr = response.data;
+      const driverStr = responseStr.split(' ');
+      console.log(driverStr);
+      let result ;
+      if (driverStr[0].endsWith("is")) {
+        result = driverStr[0].substring(0, driverStr[0].length - 2); // Remove the last 2 characters ("is")
+        console.log(result); // Output: "Amit"
+      } else {
+        result = driverStr[0];
+        console.log(driverStr[0]); // If it doesn't end with "is", return the original string
+      }
   
-      if (response.status === 201) {
+      if (response.status === 200) {
         dispatch(toggleToast({ message: 'Cab allocated to the trip successfully!', type: 'success' }));
       }
   
-      if (vehicleNumber && response.data?.driverName) {
+      if (vehicleNumber && response.status === 200) {
         setTripList(prevTripList => {
           if (Array.isArray(prevTripList)) {
             const updatedData = prevTripList.map(item => {
@@ -540,7 +548,7 @@ const AllocateCab = ({ tripList, allocationComplete,setTripList }) => {
                 return {
                   ...item,
                   vehicleNumber: vehicleNumber,
-                  driverName: response.data.driverName
+                  driverName: result
                 };
               }
               return item;

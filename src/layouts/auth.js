@@ -11,6 +11,7 @@ import RoleService from '@/services/role.service';
 import { setAllUserPermissions } from '@/redux/user.slice';
 import { MODULE_NAMES } from '@/constants/url.constants';
 import Script from 'next/script'
+import 'leaflet/dist/leaflet.css';
 
 const withAuthLayout = (WrappedComponent) => {
 
