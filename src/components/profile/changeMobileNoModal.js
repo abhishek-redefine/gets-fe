@@ -28,13 +28,7 @@ const AddressChangeModal = (props) => {
         empName: userDetails.name,
         empEmail: userDetails.email,
         requestType: "mobile",
-        address: userDetails.address,
-        geoCode: userDetails.geoCode,
         mob: values.mob,
-        zoneName: userDetails.zoneName,
-        areaName: userDetails.areaName,
-        nodal: userDetails.nodal,
-        landMark: userDetails.landMark,
         status: "RAISED",
         officeId: userDetails.primaryOfficeId,
       };
