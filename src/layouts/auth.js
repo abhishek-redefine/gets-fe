@@ -144,6 +144,7 @@ const withAuthLayout = (WrappedComponent) => {
                 'aria-labelledby': 'menu-buttons',
               }}
             >
+              <MenuItem ><Link href='/profile/profile-overview'>Profile</Link></MenuItem>
               <MenuItem onClick={logoutUser}>Logout</MenuItem>
             </Menu>
           </div>

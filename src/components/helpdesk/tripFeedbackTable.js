@@ -11,6 +11,11 @@ const TripFeedbackTable = ({ list, onRowsSelected }) => {
   const columns = useMemo(
     () => [
       {
+        accessorKey: "id",
+        header: "Feedback ID",
+        size: 150,
+      },
+      {
         accessorKey: "tripId",
         header: "Trip ID",
         size: 150,
@@ -55,6 +60,11 @@ const TripFeedbackTable = ({ list, onRowsSelected }) => {
         size: 150,
       },
       {
+        accessorKey: "remarks",
+        header: "Remarks",
+        size: 150,
+      },
+      {
         accessorKey: "feedbackStatus",
         header: "Status",
         size: 150,
@@ -68,7 +78,7 @@ const TripFeedbackTable = ({ list, onRowsSelected }) => {
     data,
     enableRowSelection: true,
     enableMultiRowSelection: false,
-    getRowId: (originalRow) => originalRow?.tripId,
+    getRowId: (originalRow) => originalRow?.id,
     state: { rowSelection },
     onRowSelectionChange: setRowSelection,
   });
@@ -88,7 +98,7 @@ const TripFeedbackTable = ({ list, onRowsSelected }) => {
     <div>
       <MaterialReactTable
         table={tableInstance}
-        getRowId={(row) => row.tripId}
+        getRowId={(row) => row.id}
       />
     </div>
   );

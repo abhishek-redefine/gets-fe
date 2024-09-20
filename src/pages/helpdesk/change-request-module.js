@@ -223,7 +223,7 @@ const MainComponent = () => {
 
   useEffect(() => {
     fetchSummary();
-  }, [pagination, searchValues]);
+  }, []);
 
   return (
     <div>
