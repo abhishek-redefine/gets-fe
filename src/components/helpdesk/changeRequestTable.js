@@ -11,6 +11,11 @@ const ChangeRequestTable = ({ list, onRowsSelected }) => {
   const columns = useMemo(
     () => [
       {
+        accessorKey: "id",
+        header: "Request ID",
+        size: 150,
+      },
+      {
         accessorKey: "empId",
         header: "Employee ID",
         size: 150,
@@ -49,7 +54,7 @@ const ChangeRequestTable = ({ list, onRowsSelected }) => {
     data,
     enableRowSelection: true,
     enableMultiRowSelection: false,
-    getRowId: (originalRow) => originalRow?.empId,
+    getRowId: (originalRow) => originalRow?.id,
     state: { rowSelection },
     onRowSelectionChange: setRowSelection,
   });
@@ -68,7 +73,7 @@ const ChangeRequestTable = ({ list, onRowsSelected }) => {
 
   return (
     <div>
-      <MaterialReactTable table={tableInstance} getRowId={(row) => row.empId} />
+      <MaterialReactTable table={tableInstance} getRowId={(row) => row.id} />
     </div>
   );
 };
