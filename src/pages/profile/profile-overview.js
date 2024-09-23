@@ -106,20 +106,36 @@ const ProfileOverview = () => {
       <div
         style={{ display: "flex", alignItems: "center", marginBottom: "30px" }}
       >
-        <img
-          src=""
-          alt="profile-img"
-          style={{
-            borderRadius: "50%",
-            width: "80px",
-            height: "80px",
-            marginRight: "20px",
-            backgroundColor: "pink",
-          }}
-        />
+        {userDetails.gender === "MALE" ? (
+          <img
+            src="/images/maleUserIcon.svg"
+            width={60}
+            height={60}
+            alt="profile-img"
+            style={{
+              borderRadius: "50%",
+              marginRight: "20px",
+              padding: "8px 5px 5px",
+              backgroundColor: "#e5e5e5",
+            }}
+          />
+        ) : (
+          <img
+            src="/images/femaleUserIcon.svg"
+            width={60}
+            height={60}
+            alt="profile-img"
+            style={{
+              borderRadius: "50%",
+              marginRight: "20px",
+              padding: "8px 5px 5px",
+              backgroundColor: "#e5e5e5",
+            }}
+          />
+        )}
         <div>
           <h3>{userDetails.name}</h3>
-          <p style={{marginTop: 2}}>Joined {userDetails.startDate}</p>
+          <p style={{ marginTop: 2 }}>Joined {userDetails.startDate}</p>
         </div>
       </div>
 
@@ -159,7 +175,7 @@ const ProfileOverview = () => {
                     border: "1px solid #ddd",
                     backgroundColor: "#f4f4f4",
                     color: "#333",
-                    overflow: 'hidden'
+                    overflow: "hidden",
                   }}
                 >
                   {value}
