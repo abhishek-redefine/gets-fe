@@ -26,7 +26,7 @@ const SearchBookings = () => {
         display: "Booking Date"
     },
     {
-        key: "employeeId",
+        key: "employeeEmailId",
         display: "Employee Id"
     },
     {

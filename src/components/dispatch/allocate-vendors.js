@@ -66,7 +66,7 @@ const AllocateVendor = ({ tripList }) => {
         size: 150,
       },
       {
-        accessorKey: 'vendorName',
+        accessorKey: 'actualVendorName',
         header: "Vendor Name",
         size: 150,
       },
@@ -108,7 +108,7 @@ const AllocateVendor = ({ tripList }) => {
       if (selectedRows[item.id]) {
         return {
           ...item,
-          vendorName: selectedVendor,
+          actualVendorName: selectedVendor,
         };
       }
       return item;
