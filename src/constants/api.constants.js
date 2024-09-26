@@ -151,4 +151,5 @@ export const API_PATH = {
   EMP : '/emp',
   RAISE_REQUEST : '/raiseRequest',
   FIND_BY_EMAIL : "/findByEmail",
+  PREFERENCE : "/preference", 
 };

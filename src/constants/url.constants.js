@@ -11,5 +11,6 @@ export const MODULE_NAMES = {
     TRACKING: "T",
     HELPDESK: "H",
     BILLING: "Bi",
-    REPORTS: "R"
+    REPORTS: "R",
+    CONFIGURATIONS: "AS",
 };
