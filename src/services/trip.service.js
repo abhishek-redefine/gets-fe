@@ -86,7 +86,6 @@ const getEmployeeById = (id) => {
     .then((response) => {
       return response;
     });
-  s;
 };
 
 const TripService = {
