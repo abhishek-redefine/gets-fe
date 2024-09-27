@@ -143,6 +143,9 @@ export const API_PATH = {
   APPLY_PENALTY_ON_TRIP : '/applyPenaltyOnTrip',
   UPDATE_TRIP_FOR_ISUUE : '/updateTripForIssue',
   STICKER : '/sticker',
+  OVERSPEED : '/overSpeed',
+  ALERT : '/alert',
+  COUNT : '/count',
   SEARCH : '/search',
   VEHICLE_DRIVER_MAPPING : '/vehicleDriverMapping',
   FEEDBACK : '/feedback',
@@ -164,4 +167,5 @@ export const API_PATH = {
   OPS_ISSUE : '/opsIssue',
   AUDIT_APPROVAL : '/auditApproval',
   AUDIT : '/audit',
+  PREFERENCE : "/preference", 
 };

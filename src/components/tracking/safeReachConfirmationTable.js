@@ -1,18 +1,16 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
-import { safeReachConfirmationData } from "@/sampleData/safeReachConfirmationData";
 
-
-const SafeReachConfirmationTable = () => {
-  const [data, setData] = useState(safeReachConfirmationData);
+const SafeReachConfirmationTable = ({tripList}) => {
+  const [data, setData] = useState(tripList || []);
 
   const columns = useMemo(
     () => [
       {
-        accessorKey: "officeId",
+        accessorKey: "primaryOfficeId",
         header: "Office ID",
         size: 100,
       },
@@ -20,6 +18,9 @@ const SafeReachConfirmationTable = () => {
         accessorKey: "tripId",
         header: "Trip ID",
         size: 100,
+        Cell: ({ cell }) => {
+          return <div>TRIP-{cell.getValue()}</div>;
+        },
       },
       {
         accessorKey: "shiftTime",
@@ -32,7 +33,7 @@ const SafeReachConfirmationTable = () => {
         size: 100,
       },
       {
-        accessorKey: "empName",
+        accessorKey: "name",
         header: "Employee Name",
         size: 100,
       },
@@ -66,11 +67,11 @@ const SafeReachConfirmationTable = () => {
         header: "Updated At",
         size: 100,
       },
-      {
-        accessorKey: "Action",
-        header: "Action",
-        size: 100,
-      },
+      // {
+      //   accessorKey: "Action",
+      //   header: "Action",
+      //   size: 100,
+      // },
     ],
     []
   );
@@ -81,6 +82,12 @@ const SafeReachConfirmationTable = () => {
     enableRowSelection: true, 
     enableMultiRowSelection: false,
   });
+
+  useEffect(()=>{
+    if(tripList){
+      setData(tripList)
+    }
+  },[tripList])
 
   return (
     <div>

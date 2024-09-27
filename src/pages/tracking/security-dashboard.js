@@ -11,22 +11,29 @@ import tracking from "@/layouts/tracking";
 import { setMasterData } from "@/redux/master.slice";
 import MasterDataService from "@/services/masterdata.service";
 import SecurityDashboardTable from "@/components/tracking/securityDashboardTable";
+import DispatchService from "@/services/dispatch.service";
+import TrackingService from "@/services/tracking.service";
 
 const MainComponent = () => {
+  const [tripList, setTripList] = useState([]);
   const [office, setOffice] = useState([]);
   const [searchValues, setSearchValues] = useState({
     officeId: "",
     shiftType: "",
-    date: moment().format("YYYY-MM-DD"),
+    tripDateStr: moment().format("YYYY-MM-DD"),
+    isCabAllocated: true,
   });
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
+  const [overSpeedCount, setOverSpeedCount] = useState(0);
+  const [sosCount, setSosCount] = useState(0);
+  const [panicCount, setPanicCount] = useState(0);
 
   const handleFilterChange = (e) => {
     const { target } = e;
     const { value, name } = target;
     let newSearchValues = { ...searchValues };
-    if (name === "date") newSearchValues[name] = value.format("YYYY-MM-DD");
+    if (name === "tripDateStr") newSearchValues[name] = value.format("YYYY-MM-DD");
     else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
   };
@@ -42,7 +49,7 @@ const MainComponent = () => {
         (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const fetchMasterData = async (type) => {
@@ -53,7 +60,7 @@ const MainComponent = () => {
         console.log(data);
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const resetFilter = () => {
@@ -65,12 +72,97 @@ const MainComponent = () => {
     setSearchValues(allSearchValue);
   };
 
+  const [pagination, setPagination] = useState({
+    page: 0,
+    size: 10,
+  })
+
+  const fetchSummary = async () => {
+    try {
+      const queryParams = new URLSearchParams(pagination);
+      let allSearchValues = { ...searchValues };
+      Object.keys(allSearchValues).forEach((objKey) => {
+        if (allSearchValues[objKey] === null || allSearchValues[objKey] === "") {
+          delete allSearchValues[objKey];
+        }
+      });
+
+      const response = await DispatchService.getTripSearchByBean(queryParams, allSearchValues);
+      console.log(response.data.data);
+      const data = response.data.data;
+      if (data.length > 0) {
+        // let temp = [];
+        // data.map((val) => {
+        //   temp.push
+        // })
+        // console.log(temp)
+        setTripList(data);
+      } else {
+        setTripList([]);
+      }
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
   useEffect(() => {
     if (!shiftTypes?.length) {
       fetchMasterData(MASTER_DATA_TYPES.SHIFT_TYPE);
     }
     fetchAllOffices();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      if (tripList.length > 0) {
+        // const dateStr = moment().format('YYYY-MM-DD');
+        const dateStr = searchValues.tripDateStr;
+        const SOSCountRes = await TrackingService.getAlertCountSOS(dateStr, 'SOS');
+        const PanicCountRes = await TrackingService.getAlertCountSOS(dateStr, 'PANIC');
+        const overspeedCountRes = await TrackingService.getAlertCountOverspeed(dateStr, "OVERSPEED");
+
+        console.log(SOSCountRes.data, PanicCountRes.data, overspeedCountRes.data);
+        setOverSpeedCount(overspeedCountRes.data);
+        setPanicCount(PanicCountRes.data);
+        setSosCount(SOSCountRes.data);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  const fetchOverspeedTrips = async() =>{
+    try{
+      // const dateStr = moment().format('YYYY-MM-DD');
+      const dateStr = searchValues.tripDateStr;
+      const response = await TrackingService.getOverSpeedTripList(dateStr, "OVERSPEED");
+      console.log(response.data);
+      setTripList(response.data);
+    }catch(err){
+      console.log(err);
+    }
+  }
+
+  const fetchAlertTrips = async(type) =>{
+    try{
+      // const dateStr = moment().format('YYYY-MM-DD');
+      const dateStr = searchValues.tripDateStr;
+      const response = await TrackingService.getAlertTripList(dateStr,type);
+      console.log(response.data);
+      setTripList(response.data);
+    }catch(err){
+      console.log(err);
+    }
+  }
+
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(() => {
+      fetchData();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [tripList]);
 
   return (
     <div>
@@ -116,12 +208,12 @@ const MainComponent = () => {
           </InputLabel>
           <LocalizationProvider dateAdapter={AdapterMoment}>
             <DatePicker
-              name="date"
+              name="tripDateStr"
               format={DATE_FORMAT}
-              value={searchValues.date ? moment(searchValues.date) : null}
+              value={searchValues.tripDateStr ? moment(searchValues.tripDateStr) : null}
               onChange={(e) =>
                 handleFilterChange({
-                  target: { name: "date", value: e },
+                  target: { name: "tripDateStr", value: e },
                 })
               }
             />
@@ -206,16 +298,17 @@ const MainComponent = () => {
             }}
           >
             <button
-              className="btn btn-primary"
+              className={overSpeedCount > 0 ? "btn btn-warning" : "btn btn-primary"}
               style={{
                 width: "auto",
                 padding: "10px 20px",
                 margin: "0 10px",
               }}
+              onClick={()=>fetchOverspeedTrips()}
             >
-              Overspeed
+              {`${overSpeedCount} Overspeed`}
             </button>
-            <button
+            {/* <button
               className="btn btn-primary"
               style={{
                 width: "auto",
@@ -224,28 +317,30 @@ const MainComponent = () => {
               }}
             >
               Vehicle Stoppage
-            </button>
+            </button> */}
             <button
-              className="btn btn-primary"
+              className={sosCount > 0 ? "btn btn-warning" : "btn btn-primary"}
               style={{
                 width: "auto",
                 padding: "10px 20px",
                 margin: "0 10px",
               }}
+              onClick={()=>fetchAlertTrips('SOS')}
             >
-              SOS
+              {`${sosCount} SOS`}
             </button>
             <button
-              className="btn btn-primary"
+              className={panicCount > 0 ? "btn btn-warning" : "btn btn-primary"}
               style={{
                 width: "auto",
                 padding: "10px 20px",
                 margin: "0 10px",
               }}
+              onClick={()=>fetchAlertTrips('PANIC')}
             >
-              Panic Button
+              {`${panicCount} Panic Button`}
             </button>
-            <button
+            {/* <button
               className="btn btn-primary"
               style={{
                 width: "auto",
@@ -264,10 +359,10 @@ const MainComponent = () => {
               }}
             >
               Device Issue
-            </button>
+            </button> */}
           </div>
         </div>
-        <SecurityDashboardTable />
+        <SecurityDashboardTable tripList={tripList} />
       </div>
     </div>
   );

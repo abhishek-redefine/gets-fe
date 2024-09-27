@@ -11,13 +11,15 @@ import tracking from "@/layouts/tracking";
 import { setMasterData } from "@/redux/master.slice";
 import MasterDataService from "@/services/masterdata.service";
 import SafeReachConfirmationTable from "@/components/tracking/safeReachConfirmationTable";
+import DispatchService from "@/services/dispatch.service";
 
 const MainComponent = () => {
+  const [tripList, setTripList] = useState([]);
   const [office, setOffice] = useState([]);
   const [searchValues, setSearchValues] = useState({
     officeId: "",
     shiftType: "",
-    date: moment().format("YYYY-MM-DD"),
+    tripDateStr: moment().format("YYYY-MM-DD"),
   });
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
@@ -26,7 +28,7 @@ const MainComponent = () => {
     const { target } = e;
     const { value, name } = target;
     let newSearchValues = { ...searchValues };
-    if (name === "date") newSearchValues[name] = value.format("YYYY-MM-DD");
+    if (name === "tripDateStr") newSearchValues[name] = value.format("YYYY-MM-DD");
     else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
   };
@@ -72,6 +74,45 @@ const MainComponent = () => {
     fetchAllOffices();
   }, []);
 
+  const [pagination, setPagination] = useState({
+    page: 0,
+    size: 10,
+  })
+
+  const fetchSummary = async () => {
+    try {
+      const queryParams = new URLSearchParams(pagination);
+      let allSearchValues = { ...searchValues };
+      Object.keys(allSearchValues).forEach((objKey) => {
+        if (allSearchValues[objKey] === null || allSearchValues[objKey] === "") {
+          delete allSearchValues[objKey];
+        }
+      });
+
+      const response = await DispatchService.getTripSearchByBean(queryParams, allSearchValues);
+      console.log(response.data.data);
+      const data = response.data.data;
+      if (data.length > 0) {
+        const temp = await Promise.all(
+          data.map(async (val) => {
+            const tripMemberResponse = await DispatchService.tripMembers(val.id);
+            return {
+              ...tripMemberResponse.data[0], 
+              tripId: val.id,
+              shiftTime : val.shiftTime
+            };
+          })
+        );
+        console.log(temp);
+        setTripList(temp);
+      } else {
+        setTripList([]);
+      }
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
   return (
     <div>
       <div
@@ -116,12 +157,12 @@ const MainComponent = () => {
           </InputLabel>
           <LocalizationProvider dateAdapter={AdapterMoment}>
             <DatePicker
-              name="date"
+              name="tripDateStr"
               format={DATE_FORMAT}
-              value={searchValues.date ? moment(searchValues.date) : null}
+              value={searchValues.tripDateStr ? moment(searchValues.tripDateStr) : null}
               onChange={(e) =>
                 handleFilterChange({
-                  target: { name: "date", value: e },
+                  target: { name: "tripDateStr", value: e },
                 })
               }
             />
@@ -215,7 +256,7 @@ const MainComponent = () => {
             >
               Update Status
             </button>
-            <button
+            {/* <button
               className="btn btn-primary"
               style={{
                 width: "auto",
@@ -224,10 +265,10 @@ const MainComponent = () => {
               }}
             >
               View Audit Logs
-            </button>
+            </button> */}
           </div>
         </div>
-        <SafeReachConfirmationTable />
+        <SafeReachConfirmationTable tripList={tripList}/>
       </div>
     </div>
   );
