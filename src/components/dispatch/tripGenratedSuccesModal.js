@@ -1,5 +1,4 @@
 import * as React from "react";
-import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 
 const ConfirmationModal = ({ pass, onClose, type, reason }) => {
@@ -28,13 +27,13 @@ const ConfirmationModal = ({ pass, onClose, type, reason }) => {
               display: "flex",
               flexFlow: "column",
               alignItems: "center",
-              // padding: "50px",
+              padding: "50px",
             }}
           >
             <img
-              src="/images/confirmationCheck.jpg"
-              width={270}
-              height={270}
+              src="/images/greenTick.svg"
+              width={150}
+              height={150}
               alt="Confirmation"
               style={{ margin: "30px 0 0 " }}
             />
@@ -43,7 +42,7 @@ const ConfirmationModal = ({ pass, onClose, type, reason }) => {
               style={{
                 fontSize: "25px",
                 fontWeight: "bold",
-                margin: "50px 0 150px",
+                margin: "70px 0 190px",
                 textAlign: "center",
                 fontFamily: "DM Sans, sans-serif",
                 // backgroundColor: "green"
@@ -60,7 +59,7 @@ const ConfirmationModal = ({ pass, onClose, type, reason }) => {
                 backgroundColor: "#f6ce47",
                 border: "none",
                 borderRadius: "6px",
-                padding: "13px 35px",
+                padding: "15px 35px",
                 fontSize: "16px",
                 cursor: "pointer",
                 zIndex: 1,
@@ -83,9 +82,9 @@ const ConfirmationModal = ({ pass, onClose, type, reason }) => {
             }}
           >
             <img
-              src="/images/confirmationCross.jpg"
-              width={180}
-              height={180}
+              src="/images/cross.svg"
+              width={150}
+              height={150}
               alt="Confirmation"
               style={{ margin: "30px 0 0 " }}
             />
@@ -94,7 +93,7 @@ const ConfirmationModal = ({ pass, onClose, type, reason }) => {
               style={{
                 fontSize: "25px",
                 fontWeight: "bold",
-                margin: "50px 0 30px",
+                margin: "70px 0 30px",
                 textAlign: "center",
                 fontFamily: "DM Sans, sans-serif",
                 // backgroundColor: "green"
@@ -108,7 +107,7 @@ const ConfirmationModal = ({ pass, onClose, type, reason }) => {
               sx={{
                 fontSize: "20px",
                 fontWeight: "bold",
-                margin: "0 0 90px",
+                margin: "0 0 80px",
                 textAlign: "center",
                 fontFamily: "DM Sans, sans-serif",
                 // color: "pink"
@@ -124,7 +123,7 @@ const ConfirmationModal = ({ pass, onClose, type, reason }) => {
                 backgroundColor: "#f6ce47",
                 border: "none",
                 borderRadius: "6px",
-                padding: "13px 35px",
+                padding: "15px 35px",
                 fontSize: "16px",
                 cursor: "pointer",
               }}

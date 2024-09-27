@@ -146,4 +146,13 @@ export const API_PATH = {
   OVERSPEED : '/overSpeed',
   ALERT : '/alert',
   COUNT : '/count',
+  SEARCH : '/search',
+  VEHICLE_DRIVER_MAPPING : '/vehicleDriverMapping',
+  FEEDBACK : '/feedback',
+  CHANGE_REQUEST: '/changeRequest',
+  PROCESS_REQUEST: "/processRequest",
+  EMP : '/emp',
+  RAISE_REQUEST : '/raiseRequest',
+  FIND_BY_EMAIL : "/findByEmail",
+  PREFERENCE : "/preference", 
 };

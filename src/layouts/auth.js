@@ -124,13 +124,11 @@ const withAuthLayout = (WrappedComponent) => {
               {getModulePermissions(MODULE_NAMES.BOOKING) && <Link onClick={() => changeRoute('bookings')} className={currentActiveState === 'bookings' && 'selected' || ''} href='/bookings/search-bookings'>Bookings</Link>}
               {getModulePermissions(MODULE_NAMES.DISPATCH) && <Link onClick={() => changeRoute('dispatch')} className={currentActiveState === 'dispatch' && 'selected' || ''} href='/dispatch/routing'>Dispatch</Link>}
               {getModulePermissions(MODULE_NAMES.TRACKING) && <Link onClick={() => changeRoute('tracking')} className={currentActiveState === 'tracking' && 'selected' || ''} href='/tracking/live-tracking'>Tracking</Link>}
-              {/* <Link onClick={() => changeRoute('tracking')} className={currentActiveState === 'tracking' && 'selected' || ''} href='/tracking'>Tracking</Link> */}
-              {/*<Link onClick={() => changeRoute('billing')} className={currentActiveState === 'billing' && 'selected' || ''} href='/billing'>Billing</Link> */}
               {getModulePermissions(MODULE_NAMES.BILLING) && <Link onClick={() => changeRoute('billing')} className={currentActiveState === 'billing' && 'selected' || ''} href='/billing/billing-issues'>Billing</Link>}
               {getModulePermissions(MODULE_NAMES.REPORTS) && <Link onClick={() => changeRoute('reports')} className={currentActiveState === 'reports' && 'selected' || ''} href='/reports/operations-reports'>Reports</Link>}
               {getModulePermissions(MODULE_NAMES.COMPLIANCE) && <Link onClick={() => changeRoute('compliance')} className={currentActiveState === 'compliance' && 'selected' || ''} href='/compliance/driver-profile'>Compliance</Link>}
               {getModulePermissions(MODULE_NAMES.ADMIN_SETTINGS) && <Link onClick={() => changeRoute('admin-settings')} className={currentActiveState === 'admin-settings' && 'selected' || ''} href='/admin-settings/access-control'>Admin Settings</Link>}
-              {/* <Link onClick={() => changeRoute('configurations')} className={currentActiveState === 'configurations' && 'selected' || ''} href='/configurations'>Configurations</Link> */}
+              {getModulePermissions(MODULE_NAMES.CONFIGURATIONS) && <Link onClick={() => changeRoute('configurations')} className={currentActiveState === 'configurations' && 'selected' || ''} href='/configurations/offices'>Configurations</Link>}
             </nav>
           </div>
           <div className='headerBellContainer'>

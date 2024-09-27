@@ -299,9 +299,9 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
 
   const addNewVehicleDetailsSubmit = async (values) => {
     try {
-      let allValues = {...values};
+      let allValues = { ...values };
       allValues.garageGeoCode = initialValues.garageGeoCode;
-      console.log(allValues,EditVehicleData);
+      console.log(allValues, EditVehicleData);
       if (EditVehicleData) {
         allValues.id = vehicleId;
         // if(vendorName === ""){
@@ -429,7 +429,7 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
           type: "success",
         })
       );
-      
+
       SetAddVehicleOpen(false);
     } catch (e) {}
   };
@@ -619,12 +619,15 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
 
   const handleGeocode = (geocode) => {
     console.log("Here in parent geocode: ", geocode);
-    let allValues = {...initialValues}
-    allValues.garageGeoCode = geocode;
+    let geocodeSeparate = geocode.split(",");
+    geocodeSeparate[0] = parseFloat(geocodeSeparate[0]).toFixed(5);
+    geocodeSeparate[1] = parseFloat(geocodeSeparate[1]).toFixed(5);
+    let allValues = { ...initialValues };
+    allValues.garageGeoCode = `${geocodeSeparate[0]}, ${geocodeSeparate[1]}`;
     setInitialValues(allValues);
     setCoordinates((prevValues) => ({
       ...prevValues,
-      geoCode: geocode,
+      geoCode: `${geocodeSeparate[0]}, ${geocodeSeparate[1]}`,
     }));
   };
 
@@ -961,7 +964,10 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
                       type="button"
                       onClick={() => {
                         setDocumentUrl(
-                          EditVehicleData.insuranceUrl.replace("/getsdev1/", "/")
+                          EditVehicleData.insuranceUrl.replace(
+                            "/getsdev1/",
+                            "/"
+                          )
                         );
                         handleOpen();
                       }}

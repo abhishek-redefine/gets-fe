@@ -9,13 +9,16 @@ import {
 import React, { useEffect, useState } from "react";
 
 const TripFeedbackModal = (props) => {
-  const { onClose, currentStatus } = props;
+  const { onClose, currentStatus, statusUpdated } = props;
   const [remarks, setRemarks] = useState("");
   // const [remarksError, setRemarksError] = useState(false);
   const [updatedStatus, setUpdatedStatus] = useState(currentStatus);
+  // const [newStatus, setNewStatus] = useState("");
 
   const handleModalClose = () => {
     console.log("modal closed");
+    statusUpdated(updatedStatus);
+    // setUpdatedStatus(updatedStatus);
     onClose();
   };
 
@@ -24,10 +27,11 @@ const TripFeedbackModal = (props) => {
     handleModalClose();
   };
 
-  const status = ["In Progress", "Pending", "Close"];
+  const status = ["IN_PROGRESS", "PENDING", "CLOSED"];
 
   const handleFilterChange = (event) => {
-    setUpdatedStatus(event.target.value);
+    const newStatus = event.target.value;
+    setUpdatedStatus(newStatus);
   };
 
   useEffect(() => {
@@ -76,7 +80,12 @@ const TripFeedbackModal = (props) => {
         noValidate
         autoComplete="off"
       >
-        <InputLabel id="remarks-label" style={{fontSize: "15px", color: "#000", marginBottom: "10px"}}>Remarks (optional)</InputLabel>
+        <InputLabel
+          id="remarks-label"
+          style={{ fontSize: "15px", color: "#000", marginBottom: "10px" }}
+        >
+          Remarks (optional)
+        </InputLabel>
         <TextField
           id="outlined-basic"
           label="Write your remarks"

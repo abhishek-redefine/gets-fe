@@ -1,6 +1,7 @@
 import {
   Box,
   FormControl,
+  InputLabel,
   MenuItem,
   Modal,
   Select,
@@ -13,25 +14,91 @@ import ViewMapModal from "./viewMapModal";
 import TripHistoryModal from "./tripHistoryModal";
 import AddEmployeeModal from "./addEmployeeModal";
 import { issueTypeData } from "@/sampleData/travelledEmployeesInfoData";
+import ComplianceService from "@/services/compliance.service";
 
 const style = {
   position: "absolute",
-  top: "45%",
+  top: "55%",
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: 650,
   bgcolor: "background.paper",
-  height: 400,
+  height: "auto",
   borderRadius: 5,
 };
 
-const TripSheetEntryDetails = ({ onClose }) => {
+const TripSheetEntryDetails = ({ onClose, tripdetails }) => {
   const [data, setData] = useState(issueTypeData);
   const [selectedRow, setSelectedRow] = useState(null);
+  const [remarks, setRemarks] = useState("");
+  const [statusHistory, setStatusHistory] = useState([]);
+  const [vehicleData, setVehicleData] = useState([]);
+  const [noShowCount, setNoShowCount] = useState(0);
+
+  const pointHeaderLabel =
+    tripdetails[0].shiftType === "LOGIN" ? "Pickup Point" : "Drop Point";
 
   const [searchValues, setSearchValues] = useState({
     issueType: "",
   });
+
+  const IssueType = [
+    "Vehicle Not Assigned",
+    "Trip Not Started",
+    "Trip Not Ended",
+    "None",
+  ];
+
+  const TripInformation = {
+    "Trip Id": `Trip-${tripdetails[0].id}`,
+    "Office Id": vehicleData[0]?.officeId,
+    Date: tripdetails[0].date,
+    "Shift Type": tripdetails[0].shiftType,
+    "Shift Time": tripdetails[0].shiftTime,
+    "Trip Type": "Planned",
+    "Escort Trip": "Yes",
+    "Trip Status": "Completed",
+    "Planned Employees": data.length,
+    "Travelled Employees": data.length - noShowCount,
+  };
+
+  const [vehicleInformation, setVehicleInformation] = useState({
+    "Vehicle ID": tripdetails[0].vehicleId,
+    "Registration ID": "",
+    "Vehicle Type": "",
+    "Vehicle Model": "",
+    "Driver Name": "",
+    "Driver Phone No.": "",
+    "Sticker No.": "",
+  });
+
+  const [billingInformation1, setBillingInformation1] = useState({
+    "Planned Vendor Name": "",
+    "Actual Vendor Name": "",
+    "Planned Vehicle Type": "",
+    "Vehicle Fuel Type": "",
+    "Billing Zone": "",
+    Location: "Noida Sector 59",
+    "Planned Km.": "99",
+    "Actual Km.": "97",
+    "Reference Km.": "101",
+    "Final Km.": "",
+  });
+
+  const billingInformation1Fields = ["Billing Zone", "Final Km."];
+
+  const [billingInformation2, setBillingInformation2] = useState({
+    "Contract ID": "CID0001",
+    "Contract Type": "T&M",
+    "Trip Start Time": "",
+    "Trip End Time": "",
+    "Trip Duration": "",
+    "On Time Status": "",
+    "Delay Reason": "",
+    "Trip Remarks": "",
+  });
+
+  const OnTimeStatus = ["Yes", "No"];
 
   const [openViewMapModal, setOpenViewMapModal] = useState(false);
   const handleViewMapModalOpen = () => {
@@ -63,6 +130,37 @@ const TripSheetEntryDetails = ({ onClose }) => {
     setOpenAddEmployeeModal(false);
   };
 
+  const convertTimeToDate = (timeString) => {
+    const [time, modifier] = timeString.split(" ");
+    let [hours, minutes] = time.split(":");
+
+    if (modifier === "PM" && hours !== "12") {
+      hours = parseInt(hours, 10) + 12;
+    }
+    if (modifier === "AM" && hours === "12") {
+      hours = "00";
+    }
+
+    const date = new Date();
+    date.setHours(parseInt(hours, 10));
+    date.setMinutes(parseInt(minutes, 10));
+    return date;
+  };
+
+  const formatDuration = (minutes) => {
+    if (minutes < 60) {
+      return `${minutes} minutes`;
+    } else {
+      const hours = Math.floor(minutes / 60);
+      const remainingMinutes = minutes % 60;
+      return remainingMinutes === 0
+        ? `${hours} hour${hours > 1 ? "s" : ""}`
+        : `${hours} hour${hours > 1 ? "s" : ""} ${remainingMinutes} minute${
+            remainingMinutes > 1 ? "s" : ""
+          }`;
+    }
+  };
+
   const handleFilterChange = (e) => {
     const { target } = e;
     const { value, name } = target;
@@ -74,6 +172,35 @@ const TripSheetEntryDetails = ({ onClose }) => {
   const handleScreenClose = () => {
     console.log("cross icon clicked");
     onClose();
+  };
+
+  const handleAddEmployee = (employeeData) => {
+    console.log("Adding employee Data>>", employeeData);
+    console.log(tripdetails);
+    const employeeExists = data.some(
+      (row) => row.empId === employeeData.employeeId
+    );
+    if (employeeExists) {
+      console.log("Employee already exists");
+    } else {
+      setData((prevData) => [
+        ...prevData,
+        {
+          empId: employeeData.employeeId,
+          empName: "Saifali",
+          gender: "Female",
+          point: "V3S Mall",
+          landmark: "V3S Mall",
+          vehicleReportTime: "11:00 AM",
+          signIn: employeeData.signInTime,
+          signOut: employeeData.signOutTime,
+          status: employeeData.tripStatus,
+          phoneNo: "9879865645",
+        },
+      ]);
+      console.log("Updated data>>>", data);
+      handleAddEmployeeModalClose();
+    }
   };
 
   const handleRowsSelected = (selectedRowId) => {
@@ -97,74 +224,211 @@ const TripSheetEntryDetails = ({ onClose }) => {
   };
 
   const handleNoShow = () => {
-    console.log("No show >>> slected row Data: ", selectedRow);
+    if (selectedRow) {
+      console.log("No show >>> selected row Status: ", selectedRow.status);
+      setStatusHistory((prevHistory) => [
+        ...prevHistory,
+        { empId: selectedRow.empId, status: selectedRow.status },
+      ]);
+      console.log("Status history: ", statusHistory);
+      let updatedData = data;
+      data.filter((row, index) => {
+        if (row.empId === selectedRow.empId) {
+          console.log("row empId", row.empId);
+          updatedData[index].status = "No show";
+        }
+      });
+      console.log("Updated Data>>>", updatedData);
+      setData([...updatedData]);
+    }
   };
 
   const handleUndoNoShow = () => {
-    console.log("Undo No Show >>> slected row Data: ", selectedRow);
+    if (selectedRow) {
+      console.log("No show >>> selected row Status: ", selectedRow.status);
+      const previousStatus = statusHistory.find(
+        (item) => item.empId === selectedRow.empId
+      );
+
+      if (previousStatus) {
+        console.log("Previous status: ", previousStatus);
+        let updatedData = data;
+        data.filter((row, index) => {
+          if (row.empId === selectedRow.empId) {
+            console.log("row empId", row.empId);
+            updatedData[index].status = previousStatus.status;
+          }
+        });
+        console.log("Updated Data>>>", updatedData);
+        setData([...updatedData]);
+
+        setStatusHistory((prevHistory) =>
+          prevHistory.filter((item) => item.empId !== selectedRow.empId)
+        );
+        console.log("Status history after undo no show: ", statusHistory);
+      }
+    }
+    console.log(
+      "Undo no show >>> selected row status after undo no show: ",
+      selectedRow.status
+    );
   };
 
   const handleSaveTableData = () => {
     setData(data);
-    console.log("updatedDataAfterDeletion: ", data);
+    // console.log("updatedDataAfterDeletion: ", data);
+    const savedData = {
+      tableData: data,
+      tripInformation: TripInformation,
+      vehicleInformation: vehicleInformation,
+      billingInformation1: billingInformation1,
+      billingInformation2: billingInformation2,
+      issueType: searchValues,
+      remarks: remarks,
+    };
+
+    console.log("Saved Data: ", savedData);
   };
 
-  const IssueType = [
-    "Vehicle Not Assigned",
-    "Trip Not Started",
-    "Trip Not Ended",
-  ];
+  const fetchVehicle = async () => {
+    try {
+      const response = await ComplianceService.getSingleVehicle(
+        tripdetails[0].vehicleId
+      );
+      console.log("vehicle response: ", response.data.vehicleDTO);
 
-  const TripInformation = {
-    "Trip Id": "TR-001",
-    "Office Id": "98776556",
-    Date: "10 July 2024",
-    "Shift Type": "Logout",
-    "Shift Time": "25 Sept 2024",
-    "Trip Type": "Planned",
-    "Escort Trip": "Yes",
-    "Trip Status": "Completed",
-    "Planned Employees": "5",
-    "Travelled Employees": "2",
+      const { data } = response || {};
+      let fetchedVehicleData = [];
+      fetchedVehicleData.push(response.data.vehicleDTO);
+      setVehicleData(fetchedVehicleData);
+      console.log("Vehicle Data: ", vehicleData);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const VehicleInformation = {
-    "Vehicle ID": "AT-878989",
-    "Registration ID": "RJ-8997-7899087",
-    "Vehicle Type": "",
-    "Vehicle Model": "",
-    "Driver Name": "",
-    "Driver Phone No.": "",
-    "Sticker No.": "",
+  const handleVehicleInfoChange = (key, value) => {
+    setVehicleInformation((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
   };
 
-  const BillingInformation1 = {
-    "Planned Vendor Name": "Ganga Tourism",
-    "Actual vendor Name": "Ganga Tourism",
-    "Planned Vehicle Type": "Cab",
-    "Vehicle Fuel Type": "Petrol",
-    "Billing Zone": "Noida",
-    "First Pickup/Last Drop Location": "Noida Sector 59",
-    "Planned Km.": "99",
-    "Actual Km.": "97",
-    "Reference Km.": "101",
-    "Final Km.": "97",
+  const handleBillingInfo1Change = (key, value) => {
+    setBillingInformation1((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
   };
 
-  const BillingInformation2 = {
-    "Contract ID": "CID0001",
-    "Contract Type": "T&M",
-    "Trip Start Time": "09:00 AM",
-    "Trip End Time": "11:00 AM",
-    "Trip Duration": "2 Hours",
-    "On Time Status": "Yes",
-    "Delay Reason": "NA",
-    "Trip Remarks": "Good",
+  const handleBillingInfo2Change = (key, value) => {
+    setBillingInformation2((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
   };
 
   useEffect(() => {
-    console.log("selcted row: ", selectedRow);
+    console.log("selected row: ", selectedRow);
   }, [selectedRow]);
+
+  useEffect(() => {
+    console.log("Data>>>>> ", data);
+    if (data.length > 0) {
+      const count = data.filter((row) => row.status === "No show").length;
+      setNoShowCount(count);
+      console.log("No show count", noShowCount);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    const newKey =
+      tripdetails[0].shiftType === "LOGIN"
+        ? "First Pickup Location"
+        : "Last Drop Location";
+
+    setBillingInformation1((prev) => {
+      const { Location: oldValue, ...rest } = prev;
+      console.log("newKey: ", newKey);
+      return {
+        ...rest,
+        [newKey]: oldValue,
+      };
+    });
+    if (data.length > 0 && newKey === "First Pickup Location") {
+      setBillingInformation1((prev) => ({
+        ...prev,
+        "First Pickup Location": data[0]?.point,
+      }));
+    }
+    if (data.length > 0 && newKey === "Last Drop Location") {
+      setBillingInformation1((prev) => ({
+        ...prev,
+        "Last Drop Location": data[data.length - 1]?.point,
+      }));
+    }
+  }, [tripdetails[0].shiftType, data]);
+
+  useEffect(() => {
+    fetchVehicle();
+  }, [tripdetails[0].vehicleId]);
+
+  useEffect(() => {
+    if (vehicleData.length > 0) {
+      setVehicleInformation((prev) => ({
+        ...prev,
+        "Registration ID": vehicleData[0].vehicleRegistrationNumber,
+        "Vehicle Type": vehicleData[0]?.vehicleType,
+        "Vehicle Model": vehicleData[0]?.vehicleModel,
+        "Sticker No.": vehicleData[0]?.stickerNumber,
+      }));
+      setBillingInformation1((prev) => ({
+        ...prev,
+        "Planned Vendor Name": vehicleData[0]?.vendorName,
+        "Actual Vendor Name": vehicleData[0]?.vendorName,
+        "Planned Vehicle Type": vehicleData[0]?.vehicleType,
+        "Vehicle Fuel Type": vehicleData[0]?.fuelType,
+      }));
+    }
+  }, [vehicleData]);
+
+  useEffect(() => {
+    if (data.length > 0) {
+      if (tripdetails[0].shiftType === "LOGIN") {
+        const newTripStartTime = data[0]?.signIn;
+        const newTripEndTime = data[data.length - 1]?.signIn;
+
+        const newTripStartDate = convertTimeToDate(newTripStartTime);
+        const newTripEndDate = convertTimeToDate(newTripEndTime);
+        const tripDurationInMinutes =
+          (newTripEndDate - newTripStartDate) / (1000 * 60);
+        const formattedTripDuration = formatDuration(tripDurationInMinutes);
+
+        setBillingInformation2((prev) => ({
+          ...prev,
+          "Trip Start Time": data[0]?.signIn,
+          "Trip End Time": data[data.length - 1]?.signIn,
+          "Trip Duration": formattedTripDuration,
+        }));
+      } else {
+        const newTripStartTime = data[0]?.signOut;
+        const newTripEndTime = data[data.length - 1]?.signOut;
+
+        const newTripStartDate = convertTimeToDate(newTripStartTime);
+        const newTripEndDate = convertTimeToDate(newTripEndTime);
+        const tripDurationInMinutes =
+          (newTripEndDate - newTripStartDate) / (1000 * 60);
+        const formattedTripDuration = formatDuration(tripDurationInMinutes);
+
+        setBillingInformation2((prev) => ({
+          ...prev,
+          "Trip Start Time": data[0]?.signOut,
+          "Trip End Time": data[data.length - 1]?.signOut,
+          "Trip Duration": formattedTripDuration,
+        }));
+      }
+    }
+  }, [data]);
 
   return (
     <div
@@ -213,7 +477,7 @@ const TripSheetEntryDetails = ({ onClose }) => {
                 style={{
                   fontSize: "20px",
                   fontWeight: "600",
-                  padding: "20px 23px 20px",
+                  padding: "20px 25px 20px",
                   borderBottomStyle: "solid",
                   borderWidth: "0.1rem",
                   borderColor: "#eeecec",
@@ -226,7 +490,7 @@ const TripSheetEntryDetails = ({ onClose }) => {
                 <Box
                   sx={{
                     width: "100%",
-                    padding: "0 15px 20px",
+                    padding: "0 25px 20px",
                   }}
                 >
                   <Grid
@@ -234,30 +498,55 @@ const TripSheetEntryDetails = ({ onClose }) => {
                     rowSpacing={1}
                     columnSpacing={{ xs: 1, sm: 2, md: 3 }}
                   >
-                    <Grid item xs={6}>
-                      {Object.entries(TripInformation).map(([key]) => (
-                        <p
+                    <Grid item xs={12}>
+                      {Object.entries(TripInformation).map(([key, value]) => (
+                        <Box
+                          display="flex"
+                          // justifyContent="space-between"
+                          alignItems="center"
+                          sx={{
+                            width: "100%",
+                            marginBottom: "15px",
+                          }}
                           key={key}
-                          style={{
-                            fontSize: "15px",
-                            fontWeight: "600",
-                            marginBottom: "25px",
-                          }}
                         >
-                          {key}
-                        </p>
-                      ))}
-                    </Grid>
-                    <Grid item xs={6}>
-                      {Object.keys(TripInformation).map((value) => (
-                        <p
-                          style={{
-                            fontSize: "15px",
-                            marginBottom: "25px",
-                          }}
-                        >
-                          {TripInformation[value]}
-                        </p>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "flex-start",
+                              width: "50%",
+                              marginRight: 30,
+                              marginBottom: "10px",
+                            }}
+                          >
+                            <p
+                              key={key}
+                              style={{
+                                fontSize: "15px",
+                                fontWeight: "600",
+                              }}
+                            >
+                              {key}
+                            </p>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "flex-start",
+                              width: "45%",
+                              marginBottom: "10px",
+                              // backgroundColor: "pink",
+                            }}
+                          >
+                            <p
+                              style={{
+                                fontSize: "15px",
+                              }}
+                            >
+                              {value}
+                            </p>
+                          </div>
+                        </Box>
                       ))}
                     </Grid>
                   </Grid>
@@ -284,7 +573,8 @@ const TripSheetEntryDetails = ({ onClose }) => {
                   borderBottomStyle: "solid",
                   borderWidth: "0.1rem",
                   borderColor: "#eeecec",
-                  marginBottom: "25px",
+                  margin: " 0 0 25px 0",
+                  padding: "20px 25px",
                 }}
               >
                 <div
@@ -292,7 +582,7 @@ const TripSheetEntryDetails = ({ onClose }) => {
                   style={{
                     fontSize: "20px",
                     fontWeight: "600",
-                    padding: "20px 23px 20px",
+                    width: "25%",
                   }}
                 >
                   Travelled Employees Information
@@ -301,7 +591,8 @@ const TripSheetEntryDetails = ({ onClose }) => {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    marginRight: "18px",
+                    justifyContent: "space-between",
+                    width: "75%",
                   }}
                 >
                   <button
@@ -309,7 +600,7 @@ const TripSheetEntryDetails = ({ onClose }) => {
                     style={{
                       width: "170px",
                       padding: "10px",
-                      margin: "0 10px",
+                      marginLeft: "20px",
                     }}
                   >
                     Distance Recalculate
@@ -319,7 +610,7 @@ const TripSheetEntryDetails = ({ onClose }) => {
                     style={{
                       width: "100px",
                       padding: "10px",
-                      margin: "0 10px",
+                      marginLeft: "20px",
                     }}
                     onClick={handleViewMapModalOpen}
                   >
@@ -340,7 +631,7 @@ const TripSheetEntryDetails = ({ onClose }) => {
                     style={{
                       width: "110px",
                       padding: "10px",
-                      margin: "0 10px",
+                      marginLeft: "20px",
                     }}
                     onClick={handleTripHistoryModalOpen}
                   >
@@ -363,7 +654,7 @@ const TripSheetEntryDetails = ({ onClose }) => {
                     style={{
                       width: "140px",
                       padding: "10px",
-                      margin: "0 10px",
+                      marginLeft: "20px",
                     }}
                     onClick={handleAddEmployeeModalOpen}
                   >
@@ -378,15 +669,16 @@ const TripSheetEntryDetails = ({ onClose }) => {
                     <Box sx={style}>
                       <AddEmployeeModal
                         onClose={() => handleAddEmployeeModalClose()}
+                        onAddEmployeeData={handleAddEmployee}
                       />
                     </Box>
                   </Modal>
                   <button
                     className="btn btn-primary"
                     style={{
-                      width: "70px",
+                      width: "90px",
                       padding: "10px",
-                      margin: "0 10px",
+                      marginLeft: "20px",
                     }}
                     onClick={handleSaveTableData}
                   >
@@ -399,7 +691,7 @@ const TripSheetEntryDetails = ({ onClose }) => {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    margin: " 0 17px 25px",
+                    margin: " 0 25px 25px",
                   }}
                 >
                   <button
@@ -407,7 +699,7 @@ const TripSheetEntryDetails = ({ onClose }) => {
                     style={{
                       width: "120px",
                       padding: "10px",
-                      margin: "0 10px",
+                      margin: "0 20px 0 0",
                     }}
                     onClick={handleDelete}
                   >
@@ -418,7 +710,7 @@ const TripSheetEntryDetails = ({ onClose }) => {
                     style={{
                       width: "130px",
                       padding: "10px",
-                      margin: "0 10px",
+                      margin: "0 20px 0 0",
                     }}
                     onClick={handleNoShow}
                   >
@@ -429,7 +721,7 @@ const TripSheetEntryDetails = ({ onClose }) => {
                     style={{
                       width: "160px",
                       padding: "10px",
-                      margin: "0 10px",
+                      margin: "0 20px 0 0",
                     }}
                     onClick={handleUndoNoShow}
                   >
@@ -442,6 +734,7 @@ const TripSheetEntryDetails = ({ onClose }) => {
                     setIssueTypeData={(newData) => setData(newData)}
                     // setIssueTypeData={(newData) => console.log("newData: ", newData)}
                     onRowsSelected={handleRowsSelected}
+                    pointHeaderLabel={pointHeaderLabel}
                   />
                 </div>
               </div>
@@ -453,14 +746,14 @@ const TripSheetEntryDetails = ({ onClose }) => {
               style={{
                 backgroundColor: "white",
                 borderRadius: "20px",
-                minHeight: "85vh",
+                paddingBottom: 60,
               }}
             >
               <div
                 style={{
                   fontSize: "20px",
                   fontWeight: "600",
-                  padding: "20px 23px 20px",
+                  padding: "20px 25px 20px",
                   borderBottomStyle: "solid",
                   borderWidth: "0.1rem",
                   borderColor: "#eeecec",
@@ -473,7 +766,7 @@ const TripSheetEntryDetails = ({ onClose }) => {
                 <Box
                   sx={{
                     width: "100%",
-                    padding: "0 15px 20px",
+                    padding: "0 25px 20px",
                   }}
                 >
                   <Grid
@@ -481,47 +774,81 @@ const TripSheetEntryDetails = ({ onClose }) => {
                     rowSpacing={1}
                     columnSpacing={{ xs: 1, sm: 2, md: 3 }}
                   >
-                    <Grid item xs={6}>
-                      {Object.entries(VehicleInformation).map(([key]) => (
-                        <p
-                          key={key}
-                          style={{
-                            fontSize: "15px",
-                            fontWeight: "600",
-                            marginBottom: "30px",
+                    <Grid item xs={12}>
+                      {Object.entries(vehicleInformation).map(([key]) => (
+                        <Box
+                          display="flex"
+                          // justifyContent="space-between"
+                          alignItems="center"
+                          sx={{
+                            width: "100%",
+                            marginBottom: "15px",
                           }}
+                          key={key}
                         >
-                          {key}
-                        </p>
-                      ))}
-                    </Grid>
-                    <Grid item xs={6}>
-                      {Object.keys(VehicleInformation).map((key) => (
-                        <Grid item xs={12} key={key}>
-                          {VehicleInformation[key] === "" ? (
-                            <input
-                              placeholder="Enter value"
-                              style={{
-                                fontSize: "15px",
-                                marginBottom: "24px",
-                                padding: "2px 8px",
-                                fontFamily: "DM Sans",
-                                border: "0.05rem solid #b2b2b2de",
-                                borderRadius: "4px",
-                                width: "90%",
-                              }}
-                            />
-                          ) : (
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "flex-start",
+                              width: "50%",
+                              marginRight: 30,
+                              marginBottom: "10px",
+                            }}
+                          >
                             <p
+                              key={key}
                               style={{
                                 fontSize: "15px",
-                                marginBottom: "30px",
+                                fontWeight: "600",
                               }}
                             >
-                              {VehicleInformation[key]}
+                              {key}
                             </p>
-                          )}
-                        </Grid>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "flex-start",
+                              width: "45%",
+                              marginBottom: "10px",
+                              // backgroundColor: "pink",
+                            }}
+                          >
+                            <Grid item xs={12} key={key}>
+                              {vehicleInformation[key] ===
+                                vehicleInformation["Driver Name"] ||
+                              vehicleInformation[key] ===
+                                vehicleInformation["Driver Phone No."] ? (
+                                <TextField
+                                  key={key}
+                                  placeholder="Enter value"
+                                  size="small"
+                                  value={vehicleInformation[key]}
+                                  onChange={(e) =>
+                                    handleVehicleInfoChange(key, e.target.value)
+                                  }
+                                  style={{
+                                    width: "90%",
+                                  }}
+                                  inputProps={{
+                                    style: {
+                                      fontFamily: "DM Sans",
+                                      fontSize: 15,
+                                    },
+                                  }}
+                                />
+                              ) : (
+                                <p
+                                  style={{
+                                    fontSize: "15px",
+                                  }}
+                                >
+                                  {vehicleInformation[key]}
+                                </p>
+                              )}
+                            </Grid>
+                          </div>
+                        </Box>
                       ))}
                     </Grid>
                     <FormControl
@@ -532,20 +859,17 @@ const TripSheetEntryDetails = ({ onClose }) => {
                         fontFamily: "DM Sans",
                       }}
                     >
-                      {/* <InputLabel
-                          id="reason-label"
-                          style={{
-                            fontSize: "14px",
-                          }}
-                        >
-                          Reason for vehicle not assigned
-                        </InputLabel> */}
+                      <InputLabel id="shiftType-label">Issue Type *</InputLabel>
                       <Select
-                        style={{
+                        sx={{
                           backgroundColor: "white",
-                          height: "40px",
                           fontSize: "15px",
+                          padding: "0px",
+                          ".MuiSelect-select": {
+                            padding: "12px",
+                          },
                         }}
+                        label="Issue Type"
                         labelId="issue-type-label"
                         id="issueType"
                         name="issueType"
@@ -583,6 +907,8 @@ const TripSheetEntryDetails = ({ onClose }) => {
                         multiline
                         rows={3}
                         size="small"
+                        value={remarks}
+                        onChange={(e) => setRemarks(e.target.value)}
                         inputProps={{
                           style: {
                             fontFamily: "DM Sans",
@@ -609,7 +935,7 @@ const TripSheetEntryDetails = ({ onClose }) => {
                 style={{
                   fontSize: "20px",
                   fontWeight: "600",
-                  padding: "20px 23px 20px",
+                  padding: "20px 25px 20px",
                   borderBottomStyle: "solid",
                   borderWidth: "0.1rem",
                   borderColor: "#eeecec",
@@ -622,7 +948,7 @@ const TripSheetEntryDetails = ({ onClose }) => {
                 <Box
                   sx={{
                     width: "100%",
-                    padding: "0 15px 20px",
+                    padding: "0 25px 20px",
                   }}
                 >
                   <Grid
@@ -630,64 +956,207 @@ const TripSheetEntryDetails = ({ onClose }) => {
                     rowSpacing={1}
                     columnSpacing={{ xs: 1, sm: 2, md: 3 }}
                   >
-                    <Grid item xs={3.5}>
-                      {Object.entries(BillingInformation1).map(([key]) => (
-                        <p
+                    <Grid item xs={7}>
+                      {Object.entries(billingInformation1).map(([key]) => (
+                        <Box
+                          display="flex"
+                          // justifyContent="space-between"
+                          alignItems="center"
+                          sx={{
+                            width: "100%",
+                            marginBottom: "15px",
+                          }}
                           key={key}
-                          style={{
-                            fontSize: "15px",
-                            fontWeight: "600",
-                            marginBottom: "25px",
-                          }}
                         >
-                          {key}
-                        </p>
-                      ))}
-                    </Grid>
-                    <Grid item xs={3.5}>
-                      {Object.keys(BillingInformation1).map((value) => (
-                        <p
-                          style={{
-                            fontSize: "15px",
-                            marginBottom: "25px",
-                          }}
-                        >
-                          {BillingInformation1[value]}
-                        </p>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "flex-start",
+                              width: "50%",
+                              marginRight: 30,
+                              marginBottom: "10px",
+                            }}
+                          >
+                            <p
+                              key={key}
+                              style={{
+                                fontSize: "15px",
+                                fontWeight: "600",
+                              }}
+                            >
+                              {key}
+                            </p>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "flex-start",
+                              width: "45%",
+                              marginBottom: "10px",
+                              // backgroundColor: "pink",
+                            }}
+                          >
+                            <Grid item xs={12} key={key}>
+                              {billingInformation1Fields.includes(key) ? (
+                                <TextField
+                                  key={key}
+                                  placeholder="Enter value"
+                                  size="small"
+                                  value={billingInformation1[key]}
+                                  onChange={(e) =>
+                                    handleBillingInfo1Change(
+                                      key,
+                                      e.target.value
+                                    )
+                                  }
+                                  style={{
+                                    width: "90%",
+                                  }}
+                                  inputProps={{
+                                    style: {
+                                      fontFamily: "DM Sans",
+                                      fontSize: 15,
+                                    },
+                                  }}
+                                />
+                              ) : (
+                                <p
+                                  style={{
+                                    fontSize: "15px",
+                                  }}
+                                >
+                                  {billingInformation1[key]}
+                                </p>
+                              )}
+                            </Grid>
+                          </div>
+                        </Box>
                       ))}
                     </Grid>
                     <Grid
                       item
-                      xs={2.5}
+                      xs={5}
                       sx={{
                         borderLeftStyle: "solid",
                         borderWidth: "0.1rem",
                         borderColor: "#eeecec",
                       }}
                     >
-                      {Object.entries(BillingInformation2).map(([key]) => (
-                        <p
+                      {Object.entries(billingInformation2).map(([key]) => (
+                        <Box
+                          display="flex"
+                          // justifyContent="space-between"
+                          alignItems="center"
+                          sx={{
+                            width: "100%",
+                            marginBottom: "15px",
+                          }}
                           key={key}
-                          style={{
-                            fontSize: "15px",
-                            fontWeight: "600",
-                            marginBottom: "25px",
-                          }}
                         >
-                          {key}
-                        </p>
-                      ))}
-                    </Grid>
-                    <Grid item xs={2.5}>
-                      {Object.keys(BillingInformation2).map((value) => (
-                        <p
-                          style={{
-                            fontSize: "15px",
-                            marginBottom: "25px",
-                          }}
-                        >
-                          {BillingInformation2[value]}
-                        </p>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "flex-start",
+                              width: "50%",
+                              marginRight: 30,
+                              marginBottom: "10px",
+                            }}
+                          >
+                            <p
+                              key={key}
+                              style={{
+                                fontSize: "15px",
+                                fontWeight: "600",
+                              }}
+                            >
+                              {key}
+                            </p>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "flex-start",
+                              width: "45%",
+                              marginBottom: "10px",
+                              // backgroundColor: "pink",
+                            }}
+                          >
+                            <Grid item xs={12} key={key}>
+                              {key === "Delay Reason" ||
+                              key === "Trip Remarks" ? (
+                                <TextField
+                                  placeholder="Enter value"
+                                  size="small"
+                                  value={billingInformation2[key]}
+                                  onChange={(e) =>
+                                    handleBillingInfo2Change(
+                                      key,
+                                      e.target.value
+                                    )
+                                  }
+                                  style={{
+                                    width: "90%",
+                                  }}
+                                  inputProps={{
+                                    style: {
+                                      fontFamily: "DM Sans",
+                                      fontSize: 15,
+                                    },
+                                  }}
+                                />
+                              ) : key === "On Time Status" ? (
+                                <FormControl
+                                  fullWidth
+                                  style={{ fontFamily: "DM Sans" }}
+                                >
+                                  <InputLabel
+                                    id="onTimeStatus-label"
+                                    style={{ fontSize: 15, top: "-7px" }}
+                                  >
+                                    Select value
+                                  </InputLabel>
+                                  <Select
+                                    sx={{
+                                      width: "90%",
+                                    }}
+                                    label="On Time Status"
+                                    labelId="onTimeStatus-label"
+                                    id="onTimeStatus"
+                                    name="onTimeStatus"
+                                    size="small"
+                                    value={billingInformation2[key]}
+                                    onChange={(e) =>
+                                      handleBillingInfo2Change(
+                                        key,
+                                        e.target.value
+                                      )
+                                    }
+                                  >
+                                    {OnTimeStatus.map((item) => (
+                                      <MenuItem
+                                        key={item}
+                                        value={item}
+                                        style={{
+                                          fontSize: "14px",
+                                        }}
+                                      >
+                                        {item}
+                                      </MenuItem>
+                                    ))}
+                                  </Select>
+                                </FormControl>
+                              ) : (
+                                <p
+                                  style={{
+                                    fontSize: "15px",
+                                  }}
+                                >
+                                  {billingInformation2[key]}
+                                </p>
+                              )}
+                            </Grid>
+                          </div>
+                        </Box>
                       ))}
                     </Grid>
                   </Grid>

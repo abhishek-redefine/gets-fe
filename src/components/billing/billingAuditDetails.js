@@ -1,12 +1,66 @@
-import { Box, FormControl, MenuItem, Select, TextField } from "@mui/material";
+import {
+  Box,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Modal,
+  Select,
+  TextField,
+} from "@mui/material";
 import Grid from "@mui/material/Grid";
 import React, { useState } from "react";
 import BillingAuditDetailsTable from "./billingAuditDetailsTable";
+import ViewMapModal from "./viewMapModal";
+import TripHistoryModal from "./tripHistoryModal";
+import ConfirmationModal from "./confirmationModal";
+
+const style = {
+  topModals: {
+    position: "absolute",
+    top: "55%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 650,
+    bgcolor: "background.paper",
+    height: "auto",
+    borderRadius: 5,
+  },
+  bottomModals: {
+    position: "absolute",
+    top: "48%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 650,
+    bgcolor: "background.paper",
+    height: "auto",
+    borderRadius: 5,
+  },
+};
 
 const BillingAuditDetails = ({ onClose }) => {
   const [searchValues, setSearchValues] = useState({
     issueType: "",
   });
+
+  const [openViewMapModal, setOpenViewMapModal] = useState(false);
+  const handleViewMapModalOpen = () => {
+    console.log("View map modal open");
+    setOpenViewMapModal(true);
+  };
+  const handleViewMapModalClose = () => {
+    console.log("View map modal close");
+    setOpenViewMapModal(false);
+  };
+
+  const [openTripHistoryModal, setOpenTripHistoryModal] = useState(false);
+  const handleTripHistoryModalOpen = () => {
+    console.log("Trip History modal open");
+    setOpenTripHistoryModal(true);
+  };
+  const handleTripHistoryModalClose = () => {
+    console.log("Trip History modal close");
+    setOpenTripHistoryModal(false);
+  };
 
   const handleFilterChange = (e) => {
     const { target } = e;
@@ -23,10 +77,39 @@ const BillingAuditDetails = ({ onClose }) => {
     }
   };
 
+  const [passFlag, setPassFlag] = useState(false);
+  const [failFlag, setFailFlag] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+  const handleModalOpen = () => {
+    console.log("Confirmation modal open");
+    setOpenModal(true);
+  };
+  const handleModalClose = () => {
+    console.log("Confirmation modal close");
+    setOpenModal(false);
+  };
+
+  const handleApproveClick = () => {
+    setPassFlag(true);
+    if (passFlag && failFlag) {
+      setFailFlag(true);
+      handleModalOpen();
+    } else {
+      setFailFlag(false);
+      handleModalOpen();
+    }
+  };
+
+  const handleRejectClick = () => {
+    setPassFlag(false);
+    handleModalOpen();
+  };
+
   const IssueType = [
     "Vehicle Not Assigned",
     "Trip Not Started",
     "Trip Not Ended",
+    "None",
   ];
 
   const TripInformation = {
@@ -45,11 +128,11 @@ const BillingAuditDetails = ({ onClose }) => {
   const VehicleInformation = {
     "Vehicle ID": "AT-878989",
     "Registration ID": "RJ-8997-7899087",
-    "Vehicle Type": "",
-    "Vehicle Model": "",
-    "Driver Name": "",
-    "Driver Phone No.": "",
-    "Sticker No.": "",
+    "Vehicle Type": "Cab",
+    "Vehicle Model": "Maruti Ertiga",
+    "Driver Name": "Raj",
+    "Driver Phone No.": "8790356356",
+    "Sticker No.": "12",
   };
 
   const BillingInformation1 = {
@@ -123,7 +206,7 @@ const BillingAuditDetails = ({ onClose }) => {
                 style={{
                   fontSize: "20px",
                   fontWeight: "600",
-                  padding: "20px 23px 20px",
+                  padding: "20px 25px 20px",
                   borderBottomStyle: "solid",
                   borderWidth: "0.1rem",
                   borderColor: "#eeecec",
@@ -136,7 +219,7 @@ const BillingAuditDetails = ({ onClose }) => {
                 <Box
                   sx={{
                     width: "100%",
-                    padding: "0 15px 20px",
+                    padding: "0 25px 20px",
                   }}
                 >
                   <Grid
@@ -144,30 +227,55 @@ const BillingAuditDetails = ({ onClose }) => {
                     rowSpacing={1}
                     columnSpacing={{ xs: 1, sm: 2, md: 3 }}
                   >
-                    <Grid item xs={6}>
-                      {Object.entries(TripInformation).map(([key]) => (
-                        <p
+                    <Grid item xs={12}>
+                      {Object.entries(TripInformation).map(([key, value]) => (
+                        <Box
+                          display="flex"
+                          // justifyContent="space-between"
+                          alignItems="center"
+                          sx={{
+                            width: "100%",
+                            marginBottom: "15px",
+                          }}
                           key={key}
-                          style={{
-                            fontSize: "15px",
-                            fontWeight: "600",
-                            marginBottom: "25px",
-                          }}
                         >
-                          {key}
-                        </p>
-                      ))}
-                    </Grid>
-                    <Grid item xs={6}>
-                      {Object.keys(TripInformation).map((value) => (
-                        <p
-                          style={{
-                            fontSize: "15px",
-                            marginBottom: "25px",
-                          }}
-                        >
-                          {TripInformation[value]}
-                        </p>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "flex-start",
+                              width: "50%",
+                              marginRight: 30,
+                              marginBottom: "10px",
+                            }}
+                          >
+                            <p
+                              key={key}
+                              style={{
+                                fontSize: "15px",
+                                fontWeight: "600",
+                              }}
+                            >
+                              {key}
+                            </p>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "flex-start",
+                              width: "45%",
+                              marginBottom: "10px",
+                              // backgroundColor: "pink",
+                            }}
+                          >
+                            <p
+                              style={{
+                                fontSize: "15px",
+                              }}
+                            >
+                              {value}
+                            </p>
+                          </div>
+                        </Box>
                       ))}
                     </Grid>
                   </Grid>
@@ -194,7 +302,8 @@ const BillingAuditDetails = ({ onClose }) => {
                   borderBottomStyle: "solid",
                   borderWidth: "0.1rem",
                   borderColor: "#eeecec",
-                  marginBottom: "25px",
+                  margin: " 0 0 25px 0",
+                  padding: "20px 25px",
                 }}
               >
                 <div
@@ -202,7 +311,7 @@ const BillingAuditDetails = ({ onClose }) => {
                   style={{
                     fontSize: "20px",
                     fontWeight: "600",
-                    padding: "20px 23px 20px",
+                    width: "60%",
                   }}
                 >
                   Travelled Employees Information
@@ -211,29 +320,54 @@ const BillingAuditDetails = ({ onClose }) => {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    marginRight: "18px",
+                    justifyContent: "flex-end",
+                    width: "40%",
                   }}
                 >
                   <button
                     className="btn btn-primary"
                     style={{
-                      width: "100px",
+                      width: "110px",
                       padding: "10px",
-                      margin: "0 10px",
+                      margin: "0 0 0 30px",
                     }}
+                    onClick={handleViewMapModalOpen}
                   >
                     View Map
                   </button>
+                  <Modal
+                    open={openViewMapModal}
+                    onClose={handleViewMapModalClose}
+                    aria-labelledby="modal-modal-title"
+                    aria-describedby="modal-modal-description"
+                  >
+                    <Box sx={style.topModals}>
+                      <ViewMapModal onClose={() => handleViewMapModalClose()} />
+                    </Box>
+                  </Modal>
                   <button
                     className="btn btn-primary"
                     style={{
                       width: "110px",
                       padding: "10px",
-                      margin: "0 10px",
+                      margin: "0 0 0 30px",
                     }}
+                    onClick={handleTripHistoryModalOpen}
                   >
                     Trip History
                   </button>
+                  <Modal
+                    open={openTripHistoryModal}
+                    onClose={handleTripHistoryModalClose}
+                    aria-labelledby="modal-modal-title"
+                    aria-describedby="modal-modal-description"
+                  >
+                    <Box sx={style.topModals}>
+                      <TripHistoryModal
+                        onClose={() => handleTripHistoryModalClose()}
+                      />
+                    </Box>
+                  </Modal>
                 </div>
               </div>
               <div className="">
@@ -249,14 +383,14 @@ const BillingAuditDetails = ({ onClose }) => {
               style={{
                 backgroundColor: "white",
                 borderRadius: "20px",
-                minHeight: "85vh",
+                paddingBottom: 60,
               }}
             >
               <div
                 style={{
                   fontSize: "20px",
                   fontWeight: "600",
-                  padding: "20px 23px 20px",
+                  padding: "20px 25px 20px",
                   borderBottomStyle: "solid",
                   borderWidth: "0.1rem",
                   borderColor: "#eeecec",
@@ -269,7 +403,7 @@ const BillingAuditDetails = ({ onClose }) => {
                 <Box
                   sx={{
                     width: "100%",
-                    padding: "0 15px 20px",
+                    padding: "0 25px 20px",
                   }}
                 >
                   <Grid
@@ -277,47 +411,57 @@ const BillingAuditDetails = ({ onClose }) => {
                     rowSpacing={1}
                     columnSpacing={{ xs: 1, sm: 2, md: 3 }}
                   >
-                    <Grid item xs={6}>
+                    <Grid item xs={12}>
                       {Object.entries(VehicleInformation).map(([key]) => (
-                        <p
-                          key={key}
-                          style={{
-                            fontSize: "15px",
-                            fontWeight: "600",
-                            marginBottom: "30px",
+                        <Box
+                          display="flex"
+                          // justifyContent="space-between"
+                          alignItems="center"
+                          sx={{
+                            width: "100%",
+                            marginBottom: "15px",
                           }}
+                          key={key}
                         >
-                          {key}
-                        </p>
-                      ))}
-                    </Grid>
-                    <Grid item xs={6}>
-                      {Object.keys(VehicleInformation).map((key) => (
-                        <Grid item xs={12} key={key}>
-                          {VehicleInformation[key] === "" ? (
-                            <input
-                              placeholder="Enter value"
-                              style={{
-                                fontSize: "15px",
-                                marginBottom: "24px",
-                                padding: "2px 8px",
-                                fontFamily: "DM Sans",
-                                border: "0.05rem solid #b2b2b2de",
-                                borderRadius: "4px",
-                                width: "90%",
-                              }}
-                            />
-                          ) : (
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "flex-start",
+                              width: "50%",
+                              marginRight: 30,
+                              marginBottom: "10px",
+                            }}
+                          >
                             <p
+                              key={key}
                               style={{
                                 fontSize: "15px",
-                                marginBottom: "30px",
+                                fontWeight: "600",
                               }}
                             >
-                              {VehicleInformation[key]}
+                              {key}
                             </p>
-                          )}
-                        </Grid>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "flex-start",
+                              width: "45%",
+                              marginBottom: "10px",
+                              // backgroundColor: "pink",
+                            }}
+                          >
+                            <Grid item xs={12} key={key}>
+                              <p
+                                style={{
+                                  fontSize: "15px",
+                                }}
+                              >
+                                {VehicleInformation[key]}
+                              </p>
+                            </Grid>
+                          </div>
+                        </Box>
                       ))}
                     </Grid>
                     <FormControl
@@ -328,20 +472,17 @@ const BillingAuditDetails = ({ onClose }) => {
                         fontFamily: "DM Sans",
                       }}
                     >
-                      {/* <InputLabel
-                          id="reason-label"
-                          style={{
-                            fontSize: "14px",
-                          }}
-                        >
-                          Reason for vehicle not assigned
-                        </InputLabel> */}
+                      <InputLabel id="shiftType-label">Issue Type *</InputLabel>
                       <Select
-                        style={{
+                        sx={{
                           backgroundColor: "white",
-                          height: "40px",
                           fontSize: "15px",
+                          padding: "0px",
+                          ".MuiSelect-select": {
+                            padding: "12px",
+                          },
                         }}
+                        label="Issue Type *"
                         labelId="issue-type-label"
                         id="issueType"
                         name="issueType"
@@ -405,7 +546,7 @@ const BillingAuditDetails = ({ onClose }) => {
                 style={{
                   fontSize: "20px",
                   fontWeight: "600",
-                  padding: "20px 23px 20px",
+                  padding: "20px 25px 20px",
                   borderBottomStyle: "solid",
                   borderWidth: "0.1rem",
                   borderColor: "#eeecec",
@@ -418,7 +559,7 @@ const BillingAuditDetails = ({ onClose }) => {
                 <Box
                   sx={{
                     width: "100%",
-                    padding: "0 15px 20px",
+                    padding: "0 25px 20px",
                   }}
                 >
                   <Grid
@@ -426,65 +567,119 @@ const BillingAuditDetails = ({ onClose }) => {
                     rowSpacing={1}
                     columnSpacing={{ xs: 1, sm: 2, md: 3 }}
                   >
-                    <Grid item xs={3.5}>
-                      {Object.entries(BillingInformation1).map(([key]) => (
-                        <p
-                          key={key}
-                          style={{
-                            fontSize: "15px",
-                            fontWeight: "600",
-                            marginBottom: "25px",
-                          }}
-                        >
-                          {key}
-                        </p>
-                      ))}
-                    </Grid>
-                    <Grid item xs={3.5}>
-                      {Object.keys(BillingInformation1).map((value) => (
-                        <p
-                          style={{
-                            fontSize: "15px",
-                            marginBottom: "25px",
-                          }}
-                        >
-                          {BillingInformation1[value]}
-                        </p>
-                      ))}
+                    <Grid item xs={7}>
+                      {Object.entries(BillingInformation1).map(
+                        ([key, value]) => (
+                          <Box
+                            display="flex"
+                            // justifyContent="space-between"
+                            alignItems="center"
+                            sx={{
+                              width: "100%",
+                              marginBottom: "15px",
+                            }}
+                            key={key}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "flex-start",
+                                width: "50%",
+                                marginRight: 30,
+                                marginBottom: "10px",
+                              }}
+                            >
+                              <p
+                                key={key}
+                                style={{
+                                  fontSize: "15px",
+                                  fontWeight: "600",
+                                }}
+                              >
+                                {key}
+                              </p>
+                            </div>
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "flex-start",
+                                width: "45%",
+                                marginBottom: "10px",
+                                // backgroundColor: "pink",
+                              }}
+                            >
+                              <p
+                                style={{
+                                  fontSize: "15px",
+                                }}
+                              >
+                                {value}
+                              </p>
+                            </div>
+                          </Box>
+                        )
+                      )}
                     </Grid>
                     <Grid
                       item
-                      xs={2.5}
+                      xs={5}
                       sx={{
                         borderLeftStyle: "solid",
                         borderWidth: "0.1rem",
                         borderColor: "#eeecec",
                       }}
                     >
-                      {Object.entries(BillingInformation2).map(([key]) => (
-                        <p
-                          key={key}
-                          style={{
-                            fontSize: "15px",
-                            fontWeight: "600",
-                            marginBottom: "25px",
-                          }}
-                        >
-                          {key}
-                        </p>
-                      ))}
-                    </Grid>
-                    <Grid item xs={2.5}>
-                      {Object.keys(BillingInformation2).map((value) => (
-                        <p
-                          style={{
-                            fontSize: "15px",
-                            marginBottom: "25px",
-                          }}
-                        >
-                          {BillingInformation2[value]}
-                        </p>
-                      ))}
+                      {Object.entries(BillingInformation2).map(
+                        ([key, value]) => (
+                          <Box
+                            display="flex"
+                            // justifyContent="space-between"
+                            alignItems="center"
+                            sx={{
+                              width: "100%",
+                              marginBottom: "15px",
+                            }}
+                            key={key}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "flex-start",
+                                width: "50%",
+                                marginRight: 30,
+                                marginBottom: "10px",
+                              }}
+                            >
+                              <p
+                                key={key}
+                                style={{
+                                  fontSize: "15px",
+                                  fontWeight: "600",
+                                }}
+                              >
+                                {key}
+                              </p>
+                            </div>
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "flex-start",
+                                width: "45%",
+                                marginBottom: "10px",
+                                // backgroundColor: "pink",
+                              }}
+                            >
+                              <p
+                                style={{
+                                  fontSize: "15px",
+                                }}
+                              >
+                                {value}
+                              </p>
+                            </div>
+                          </Box>
+                        )
+                      )}
                     </Grid>
                   </Grid>
                 </Box>
@@ -511,6 +706,7 @@ const BillingAuditDetails = ({ onClose }) => {
                   padding: "15px",
                   margin: "0 15px",
                 }}
+                onClick={handleApproveClick}
               >
                 Approve
               </button>
@@ -521,9 +717,24 @@ const BillingAuditDetails = ({ onClose }) => {
                   padding: "15px",
                   margin: "0 10px",
                 }}
+                onClick={handleRejectClick}
               >
                 Reject
               </button>
+              <Modal
+                open={openModal}
+                onClose={handleModalClose}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+              >
+                <Box sx={style.bottomModals}>
+                  <ConfirmationModal
+                    onClose={handleModalClose}
+                    pass={passFlag}
+                    fail={failFlag}
+                  />
+                </Box>
+              </Modal>
             </div>
           </Grid>
         </Grid>

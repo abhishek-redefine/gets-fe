@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { FormControl, InputLabel, Select, MenuItem, Modal, Box } from "@mui/material";
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Modal,
+  Box,
+} from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
@@ -13,16 +20,30 @@ import MasterDataService from "@/services/masterdata.service";
 import TripSheetEntryDetails from "@/components/billing/tripSheetEntryDetails";
 import TripSheetEntryTable from "@/components/billing/tripSheetEntryTable";
 import TransferTripModal from "@/components/billing/transferTripModal";
+import ManualGenerateTripModal from "@/components/billing/manualGenerateTripModal";
+import ManualCreateTripDetails from "@/components/billing/manualCreateTripDetails";
 
 const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 650,
-  bgcolor: "background.paper",
-  height: 400,
-  borderRadius: 5,
+  tripTransferStyle: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 650,
+    bgcolor: "background.paper",
+    height: 400,
+    borderRadius: 5,
+  },
+  generateTripStyle: {
+    position: "absolute",
+    top: "41%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 650,
+    bgcolor: "background.paper",
+    height: 400,
+    borderRadius: 5,
+  },
 };
 
 const MainComponent = () => {
@@ -41,8 +62,54 @@ const MainComponent = () => {
     page: 0,
     size: 100,
   });
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [selectedVehicleId, setSelectedVehicleId] = useState("");
+  const [selectedVehicleRegistrationNo, setSelectedVehicleRegistrationNo] =
+    useState("");
+  const [searchValuesData, setSearchValuesData] = useState({});
 
+  const handleRowsSelected = (selectedRow) => {
+    setSelectedRow(selectedRow);
+    console.log("Trip sheet selected row >>>: ", selectedRow);
+  };
+
+  const handleEditTripClick = () => {
+    // console.log("edit trip selected row>>", selectedRow);
+    if (selectedRow) {
+      setDetailsScreenFlag(true);
+      console.log("Selected row vehicle ID: ", selectedRow.vehicleId);
+      handleTripInfoScreenOpen();
+      setManualCreateTripDetailsScreenOpen(false);
+      setSelectedRow(null);
+    }
+  };
+
+  const handleTransferTripClick = () => {
+    if (selectedRow) {
+      console.log("Selected row vehicle ID: ", selectedRow.vehicleId);
+      console.log(
+        "Selected row vehicle registration Number: ",
+        selectedRow.vehicleRegistration
+      );
+      setSelectedVehicleId(selectedRow.vehicleId);
+      setSelectedVehicleRegistrationNo(selectedRow.vehicleRegistration);
+      handleTripTransferModalOpen();
+      setSelectedRow(null);
+    }
+  };
+
+  const handleCreateTripDetailsScreen = () => {
+    setDetailsScreenFlag(true);
+    setTripDetailsScreenOpen(false);
+    handleCreateTripDetailsScreenOpen();
+  };
+
+  const [detailsScreenFlag, setDetailsScreenFlag] = useState(false);
   const [tripDetailsScreenOpen, setTripDetailsScreenOpen] = useState(false);
+  const [
+    manualCreateTripDetailsScreenOpen,
+    setManualCreateTripDetailsScreenOpen,
+  ] = useState(false);
 
   const handleTripInfoScreenOpen = () => {
     console.log("Trip Details Screen opened");
@@ -52,6 +119,18 @@ const MainComponent = () => {
   const handleTripInfoScreenClose = () => {
     console.log("Trip Details Screen closed");
     setTripDetailsScreenOpen(false);
+    setDetailsScreenFlag(false);
+  };
+
+  const handleCreateTripDetailsScreenOpen = () => {
+    console.log("Create Trip Details Screen closed");
+    setManualCreateTripDetailsScreenOpen(true);
+  };
+
+  const handleCreateTripDetailsScreenClose = () => {
+    console.log("Create Trip Details Screen closed");
+    setManualCreateTripDetailsScreenOpen(false);
+    setDetailsScreenFlag(false);
   };
 
   const [openTripTransferModal, setOpenTripTransferModal] = useState(false);
@@ -59,11 +138,24 @@ const MainComponent = () => {
   const handleTripTransferModalOpen = () => {
     console.log("handle trip transfer modal open");
     setOpenTripTransferModal(true);
-  }
+  };
 
   const handleTripTransferModalClose = () => {
     console.log("handle trip transfer modal close");
     setOpenTripTransferModal(false);
+    // console.log("edit trip selected row>>", selectedRow);
+  };
+
+  const [openGenerateTripModal, setOpenGenerateTripModal] = useState(false);
+  const handleGenerateTripModalOpen = () => {
+    console.log("Generate Trip modal open");
+    setOpenGenerateTripModal(true);
+  };
+
+  const handleGenerateTripModalClose = () => {
+    console.log("Generate Trip modal close");
+    setOpenGenerateTripModal(false);
+    // console.log("edit trip selected row>>", selectedRow);
   };
 
   const handleFilterChange = (e) => {
@@ -123,8 +215,8 @@ const MainComponent = () => {
       });
       const data = [
         {
-          vehicleId: "VH740923",
-          vehicleRegistration: "RS-DEL-001",
+          vehicleId: "4",
+          vehicleRegistration: "DL04C196",
           vehicleType: "Cab",
           vendor: "Active",
           date: "04-08-2024",
@@ -133,7 +225,7 @@ const MainComponent = () => {
           hrs: "4",
           issueType: "Km. Issue",
           shiftTime: "09:30",
-          shiftType: "Login",
+          shiftType: "LOGOUT",
         },
       ];
       setList(data);
@@ -149,10 +241,36 @@ const MainComponent = () => {
     fetchAllOffices();
   }, []);
 
+  const handleSearchValues = (data) => {
+    console.log("Search values changed: ", data);
+    setSearchValuesData(data);
+  };
+
+  useEffect(() => {
+    if (!selectedRow) {
+      console.log("Row unselected");
+      // setSelectedRow(null);
+    }
+  }, [selectedRow]);
+
   return (
     <div>
-      {tripDetailsScreenOpen ? (
-        <TripSheetEntryDetails onClose={handleTripInfoScreenClose} />
+      {detailsScreenFlag ? (
+        <div>
+          {tripDetailsScreenOpen ? (
+            <TripSheetEntryDetails onClose={handleTripInfoScreenClose} tripdetails={list}/>
+          ) : (
+            ""
+          )}
+          {manualCreateTripDetailsScreenOpen ? (
+            <ManualCreateTripDetails
+              onClose={handleCreateTripDetailsScreenClose}
+              tripdetails={searchValuesData}
+            />
+          ) : (
+            ""
+          )}
+        </div>
       ) : (
         <div>
           <div
@@ -296,7 +414,7 @@ const MainComponent = () => {
                     padding: "10px",
                     margin: "0 10px",
                   }}
-                  onClick={handleTripInfoScreenOpen}
+                  onClick={handleEditTripClick}
                 >
                   Edit Trip
                 </button>
@@ -307,25 +425,58 @@ const MainComponent = () => {
                     padding: "10px",
                     margin: "0 10px",
                   }}
-                  onClick={handleTripTransferModalOpen}
+                  onClick={handleTransferTripClick}
                 >
                   Transfer Trip
                 </button>
+                <Modal
+                  open={openTripTransferModal}
+                  onClose={handleTripTransferModalClose}
+                  aria-labelledby="modal-modal-title"
+                  aria-describedby="modal-modal-description"
+                >
+                  <Box sx={style.tripTransferStyle}>
+                    <TransferTripModal
+                      onClose={handleTripTransferModalClose}
+                      vehicleId={selectedVehicleId}
+                      vehicleRegistrationNumber={selectedVehicleRegistrationNo}
+                    />
+                  </Box>
+                </Modal>
+                <button
+                  className="btn btn-primary"
+                  style={{
+                    width: "140px",
+                    padding: "10px",
+                    margin: "0 10px",
+                  }}
+                  onClick={handleGenerateTripModalOpen}
+                >
+                  Create Trip
+                </button>
+                <Modal
+                  open={openGenerateTripModal}
+                  onClose={handleGenerateTripModalClose}
+                  aria-labelledby="modal-modal-title"
+                  aria-describedby="modal-modal-description"
+                >
+                  <Box sx={style.generateTripStyle}>
+                    <ManualGenerateTripModal
+                      onClose={handleGenerateTripModalClose}
+                      createdTripScreenOpen={handleCreateTripDetailsScreen}
+                      searchValuesdata={(searchValues) =>
+                        handleSearchValues(searchValues)
+                      }
+                    />
+                  </Box>
+                </Modal>
               </div>
             </div>
-            <TripSheetEntryTable list={list} />
-            <Modal
-              open={openTripTransferModal}
-              onClose={handleTripTransferModalClose}
-              aria-labelledby="modal-modal-title"
-              aria-describedby="modal-modal-description"
-            >
-              <Box sx={style}>
-                <TransferTripModal
-                  onClose={() => handleTripTransferModalClose()}
-                />
-              </Box>
-            </Modal>
+            <TripSheetEntryTable
+              list={list}
+              onRowsSelected={handleRowsSelected}
+              selectedRow={selectedRow}
+            />
           </div>
         </div>
       )}
