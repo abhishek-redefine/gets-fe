@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { FormControl, InputLabel, Select, MenuItem, Autocomplete, TextField } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
@@ -12,18 +12,20 @@ import { setMasterData } from "@/redux/master.slice";
 import MasterDataService from "@/services/masterdata.service";
 import BillingIssuesTable from "@/components/billing/billingIssuesTable";
 import BillingIssuesDetails from "@/components/billing/billingIssuesDetails";
+import ComplianceService from "@/services/compliance.service";
 
 const MainComponent = () => {
   const [office, setOffice] = useState([]);
   const [searchValues, setSearchValues] = useState({
     officeId: "",
     shiftType: "",
-    date: moment().format("YYYY-MM-DD"),
-    tripStatus: "",
-    vendorType: "",
-    issueCategory: "",
+    tripDate: moment().format("YYYY-MM-DD"),
+    issueName: "Trip Not Ended",
+    vendorName : ""
   });
   const [list, setList] = useState([]);
+  const [searchVendor, setSearchVendor] = useState([]);
+  const [openSearchVendor, setOpenSearchVendor] = useState(false);
 
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
@@ -38,7 +40,26 @@ const MainComponent = () => {
     setSelectedTripId(false);
   };
 
-  const vendorType = ["Active", "Inactive", "Blacklisted", "Pending"];
+  const searchForVendor = async (e) => {
+    try {
+      if (e.target.value) {
+        const response = await ComplianceService.searchVendor(e.target.value);
+        const { data } = response || {};
+        setSearchVendor(data);
+      } else {
+        setSearchVendor([]);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  const onChangeHandler = (newValue, name) => {
+    console.log("on change handler", newValue);
+    let allSearchValues = {...searchValues};
+    allSearchValues[name] = newValue;
+    setSearchValues(allSearchValues);
+  };
 
   const issueCategory = ["Trip Not Ended", "Km. Issue", "Attendance Issue"];
 
@@ -46,7 +67,7 @@ const MainComponent = () => {
     const { target } = e;
     const { value, name } = target;
     let newSearchValues = { ...searchValues };
-    if (name === "date") newSearchValues[name] = value.format("YYYY-MM-DD");
+    if (name === "tripDate") newSearchValues[name] = value.format("YYYY-MM-DD");
     else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
   };
@@ -62,7 +83,7 @@ const MainComponent = () => {
         (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const fetchMasterData = async (type) => {
@@ -73,7 +94,7 @@ const MainComponent = () => {
         console.log(data);
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const resetFilter = () => {
@@ -97,6 +118,7 @@ const MainComponent = () => {
           delete allSearchValues[objKey];
         }
       });
+      console.log(allSearchValues);
       const data = [
         {
           vehicleId: "4",
@@ -173,28 +195,6 @@ const MainComponent = () => {
             )}
 
             <div
-              style={{ minWidth: "160px", backgroundColor: "white" }}
-              className="form-control-input"
-            >
-              <FormControl fullWidth>
-                <InputLabel id="vendor-type-label">Vendor</InputLabel>
-                <Select
-                  style={{ width: "180px", backgroundColor: "white" }}
-                  labelId="vendor-type-label"
-                  id="vendorType"
-                  name="vendorType"
-                  value={searchValues.vendorType}
-                  label="Vendor Type"
-                  onChange={handleFilterChange}
-                >
-                  {vendorType.map((item) => (
-                    <MenuItem value={item}>{item}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </div>
-
-            <div
               className="form-control-input"
               style={{ backgroundColor: "white" }}
             >
@@ -220,15 +220,15 @@ const MainComponent = () => {
               className="form-control-input"
             >
               <FormControl fullWidth>
-                <InputLabel id="issue-category-label">
+                <InputLabel id="issueName-label">
                   Issue Category
                 </InputLabel>
                 <Select
                   style={{ width: "180px", backgroundColor: "white" }}
-                  labelId="issue-category-label"
-                  id="issueCategory"
-                  name="issueCategory"
-                  value={searchValues.issueCategory}
+                  labelId="issueName-label"
+                  id="issueName"
+                  name="issueName"
+                  value={searchValues.issueName}
                   label="Issue Category"
                   onChange={handleFilterChange}
                 >
@@ -257,6 +257,33 @@ const MainComponent = () => {
                     </MenuItem>
                   ))}
                 </Select>
+              </FormControl>
+            </div>
+
+            <div
+              style={{ minWidth: "160px", backgroundColor: "white" }}
+              className="form-control-input"
+            >
+              <FormControl variant="outlined">
+                <Autocomplete
+                  disablePortal
+                  id="search-vendor"
+                  options={searchVendor}
+                  autoComplete
+                  open={openSearchVendor}
+                  onOpen={() => {
+                    setOpenSearchVendor(true);
+                  }}
+                  onClose={() => {
+                    setOpenSearchVendor(false);
+                  }}
+                  onChange={(e, val) => onChangeHandler(val?.vendorName, "VendorName")}
+                  getOptionKey={(vendor) => vendor.vendorId}
+                  getOptionLabel={(vendor) => vendor.vendorName}
+                  freeSolo
+                  name="Vendor"
+                  renderInput={(params) => <TextField {...params} label="Search Vendor Name" onChange={searchForVendor} />}
+                />
               </FormControl>
             </div>
             {/* <div style={{ minWidth: "160px", backgroundColor: 'white', }} className="form-control-input">

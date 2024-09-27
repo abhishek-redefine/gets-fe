@@ -6,7 +6,7 @@ import {
 
 
 
-const BillingIssuesTable = ({list, vehicleIdClicked}) => {
+const BillingIssuesTable = ({ list, vehicleIdClicked }) => {
   const [data, setData] = useState([]);
 
   const handleTripClick = () => {
@@ -21,19 +21,19 @@ const BillingIssuesTable = ({list, vehicleIdClicked}) => {
         header: 'Vehicle ID',
         size: 150,
         Cell: ({ cell }) => {
-            const vehicleId = cell.getValue();
-            return (
-                <a
-                  onClick={handleTripClick}
-                  style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
-                >
-                  {vehicleId}
-                </a>
-            );
+          const vehicleId = cell.getValue();
+          return (
+            <a
+              onClick={handleTripClick}
+              style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
+            >
+              {vehicleId}
+            </a>
+          );
         }
       },
       {
-        accessorKey: 'vehicleRegistration', 
+        accessorKey: 'vehicleRegistration',
         header: 'Vehicle Registration',
         size: 250,
       },
@@ -53,11 +53,17 @@ const BillingIssuesTable = ({list, vehicleIdClicked}) => {
         size: 100,
       },
       {
-        accessorKey: 'id', 
+        accessorKey: 'id',
         header: 'Trip ID',
         size: 150,
         Cell: ({ cell }) => {
-          return <div>TRIP-{cell.getValue()}</div>;
+          return <div>
+            <a
+              onClick={handleTripClick}
+              style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
+            >TRIP-{cell.getValue()}
+            </a>
+          </div>;
         },
       },
       {
@@ -95,13 +101,13 @@ const BillingIssuesTable = ({list, vehicleIdClicked}) => {
     getRowId: row => row.tripId,
   });
 
-  useEffect(()=>{
+  useEffect(() => {
     setData(list)
-  },[list])
+  }, [list])
 
   return (
     <div>
-        <MaterialReactTable table={tableInstance} />
+      <MaterialReactTable table={tableInstance} />
     </div>
   );
 };
