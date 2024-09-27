@@ -56,9 +56,12 @@ const AllocateVendor = ({ tripList }) => {
         },
       },
       {
-        accessorKey: 'escortStatus',
+        accessorKey: "isEscortRequired",
         header: "Escort Trip",
         size: 150,
+        Cell: ({ cell }) => {
+          return <div>{cell.getValue() ? "Yes" : "No"}</div>;
+        },
       },
       {
         accessorKey: 'special',
