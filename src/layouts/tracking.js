@@ -51,14 +51,14 @@ const tracking = (WrappedComponent) => {
           >
             Safe Reach Confirmation
           </button>
-          <button
+          {/* <button
             onClick={() => changeRoute("incident-management")}
             className={`btn btn-secondary ${
               currentActiveState === "incident-management" ? "btn-blk" : ""
             }`}
           >
             Incident Management
-          </button>
+          </button> */}
         </div>
         <div>
           <WrappedComponent {...props} />
