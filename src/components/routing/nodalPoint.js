@@ -22,6 +22,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { TimeField } from "@mui/x-date-pickers/TimeField";
 import dayjs from "dayjs";
 import GeocodeModal from "../user-management/geocodeModal";
+import LoaderComponent from "../loader";
 
 const style = {
   position: "absolute",
@@ -118,6 +119,7 @@ const NodalPoint = () => {
     page: 0,
     size: 10,
   });
+  const [loading, setLoading] = useState(false);
 
   const [openGeocodeModal, setOpenGeocodeModal] = useState(false);
   const handleGeocodeModalOpen = () => setOpenGeocodeModal(true);
@@ -148,6 +150,8 @@ const NodalPoint = () => {
       values.reportingTime = reportingTime;
       console.log("clicked", values);
       try {
+        setLoading(true);
+        // await new Promise((resolve) => setTimeout(resolve, 5000));
         const response = await RoutingService.createNodalPoint({
           nodalDTO: values,
         });
@@ -171,6 +175,8 @@ const NodalPoint = () => {
         handleModalClose();
       } catch (err) {
         console.log(err);
+      } finally {
+        setLoading(false);
       }
     },
   });
@@ -228,6 +234,8 @@ const NodalPoint = () => {
 
   const fetchAllNodalPoints = async (search = false) => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       let params = new URLSearchParams(pagination);
       let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
@@ -249,6 +257,8 @@ const NodalPoint = () => {
       setPaginationData(localPaginationData);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -427,6 +437,7 @@ const NodalPoint = () => {
           handlePageChange={handlePageChange}
           enableDisableRow={true}
           pagination={paginationData}
+          isLoading={loading}
         />
         <Modal
           open={openModal}
@@ -605,6 +616,30 @@ const NodalPoint = () => {
                 </div>
               </div>
             </div>
+            {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "fixed",
+                // backgroundColor: "#000000",
+                zIndex: 1,
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                opacity: 1,
+                color: "#000000",
+                // height: "100vh",
+                // width: "100vw",
+              }}
+            >
+              <LoaderComponent />
+            </div>
+            ) : (
+              " "
+            )}
           </Box>
         </Modal>
       </div>

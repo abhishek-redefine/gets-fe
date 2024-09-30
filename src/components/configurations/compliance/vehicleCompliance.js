@@ -10,10 +10,12 @@ import {
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { toggleToast } from "@/redux/company.slice";
+import LoaderComponent from "@/components/loader";
 
 const VehicleCompliance = () => {
   const dispatch = useDispatch();
 
+  const [loading, setLoading] = useState(false);
   const [values, setValues] = useState({
     "vehicle.pollution": "",
     "vehicle.insurance": "",
@@ -82,6 +84,8 @@ const VehicleCompliance = () => {
   const fetchPreferenceValues = async (e) => {
     let id = 3;
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       for (const field of fieldText) {
         if (field.name !== "Vehicle Compliance Notification Type") {
           const response = await OfficeService.getPreferenceById(id);
@@ -97,12 +101,16 @@ const VehicleCompliance = () => {
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
   const CreatePreference = async () => {
     try {
       let idCount = 3;
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       for (const field of fieldText) {
         if (field.name !== "Vehicle Compliance Notification Type") {
           const payload = {
@@ -139,6 +147,8 @@ const VehicleCompliance = () => {
       }
     } catch (err) {
       console.log("Error setting preferences", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -346,6 +356,30 @@ const VehicleCompliance = () => {
           </button>
         </div>
       </div>
+      {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "fixed",
+            // backgroundColor: "#000000",
+            zIndex: 1,
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            opacity: 1,
+            color: "#000000",
+            // height: "100vh",
+            // width: "100vw",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

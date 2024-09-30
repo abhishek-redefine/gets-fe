@@ -4,9 +4,9 @@ import {
   useMaterialReactTable,
 } from "material-react-table";
 import { liveTrackingData } from "@/sampleData/liveTrackingData";
+import LoaderComponent from "../loader";
 
-
-const LiveTrackingTable = ({ tripData }) => {
+const LiveTrackingTable = ({ tripData, isLoading }) => {
   const [data, setData] = useState(tripData || []);
 
   const columns = useMemo(
@@ -89,14 +89,18 @@ const LiveTrackingTable = ({ tripData }) => {
     data,
     enableRowSelection: true,
     enableMultiRowSelection: true,
+    state: { isLoading },
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />,
+    },
   });
 
-  useEffect(()=>{
-    if(tripData){
-      console.log(tripData)
-      setData(tripData);  
+  useEffect(() => {
+    if (tripData) {
+      console.log(tripData);
+      setData(tripData);
     }
-  },[tripData])
+  }, [tripData]);
 
   return (
     <div>

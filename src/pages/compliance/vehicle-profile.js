@@ -132,6 +132,8 @@ const VehicleProfile = () => {
     }
     const handleClose = () => setOpen(false);
 
+    const [loading, setLoading] = useState(false);
+
     const [openModal,setOpenModal] = useState(false);
     const handleCloseModal = () =>{
         setEditVehicleData(null);
@@ -284,6 +286,8 @@ const VehicleProfile = () => {
 
     const initializer = async (resetFlag, filter = {}) => {
         try {
+            setLoading(true);
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
             var allValuesSearch = { ...filter };
             Object.keys(allValuesSearch).forEach((objKey) => {
                 if (allValuesSearch[objKey] === null || allValuesSearch[objKey] === "") {
@@ -308,6 +312,8 @@ const VehicleProfile = () => {
             delete localPaginationData?.data;
             setPaginationData(localPaginationData);
         } catch (e) {
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -571,7 +577,7 @@ const VehicleProfile = () => {
                     </div>
                 </div>
                 <div className='gridContainer'>
-                    <Grid headers={headers} listing={vehicleData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} handlePageChange={handlePageChange} pagination={paginationData} />
+                    <Grid headers={headers} listing={vehicleData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} handlePageChange={handlePageChange} pagination={paginationData} isLoading={loading} />
                 </div>
                 <Dialog
                     open={openModal}

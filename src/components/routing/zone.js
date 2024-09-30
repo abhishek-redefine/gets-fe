@@ -16,6 +16,7 @@ import { useFormik } from "formik";
 import { useDispatch, useSelector } from "react-redux";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
+import LoaderComponent from "../loader";
 
 const style = {
   position: "absolute",
@@ -78,6 +79,7 @@ const Zone = ({ roleType, onSuccess }) => {
     setOpenModal(false);
   };
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
 
   const formik = useFormik({
     initialValues: initialValues,
@@ -85,6 +87,8 @@ const Zone = ({ roleType, onSuccess }) => {
     onSubmit: async (values) => {
       console.log("clicked", values);
       try {
+        setLoading(true);
+        // await new Promise((resolve) => setTimeout(resolve, 5000));
         const response = await RoutingService.createZone({ zoneDTO: values });
         if (response.status === 201) {
           dispatch(
@@ -106,6 +110,8 @@ const Zone = ({ roleType, onSuccess }) => {
         handleModalClose();
       } catch (err) {
         console.log(err);
+      } finally {
+        setLoading(false);
       }
     },
   });
@@ -170,6 +176,8 @@ const Zone = ({ roleType, onSuccess }) => {
 
   const fetchAllZones = async (search=false) => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       console.log(search);
       let params = new URLSearchParams(pagination);
       const response = search ? await RoutingService.getAllZones(params,searchValues.officeId) : await RoutingService.getAllZones(params);
@@ -182,6 +190,8 @@ const Zone = ({ roleType, onSuccess }) => {
       setPaginationData(localPaginationData);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -242,6 +252,7 @@ const Zone = ({ roleType, onSuccess }) => {
           pageNoText="pageNumber"
           handlePageChange={handlePageChange}
           pagination={paginationData}
+          isLoading={loading}
         />
         <Modal
           open={openModal}
@@ -306,6 +317,30 @@ const Zone = ({ roleType, onSuccess }) => {
                 </div>
               </div>
             </div>
+            {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "fixed",
+                // backgroundColor: "#000000",
+                zIndex: 1,
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                opacity: 1,
+                color: "#000000",
+                // height: "100vh",
+                // width: "100vw",
+              }}
+            >
+              <LoaderComponent />
+            </div>
+            ) : (
+              " "
+            )}
           </Box>
         </Modal>
       </div>

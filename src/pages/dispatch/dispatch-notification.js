@@ -39,13 +39,15 @@ const MainComponent = () => {
     page: 0,
     size: 100,
   });
-  const [list,setList] = useState([]);
+  const [list, setList] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const handleFilterChange = (e) => {
     const { target } = e;
     const { value, name } = target;
     let newSearchValues = { ...searchValues };
-    if (name === "tripDateStr") newSearchValues[name] = value.format("YYYY-MM-DD");
+    if (name === "tripDateStr")
+      newSearchValues[name] = value.format("YYYY-MM-DD");
     else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
   };
@@ -84,10 +86,12 @@ const MainComponent = () => {
     setSearchValues(allSearchValue);
   };
 
-  const fetchSummary = async() =>{
-    try{
+  const fetchSummary = async () => {
+    try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       let params = new URLSearchParams(pagination);
-      let allSearchValues = {...searchValues};
+      let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
         if (
           allSearchValues[objKey] === null ||
@@ -102,11 +106,12 @@ const MainComponent = () => {
       );
       console.log(response.data.data);
       setList(response.data.data);
-    }catch(err){
+    } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
-  }
-
+  };
 
   useEffect(() => {
     if (!shiftTypes?.length) {
@@ -114,7 +119,6 @@ const MainComponent = () => {
     }
     fetchAllOffices();
   }, []);
-
 
   return (
     <div>
@@ -162,7 +166,11 @@ const MainComponent = () => {
             <DatePicker
               name="tripDateStr"
               format={DATE_FORMAT}
-              value={searchValues.tripDateStr ? moment(searchValues.tripDateStr) : null}
+              value={
+                searchValues.tripDateStr
+                  ? moment(searchValues.tripDateStr)
+                  : null
+              }
               onChange={(e) =>
                 handleFilterChange({
                   target: { name: "tripDateStr", value: e },
@@ -238,7 +246,7 @@ const MainComponent = () => {
           fontFamily: "DM Sans, sans-serif",
         }}
       >
-        <DispatchNotificationTable list={list}/>
+        <DispatchNotificationTable list={list} isLoading={loading} />
       </div>
     </div>
   );

@@ -54,6 +54,7 @@ const EmployeeManagement = ({
     });
     const [employeeListing, setEmployeeListing] = useState();
     const [editEmployeeData, setEditEmployeeData] = useState({});
+    const [loading, setLoading] = useState(false);
 
     const onUserSuccess = () => {
         setIsAddEdit(false);
@@ -64,6 +65,8 @@ const EmployeeManagement = ({
 
     const fetchAllEmployees = async () => {
         try {
+            setLoading(true);
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
             const params = new URLSearchParams(pagination);
             const response = await OfficeService.getAllEmployees(params.toString());
             const { data } = response || {};
@@ -74,6 +77,8 @@ const EmployeeManagement = ({
             setPaginationData(localPaginationData);
         } catch (e) {
             console.error(e);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -129,7 +134,7 @@ const EmployeeManagement = ({
                     </div>
                 </div>
                 <div className='gridContainer'>
-                    <Grid onMenuItemClick={onMenuItemClick} handlePageChange={handlePageChange} pagination={paginationData} headers={headers} listing={employeeListing} />
+                    <Grid onMenuItemClick={onMenuItemClick} handlePageChange={handlePageChange} pagination={paginationData} headers={headers} listing={employeeListing} isLoading={loading}/>
                 </div>
             </div>}
             {isAddEdit && <div>

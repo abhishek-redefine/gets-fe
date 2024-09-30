@@ -28,12 +28,14 @@ const MainComponent = () => {
   const [overSpeedCount, setOverSpeedCount] = useState(0);
   const [sosCount, setSosCount] = useState(0);
   const [panicCount, setPanicCount] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const handleFilterChange = (e) => {
     const { target } = e;
     const { value, name } = target;
     let newSearchValues = { ...searchValues };
-    if (name === "tripDateStr") newSearchValues[name] = value.format("YYYY-MM-DD");
+    if (name === "tripDateStr")
+      newSearchValues[name] = value.format("YYYY-MM-DD");
     else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
   };
@@ -49,7 +51,7 @@ const MainComponent = () => {
         (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) { }
+    } catch (e) {}
   };
 
   const fetchMasterData = async (type) => {
@@ -60,7 +62,7 @@ const MainComponent = () => {
         console.log(data);
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) { }
+    } catch (e) {}
   };
 
   const resetFilter = () => {
@@ -75,19 +77,27 @@ const MainComponent = () => {
   const [pagination, setPagination] = useState({
     page: 0,
     size: 10,
-  })
+  });
 
   const fetchSummary = async () => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const queryParams = new URLSearchParams(pagination);
       let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
-        if (allSearchValues[objKey] === null || allSearchValues[objKey] === "") {
+        if (
+          allSearchValues[objKey] === null ||
+          allSearchValues[objKey] === ""
+        ) {
           delete allSearchValues[objKey];
         }
       });
 
-      const response = await DispatchService.getTripSearchByBean(queryParams, allSearchValues);
+      const response = await DispatchService.getTripSearchByBean(
+        queryParams,
+        allSearchValues
+      );
       console.log(response.data.data);
       const data = response.data.data;
       if (data.length > 0) {
@@ -101,9 +111,11 @@ const MainComponent = () => {
         setTripList([]);
       }
     } catch (err) {
-      console.log(err)
+      console.log(err);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     if (!shiftTypes?.length) {
@@ -117,11 +129,24 @@ const MainComponent = () => {
       if (tripList.length > 0) {
         // const dateStr = moment().format('YYYY-MM-DD');
         const dateStr = searchValues.tripDateStr;
-        const SOSCountRes = await TrackingService.getAlertCountSOS(dateStr, 'SOS');
-        const PanicCountRes = await TrackingService.getAlertCountSOS(dateStr, 'PANIC');
-        const overspeedCountRes = await TrackingService.getAlertCountOverspeed(dateStr, "OVERSPEED");
+        const SOSCountRes = await TrackingService.getAlertCountSOS(
+          dateStr,
+          "SOS"
+        );
+        const PanicCountRes = await TrackingService.getAlertCountSOS(
+          dateStr,
+          "PANIC"
+        );
+        const overspeedCountRes = await TrackingService.getAlertCountOverspeed(
+          dateStr,
+          "OVERSPEED"
+        );
 
-        console.log(SOSCountRes.data, PanicCountRes.data, overspeedCountRes.data);
+        console.log(
+          SOSCountRes.data,
+          PanicCountRes.data,
+          overspeedCountRes.data
+        );
         setOverSpeedCount(overspeedCountRes.data);
         setPanicCount(PanicCountRes.data);
         setSosCount(SOSCountRes.data);
@@ -129,31 +154,34 @@ const MainComponent = () => {
     } catch (err) {
       console.log(err);
     }
-  }
+  };
 
-  const fetchOverspeedTrips = async() =>{
-    try{
+  const fetchOverspeedTrips = async () => {
+    try {
       // const dateStr = moment().format('YYYY-MM-DD');
       const dateStr = searchValues.tripDateStr;
-      const response = await TrackingService.getOverSpeedTripList(dateStr, "OVERSPEED");
+      const response = await TrackingService.getOverSpeedTripList(
+        dateStr,
+        "OVERSPEED"
+      );
       console.log(response.data);
       setTripList(response.data);
-    }catch(err){
+    } catch (err) {
       console.log(err);
     }
-  }
+  };
 
-  const fetchAlertTrips = async(type) =>{
-    try{
+  const fetchAlertTrips = async (type) => {
+    try {
       // const dateStr = moment().format('YYYY-MM-DD');
       const dateStr = searchValues.tripDateStr;
-      const response = await TrackingService.getAlertTripList(dateStr,type);
+      const response = await TrackingService.getAlertTripList(dateStr, type);
       console.log(response.data);
       setTripList(response.data);
-    }catch(err){
+    } catch (err) {
       console.log(err);
     }
-  }
+  };
 
   useEffect(() => {
     fetchData();
@@ -210,7 +238,11 @@ const MainComponent = () => {
             <DatePicker
               name="tripDateStr"
               format={DATE_FORMAT}
-              value={searchValues.tripDateStr ? moment(searchValues.tripDateStr) : null}
+              value={
+                searchValues.tripDateStr
+                  ? moment(searchValues.tripDateStr)
+                  : null
+              }
               onChange={(e) =>
                 handleFilterChange({
                   target: { name: "tripDateStr", value: e },
@@ -298,13 +330,15 @@ const MainComponent = () => {
             }}
           >
             <button
-              className={overSpeedCount > 0 ? "btn btn-warning" : "btn btn-primary"}
+              className={
+                overSpeedCount > 0 ? "btn btn-warning" : "btn btn-primary"
+              }
               style={{
                 width: "auto",
                 padding: "10px 20px",
                 margin: "0 10px",
               }}
-              onClick={()=>fetchOverspeedTrips()}
+              onClick={() => fetchOverspeedTrips()}
             >
               {`${overSpeedCount} Overspeed`}
             </button>
@@ -325,7 +359,7 @@ const MainComponent = () => {
                 padding: "10px 20px",
                 margin: "0 10px",
               }}
-              onClick={()=>fetchAlertTrips('SOS')}
+              onClick={() => fetchAlertTrips("SOS")}
             >
               {`${sosCount} SOS`}
             </button>
@@ -336,7 +370,7 @@ const MainComponent = () => {
                 padding: "10px 20px",
                 margin: "0 10px",
               }}
-              onClick={()=>fetchAlertTrips('PANIC')}
+              onClick={() => fetchAlertTrips("PANIC")}
             >
               {`${panicCount} Panic Button`}
             </button>
@@ -362,7 +396,7 @@ const MainComponent = () => {
             </button> */}
           </div>
         </div>
-        <SecurityDashboardTable tripList={tripList} />
+        <SecurityDashboardTable tripList={tripList} isLoading={loading}/>
       </div>
     </div>
   );

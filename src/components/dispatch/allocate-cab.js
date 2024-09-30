@@ -8,8 +8,9 @@ import Autocomplete from '@mui/material/Autocomplete';
 import DispatchService from "@/services/dispatch.service";
 import { toggleToast } from '@/redux/company.slice';
 import { useDispatch, useSelector } from "react-redux";
+import LoaderComponent from "../loader";
 
-const AllocateCab = ({ tripList, allocationComplete, setTripList }) => {
+const AllocateCab = ({ tripList, allocationComplete, setTripList, isLoading }) => {
   const dispatch = useDispatch();
   const [data, setData] = useState([]);
   const [selectedRows, setSelectedRows] = useState({});
@@ -110,6 +111,10 @@ const AllocateCab = ({ tripList, allocationComplete, setTripList }) => {
   const tableInstance = useMaterialReactTable({
     columns,
     data: data,
+    state: { isLoading },
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />
+    },
   });
 
   const VehicleNumberCell = ({ value, onChange, options, rowData }) => {
@@ -215,6 +220,14 @@ const AllocateCab = ({ tripList, allocationComplete, setTripList }) => {
             console.log("Updated Data:", updatedData);
 
             // Update state
+            if (updatedData) {
+              dispatch(
+                toggleToast({
+                  message: "Cab allocated to the trip successfully!",
+                  type: "success",
+                })
+              );
+            }
             return updatedData;
           } else {
             console.error("Invalid data or missing values.");

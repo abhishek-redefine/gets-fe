@@ -3,8 +3,9 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
+import LoaderComponent from "../loader";
 
-const ApprovalsWorkflowTable = ({ onRowSelect, list }) => {
+const ApprovalsWorkflowTable = ({ onRowSelect, list, isLoading }) => {
   const [data, setData] = useState([]);
   const [rowSelection, setRowSelection] = useState({});
 
@@ -42,9 +43,9 @@ const ApprovalsWorkflowTable = ({ onRowSelect, list }) => {
         },
       },
       {
-        accessorKey : "remarks",
+        accessorKey: "remarks",
         header: "Ops Remarks",
-        size : 200,
+        size: 200,
         Cell: ({ cell }) => {
           return <div>{cell?.getValue() || "N/A"}</div>;
         },
@@ -74,8 +75,11 @@ const ApprovalsWorkflowTable = ({ onRowSelect, list }) => {
     enableRowSelection: true,
     enableMultiRowSelection: false,
     getRowId: (originalRow) => originalRow?.tripId,
-    state: { rowSelection },
+    state: { rowSelection, isLoading },
     onRowSelectionChange: setRowSelection,
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />,
+    },
   });
 
   useEffect(() => {

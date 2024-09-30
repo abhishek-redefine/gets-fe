@@ -19,7 +19,7 @@ import { TimeField } from "@mui/x-date-pickers/TimeField";
 import { getFormattedLabel } from "@/utils/utils";
 import dayjs from "dayjs";
 import ConfirmationModal from "./tripGenratedSuccesModal";
-
+import LoaderComponent from "@/components/loader";
 
 const GenerateTripModal = (props) => {
   const { onClose, data, selectedDate, dummy, officeData, shiftTypes } = props;
@@ -53,8 +53,9 @@ const GenerateTripModal = (props) => {
     shiftType: data.shiftType,
     noOfTrips: 1,
   });
+  const [loading, setLoading] = useState(false);
 
-  const [failureMessage, setFailureMessage] = useState("")
+  const [failureMessage, setFailureMessage] = useState("");
   const [openConfirmationModal, setOpenConfirmationModal] = useState(false);
   const handleConfirmationModalOpen = () => {
     console.log("Confirmation modal open");
@@ -83,6 +84,8 @@ const GenerateTripModal = (props) => {
 
   const generateTrips = async () => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const payload = {
         officeIds: [data.officeId],
         date: selectedDate,
@@ -133,10 +136,14 @@ const GenerateTripModal = (props) => {
       setFailureMessage(error.response.data.message);
       console.log("failure message>>>", error.response.data.message);
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
   const dummyTrips = async () => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       let payload = { dummyTripDTO: dummyRouteOptions };
       console.log(payload);
       const response = await DispatchService.generateDummyTrip(payload);
@@ -152,6 +159,8 @@ const GenerateTripModal = (props) => {
       setPassFlag(false);
       setFailureMessage(err.response.data.message);
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
   const handleFilterChangeDummyRoute = async (e) => {
@@ -649,6 +658,30 @@ const GenerateTripModal = (props) => {
             />
           </Box>
         </Modal>
+      )}
+      {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "fixed",
+            // backgroundColor: "#000000",
+            zIndex: 1,
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            opacity: 1,
+            color: "#000000",
+            // height: "100vh",
+            // width: "100vw",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
       )}
     </>
   );

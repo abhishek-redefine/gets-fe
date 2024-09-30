@@ -90,6 +90,7 @@ const Vendor = () => {
     const [open, setOpen] = useState(false);
     const [selectedVendor,setSelectedVendor] = useState();
     const [isEnableFlag,setIsEnableFlag] = useState(false);
+    const [loading, setLoading] = useState(false);
     
     const handleOpen = (id,isEnable) => {
         console.log(`id = ${id}, isEnable = ${isEnable}`)
@@ -126,16 +127,22 @@ const Vendor = () => {
 
     const fetchAllVendors = async () => {
         try {
+            setLoading(true);
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
             const response = await ComplianceService.getAllVendorCompany();
             setVendorListing(response.data.paginatedResponse.content);
         } catch (e) {
             console.error(e);
+        } finally {
+            setLoading(false);
         }
     };
 
     const searchVendorById = async() =>{
         try{
             if(vendorId){
+                setLoading(true);
+                // await new Promise((resolve) => setTimeout(resolve, 5000));
                 const response = await ComplianceService.getVendorCompanyById(vendorId);
                 setVendorListing([response.data.vendorCompany]);
             //console.log(response.data.vendorCompany);
@@ -143,6 +150,8 @@ const Vendor = () => {
         }
         catch(err){
             console.log(err);
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -280,7 +289,7 @@ const Vendor = () => {
                     </div>
                 </div>
                 <div className='gridContainer'>
-                    <Grid onMenuItemClick={onMenuItemClick} headers={headers} listing={vendorListing} enableDisableRow={true}/>
+                    <Grid onMenuItemClick={onMenuItemClick} headers={headers} listing={vendorListing} enableDisableRow={true} isLoading={loading}/>
                 </div>
                 <Modal
                     open={open}

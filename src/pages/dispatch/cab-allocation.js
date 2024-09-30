@@ -1,20 +1,12 @@
 import dispatch from "@/layouts/dispatch";
-import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-} from "@mui/material";
+import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { useEffect, useState } from "react";
 import { getFormattedLabel } from "@/utils/utils";
 import OfficeService from "@/services/office.service";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
-import {
-  DATE_FORMAT,
-  MASTER_DATA_TYPES,
-} from "@/constants/app.constants.";
+import { DATE_FORMAT, MASTER_DATA_TYPES } from "@/constants/app.constants.";
 import { useDispatch, useSelector } from "react-redux";
 import MasterDataService from "@/services/masterdata.service";
 import GridNew from "@/components/gridNew";
@@ -24,6 +16,7 @@ import DispatchService from "@/services/dispatch.service";
 import { setMasterData } from "@/redux/master.slice";
 import CabStickerModal from "@/components/dispatch/cabStickerModel";
 import AllocateCab from "@/components/dispatch/allocate-cab";
+import LoaderComponent from "@/components/loader";
 
 const style = {
   position: "absolute",
@@ -44,7 +37,8 @@ const MainComponent = () => {
     { field: "bookingCount" },
     { field: "routingStatus" },
     { field: "dispatchStatus" },
-    { field: "tripCount",
+    {
+      field: "tripCount",
       cellRenderer: (params) => {
         const tripCount = params.value;
 
@@ -54,11 +48,18 @@ const MainComponent = () => {
         };
 
         return (
-          <div style={{ cursor: 'pointer', textDecoration: 'underline', color: "blue"}} onClick={handleClick}>
+          <div
+            style={{
+              cursor: "pointer",
+              textDecoration: "underline",
+              color: "blue",
+            }}
+            onClick={handleClick}
+          >
             {tripCount}
           </div>
         );
-      }
+      },
     },
     { field: "allocatedVendorCount" },
     { field: "allocatedCabCount" },
@@ -75,7 +76,6 @@ const MainComponent = () => {
     transportType: "",
   });
 
-
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
   const [showAction, setShowAction] = useState(false);
@@ -87,15 +87,19 @@ const MainComponent = () => {
   const [allocateCabShow, setAllocateCabShow] = useState(false);
   const [tripList, setTripList] = useState([]);
   const [shiftId, setShiftId] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(moment().format("YYYY-MM-DD"));
-
+  const [selectedDate, setSelectedDate] = useState(
+    moment().format("YYYY-MM-DD")
+  );
+  const [loading, setLoading] = useState(false);
 
   const handleFilterChange = (e) => {
     const { target } = e;
     const { value, name } = target;
     let newSearchValues = { ...searchValues };
-    if (name === "date") { newSearchValues[name] = value.format("YYYY-MM-DD"); setSelectedDate(value.format("YYYY-MM-DD")) }
-    else newSearchValues[name] = value;
+    if (name === "date") {
+      newSearchValues[name] = value.format("YYYY-MM-DD");
+      setSelectedDate(value.format("YYYY-MM-DD"));
+    } else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
   };
 
@@ -110,7 +114,7 @@ const MainComponent = () => {
         (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) { }
+    } catch (e) {}
   };
 
   const fetchMasterData = async (type) => {
@@ -120,12 +124,14 @@ const MainComponent = () => {
       if (data?.length) {
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) { }
+    } catch (e) {}
   };
 
   const fetchSummary = async () => {
     try {
       console.log("search values>>>>>", searchValues);
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
         if (
@@ -140,24 +146,32 @@ const MainComponent = () => {
       setData(response.data);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const allocateCabHanlder = async () => {
     try {
+      setAllocateCabShow(true);
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const queryParams = {
         shiftId: shiftId,
         tripDate: selectedDate,
       };
       const params = new URLSearchParams(queryParams);
-      const response = await DispatchService.getTripByShiftIdAndTripDate(params);
+      const response = await DispatchService.getTripByShiftIdAndTripDate(
+        params
+      );
       setTripList(response.data);
       console.log(response.data);
-      setAllocateCabShow(true);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   const selectedRowHandler = (flag, row) => {
     setShowAction(flag);
@@ -181,9 +195,9 @@ const MainComponent = () => {
     fetchAllOffices();
   }, []);
 
-  useEffect(()=>{
-    console.log("In parent>>>>>>",tripList)
-  },[tripList]);
+  useEffect(() => {
+    console.log("In parent>>>>>>", tripList);
+  }, [tripList]);
 
   return (
     <div>
@@ -352,6 +366,7 @@ const MainComponent = () => {
               data={data}
               headers={headers}
               setShowAction={(flag, row) => selectedRowHandler(flag, row)}
+              isLoading={loading}
             />
           </div>
 
@@ -372,10 +387,39 @@ const MainComponent = () => {
           </Modal>
         </div>
       ) : (
-        <div style={{ margin: '20px 0', boxShadow: 'none', }}>
-          <AllocateCab tripList={tripList} setTripList={(list)=>setTripList(list)} allocationComplete={() => setAllocateCabShow(false)} />
+        <div style={{ margin: "20px 0", boxShadow: "none" }}>
+          <AllocateCab
+            tripList={tripList}
+            setTripList={(list) => setTripList(list)}
+            allocationComplete={() => setAllocateCabShow(false)}
+            isLoading={loading}
+          />
         </div>
       )}
+      {/* {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "fixed",
+            // backgroundColor: "#000000",
+            zIndex: 1,
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            opacity: 1,
+            color: "#000000",
+            // height: "100vh",
+            // width: "100vw",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )} */}
     </div>
   );
 };

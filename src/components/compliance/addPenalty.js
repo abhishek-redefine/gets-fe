@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from "formik";
 import * as yup from "yup";
 import ComplianceService from '@/services/compliance.service';
+import LoaderComponent from '../loader';
 
 export const validationSchema = yup.object({
     officeId: yup.string("Enter Office Id").required("Enter Office Id"),
@@ -27,6 +28,7 @@ const AddPenalty = ({ EditPenaltyData, isAddPenalty }) => {
         penaltyType: "",
         penaltyActionRequired: ""
     });
+    const [loading, setLoading] = useState(false);
 
     useState(() => {
         if (EditPenaltyData?.id) {
@@ -42,16 +44,22 @@ const AddPenalty = ({ EditPenaltyData, isAddPenalty }) => {
             try {
                 if (EditPenaltyData.id) {
                     values.id = EditPenaltyData.id;
+                    setLoading(true);
+                    // await new Promise((resolve) => setTimeout(resolve, 5000));
                     const response = await ComplianceService.updatePenalty({ "penalty": values });
                     console.log(response.status);
                     isAddPenalty();
                 } else {
+                    setLoading(true);
+                    // await new Promise((resolve) => setTimeout(resolve, 5000));
                     const response = await ComplianceService.createPenalty({ "penalty": values })
                     console.log(response.status);
                     isAddPenalty();
                 }
             } catch (err) {
                 console.log(err);
+            } finally {
+                setLoading(false);
             }
         }
     });
@@ -161,6 +169,30 @@ const AddPenalty = ({ EditPenaltyData, isAddPenalty }) => {
                     </div>
                 </div>
             </div>
+            {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "fixed",
+                // backgroundColor: "#000000",
+                zIndex: 1,
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                opacity: 1,
+                color: "#000000",
+                // height: "100vh",
+                // width: "100vw",
+              }}
+            >
+              <LoaderComponent />
+            </div>
+            ) : (
+              " "
+            )}
         </div>
     );
 }

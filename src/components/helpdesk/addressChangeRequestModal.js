@@ -2,6 +2,9 @@ import { Autocomplete, Box, Grid, Modal, TextField } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import VerifyGeocodeModal from "./verifyGeocodeModal";
 import TripService from "@/services/trip.service";
+import { useDispatch } from "react-redux";
+import { toggleToast } from "@/redux/company.slice";
+import LoaderComponent from "@/components/loader";
 
 const style = {
   position: "absolute",
@@ -15,21 +18,37 @@ const style = {
 };
 
 const AddressChangeRequestModal = (props) => {
-  const { onClose, addressRequestDetails, updatedStatus, } = props;
+  const dispatch = useDispatch();
+  const { onClose, addressRequestDetails, updatedStatus } = props;
   const [remarks, setRemarks] = useState("");
   const [remarksError, setRemarksError] = useState(false);
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [openGeocodeModal, setOpenGeocodeModal] = useState(false);
   const [userDetails, setUserDetails] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const fetchUserDetails = async (e) => {
     try {
-      const response = await TripService.getEmployeeById(addressRequestDetails.empId);
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
+      const response = await TripService.getEmployeeById(
+        addressRequestDetails.empId
+      );
       console.log("User Details>>>", response.data);
       setUserDetails(response.data);
+      if (response.status === 500) {
+        dispatch(
+          toggleToast({
+            message: "Failed! Try again later.",
+            type: "error",
+          })
+        );
+      }
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -37,7 +56,7 @@ const AddressChangeRequestModal = (props) => {
     {
       oldAddress: {
         Address: userDetails.address,
-        Landmark: userDetails.landMark, 
+        Landmark: userDetails.landMark,
         Geocode: userDetails.geoCode,
         Zone: userDetails.zoneName,
         Area: userDetails.areaName,
@@ -321,6 +340,30 @@ const AddressChangeRequestModal = (props) => {
           </button>
         </div>
       </div>
+      {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "fixed",
+            // backgroundColor: "#000000",
+            zIndex: 1,
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            opacity: 1,
+            color: "#000000",
+            // height: "100vh",
+            // width: "100vw",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

@@ -12,11 +12,13 @@ import {
 import { getFormattedLabel } from "@/utils/utils";
 import OfficeService from "@/services/office.service";
 import { useDispatch } from "react-redux";
+import { toggleToast } from "@/redux/company.slice";
 import helpdesk from "@/layouts/helpdesk";
 import ChangeRequestTable from "@/components/helpdesk/changeRequestTable";
 import ContactNumberChangeRequestModal from "@/components/helpdesk/contactNoChangeRequestModal";
 import AddressChangeRequestModal from "@/components/helpdesk/addressChangeRequestModal";
 import TripService from "@/services/trip.service";
+import LoaderComponent from "@/components/loader";
 
 const style = {
   position: "absolute",
@@ -43,6 +45,7 @@ const MainComponent = () => {
     page: 0,
     size: 100,
   });
+  const [loading, setLoading] = useState(false);
 
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [searchedUsers, setSearchedUsers] = useState([]);
@@ -136,6 +139,8 @@ const MainComponent = () => {
 
   const fetchSummary = async () => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       let params = new URLSearchParams(pagination);
       console.log("Search values>>>", searchValues);
       let allSearchValues = { ...searchValues };
@@ -154,14 +159,26 @@ const MainComponent = () => {
       console.log("change request list response data", response.data.data);
       setList(response.data.data);
       setSelectedRow(null);
+      if (response.status === 500) {
+        dispatch(
+          toggleToast({
+            message: `Failed! Please try again later.`,
+            type: "error",
+          })
+        );
+      }
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const updateRequestStatus = async (newStatus) => {
     try {
       console.log("New Status>>>", newStatus);
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       let payload;
       // if (selectedRow.requestType === "mobile") {
       //   payload = {
@@ -176,23 +193,23 @@ const MainComponent = () => {
       //     officeId: selectedRow.officeId,
       //   };
       // } else if (selectedRow.requestType === "address") {
-        payload = {
-          id: selectedRow.id,
-          attemptTime: selectedRow.attemptTime,
-          empId: selectedRow.empId,
-          empName: selectedRow.empName,
-          empEmail: selectedRow.empEmail,
-          requestType: selectedRow.requestType,
-          address: selectedRow.address,
-          geoCode: selectedRow.geoCode,
-          mob: selectedRow.mob,
-          zoneName: selectedRow.zoneName,
-          areaName: selectedRow.areaName,
-          nodal: selectedRow.nodal,
-          landMark: selectedRow.landMark,
-          status: newStatus,
-          officeId: selectedRow.officeId,
-        };
+      payload = {
+        id: selectedRow.id,
+        attemptTime: selectedRow.attemptTime,
+        empId: selectedRow.empId,
+        empName: selectedRow.empName,
+        empEmail: selectedRow.empEmail,
+        requestType: selectedRow.requestType,
+        address: selectedRow.address,
+        geoCode: selectedRow.geoCode,
+        mob: selectedRow.mob,
+        zoneName: selectedRow.zoneName,
+        areaName: selectedRow.areaName,
+        nodal: selectedRow.nodal,
+        landMark: selectedRow.landMark,
+        status: newStatus,
+        officeId: selectedRow.officeId,
+      };
       // }
       const response = await TripService.changeRequestStatus(payload);
       console.log("Updated status response data", response);
@@ -210,6 +227,8 @@ const MainComponent = () => {
       console.log("selected row status inside update status>>>", selectedRow);
     } catch (err) {
       console.log("Error updating feedback status", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -411,8 +430,33 @@ const MainComponent = () => {
         <ChangeRequestTable
           list={list}
           onRowsSelected={(row) => handleRowsSelected(row)}
+          isLoading={loading}
         />
       </div>
+      {/* {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "fixed",
+            // backgroundColor: "#000000",
+            zIndex: 1,
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            opacity: 1,
+            color: "#000000",
+            // height: "100vh",
+            // width: "100vw",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )} */}
     </div>
   );
 };

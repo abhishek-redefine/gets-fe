@@ -88,6 +88,7 @@ const VehicleDriverMapping = () => {
         page: 0,
         size : DEFAULT_PAGE_SIZE
     })
+    const [loading, setLoading] = useState(false);
 
     //////////////////////////////////////////////////
     const [openModal,setOpenModal] = useState(false);
@@ -154,10 +155,14 @@ const VehicleDriverMapping = () => {
 
     const initializer = async () => {
         try {
+            setLoading(true);
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
             let params = new URLSearchParams(pagination);
             const response = await ComplianceService.getAllVehiclesMapping(params.toString(),{});
             setVehicleData(response.data.data)
         } catch (e) {
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -172,7 +177,7 @@ const VehicleDriverMapping = () => {
             </div>
             <div>
                 <div className='gridContainer'>
-                    <Grid headers={headers} listing={vehicleData} onMenuItemClick={onMenuItemClick} />
+                    <Grid headers={headers} listing={vehicleData} onMenuItemClick={onMenuItemClick} isLoading={loading} />
                 </div>
             </div>
             <Dialog

@@ -1,55 +1,70 @@
-import React, { useEffect, useState } from 'react';
-import AdminSettings from '@/layouts/admin-settings';
-import { useDispatch } from 'react-redux';
-import MasterDataService from '@/services/masterdata.service';
-import { setMasterData } from '@/redux/master.slice';
-import OfficesListing from '@/components/offices/offices-listing';
-import OfficesMapping from '@/components/offices/offices-mapping';
-import OfficeService from '@/services/office.service';
+import React, { useEffect, useState } from "react";
+import AdminSettings from "@/layouts/admin-settings";
+import { useDispatch } from "react-redux";
+import MasterDataService from "@/services/masterdata.service";
+import { setMasterData } from "@/redux/master.slice";
+import OfficesListing from "@/components/offices/offices-listing";
+import OfficesMapping from "@/components/offices/offices-mapping";
+import OfficeService from "@/services/office.service";
 
 const Offices = () => {
-    
-    const [currentState, setCurrentState] = useState(1);
+  const [currentState, setCurrentState] = useState(1);
 
-    const [officeListing, setOfficeListing] = useState();
-    
-    const fetchAllOffices = async () => {
-        try {
-            const response = await OfficeService.getAllOffices();
-            const { data } = response || {};
-            const { clientOfficeDTO } = data || {};
-            setOfficeListing(clientOfficeDTO);
-        } catch (e) {
-            console.error(e);
-        }
-    };
+  const [officeListing, setOfficeListing] = useState();
+  const [loading, setLoading] = useState(false);
 
-    useEffect(() =>{
-        fetchAllOffices();
-    }, []);
-
-
-    const changeState = (newState) => {
-        setCurrentState(newState);
+  const fetchAllOffices = async () => {
+    try {
+      setLoading(true);
+    //   await new Promise((resolve) => setTimeout(resolve, 5000));
+      const response = await OfficeService.getAllOffices();
+      const { data } = response || {};
+      const { clientOfficeDTO } = data || {};
+      setOfficeListing(clientOfficeDTO);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const onSuccess = () => {
+  useEffect(() => {
+    fetchAllOffices();
+  }, []);
 
-    };
+  const changeState = (newState) => {
+    setCurrentState(newState);
+  };
 
-    return (
-        <div className='mainSettingsContainer'>
-            <h2>Offices</h2>
-            <div className='currentStateContainer'>
-            <button onClick={() => changeState(1)} className={`btn btn-secondary ${currentState === 1 ? 'btn-blk' : ''}`}>Office Listing</button>
-            <button onClick={() => changeState(2)} className={`btn btn-secondary ${currentState === 2 ? 'btn-blk' : ''}`}>Office Mappings</button>
-            </div>
-            <div>
-                {currentState === 1 && <OfficesListing officeListing={officeListing} onSuccess={onSuccess} />}
-                {currentState === 2 && <OfficesMapping officeListing={officeListing} onSuccess={onSuccess} />}
-            </div>
-        </div>
-    );
-}
+  const onSuccess = () => {};
+
+  return (
+    <div className="mainSettingsContainer">
+      <h2>Offices</h2>
+      <div className="currentStateContainer">
+        <button
+          onClick={() => changeState(1)}
+          className={`btn btn-secondary ${currentState === 1 ? "btn-blk" : ""}`}
+        >
+          Office Listing
+        </button>
+        <button
+          onClick={() => changeState(2)}
+          className={`btn btn-secondary ${currentState === 2 ? "btn-blk" : ""}`}
+        >
+          Office Mappings
+        </button>
+      </div>
+      <div>
+        {currentState === 1 && (
+          <OfficesListing officeListing={officeListing} onSuccess={onSuccess} isLoading={loading} />
+        )}
+        {currentState === 2 && (
+          <OfficesMapping officeListing={officeListing} onSuccess={onSuccess} />
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default AdminSettings(Offices);

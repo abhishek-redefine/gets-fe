@@ -15,6 +15,7 @@ import IframeComponent from '../iframe/Iframe';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import dayjs from 'dayjs';
+import LoaderComponent from '../loader';
 
 const validationSchemaStepOne = object({
     name: string().required('Driver Name is required'),
@@ -204,6 +205,8 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
         "ddTrainingDate" : ""
     });
 
+    const [loading, setLoading] = useState(false);
+
     const addNewDriverDetailsSubmit = async (values) => {
         console.log('addNewDriverDetailsSubmit', values)
         console.log("Hello>>>>>>", vendorName)
@@ -215,6 +218,8 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                 //     alert("please enter vendor");
                 //     return;
                 // }
+                setLoading(true);
+                // await new Promise((resolve) => setTimeout(resolve, 5000));
                 const response = await ComplianceService.updateDriver({ "driver": values });
                 if (response.status === 200) {
                     setDriverId(response.data.driver.id);
@@ -230,6 +235,8 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                     return ;
                 }
                 values.vendorName = vendorName;
+                setLoading(true);
+                // await new Promise((resolve) => setTimeout(resolve, 5000));
                 const response = await ComplianceService.createDriver({ "driver": values });
                 if (response.status === 200) {
                     setDriverId(response.data.driver.id);
@@ -264,6 +271,8 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                     handleShow();
                 }
             }
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -844,7 +853,29 @@ const AddNewDriver = ({ EditDriverData, SetAddDriverOpen }) => {
                     </div>
                 </Box>
             </Modal>
-        </div >
+            {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "fixed",
+                // backgroundColor: "#000000",
+                zIndex: 1,
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                opacity: 1,
+                color: "#000000",
+                // height: "100vh",
+                // width: "100vw",
+              }}
+            >
+              <LoaderComponent />
+            </div>
+            ) : ("")}
+        </div>
     )
 }
 

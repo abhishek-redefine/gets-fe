@@ -7,6 +7,7 @@ import { useFormik } from "formik";
 import * as yup from "yup";
 import OfficeService from '@/services/office.service';
 import { toggleToast } from '@/redux/company.slice';
+import LoaderComponent from '../loader';
 
 export const validationSchema = yup.object({
     officeIds: yup.string("Enter Office Id").required("Enter Office Id"),
@@ -30,6 +31,8 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
         vehicleType: ""
     });
 
+    const [loading, setLoading] = useState(false);
+
     useState(() => {
         if (EditEhsData?.id) {
             let newEditInfo = Object.assign(initialValues, EditEhsData);
@@ -49,6 +52,8 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
                 if (EditEhsData?.id) {
                     values.ehsAppliedOn === "Driver" ? values["ehsAppliedOnDriver"] = true : values["ehsAppliedOnDriver"] = false;
                     values.officeIds = [values.officeIds];
+                    setLoading(true);
+                    // await new Promise((resolve) => setTimeout(resolve, 5000));
                     const response = await ComplianceService.updateEHS({ "ehs": values })
                     if (response.status === 200) {
                         dispatch(toggleToast({ message: 'EHS details updated successfully!', type: 'success' }));
@@ -60,6 +65,8 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
                 } else {
                     values.ehsAppliedOn === "Driver" ? values["ehsAppliedOnDriver"] = true : values["ehsAppliedOnDriver"] = false;
                     values.officeIds = [values.officeIds]
+                    setLoading(true);
+                    // await new Promise((resolve) => setTimeout(resolve, 5000));
                     const response = await ComplianceService.createEHS({ "ehs": values })
                     if (response.status === 201) {
                         dispatch(toggleToast({ message: 'EHS details added successfully!', type: 'success' }));
@@ -73,6 +80,8 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
                 dispatch(toggleToast({ message: 'EHS details not added. Please try again later!', type: 'error' }));
                 values.officeIds = values.officeIds[0];
                 console.log(err);
+            } finally {
+                setLoading(false);
             }
         }
     });
@@ -287,6 +296,30 @@ const AddEHS = ({ EditEhsData, SetIsAddEhs }) => {
                     </div>
                 </div>
             </div>
+            {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "fixed",
+                // backgroundColor: "#000000",
+                zIndex: 1,
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                opacity: 1,
+                color: "#000000",
+                // height: "100vh",
+                // width: "100vw",
+              }}
+            >
+              <LoaderComponent />
+            </div>
+            ) : (
+              " "
+            )}
         </div>
     );
 }

@@ -3,8 +3,9 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
+import LoaderComponent from "../loader";
 
-const TripsTable = ({ list, tripIdClicked }) => {
+const TripsTable = ({ list, tripIdClicked, isLoading }) => {
   const [data, setData] = useState([]);
 
   const handleTripClick = (id) => {
@@ -83,6 +84,10 @@ const TripsTable = ({ list, tripIdClicked }) => {
     getRowId: (row) => {
       row.id;
       console.log("row.id", row.id);
+    },
+    state: { isLoading },
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />,
     },
   });
 

@@ -135,6 +135,8 @@ const DriverProfile = () => {
         driverState: ""
     });
     const [open, setOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
+
     const handleOpen = (id,isEnable) => {
         console.log(`id = ${id}, isEnable = ${isEnable}`)
         setSelectedDriver(id);
@@ -252,6 +254,8 @@ const DriverProfile = () => {
 
     const initializer = async (resetFlag,filter={}) => {
         try {
+            setLoading(true);
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
             console.log(filter);
             var allValuesSearch = {...filter};
             Object.keys(allValuesSearch).forEach((objKey) => {
@@ -277,6 +281,8 @@ const DriverProfile = () => {
             delete localPaginationData?.data;
             setPaginationData(localPaginationData);
         } catch (e) {
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -515,7 +521,7 @@ const DriverProfile = () => {
                     </div>
                 </div>
                 <div className='gridContainer'>
-                    <Grid headers={headers} listing={driverData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} handlePageChange={handlePageChange} pagination={paginationData}/>
+                    <Grid headers={headers} listing={driverData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} handlePageChange={handlePageChange} pagination={paginationData} isLoading={loading}/>
                 </div>
                 <Modal
                     open={open}

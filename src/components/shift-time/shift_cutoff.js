@@ -45,9 +45,12 @@ const ShiftCutoff = () => {
         pageNo: 1,
         pageSize: 10,
     });
+    const [loading, setLoading] = useState(false);
 
     const initializer = async () => {
         try {
+            setLoading(true);
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
             const params = new URLSearchParams(pagination);
             const response = await ShiftService.getAllShiftsWOPagination(params.toString());
             response.data.data.map((item) => {
@@ -102,6 +105,8 @@ const ShiftCutoff = () => {
             })
             setViewShiftTimeData(response.data.data)
         } catch (e) {
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -124,7 +129,7 @@ const ShiftCutoff = () => {
                     </div>
                 </div>
                 <div className='gridContainer'>
-                    <Grid headers={headers} listing={viewShiftTimeData} enableDisableRow={true} />
+                    <Grid headers={headers} listing={viewShiftTimeData} enableDisableRow={true} isLoading={loading}/>
                 </div>
             </div>}
             {cutOffState.forEdit && <div>

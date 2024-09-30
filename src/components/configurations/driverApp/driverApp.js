@@ -3,10 +3,12 @@ import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { toggleToast } from "@/redux/company.slice";
 import OfficeService from "@/services/office.service";
+import LoaderComponent from "@/components/loader";
 
 const DriverApp = () => {
   const dispatch = useDispatch();
 
+  const [loading, setLoading] = useState(false);
   const [values, setValues] = useState({
     "vehicle.max.speed": "",
   });
@@ -31,6 +33,8 @@ const DriverApp = () => {
 
   const fetchPreferenceValues = async (e) => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const response = await OfficeService.getPreferenceById(14);
       if (response && response.data) {
         console.log(
@@ -41,11 +45,15 @@ const DriverApp = () => {
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
   const CreatePreference = async () => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const payload = {
         id: 14,
         name: "vehicle.max.speed",
@@ -76,6 +84,8 @@ const DriverApp = () => {
       }
     } catch (err) {
       console.log("Error setting preferences", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -162,6 +172,30 @@ const DriverApp = () => {
           </button>
         </div>
       </div>
+      {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "fixed",
+            // backgroundColor: "#000000",
+            zIndex: 1,
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            opacity: 1,
+            color: "#000000",
+            // height: "100vh",
+            // width: "100vw",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

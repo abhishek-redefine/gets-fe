@@ -1,7 +1,8 @@
 import { AgGridReact } from "ag-grid-react";
 import { useRef, useMemo, useCallback, useEffect, useState } from "react";
+import LoaderComponent from "../loader";
 
-const GridNew = ({ headers, setShowAction,data }) => {
+const GridNew = ({ headers, setShowAction, data, isLoading }) => {
   const gridRef = useRef();
   const [selectedRow, setSelectedRow] = useState(null);
   const containerStyle = useMemo(() => ({ width: "100%", height: 500 }), []);
@@ -55,10 +56,25 @@ const GridNew = ({ headers, setShowAction,data }) => {
     }
   }, [setShowAction]);
 
+  const loadingCellRenderer = useCallback(() => {
+    if (isLoading) {
+      return (
+        <div style={{ backgroundColor: "pink" }}>
+          <LoaderComponent />
+        </div>
+      );
+    }
+  }, [isLoading]);
+  const loadingCellRendererParams = useMemo(() => {
+    return {
+      loadingMessage: "One moment please...",
+    };
+  }, []);
+
   // Log grid updates to debug re-renders
   useEffect(() => {
     console.log("Grid updated");
-  },[]);
+  }, []);
 
   return (
     <div style={containerStyle}>
@@ -73,7 +89,8 @@ const GridNew = ({ headers, setShowAction,data }) => {
           suppressAggFuncInHeader={true}
           onSelectionChanged={onSelectionChanged}
           pagination={true}
-          
+          loadingCellRenderer={loadingCellRenderer}
+          loadingCellRendererParams={loadingCellRendererParams}
         />
       </div>
     </div>

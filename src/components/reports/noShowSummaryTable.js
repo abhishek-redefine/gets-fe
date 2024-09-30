@@ -3,8 +3,9 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
+import LoaderComponent from "../loader";
 
-const NoShowSummaryTable = ({ list }) => {
+const NoShowSummaryTable = ({ list, isLoading }) => {
   const [data, setData] = useState([]);
 
   const columns = useMemo(
@@ -25,12 +26,12 @@ const NoShowSummaryTable = ({ list }) => {
         size: 150,
       },
       {
-        accessorKey: "rerosteredCount",
+        accessorKey: "reRosteredCount",
         header: "Rerostered Count",
         size: 150,
       },
       {
-        accessorKey: "rerosteredPercentage",
+        accessorKey: "reRosteredPercentage",
         header: "Rerostered (%)",
         size: 150,
       },
@@ -46,6 +47,12 @@ const NoShowSummaryTable = ({ list }) => {
   const tableInstance = useMaterialReactTable({
     columns,
     data,
+    state: {
+      isLoading,
+    },
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />,
+    },
   });
 
   useEffect(() => {

@@ -164,7 +164,7 @@ const MainComponent = () => {
             // backgroundColor: "yellow"
           }}
         >
-          <div className="filterContainer" style={{}}>
+          <div className="filterContainer" style={{flexWrap: "wrap"}}>
             {office.length > 0 && (
               <div style={{ minWidth: "180px" }} className="form-control-input">
                 <FormControl fullWidth>

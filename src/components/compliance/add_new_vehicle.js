@@ -28,6 +28,7 @@ import Box from "@mui/material/Box";
 import MasterDataService from "@/services/masterdata.service";
 import dayjs from "dayjs";
 import GeocodeModal from "../user-management/geocodeModal";
+import LoaderComponent from '../loader';
 
 const style = {
   position: "absolute",
@@ -232,6 +233,8 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
   const [fuelType, setFuelTypes] = useState([]);
   const [gpsTypes, setGpsTypes] = useState([]);
 
+  const [loading, setLoading] = useState(false);
+
   const onChangeDriverHandler = (newValue, name, key) => {
     console.log("on change handler", newValue);
     var allValues = { ...initialValues };
@@ -314,6 +317,8 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
         } else {
           allValues.driverId = driverId;
         }
+        setLoading(true);
+        // await new Promise((resolve) => setTimeout(resolve, 5000));
         const response = await ComplianceService.updateVehicle({
           vehicleDTO: allValues,
         });
@@ -337,6 +342,7 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
           return false;
         }
       } else {
+        
         var apiData = { ...allValues };
         if (vendorName === "") {
           alert("Enter vendor name");
@@ -348,6 +354,8 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
         // apiData.gpsStatus = "ACTIVE";
         // apiData.acStatus = "AVAILABLE";
         // apiData.fuelType = "DIESEL";
+        setLoading(true);
+        // await new Promise((resolve) => setTimeout(resolve, 5000));
         const response = await ComplianceService.createVehicle({
           vehicleDTO: apiData,
         });
@@ -392,6 +400,8 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
           handleShow();
         }
       }
+    } finally {
+      setLoading(false);
     }
   };
   function checkUniqueConstraint(message, key) {
@@ -1284,6 +1294,28 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
           </div>
         </Box>
       </Modal>
+      {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "fixed",
+                // backgroundColor: "#000000",
+                zIndex: 1,
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                opacity: 1,
+                color: "#000000",
+                // height: "100vh",
+                // width: "100vw",
+              }}
+            >
+              <LoaderComponent />
+            </div>
+            ) : ("")}
     </div>
   );
 };

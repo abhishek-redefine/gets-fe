@@ -1,10 +1,15 @@
 import * as React from "react";
 import Typography from "@mui/material/Typography";
+import { useState } from "react";
 
 const ConfirmationModal = ({ pass, onClose, type, reason }) => {
   const onHandleClose = () => {
     onClose();
   };
+
+  useState(() => {
+    console.log("Failure Reason>>>", reason);
+  }, []);
 
   return (
     <div

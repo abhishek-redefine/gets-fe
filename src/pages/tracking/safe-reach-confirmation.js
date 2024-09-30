@@ -23,12 +23,14 @@ const MainComponent = () => {
   });
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
 
   const handleFilterChange = (e) => {
     const { target } = e;
     const { value, name } = target;
     let newSearchValues = { ...searchValues };
-    if (name === "tripDateStr") newSearchValues[name] = value.format("YYYY-MM-DD");
+    if (name === "tripDateStr")
+      newSearchValues[name] = value.format("YYYY-MM-DD");
     else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
   };
@@ -77,29 +79,39 @@ const MainComponent = () => {
   const [pagination, setPagination] = useState({
     page: 0,
     size: 10,
-  })
+  });
 
   const fetchSummary = async () => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const queryParams = new URLSearchParams(pagination);
       let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
-        if (allSearchValues[objKey] === null || allSearchValues[objKey] === "") {
+        if (
+          allSearchValues[objKey] === null ||
+          allSearchValues[objKey] === ""
+        ) {
           delete allSearchValues[objKey];
         }
       });
 
-      const response = await DispatchService.getTripSearchByBean(queryParams, allSearchValues);
+      const response = await DispatchService.getTripSearchByBean(
+        queryParams,
+        allSearchValues
+      );
       console.log(response.data.data);
       const data = response.data.data;
       if (data.length > 0) {
         const temp = await Promise.all(
           data.map(async (val) => {
-            const tripMemberResponse = await DispatchService.tripMembers(val.id);
+            const tripMemberResponse = await DispatchService.tripMembers(
+              val.id
+            );
             return {
-              ...tripMemberResponse.data[0], 
+              ...tripMemberResponse.data[0],
               tripId: val.id,
-              shiftTime : val.shiftTime
+              shiftTime: val.shiftTime,
             };
           })
         );
@@ -109,9 +121,11 @@ const MainComponent = () => {
         setTripList([]);
       }
     } catch (err) {
-      console.log(err)
+      console.log(err);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div>
@@ -159,7 +173,11 @@ const MainComponent = () => {
             <DatePicker
               name="tripDateStr"
               format={DATE_FORMAT}
-              value={searchValues.tripDateStr ? moment(searchValues.tripDateStr) : null}
+              value={
+                searchValues.tripDateStr
+                  ? moment(searchValues.tripDateStr)
+                  : null
+              }
               onChange={(e) =>
                 handleFilterChange({
                   target: { name: "tripDateStr", value: e },
@@ -268,7 +286,7 @@ const MainComponent = () => {
             </button> */}
           </div>
         </div>
-        <SafeReachConfirmationTable tripList={tripList}/>
+        <SafeReachConfirmationTable tripList={tripList} isLoading={loading}/>
       </div>
     </div>
   );
