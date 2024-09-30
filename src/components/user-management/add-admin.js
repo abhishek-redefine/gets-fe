@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from "formik";
 import { validationSchema } from './admin/validationSchema';
 import { toggleToast } from '@/redux/company.slice';
+import LoaderComponent from '../loader';
 
 const AddAdmin = ({
     roleType,
@@ -27,6 +28,8 @@ const AddAdmin = ({
         email: "",
         roles: []
     });
+
+    const [loading, setLoading] = useState(false);
 
     useState(() => {
         if (editEmployeeData?.id) {
@@ -47,9 +50,13 @@ const AddAdmin = ({
             });
             try {
                 if (initialValues?.id) {
+                    setLoading(true);
+                    // await new Promise((resolve) => setTimeout(resolve, 5000));
                     await OfficeService.updateAdmin({adminUser: {...initialValues, ...allValues}});
                     dispatch(toggleToast({ message: 'Admin updated successfully!', type: 'success' }));
                 } else {
+                    setLoading(true);
+                    // await new Promise((resolve) => setTimeout(resolve, 5000));
                     await OfficeService.createAdmin({adminUser: allValues});
                     dispatch(toggleToast({ message: 'Admin added successfully!', type: 'success' }));
                 }
@@ -58,6 +65,8 @@ const AddAdmin = ({
             } catch (e) {
                 console.error(e);
                 dispatch(toggleToast({ message: e?.response?.data?.message || 'Error adding admin, please try again later!', type: 'error' }));
+            } finally {
+                setLoading(false);
             }
         }
     });
@@ -247,6 +256,30 @@ const AddAdmin = ({
                     </div>
                 </div>
             </div>
+            {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "fixed",
+                // backgroundColor: "#000000",
+                zIndex: 1,
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                opacity: 1,
+                color: "#000000",
+                // height: "100vh",
+                // width: "100vw",
+              }}
+            >
+              <LoaderComponent />
+            </div>
+            ) : (
+              " "
+            )}
         </div>
     );
 }

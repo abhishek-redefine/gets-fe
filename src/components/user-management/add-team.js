@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from "formik";
 import { validationSchema } from './team/validationSchema';
 import { toggleToast } from '@/redux/company.slice';
+import LoaderComponent from '../loader';
 
 const AddTeam = ({
     onUserSuccess,
@@ -24,6 +25,8 @@ const AddTeam = ({
         sendNotification: "",
         comment: ""        
     });
+
+    const [loading, setLoading] = useState(false);
 
     useState(() => {
         if (editEmployeeData?.id) {
@@ -49,9 +52,13 @@ const AddTeam = ({
             // }
             try {
                 if (initialValues?.id) {
+                    setLoading(true);
+                    // await new Promise((resolve) => setTimeout(resolve, 5000));
                     await OfficeService.updateTeams({team: {...initialValues, ...allValues}});
                     dispatch(toggleToast({ message: 'Team updated successfully!', type: 'success' }));
                 } else {
+                    setLoading(true);
+                    // await new Promise((resolve) => setTimeout(resolve, 5000));
                     console.log(allValues);
                     await OfficeService.createTeams({team: allValues});
                     dispatch(toggleToast({ message: 'Team added successfully!', type: 'success' }));
@@ -60,6 +67,8 @@ const AddTeam = ({
             } catch (e) {
                 console.error(e);
                 dispatch(toggleToast({ message: e?.response?.data?.message || 'Error adding team, please try again later!', type: 'error' }));
+            } finally {
+                setLoading(false);
             }
         }
     });
@@ -232,6 +241,30 @@ const AddTeam = ({
                     </div>
                 </div>
             </div>
+            {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "fixed",
+                // backgroundColor: "#000000",
+                zIndex: 1,
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                opacity: 1,
+                color: "#000000",
+                // height: "100vh",
+                // width: "100vw",
+              }}
+            >
+              <LoaderComponent />
+            </div>
+            ) : (
+              " "
+            )}
         </div>
     );
 }

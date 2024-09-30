@@ -109,6 +109,7 @@ const BookingChangeLogs = () => {
     page: 0,
     size: DEFAULT_PAGE_SIZE,
   });
+  const [loading, setLoading] = useState(false);
 
   const fetchInOutTimes = async (isIn, newSearchValues) => {
     try {
@@ -130,6 +131,8 @@ const BookingChangeLogs = () => {
 
   const fetchAllBookings = async (resetFlag) => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
         const role = JSON.parse(localStorage.getItem('userRoles'));
         const userDetails = JSON.parse(localStorage.getItem('userDetails'));
         const params = new URLSearchParams(pagination);
@@ -168,6 +171,8 @@ const BookingChangeLogs = () => {
         setPaginationData(localPaginationData);
     } catch (e) {
         console.error(e);
+    } finally {
+      setLoading(false);
     }
 };
 
@@ -442,6 +447,7 @@ const getAllTeams = async() =>{
               handlePageChange={handlePageChange}
               pagination={paginationData}
               listing={bookingListing}
+              isLoading={loading}
             />
           </>
         ) : (

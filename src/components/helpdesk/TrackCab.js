@@ -1,15 +1,17 @@
 import { Box } from "@mui/material";
 import React, { useEffect, useState } from "react";
+import LoaderComponent from "../loader";
 
 const TrackCab = ({ onClose }) => {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [map, setMap] = useState(null);
   const [lat, setLat] = useState(28.61266);
   const [lng, setLng] = useState(77.36105);
 
   const mapDetails = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 2000));
       setLat(28.61266);
       setLng(77.36105);
     } catch (error) {
@@ -63,7 +65,11 @@ const TrackCab = ({ onClose }) => {
 
   return (
     <div
-      style={{ backgroundColor: "#f9f9f9", padding: "25px 30px", marginTop: "20px" }}
+      style={{
+        backgroundColor: "#f9f9f9",
+        padding: "25px 30px",
+        marginTop: "20px",
+      }}
     >
       <Box
         style={{
@@ -100,7 +106,26 @@ const TrackCab = ({ onClose }) => {
           }}
         >
           {loading ? (
-            <div>Loading...</div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "fixed",
+                // backgroundColor: "#000000",
+                zIndex: 1,
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                opacity: 1,
+                color: "#000000",
+                // height: "100vh",
+                // width: "100vw",
+              }}
+            >
+              <LoaderComponent />
+            </div>
           ) : (
             <div id="map" style={{ width: "100%", height: "100%" }}></div>
           )}

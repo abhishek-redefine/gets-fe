@@ -9,7 +9,7 @@ import {
   TextField,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
-
+import LoaderComponent from "../loader";
 
 const MenuProps = {
   PaperProps: {
@@ -20,30 +20,30 @@ const MenuProps = {
   },
 };
 
-
 const AddPenaltyModal = (props) => {
-  const { data,onClose } = props;
+  const { data, onClose } = props;
   const [select, setSelect] = useState("No Action");
   const [penaltyType, setPenaltyType] = useState({});
   const [penaltyAmount, setPenaltyAmount] = useState(0);
   const [pagination, setPagination] = useState({
     pageNo: 0,
     pageSize: 100,
-  })
+  });
   const [penaltyTypes, setPenaltyTypes] = useState([]);
-  const [searchValues,setSearchValues] = useState({});
+  const [searchValues, setSearchValues] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const handleFilterChange = (e) => {
     const { target } = e;
     const { name, value } = target;
     setPenaltyAmount(value.penaltyAmount);
-    setPenaltyType(value)
+    setPenaltyType(value);
     // setSearchValues({ ...searchValues, [e.target.name]: e.target.value });
   };
 
   const getOpsPenalty = async () => {
     try {
-      const params = new URLSearchParams(pagination)
+      const params = new URLSearchParams(pagination);
       const response = await ComplianceService.getAllPenalty(params);
       console.log(response.data.paginatedResponse.content);
       let data = response.data.paginatedResponse.content;
@@ -52,28 +52,30 @@ const AddPenaltyModal = (props) => {
     } catch (err) {
       console.log(err);
     }
-  }
+  };
 
   const addPenalty = async () => {
     try {
       const payload = {
-        "tripId": data.id,
-        "penaltyType": penaltyType.penaltyName,
-        "penaltyAmount": penaltyAmount,
-        "penaltyAction": select,
-      }
+        tripId: data.id,
+        penaltyType: penaltyType.penaltyName,
+        penaltyAmount: penaltyAmount,
+        penaltyAction: select,
+      };
       console.log(payload);
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const response = await DispatchService.addPenalty(payload);
-      if(response.status === 200){
+      if (response.status === 200) {
         onClose();
       }
       console.log(response.data);
     } catch (err) {
-      console.log(err)
+      console.log(err);
+    } finally {
+      setLoading(false);
     }
-  }
-
-
+  };
 
   const handleFormatChange = (e) => {
     setSelect(e.target.value);
@@ -85,7 +87,7 @@ const AddPenaltyModal = (props) => {
 
   useEffect(() => {
     getOpsPenalty();
-  }, [])
+  }, []);
 
   return (
     <div
@@ -165,7 +167,11 @@ const AddPenaltyModal = (props) => {
               MenuProps={MenuProps}
             >
               {penaltyTypes.map((item) => (
-                <MenuItem key={item.id} value={item} style={{ fontSize: "15px", textWrap: 'wrap' }}>
+                <MenuItem
+                  key={item.id}
+                  value={item}
+                  style={{ fontSize: "15px", textWrap: "wrap" }}
+                >
                   {item.penaltyName}
                 </MenuItem>
               ))}
@@ -191,7 +197,7 @@ const AddPenaltyModal = (props) => {
               fullWidth
               value={penaltyAmount}
               disabled={penaltyType?.penaltyName !== "Miscellaneous"}
-              onChange={(e)=>setPenaltyAmount(e.target.value)}
+              onChange={(e) => setPenaltyAmount(e.target.value)}
               inputProps={{ style: { fontFamily: "DM Sans", fontSize: 15 } }}
               InputLabelProps={{ style: { fontSize: 14 } }}
             />
@@ -243,7 +249,7 @@ const AddPenaltyModal = (props) => {
               id="terminateAndBlacklist"
               name="selectFormat"
               value="Terminate and Blacklist"
-              style={{ margin: "0 10px", }}
+              style={{ margin: "0 10px" }}
               checked={select === "Terminate and Blacklist"}
               onChange={handleFormatChange}
             />
@@ -267,12 +273,36 @@ const AddPenaltyModal = (props) => {
               cursor: "pointer",
               marginTop: "70px",
             }}
-            onClick={()=>addPenalty()}
+            onClick={() => addPenalty()}
           >
             Add
           </button>
         </div>
       </div>
+      {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "fixed",
+            // backgroundColor: "#000000",
+            zIndex: 1,
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            opacity: 1,
+            color: "#000000",
+            // height: "100vh",
+            // width: "100vw",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

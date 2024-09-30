@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { toggleToast } from "@/redux/company.slice";
+import LoaderComponent from "@/components/loader";
 
 const Employee = () => {
   const dispatch = useDispatch();
@@ -25,6 +26,7 @@ const Employee = () => {
   });
   const [officeList, setOfficeList] = useState([]);
   const [officeId, setOfficeId] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const fetchAllOffice = async () => {
     try {
@@ -58,21 +60,27 @@ const Employee = () => {
 
   const fetchPreferenceValues = async (e) => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const response = await OfficeService.getPreferenceById(1);
       if (response && response.data) {
         console.log(
           `Fetched preference for employee's address change request: `,
           response.data.value
         );
-        handleValueChange("vehicle.max.speed", response.data.value);
+        handleValueChange("emp.change.request", response.data.value);
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
   const CreatePreference = async () => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const payload = {
         id: 1,
         name: "emp.change.request",
@@ -103,6 +111,8 @@ const Employee = () => {
       }
     } catch (err) {
       console.log("Error setting preferences", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -234,6 +244,30 @@ const Employee = () => {
           </div>
         </div>
       </div>
+      {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "fixed",
+            // backgroundColor: "#000000",
+            zIndex: 1,
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            opacity: 1,
+            color: "#000000",
+            // height: "100vh",
+            // width: "100vw",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

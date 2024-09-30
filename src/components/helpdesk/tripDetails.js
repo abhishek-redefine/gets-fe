@@ -6,6 +6,9 @@ import TripService from "@/services/trip.service";
 import ComplianceService from "@/services/compliance.service";
 import DispatchService from "@/services/dispatch.service";
 import ViewMapModal from "./viewMapModal";
+import { useDispatch } from "react-redux";
+import { toggleToast } from "@/redux/company.slice";
+import LoaderComponent from "@/components/loader";
 
 const style = {
   topModals: {
@@ -21,9 +24,11 @@ const style = {
 };
 
 const TripDetails = ({ onClose, tripId }) => {
+  const dispatch = useDispatch();
   const [tripDetails, setTripDetails] = useState({});
   const [vehicleDetails, setvehicleDetails] = useState({});
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const [openViewMapModal, setOpenViewMapModal] = useState(false);
   const handleViewMapModalOpen = () => {
@@ -47,34 +52,70 @@ const TripDetails = ({ onClose, tripId }) => {
 
   const fetchTripDetails = async () => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const response = await TripService.getTripByTripId(tripId);
       console.log("Clicked trip data>>>", response.data);
       setTripDetails(response.data);
+      if (response.status === 500) {
+        dispatch(
+          toggleToast({
+            message: `Failed! Please try again later.`,
+            type: "error",
+          })
+        );
+      }
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchVehicle = async () => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const response = await ComplianceService.getSingleVehicle(
         tripDetails.vehicleId
       );
       console.log("Vehicle details", response.data.vehicleDTO);
       setvehicleDetails(response.data.vehicleDTO);
+      if (response.status === 500) {
+        dispatch(
+          toggleToast({
+            message: `Failed! Please try again later.`,
+            type: "error",
+          })
+        );
+      }
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchAllTripMembers = async () => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const response = await DispatchService.tripMembers(tripId);
       console.log("Trip members", response.data);
       // setvehicleDetails(response.data.vehicleDTO);
       setData(response.data);
+      if (response.status === 500) {
+        dispatch(
+          toggleToast({
+            message: `Failed! Please try again later.`,
+            type: "error",
+          })
+        );
+      }
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -443,6 +484,7 @@ const TripDetails = ({ onClose, tripId }) => {
                   <EmployeeTripTable
                     tripMembersList={data}
                     pointHeaderLabel={tripDetails.shiftType}
+                    isLoading={loading}
                   />
                 </div>
               </div>
@@ -450,6 +492,30 @@ const TripDetails = ({ onClose, tripId }) => {
           </Grid>
         </Grid>
       </Box>
+      {/* {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "fixed",
+            // backgroundColor: "#000000",
+            zIndex: 1,
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            opacity: 1,
+            color: "#000000",
+            // height: "100vh",
+            // width: "100vw",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )} */}
     </div>
   );
 };

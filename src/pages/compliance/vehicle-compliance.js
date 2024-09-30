@@ -85,6 +85,7 @@ const VehicleCompliance = () => {
         pageNo: 1,
         pageSize: 10,
     });
+    const [loading, setLoading] = useState(false);
 
     const onMenuItemClick = async (key, clickedItem) => {
         if (key === "viewVehicle") {
@@ -155,12 +156,16 @@ const VehicleCompliance = () => {
 
     const initializer = async () => {
         try {
+            setLoading(true);
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
             const response = await ComplianceService.getAllVehicles();
             var filteredData = response.data.data.filter((item) => {
                 return item.complianceStatus === "COMPLIANT"
             })
             setVehicleData(filteredData)
         } catch (e) {
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -182,7 +187,7 @@ const VehicleCompliance = () => {
                     </div>
                 </div>
                 <div className='gridContainer'>
-                    <Grid headers={headers} listing={vehicleData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} />
+                    <Grid headers={headers} listing={vehicleData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} isLoading={loading} />
                 </div>
             </div>}
             {

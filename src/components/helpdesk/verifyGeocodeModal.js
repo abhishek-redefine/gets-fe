@@ -1,16 +1,18 @@
 import { Box } from "@mui/material";
 import React, { useEffect, useState } from "react";
+import LoaderComponent from "../loader";
 
-const VerifyGeocodeModal = ({ onClose, geocodeLat, geocodeLng}) => {
-  const [loading, setLoading] = useState(true);
+const VerifyGeocodeModal = ({ onClose, geocodeLat, geocodeLng }) => {
+  const [loading, setLoading] = useState(false);
   const [map, setMap] = useState(null);
   const [lat, setLat] = useState(geocodeLat);
   const [lng, setLng] = useState(geocodeLng);
-  
 
   const mapDetails = async () => {
     setLoading(true);
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 2000));
       setLat(geocodeLat);
       setLng(geocodeLng);
     } catch (error) {
@@ -89,7 +91,26 @@ const VerifyGeocodeModal = ({ onClose, geocodeLat, geocodeLng}) => {
         }}
       >
         {loading ? (
-          <div>Loading...</div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              position: "fixed",
+              // backgroundColor: "#000000",
+              zIndex: 1,
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              opacity: 1,
+              color: "#000000",
+              // height: "100vh",
+              // width: "100vw",
+            }}
+          >
+            <LoaderComponent />
+          </div>
         ) : (
           <div id="map" style={{ width: "100%", height: "100%" }}></div>
         )}

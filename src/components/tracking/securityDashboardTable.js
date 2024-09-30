@@ -4,8 +4,9 @@ import {
   useMaterialReactTable,
 } from "material-react-table";
 import { securityDashboardData } from "@/sampleData/securityDashboardData";
+import LoaderComponent from "../loader";
 
-const SecurityDashboardTable = ({tripList}) => {
+const SecurityDashboardTable = ({tripList, isLoading}) => {
   const [data, setData] = useState(tripList || []);
 
   const columns = useMemo(
@@ -80,6 +81,10 @@ const SecurityDashboardTable = ({tripList}) => {
     data,
     enableRowSelection: true, 
     enableMultiRowSelection: true,
+    state: { isLoading },
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />
+    },
   });
 
   useEffect(()=>{

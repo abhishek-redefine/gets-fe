@@ -10,10 +10,12 @@ import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { toggleToast } from "@/redux/company.slice";
 import OfficeService from "@/services/office.service";
+import LoaderComponent from "@/components/loader";
 
 const DriverCompliance = () => {
   const dispatch = useDispatch();
 
+  const [loading, setLoading] = useState(false);
   const [values, setValues] = useState({
     "driver.license": "",
     "driver.medical.cert": "",
@@ -76,6 +78,8 @@ const DriverCompliance = () => {
   const fetchPreferenceValues = async (e) => {
     let id = 9;
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       for (const field of fieldText) {
         if (field.name !== "Driver Compliance Notification Type") {
           const response = await OfficeService.getPreferenceById(id);
@@ -91,45 +95,54 @@ const DriverCompliance = () => {
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
   const CreatePreference = async () => {
     try {
       let idCount = 9;
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       for (const field of fieldText) {
         if (field.name !== "Driver Compliance Notification Type") {
-        const payload = {
-          id: idCount,
-          name: field.name,
-          type: "driver",
-          value: values[field.name],
-        };
-        const response = await OfficeService.createPreference(payload);
-        console.log(`Configuration response for ${field.name}`, response.data);
-
-        if (response.status === 201) {
-          dispatch(
-            toggleToast({
-              message: `Preferences saved successfully.`,
-              type: "success",
-            })
+          const payload = {
+            id: idCount,
+            name: field.name,
+            type: "driver",
+            value: values[field.name],
+          };
+          const response = await OfficeService.createPreference(payload);
+          console.log(
+            `Configuration response for ${field.name}`,
+            response.data
           );
-        }
-        if (response.status === 500) {
-          dispatch(
-            toggleToast({
-              message: `Failed to save preferences, Please try again later.`,
-              type: "error",
-            })
-          );
-        }
 
-        idCount++;
-      }
+          if (response.status === 201) {
+            dispatch(
+              toggleToast({
+                message: `Preferences saved successfully.`,
+                type: "success",
+              })
+            );
+          }
+          if (response.status === 500) {
+            dispatch(
+              toggleToast({
+                message: `Failed to save preferences, Please try again later.`,
+                type: "error",
+              })
+            );
+          }
+
+          idCount++;
+        }
       }
     } catch (err) {
       console.log("Error setting preferences", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -140,6 +153,7 @@ const DriverCompliance = () => {
       "driver.police.verification": "",
       "driver.bgb": "",
       "driver.dd.training": "",
+      "Driver Compliance Notification Type": [],
       // mobileNumbers: "",
       // emailIds: "",
       // notificationFrequency: "",
@@ -334,6 +348,30 @@ const DriverCompliance = () => {
           </button>
         </div>
       </div>
+      {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "fixed",
+            // backgroundColor: "#000000",
+            zIndex: 1,
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            opacity: 1,
+            color: "#000000",
+            // height: "100vh",
+            // width: "100vw",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

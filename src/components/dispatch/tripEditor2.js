@@ -16,6 +16,7 @@ import {
 } from 'material-react-table';
 import { Box, Typography } from '@mui/material';
 import DispatchService from "@/services/dispatch.service";
+import LoaderComponent from "../loader";
 
 
 const initDataArray = [
@@ -35,6 +36,7 @@ const TripEditor2 = (props) => {
     const [memberTable, setMemberTable] = useState([]);
     const [tripData, setTripData] = useState([]);
     const [tripMemberData, setTripMemberData] = useState([]);
+    const [loading, setLoading] = useState(false);
     const columns = useMemo(() => [
         {
             header: "Trip Id",
@@ -305,6 +307,8 @@ const TripEditor2 = (props) => {
             let data = [];
             let members = [];
             let count = 0;
+            setLoading(true);
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
             const memberPromises = trips.map(async (val, index) => {
                 const response = await DispatchService.tripMembers(val.id);
                 let tempTripMember = [];
@@ -354,6 +358,8 @@ const TripEditor2 = (props) => {
             console.log("Trip Members>>>>>", data);
         } catch (err) {
             console.log(err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -366,7 +372,7 @@ const TripEditor2 = (props) => {
         setData(tripData)
     }, [tripData])
 
-    const Table = ({ tripData, columns }) => {
+    const Table = ({ tripData, columns, isLoading  }) => {
         const [data,setData] = useState([tripData]);
         const table = useMaterialReactTable({
             data,
@@ -377,6 +383,10 @@ const TripEditor2 = (props) => {
             enableStickyFooter: false,
             enableExpandAll: false, //hide expand all double arrow in column header
             enableExpanding: true,
+            state: { isLoading },
+            muiCircularProgressProps: {
+              Component: <LoaderComponent />
+            },
         });
         return (
             <MaterialReactTable table={table} />
@@ -726,7 +736,7 @@ const TripEditor2 = (props) => {
                     {
                         tripData.length > 0 &&
                         tripData.map((val) => (
-                            <Table tripData={val} columns={columns} />
+                            <Table tripData={val} columns={columns} isLoading={loading}/>
                         ))
                     }
                 </div>

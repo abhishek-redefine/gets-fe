@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Box,
-} from "@mui/material";
+import { FormControl, InputLabel, Select, MenuItem, Box } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
@@ -55,8 +49,12 @@ const MainComponent = () => {
   const [list, setList] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const handleModalOpen = () => setOpenModal(true);
-  const handleModalClose = () => {setOpenModal(false);fetchSummary();}
+  const handleModalClose = () => {
+    setOpenModal(false);
+    fetchSummary();
+  };
   const [selectedRow, setSelectedRow] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   // Temprary
   const [showAction, setShowAction] = useState(false);
@@ -73,9 +71,10 @@ const MainComponent = () => {
   const handleFilterChange = (e) => {
     const { target } = e;
     const { value, name } = target;
-    console.log(value,name);
+    console.log(value, name);
     let newSearchValues = { ...searchValues };
-    if (name === "tripDateStr") newSearchValues[name] = value.format("YYYY-MM-DD");
+    if (name === "tripDateStr")
+      newSearchValues[name] = value.format("YYYY-MM-DD");
     else newSearchValues[name] = value;
     console.log(newSearchValues);
     setSearchValues(newSearchValues);
@@ -92,7 +91,7 @@ const MainComponent = () => {
         (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) { }
+    } catch (e) {}
   };
 
   const fetchMasterData = async (type) => {
@@ -103,7 +102,7 @@ const MainComponent = () => {
         console.log(data);
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) { }
+    } catch (e) {}
   };
 
   const resetFilter = () => {
@@ -118,6 +117,8 @@ const MainComponent = () => {
 
   const fetchSummary = async () => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       let params = new URLSearchParams(pagination);
       let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
@@ -155,17 +156,19 @@ const MainComponent = () => {
         }
         console.log(temp);
         tripList.push(temp);
-      })
+      });
       console.log(tripList);
       setList(response.data.data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const onRowSelect = (row) => {
     setSelectedRow(row);
-    console.log("slected", row);
+    console.log("slected row data", row);
   };
 
   useEffect(() => {
@@ -223,7 +226,11 @@ const MainComponent = () => {
                 <DatePicker
                   name="tripDateStr"
                   format={DATE_FORMAT}
-                  value={searchValues.tripDateStr ? moment(searchValues.tripDateStr) : null}
+                  value={
+                    searchValues.tripDateStr
+                      ? moment(searchValues.tripDateStr)
+                      : null
+                  }
                   onChange={(e) =>
                     handleFilterChange({
                       target: { name: "tripDateStr", value: e },
@@ -343,7 +350,7 @@ const MainComponent = () => {
               fontFamily: "DM Sans, sans-serif",
             }}
           >
-            <ApprovalsWorkflowTable list={list} onRowSelect={onRowSelect} />
+            <ApprovalsWorkflowTable list={list} onRowSelect={onRowSelect} isLoading={loading} />
           </div>
           <Modal
             open={openModal}
@@ -352,10 +359,7 @@ const MainComponent = () => {
             aria-describedby="modal-modal-description"
           >
             <Box sx={style}>
-              <IssueTypeModal
-                data={selectedRow}
-                onClose={handleModalClose}
-              />
+              <IssueTypeModal data={selectedRow} onClose={handleModalClose} />
             </Box>
           </Modal>
         </div>

@@ -99,6 +99,7 @@ const EhsEntryVehicle = ({
     ehsStatus: "",
     entityId: EhsVehicleData.id,
   });
+  const [loading, setLoading] = useState(false);
 
   const [documentUrl, setDocumentUrl] = useState();
   const [noFile, setNoFile] = useState(false);
@@ -110,7 +111,7 @@ const EhsEntryVehicle = ({
     if (key === "view") {
       if (clickedItem?.ehsFileUrl != "") {
         setNoFile(false);
-        setDocumentUrl(clickedItem?.ehsFileUrl.replace("gets-dev.",""));
+        setDocumentUrl(clickedItem?.ehsFileUrl.replace("gets-dev.", ""));
         handleOpen();
       } else {
         setNoFile(true);
@@ -122,6 +123,8 @@ const EhsEntryVehicle = ({
 
   const searchEhsHistory = async (resetFlag = false) => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       var date = moment(searchDate).format("YYYY-MM-DD");
       let params = new URLSearchParams(pagination);
       var filter = { ...searchBean };
@@ -146,6 +149,8 @@ const EhsEntryVehicle = ({
       setEhsVehicleData(response.data.data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -283,6 +288,7 @@ const EhsEntryVehicle = ({
               headers={headers}
               listing={ehsVehicleData}
               onMenuItemClick={onMenuItemClick}
+              isLoading={loading}
             />
           </div>
           <Modal

@@ -12,6 +12,7 @@ import ComplianceService from "@/services/compliance.service";
 import MasterDataService from "@/services/masterdata.service";
 import { useDispatch } from "react-redux";
 import EhsEntryComponent from "./ehsEntryComponent";
+import LoaderComponent from "../loader";
 
 const VehicleEhsEntry = () => {
   const headers = [
@@ -54,6 +55,7 @@ const VehicleEhsEntry = () => {
     pageNo: 0,
     pageSize: 100,
   });
+  const [loading, setLoading] = useState(false);
 
   const onChangeVehicleHandler = (newValue, name, key) => {
     console.log("on change handler", newValue);
@@ -89,12 +91,16 @@ const VehicleEhsEntry = () => {
   };
   const getAllEhsByVehicleId = async (vehicleId) => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const response = await ComplianceService.getAllEhsByVehicleId(vehicleId);
       const { data } = response || {};
       console.log(data.vehicleEhsDTO);
       setEhsList(data.vehicleEhsDTO);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -213,17 +219,27 @@ const VehicleEhsEntry = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {ehsList &&
-                      ehsList.length > 0 &&
-                      ehsList.map((item, i) => {
-                        return (
-                          <EhsEntryComponent
-                            listing={item}
-                            key={i}
-                            ehsStatusList={ehsStatusList}
-                          />
-                        );
-                      })}
+                    {loading ? (
+                      <tr>
+                        <td colSpan={headers.length}>
+                          <LoaderComponent />
+                        </td>
+                      </tr>
+                    ) : (
+                      <div>
+                        {ehsList &&
+                          ehsList.length > 0 &&
+                          ehsList.map((item, i) => {
+                            return (
+                              <EhsEntryComponent
+                                listing={item}
+                                key={i}
+                                ehsStatusList={ehsStatusList}
+                              />
+                            );
+                          })}
+                      </div>
+                    )}
                   </tbody>
                 </table>
               </div>

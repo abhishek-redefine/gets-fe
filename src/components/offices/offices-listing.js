@@ -4,7 +4,8 @@ import OfficeService from '@/services/office.service';
 
 const OfficesListing = ({
     onSuccess,
-    officeListing
+    officeListing,
+    isLoading
 }) => {
 
     const headers = [{
@@ -36,7 +37,7 @@ const OfficesListing = ({
         <div className='internalSettingContainer'>
             <div>
                 <div className='gridContainer'>
-                    <Grid headers={headers} listing={officeListing} />
+                    <Grid headers={headers} listing={officeListing} isLoading={isLoading}/>
                 </div>
             </div>
         </div>

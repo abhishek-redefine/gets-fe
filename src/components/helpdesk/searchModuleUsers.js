@@ -20,6 +20,8 @@ import { setMasterData } from "@/redux/master.slice";
 import MasterDataService from "@/services/masterdata.service";
 import UsersTable from "@/components/helpdesk/usersTable";
 import BookingService from "@/services/booking.service";
+import LoaderComponent from "../loader";
+import { toggleToast } from "@/redux/company.slice";
 
 const SearchModuleUsers = () => {
   const [office, setOffice] = useState([]);
@@ -32,6 +34,7 @@ const SearchModuleUsers = () => {
   });
   const [list, setList] = useState([]);
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [selectedUserEmail, setSelectedUserEmail] = useState();
@@ -132,10 +135,12 @@ const SearchModuleUsers = () => {
     } else {
       setError((prevError) => ({ ...prevError, empId: "" }));
     }
-    if (!searchValues.empId) {
+    if (hasError) {
       console.log("Search user first");
     } else {
       try {
+        setLoading(true);
+        // await new Promise((resolve) => setTimeout(resolve, 5000));
         let params = new URLSearchParams(pagination);
         console.log("Search values>>>", searchValues);
         let allSearchValues = { ...searchValues };
@@ -151,11 +156,22 @@ const SearchModuleUsers = () => {
           params,
           allSearchValues
         );
-        console.log("response data>>>", response.data.data);
+        console.log("fetch summary response data>>>", response.data.data);
+
         setList(response.data.data);
         fetchUserDetails();
+        if (response.status === 500) {
+          dispatch(
+            toggleToast({
+              message: `Failed!, Please try again later.`,
+              type: "error",
+            })
+          );
+        }
       } catch (err) {
         console.log(err);
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -619,8 +635,32 @@ const SearchModuleUsers = () => {
         >
           <h3>Booking Summary</h3>
         </div>
-        <UsersTable list={list} />
+        <UsersTable list={list} isLoading={loading}/>
       </div>
+      {/* {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "fixed",
+            // backgroundColor: "#000000",
+            zIndex: 1,
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            opacity: 1,
+            color: "#000000",
+            // height: "100vh",
+            // width: "100vw",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )} */}
     </div>
   );
 };

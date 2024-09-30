@@ -103,6 +103,8 @@ const EhsVehicleProfile = () => {
         complianceStatus : "COMPLIANT",
         ehsStatus: "",
     });
+    const [loading, setLoading] = useState(false);
+
     const handlePageChange = (page) => {
         let updatedPagination = {...pagination};
         updatedPagination.page = page;
@@ -168,6 +170,8 @@ const EhsVehicleProfile = () => {
     const initializer = async (resetFlag=false,filter={complianceStatus : "COMPLIANT"}) => {
         try {
             console.log(filter);
+            setLoading(true);
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
             var allValuesSearch = {...filter};
             Object.keys(allValuesSearch).forEach((objKey) => {
                 if (allValuesSearch[objKey] === null || allValuesSearch[objKey] === "") {
@@ -185,6 +189,8 @@ const EhsVehicleProfile = () => {
             const response = await ComplianceService.getAllVehicles(params.toString(),allValuesSearch);
             setVehicleData(response.data.data)
         } catch (e) {
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -291,7 +297,7 @@ const EhsVehicleProfile = () => {
                     </div>
                 </div>
                 <div className='gridContainer'>
-                    <Grid headers={headers} listing={vehicleData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} />
+                    <Grid headers={headers} listing={vehicleData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} isLoading={loading} />
                 </div>
             </div>}
             {

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import ShiftService from '@/services/shift.service';
 import { useDispatch } from 'react-redux';
 import { toggleToast } from '@/redux/company.slice';
+import LoaderComponent from '../loader';
 
 const CutoffForEdit = ({
     editEmployeeData,
@@ -100,6 +101,8 @@ const CutoffForEdit = ({
         }
     });
 
+    const [loading, setLoading] = useState(false);
+
     const initializeFormValues = (data) => {
         setDayCutoffValues(JSON.parse(data[0].shiftCreateBookingAttribute));
         setFinalSelectedData(data[0]);
@@ -108,8 +111,11 @@ const CutoffForEdit = ({
     const cutOffForEditFormSubmit = async () => {
         var apiData = finalSelectedData
         apiData.shiftCreateBookingAttribute = JSON.stringify(dayCutoffValues)
-        const response = await ShiftService.updateShift({ "shift": apiData })
-        if (response.data) {
+        try {
+            setLoading(true);
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
+            const response = await ShiftService.updateShift({ "shift": apiData })
+            if (response.data) {
             dispatch(toggleToast({ message: 'Shift cut off for edit added successfully!', type: 'success' }));
             initializer();
             setFormValues({
@@ -163,7 +169,11 @@ const CutoffForEdit = ({
                 }
             });
         }
-
+        }catch (err) {
+            console.log("Error>>>", err);
+        } finally {
+            setLoading(false);
+        }
     }
 
     const dropDownListValuesSetFunction = (data) => {
@@ -770,7 +780,31 @@ const CutoffForEdit = ({
                     <button type='submit' onClick={cutOffForEditFormSubmit} className='btn btn-primary'>{editEmployeeData?.id ? 'Create' : 'Update'} </button>
                 </div>
             </div>
-        </div >
+            {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "fixed",
+                // backgroundColor: "#000000",
+                zIndex: 1,
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                opacity: 1,
+                color: "#000000",
+                // height: "100vh",
+                // width: "100vw",
+              }}
+            >
+              <LoaderComponent />
+            </div>
+            ) : (
+              " "
+            )}
+        </div>
     );
 }
 

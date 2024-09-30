@@ -51,6 +51,7 @@ const MainComponent = () => {
   })
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
 
   const handleFilterChange = (e) => {
     const { target } = e;
@@ -88,6 +89,8 @@ const MainComponent = () => {
 
   const fetchSummary = async () => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const params = new URLSearchParams(pagination);
       console.log("search values>>>>>", searchValues);
       let allSearchValues = { ...searchValues };
@@ -108,6 +111,8 @@ const MainComponent = () => {
       setList(response.data.data);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -267,7 +272,7 @@ const MainComponent = () => {
             </button>
           </div>
         </div>
-        <OperationPenaltyTable list={list} onRowSelect={onRowSelect} />
+        <OperationPenaltyTable list={list} onRowSelect={onRowSelect} isLoading={loading} />
       </div>
 
       <Modal

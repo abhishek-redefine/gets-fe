@@ -3,8 +3,9 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
+import LoaderComponent from "../loader";
 
-const AdjustmentPenaltyTable = ({ list }) => {
+const AdjustmentPenaltyTable = ({ list, isLoading }) => {
   const [data, setData] = useState([]);
 
   const columns = useMemo(
@@ -61,6 +62,12 @@ const AdjustmentPenaltyTable = ({ list }) => {
   const tableInstance = useMaterialReactTable({
     columns,
     data,
+    state: {
+      isLoading,
+    },
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />,
+    },
   });
 
   useEffect(() => {

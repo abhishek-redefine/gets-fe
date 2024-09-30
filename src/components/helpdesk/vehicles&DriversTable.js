@@ -3,8 +3,9 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
+import LoaderComponent from "../loader";
 
-const VehiclesNDriversTable = ({ list, vehicleTripIdClicked }) => {
+const VehiclesNDriversTable = ({ list, vehicleTripIdClicked, isLoading }) => {
   const [data, setData] = useState([]);
 
   const handleTripClick = (id) => {
@@ -75,7 +76,11 @@ const VehiclesNDriversTable = ({ list, vehicleTripIdClicked }) => {
   const tableInstance = useMaterialReactTable({
     columns,
     data,
+    state: { isLoading },
     getRowId: (row) => row.id,
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />,
+    },
   });
 
   useEffect(() => {
@@ -89,7 +94,7 @@ const VehiclesNDriversTable = ({ list, vehicleTripIdClicked }) => {
           padding: "8px 20px 0",
         }}
       >
-        <MaterialReactTable table={tableInstance} getRowId={(row) => row.id}/>
+        <MaterialReactTable table={tableInstance} getRowId={(row) => row.id} />
       </div>
     </div>
   );

@@ -60,6 +60,7 @@ const DriverCompliance = () => {
     const [viewDriverOpen, setViewDriverOpen] = useState(false)
     const [editDriverData, setEditDriverData] = useState(false)
     const [driverData, setDriverData] = useState()
+    const [loading, setLoading] = useState(false);
 
     const downloadReport = () => {
         var data = [
@@ -112,12 +113,16 @@ const DriverCompliance = () => {
 
     const initializer = async () => {
         try {
+            setLoading(true);
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
             const response = await ComplianceService.getAllDrivers();
             var filteredData = response.data.data.filter((item) => {
                 return item.complianceStatus === "COMPLIANT"
             })
             setDriverData(filteredData)
         } catch (e) {
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -138,7 +143,7 @@ const DriverCompliance = () => {
                     </div>
                 </div>
                 <div className='gridContainer'>
-                    <Grid headers={headers} listing={driverData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} />
+                    <Grid headers={headers} listing={driverData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} isLoading={loading}/>
                 </div>
             </div>}
             {

@@ -1,22 +1,39 @@
 import TripService from "@/services/trip.service";
 import { Box, TextField } from "@mui/material";
 import React, { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { toggleToast } from "@/redux/company.slice";
+import LoaderComponent from "@/components/loader";
 
 const ContactNumberChangeRequestModal = (props) => {
+  const dispatch = useDispatch();
   const { onClose, phoneRequestDetails, updatedStatus } = props;
   const [remarks, setRemarks] = useState("");
   const [remarksError, setRemarksError] = useState(false);
   const [userDetails, setUserDetails] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const fetchUserDetails = async (e) => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const response = await TripService.getEmployeeById(
         phoneRequestDetails.empId
       );
       console.log("User Details>>>", response.data);
       setUserDetails(response.data);
+      if (response.status === 500) {
+        dispatch(
+          toggleToast({
+            message: "Failed! Try again later.",
+            type: "error",
+          })
+        );
+      }
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -187,6 +204,30 @@ const ContactNumberChangeRequestModal = (props) => {
           </button>
         </div>
       </div>
+      {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "fixed",
+            // backgroundColor: "#000000",
+            zIndex: 1,
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            opacity: 1,
+            color: "#000000",
+            // height: "100vh",
+            // width: "100vw",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

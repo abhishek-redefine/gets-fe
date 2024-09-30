@@ -16,6 +16,7 @@ import React, { useEffect, useState } from "react";
 import { toggleToast } from "@/redux/company.slice";
 import { useDispatch } from "react-redux";
 import { useFormik } from "formik";
+import LoaderComponent from "@/components/loader";
 
 const ShiftTeamMapping = ({ onUserSuccess, editEmployeeData }) => {
   const dispatch = useDispatch();
@@ -29,8 +30,9 @@ const ShiftTeamMapping = ({ onUserSuccess, editEmployeeData }) => {
   });
   const [pagination, setPagination] = useState({
     page: 0,
-    size: 100,        
-});
+    size: 100,
+  });
+  const [loading, setLoading] = useState(false);
 
   const formik = useFormik({
     initialValues: formValues,
@@ -45,9 +47,11 @@ const ShiftTeamMapping = ({ onUserSuccess, editEmployeeData }) => {
           shiftType: allValues.shiftType,
           transportType: allValues.transportType,
         },
-        shiftId : allValues.shiftTime
+        shiftId: allValues.shiftTime,
       };
       try {
+        setLoading(true);
+        // await new Promise((resolve) => setTimeout(resolve, 5000));
         const response = await ShiftService.shiftTeamZoneMapping(payload);
         console.log(response);
         dispatch(
@@ -67,6 +71,8 @@ const ShiftTeamMapping = ({ onUserSuccess, editEmployeeData }) => {
         initializer();
       } catch (err) {
         console.log("Error", err);
+      } finally {
+        setLoading(false);
       }
     },
   });
@@ -401,6 +407,30 @@ const ShiftTeamMapping = ({ onUserSuccess, editEmployeeData }) => {
           </button>
         </div>
       </div>
+      {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "fixed",
+            // backgroundColor: "#000000",
+            zIndex: 1,
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            opacity: 1,
+            color: "#000000",
+            // height: "100vh",
+            // width: "100vw",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

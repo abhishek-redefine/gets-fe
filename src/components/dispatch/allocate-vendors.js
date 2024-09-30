@@ -10,13 +10,14 @@ import Fade from "@mui/material/Fade";
 import DispatchService from "@/services/dispatch.service";
 import ComplianceService from "@/services/compliance.service";
 import { useDispatch, useSelector } from "react-redux";
-import { toggleToast } from '@/redux/company.slice';
+import { toggleToast } from "@/redux/company.slice";
+import LoaderComponent from "../loader";
 
-const AllocateVendor = ({ tripList }) => {
+const AllocateVendor = ({ tripList, isLoading }) => {
   const [data, setData] = useState([]);
   const [selectedRows, setSelectedRows] = useState({});
-  const [vendorList,setVendorList] = useState([]);
-  const [selectedVendor, setSelectedVendor] = useState('');
+  const [vendorList, setVendorList] = useState([]);
+  const [selectedVendor, setSelectedVendor] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedVendorId, setSelectedVendorId] = useState("");
   const dispatch = useDispatch();
@@ -40,7 +41,7 @@ const AllocateVendor = ({ tripList }) => {
         },
       },
       {
-        accessorKey: 'routeName',
+        accessorKey: "routeName",
         header: "First Pickup/ Last Drop",
         size: 150,
       },
@@ -64,22 +65,22 @@ const AllocateVendor = ({ tripList }) => {
         },
       },
       {
-        accessorKey: 'special',
+        accessorKey: "special",
         header: "Special",
         size: 150,
       },
       {
-        accessorKey: 'actualVendorName',
+        accessorKey: "actualVendorName",
         header: "Vendor Name",
         size: 150,
       },
       {
-        accessorKey: 'vehicleNumber',
+        accessorKey: "vehicleNumber",
         header: "Vehicle Number",
         size: 150,
       },
       {
-        accessorKey: 'driverName',
+        accessorKey: "driverName",
         header: "Driver Name",
         size: 150,
       },
@@ -87,7 +88,7 @@ const AllocateVendor = ({ tripList }) => {
     []
   );
 
-  const handleSelectChange = (vendorName,vendorId) => {
+  const handleSelectChange = (vendorName, vendorId) => {
     setSelectedVendor(vendorName);
     setSelectedVendorId(vendorId);
     handleClose();
@@ -107,7 +108,7 @@ const AllocateVendor = ({ tripList }) => {
 
   const handleAssignVendor = () => {
     console.log("Selected Rows:", selectedRows);
-    const updatedData = data.map(item => {
+    const updatedData = data.map((item) => {
       if (selectedRows[item.id]) {
         return {
           ...item,
@@ -118,31 +119,48 @@ const AllocateVendor = ({ tripList }) => {
     });
     console.log("Updated Data:", updatedData);
     setData(updatedData);
-    setSelectedVendor('');
+    setSelectedVendor("");
     setSelectedVendorId(null);
     setSelectedRows({});
     allocateVendor(selectedRows);
   };
 
-  const allocateVendor = async(selectedRows) =>{
-    try{
+  const allocateVendor = async (selectedRows) => {
+    try {
       const tripIds = [];
       Object.keys(selectedRows).forEach((objKey) => {
         tripIds.push(parseInt(objKey));
-      })
+      });
       console.log(tripIds);
-      const response = await DispatchService.allocateVendor(selectedVendorId,tripIds);
-      if(response.status === 201){
-        dispatch(toggleToast({ message: 'Vendor added to the trip successfully!', type: 'success' }));
+      const response = await DispatchService.allocateVendor(
+        selectedVendorId,
+        tripIds
+      );
+      if (response.status === 201) {
+        dispatch(
+          toggleToast({
+            message: "Vendor added to the trip successfully!",
+            type: "success",
+          })
+        );
+      } else {
+        dispatch(
+          toggleToast({
+            message: "Please try again in after some time.",
+            type: "error",
+          })
+        );
       }
-      else{
-        dispatch(toggleToast({ message: 'Please try again in after some time.', type: 'error' }));
-      }
-    }catch(err){
-      dispatch(toggleToast({ message: 'Please try again in after some time.', type: 'error' }));
+    } catch (err) {
+      dispatch(
+        toggleToast({
+          message: "Please try again in after some time.",
+          type: "error",
+        })
+      );
       console.log(err);
     }
-  }
+  };
 
   const tableInstance = useMaterialReactTable({
     columns,
@@ -150,9 +168,13 @@ const AllocateVendor = ({ tripList }) => {
     enableRowSelection: true,
     state: {
       rowSelection: selectedRows,
+      isLoading,
     },
     onRowSelectionChange: handleRowSelection,
-    getRowId: row => row.id,
+    getRowId: (row) => row.id,
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />,
+    },
   });
 
   const getAllVendor = async () => {
@@ -160,25 +182,25 @@ const AllocateVendor = ({ tripList }) => {
       const response = await ComplianceService.getAllVendorCompany();
       console.log(response.data);
       var list = [];
-      response.data.paginatedResponse.content.map((val,index)=>{
+      response.data.paginatedResponse.content.map((val, index) => {
         const obj = {
-          name : val.name,
-          vendorId : val.id
-        }
+          name: val.name,
+          vendorId: val.id,
+        };
         list.push(obj);
-      })
+      });
       console.log(list);
       setVendorList(list);
     } catch (err) {
       console.log(err);
     }
-  }
+  };
 
   useEffect(() => {
     setData(tripList);
     getAllVendor();
-
   }, []);
+
 
   return (
     <div>
@@ -219,7 +241,7 @@ const AllocateVendor = ({ tripList }) => {
                 textTransform: "unset",
               }}
             >
-              {selectedVendor || 'Vendor Name'}
+              {selectedVendor || "Vendor Name"}
             </Button>
             <Menu
               id="fade-menu"
@@ -237,8 +259,12 @@ const AllocateVendor = ({ tripList }) => {
                 fontFamily: "DM Sans",
               }}
             >
-              {vendorList.map((item,idx)=>(
-                <MenuItem onClick={() => handleSelectChange(item.name,item.vendorId)}>{item.name}</MenuItem>
+              {vendorList.map((item, idx) => (
+                <MenuItem
+                  onClick={() => handleSelectChange(item.name, item.vendorId)}
+                >
+                  {item.name}
+                </MenuItem>
               ))}
             </Menu>
             <button

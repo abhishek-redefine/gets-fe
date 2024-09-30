@@ -3,8 +3,9 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
+import LoaderComponent from "../loader";
 
-const SafeReachConfirmationTable = ({tripList}) => {
+const SafeReachConfirmationTable = ({tripList, isLoading}) => {
   const [data, setData] = useState(tripList || []);
 
   const columns = useMemo(
@@ -81,6 +82,10 @@ const SafeReachConfirmationTable = ({tripList}) => {
     data,
     enableRowSelection: true, 
     enableMultiRowSelection: false,
+    state: { isLoading },
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />
+    },
   });
 
   useEffect(()=>{
