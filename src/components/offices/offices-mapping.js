@@ -7,7 +7,7 @@ import AddOfficeMapping from './add-office-mapping';
 
 const OfficesMapping = ({
     officeListing,
-    onSuccess
+    onSuccess,
 }) => {
 
     const headers = [{
@@ -23,6 +23,7 @@ const OfficesMapping = ({
     const [selectedOfficeId, setSelectedOfficeId] = useState();
     const [isApiResponse, setIsApiResponse] = useState(false);
     const [officeMapping, setOfficeMapping] = useState();
+    const [loading, setLoading] = useState(false);
 
     const onUserSuccess = () => {
         setIsAddEdit(false);
@@ -32,6 +33,8 @@ const OfficesMapping = ({
     const fetchOfficeMapping = async () => {
         setIsApiResponse(false);
         try {
+            setLoading(true);
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
             const response = await OfficeService.getOfficeMapping(selectedOfficeId);
             const { data } = response || {};
             const { officeMappingDTOs } = data || {};
@@ -40,6 +43,8 @@ const OfficesMapping = ({
         } catch (e) {
             console.error(e);
             setIsApiResponse(true);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -84,7 +89,7 @@ const OfficesMapping = ({
                 </div>
                 {isApiResponse && !officeMapping?.length && <p className='notFoundTableContent'>No mapping found!</p>}
                 {!!officeMapping?.length && <div className='gridContainer'>
-                    <Grid headers={headers} listing={officeMapping} />
+                    <Grid headers={headers} listing={officeMapping} isLoading={loading}/>
                 </div>}
             </div>}
             {isAddEdit && <div>

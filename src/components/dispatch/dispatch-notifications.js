@@ -3,11 +3,10 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
-import { dispatchNotificationData } from "@/sampleData/dispatchNotificationData";
+import LoaderComponent from "../loader";
 
 
-
-const DispatchNotificationTable = ({list}) => {
+const DispatchNotificationTable = ({list, isLoading}) => {
   const [data, setData] = useState([]);
 
   const columns = useMemo(
@@ -72,7 +71,11 @@ const DispatchNotificationTable = ({list}) => {
   const tableInstance = useMaterialReactTable({
     columns,
     data,
-    getRowId: row => row.tripId,
+    getRowId: row => row.id,
+    state: { isLoading },
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />
+    },
   });
 
   useEffect(()=>{

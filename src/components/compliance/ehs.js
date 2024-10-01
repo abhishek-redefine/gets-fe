@@ -58,6 +58,8 @@ const EHS = () => {
         pageNo : 0,
         pageSize : 10,
     })
+    const [loading, setLoading] = useState(false);
+
     const handlePageChange = (page) => {
         console.log(page);
         let updatedPagination = {...pagination};
@@ -67,6 +69,8 @@ const EHS = () => {
 
     const fetchAllEHS = async () => {
         try {
+            setLoading(true);
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
             let params = new URLSearchParams(pagination);
             const response = await ComplianceService.getAllEHS(params, {});
             setEhsListing(response.data.data);
@@ -77,6 +81,8 @@ const EHS = () => {
             setPaginationData(localPaginationData);
         } catch (e) {
             console.error(e);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -107,6 +113,7 @@ const EHS = () => {
                         pageNoText="pageNumber"
                         handlePageChange={handlePageChange}
                         pagination={paginationData}
+                        isLoading={loading}
                     />
                 </div>
             </div>}

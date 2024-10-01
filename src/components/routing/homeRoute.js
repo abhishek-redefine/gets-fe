@@ -5,6 +5,7 @@ import OfficeService from "@/services/office.service";
 import { getFormattedLabel } from "@/utils/utils";
 import RoutingService from "@/services/route.service";
 import { object } from "yup";
+import LoaderComponent from "../loader";
 
 const HomeRoute = () => {
   const headers = [
@@ -52,6 +53,8 @@ const HomeRoute = () => {
     size: 10,
   });
   const [paginationData, setPaginationData] = useState();
+  const [loading, setLoading] = useState(false);
+
   const handlePageChange = (page) => {
     let updatedPagination = { ...pagination };
     updatedPagination.page = page;
@@ -101,6 +104,8 @@ const HomeRoute = () => {
 
   const fetchAllHomeRoutes = async (search=false) => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const params = new URLSearchParams(pagination);
       console.log(searchValues);
       let allSearchValues = {...searchValues};
@@ -119,6 +124,8 @@ const HomeRoute = () => {
       setPaginationData(localPaginationData);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -192,6 +199,7 @@ const HomeRoute = () => {
           listing={homeRoutes}
           handlePageChange={handlePageChange}
           //enableDisableRow={true}
+          isLoading={loading}
         />
       </div>
     </div>

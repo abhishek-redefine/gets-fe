@@ -46,6 +46,7 @@ const MainComponent = () => {
   const [autoSelectLogin, setAutoSelectLogin] = useState(null);
   const [autoSelectLogout, setAutoSelectLogout] = useState(null);
   const [selectedB2bId, setSelectedB2bId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const [pagination, setPagination] = useState({
     page: 0,
@@ -88,7 +89,7 @@ const MainComponent = () => {
         console.log(data);
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) { }
+    } catch (e) {}
   };
 
   const fetchAllOffices = async () => {
@@ -108,11 +109,13 @@ const MainComponent = () => {
           clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) { }
+    } catch (e) {}
   };
 
   const getTrips = async () => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       let params = new URLSearchParams(pagination);
       let searchValues = {
         officeId: searchValuesForLogin.officeIdForLogin,
@@ -136,6 +139,8 @@ const MainComponent = () => {
       setLogoutTripList(logoutResponse.data.data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -157,6 +162,8 @@ const MainComponent = () => {
 
   const getB2BTrips = async () => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const response = await DispatchService.getAllB2B();
       var data = response.data.data;
       var tempLogin = [];
@@ -181,6 +188,8 @@ const MainComponent = () => {
       setB2bPair(tempPair);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -223,7 +232,13 @@ const MainComponent = () => {
   };
 
   const handleUnpairTrips = () => {
-    console.log("entered", pairedTrips, pairedTripIds, autoSelectLogin, autoSelectLogout);
+    console.log(
+      "entered",
+      pairedTrips,
+      pairedTripIds,
+      autoSelectLogin,
+      autoSelectLogout
+    );
 
     let tempPairedTrips = [...pairedTrips];
     let tempPairedTripIds = [...pairedTripIds];
@@ -239,12 +254,16 @@ const MainComponent = () => {
     setPairedTrips(tempPairedTrips);
     console.log("setPairedTrips>> " + tempPairedTrips);
 
-    const findTripIdsIndex = tempPairedTripIds.findIndex((id) => id === `TRIP-${autoSelectLogout}-TRIP-${autoSelectLogin}`);
+    const findTripIdsIndex = tempPairedTripIds.findIndex(
+      (id) => id === `TRIP-${autoSelectLogout}-TRIP-${autoSelectLogin}`
+    );
     tempPairedTripIds.splice(findTripIdsIndex, 1);
     // console.log("tempPairedTripIds: " +tempPairedTripIds);
     setPairedTripIds(tempPairedTripIds);
 
-    const findAllIdsIndex = tempAllIdsPairedAndB2bList.findIndex((id) => id.logoutId === autoSelectLogout);
+    const findAllIdsIndex = tempAllIdsPairedAndB2bList.findIndex(
+      (id) => id.logoutId === autoSelectLogout
+    );
     tempAllIdsPairedAndB2bList.splice(findAllIdsIndex, 1);
     // console.log("tempAllIdsPairedAndB2bList: " +tempAllIdsPairedAndB2bList);
     setAllIdsPairedAndB2bList(tempAllIdsPairedAndB2bList);
@@ -252,10 +271,9 @@ const MainComponent = () => {
     setAutoSelectLogin(null);
   };
 
-
   const generateB2B = async () => {
     try {
-      console.log(pairedTripIds);
+      console.log("paired trip ids>>>", pairedTripIds);
       const b2BTripDTO = {
         b2BTripDTO: [],
       };
@@ -269,7 +287,7 @@ const MainComponent = () => {
         });
       });
       const response = await DispatchService.generateB2bTrip(b2BTripDTO);
-      console.log(response);
+      console.log("generateB2B response>>>", response);
       if (response.status === 201) {
         dispatch(
           toggleToast({ message: "B2B created successfully!", type: "success" })
@@ -720,6 +738,7 @@ const MainComponent = () => {
               autoSelectTrip={autoSelectLogout}
               handleSelectRow={(type, tripId) => handleSelectRow(type, tripId)}
               setSelectedB2bId={setSelectedB2bId}
+              isLoading={loading}
             />
           </div>
           <div style={{ flex: 1, minWidth: "600px" }}>
@@ -757,6 +776,7 @@ const MainComponent = () => {
               autoSelectTrip={autoSelectLogin}
               handleSelectRow={(type, tripId) => handleSelectRow(type, tripId)}
               setSelectedB2bId={setSelectedB2bId}
+              isLoading={loading}
             />
           </div>
         </div>

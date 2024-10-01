@@ -11,6 +11,7 @@ import RoleService from "@/services/role.service";
 import { setAllUserPermissions } from "@/redux/user.slice";
 import { MODULE_NAMES } from "@/constants/url.constants";
 import Script from "next/script";
+import 'leaflet/dist/leaflet.css';
 
 const withAuthLayout = (WrappedComponent) => {
   const WithAuthLayout = (props) => {
@@ -180,8 +181,8 @@ const withAuthLayout = (WrappedComponent) => {
                   Tracking
                 </Link>
               )}
-              {/* <Link onClick={() => changeRoute('tracking')} className={currentActiveState === 'tracking' && 'selected' || ''} href='/tracking'>Tracking</Link> */}
-              {/*<Link onClick={() => changeRoute('billing')} className={currentActiveState === 'billing' && 'selected' || ''} href='/billing'>Billing</Link> */}
+              {getModulePermissions(MODULE_NAMES.TRACKING) && <Link onClick={() => changeRoute('tracking')} className={currentActiveState === 'tracking' && 'selected' || ''} href='/tracking/live-tracking'>Tracking</Link>}
+              {getModulePermissions(MODULE_NAMES.BILLING) && <Link onClick={() => changeRoute('billing')} className={currentActiveState === 'billing' && 'selected' || ''} href='/billing/billing-issues'>Billing</Link>}
               {getModulePermissions(MODULE_NAMES.BILLING) && (
                 <Link
                   onClick={() => changeRoute("billing")}
@@ -227,7 +228,7 @@ const withAuthLayout = (WrappedComponent) => {
                   Admin Settings
                 </Link>
               )}
-              {/* <Link onClick={() => changeRoute('configurations')} className={currentActiveState === 'configurations' && 'selected' || ''} href='/configurations'>Configurations</Link> */}
+              {getModulePermissions(MODULE_NAMES.CONFIGURATIONS) && <Link onClick={() => changeRoute('configurations')} className={currentActiveState === 'configurations' && 'selected' || ''} href='/configurations/offices'>Configurations</Link>}
             </nav>
           </div>
           <div className="headerBellContainer">

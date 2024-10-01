@@ -24,6 +24,8 @@ import DispatchService from "@/services/dispatch.service";
 import ComplianceService from "@/services/compliance.service";
 import TripService from "@/services/trip.service";
 import TrackCab from "./TrackCab";
+import LoaderComponent from "../loader";
+import { toggleToast } from "@/redux/company.slice";
 
 const SearchModuleVehiclesAndDrivers = ({ tripIdClicked }) => {
   const [list, setList] = useState([]);
@@ -53,6 +55,7 @@ const SearchModuleVehiclesAndDrivers = ({ tripIdClicked }) => {
   const [error, setError] = useState(false);
   const [vehicleDetails, setVehicleDetails] = useState({});
   const [trackCabFlag, setTrackCabFlag] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const vehicleDriverDetails = {
     "Registration Number": vehicleDetails.vehicleNumber,
@@ -151,29 +154,43 @@ const SearchModuleVehiclesAndDrivers = ({ tripIdClicked }) => {
     } else {
       setError((prevError) => ({ ...prevError, selectFilter: "" }));
     }
-    if (hasError) return;
+    if (hasError) {
+      console.log("Please choose a filter option to proceed.");
+    } else {
+      try {
+        setLoading(true);
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        let params = new URLSearchParams(pagination);
+        console.log("Search values>>>", searchValues);
+        let allSearchValues = { ...searchValues };
 
-    try {
-      let params = new URLSearchParams(pagination);
-      console.log("Search values>>>", searchValues);
-      let allSearchValues = { ...searchValues };
-
-      Object.keys(allSearchValues).forEach((objKey) => {
-        if (
-          allSearchValues[objKey] === null ||
-          allSearchValues[objKey] === ""
-        ) {
-          delete allSearchValues[objKey];
+        Object.keys(allSearchValues).forEach((objKey) => {
+          if (
+            allSearchValues[objKey] === null ||
+            allSearchValues[objKey] === ""
+          ) {
+            delete allSearchValues[objKey];
+          }
+        });
+        const response = await DispatchService.getTripSearchByBean(
+          params,
+          allSearchValues
+        );
+        console.log("response data>>>", response.data.data);
+        setList(response.data.data);
+        if (response.status === 500) {
+          dispatch(
+            toggleToast({
+              message: `Failed! Please try again later.`,
+              type: "error",
+            })
+          );
         }
-      });
-      const response = await DispatchService.getTripSearchByBean(
-        params,
-        allSearchValues
-      );
-      console.log("response data>>>", response.data.data);
-      setList(response.data.data);
-    } catch (err) {
-      console.log(err);
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -596,10 +613,35 @@ const SearchModuleVehiclesAndDrivers = ({ tripIdClicked }) => {
             <VehiclesNDriversTable
               list={list}
               vehicleTripIdClicked={handleTripClick}
+              isLoading={loading}
             />
           </div>
         </div>
       )}
+      {/* {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "fixed",
+            // backgroundColor: "#000000",
+            zIndex: 1,
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            opacity: 1,
+            color: "#000000",
+            // height: "100vh",
+            // width: "100vw",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )} */}
     </div>
   );
 };

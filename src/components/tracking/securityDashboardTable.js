@@ -1,23 +1,37 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
 import { securityDashboardData } from "@/sampleData/securityDashboardData";
+import LoaderComponent from "../loader";
 
-const SecurityDashboardTable = () => {
-  const [data, setData] = useState(securityDashboardData);
+const SecurityDashboardTable = ({tripList, isLoading}) => {
+  const [data, setData] = useState(tripList || []);
 
   const columns = useMemo(
     () => [
       {
-        accessorKey: "officeId",
-        header: "Office ID",
+        accessorKey: "id",
+        header: "Trip ID",
+        size: 150,
+        Cell: ({ cell }) => {
+          return <div>TRIP-{cell.getValue()}</div>;
+        },
+      },
+      {
+        accessorKey: "vehicleNumber",
+        header: "Vehicle Number",
         size: 100,
       },
       {
-        accessorKey: "shiftType",
-        header: "Shift Type",
+        accessorKey: "officeId",
+        header: "Office",
+        size: 170,
+      },
+      {
+        accessorKey: "tripState",
+        header: "Trip State",
         size: 100,
       },
       {
@@ -26,59 +40,37 @@ const SecurityDashboardTable = () => {
         size: 100,
       },
       {
-        accessorKey: "bookingCount",
-        header: "Booking Count",
+        accessorKey: "shiftType",
+        header: "shift Type",
         size: 100,
       },
       {
-        accessorKey: "routingStatus",
-        header: "Routing Status",
+        accessorKey: "empIds",
+        header: "Employee",
         size: 100,
       },
       {
-        accessorKey: "dispatchStatus",
-        header: "Dispatch Status",
+        accessorKey: "tripStartTime",
+        header: "Trip Start Time",
         size: 100,
       },
       {
-        accessorKey: "tripCount",
-        header: "Trip Count",
+        accessorKey: "routeName",
+        header: "Route",
         size: 150,
       },
       {
-        accessorKey: "allocatedToVendors",
-        header: "Allocated To Vendors",
-        size: 200,
+        accessorKey: "pickupTime",
+        header: "ETA",
+        size: 170,
       },
       {
-        accessorKey: "cabsDeployed",
-        header: "Cabs Deployed",
-        size: 100,
-      },
-      {
-        accessorKey: "fleetMix",
-        header: "Fleet Mix",
-        size: 230,
-      },
-      {
-        accessorKey: "escortTrip",
-        header: "Escort Trip",
-        size: 100,
-      },
-      {
-        accessorKey: "backToBack",
-        header: "Back to Back",
-        size: 100,
-      },
-      {
-        accessorKey: "smsStatus",
-        header: "SMS Status",
-        size: 150,
-      },
-      {
-        accessorKey: "emailStatus",
-        header: "Email Status",
-        size: 150,
+        accessorKey: "noOfSeats",
+        header: "Vehicle Type",
+        size: 130,
+        Cell: ({ cell }) => {
+          return <div>{cell.getValue()}s</div>;
+        },
       },
     ],
     []
@@ -89,7 +81,17 @@ const SecurityDashboardTable = () => {
     data,
     enableRowSelection: true, 
     enableMultiRowSelection: true,
+    state: { isLoading },
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />
+    },
   });
+
+  useEffect(()=>{
+    if(tripList){
+      setData(tripList);
+    }
+  },[tripList])
 
   return (
     <div>

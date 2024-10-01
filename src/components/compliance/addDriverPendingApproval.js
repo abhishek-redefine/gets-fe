@@ -14,6 +14,7 @@ import pako from "pako";
 import IframeComponent from "../iframe/Iframe";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
+import LoaderComponent from "../loader";
 
 const style = {
   position: "absolute",
@@ -25,7 +26,11 @@ const style = {
   height: 600,
 };
 
-const AddDriverPendingApproval = ({ ViewDetailsData, SetAddDriverOpen,isView }) => {
+const AddDriverPendingApproval = ({
+  ViewDetailsData,
+  SetAddDriverOpen,
+  isView,
+}) => {
   const [initialValues, setInitialValues] = useState({
     name: "",
     mobile: "",
@@ -65,6 +70,7 @@ const AddDriverPendingApproval = ({ ViewDetailsData, SetAddDriverOpen,isView }) 
   const handleModalClose = () => setOpenModal(false);
   const [documentUrl, setDocumentUrl] = useState();
   const [documentTitle, setDocumentTitle] = useState();
+  const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -133,30 +139,37 @@ const AddDriverPendingApproval = ({ ViewDetailsData, SetAddDriverOpen,isView }) 
     return pdfBytes;
   }
 
-  const approveDriver = async (approveOrReject,msg="approved") => {
-    const response = await ComplianceService.approveDriver(
-      initialValues.id,
-      approveOrReject,
-      msg
-    );
-    if (response.status === 200) {
-      if (approveOrReject) {
-        dispatch(
-          toggleToast({
-            message: "Driver approved successfully!",
-            type: "success",
-          })
-        );
-        SetAddDriverOpen();
-      } else {
-        dispatch(
-          toggleToast({
-            message: "Driver rejected successfully!",
-            type: "success",
-          })
-        );
-        SetAddDriverOpen();
+  const approveDriver = async (approveOrReject, msg = "approved") => {
+    try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
+      const response = await ComplianceService.approveDriver(
+        initialValues.id,
+        approveOrReject,
+        msg
+      );
+      if (response.status === 200) {
+        if (approveOrReject) {
+          dispatch(
+            toggleToast({
+              message: "Driver approved successfully!",
+              type: "success",
+            })
+          );
+          SetAddDriverOpen();
+        } else {
+          dispatch(
+            toggleToast({
+              message: "Driver rejected successfully!",
+              type: "success",
+            })
+          );
+          SetAddDriverOpen();
+        }
       }
+    } catch (e) {
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -408,30 +421,28 @@ const AddDriverPendingApproval = ({ ViewDetailsData, SetAddDriverOpen,isView }) 
             )}
           </div>
         </div>
-        {
-          !isView ?
-            <div className="addBtnContainer" style={{ justifyContent: "end" }}>
-              <button className="btn btn-secondary" onClick={() => handleOpen()}>
-                Reject
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={() => approveDriver(true)}
-              >
-                Approve
-              </button>
-            </div>
-            :
-            <div className="addBtnContainer" style={{ justifyContent: "end" }}>
-              <button
-                className="btn btn-primary"
-                onClick={() => SetAddDriverOpen()}
-              >
-                Back
-              </button>
-            </div>
-        }
-        
+        {!isView ? (
+          <div className="addBtnContainer" style={{ justifyContent: "end" }}>
+            <button className="btn btn-secondary" onClick={() => handleOpen()}>
+              Reject
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={() => approveDriver(true)}
+            >
+              Approve
+            </button>
+          </div>
+        ) : (
+          <div className="addBtnContainer" style={{ justifyContent: "end" }}>
+            <button
+              className="btn btn-primary"
+              onClick={() => SetAddDriverOpen()}
+            >
+              Back
+            </button>
+          </div>
+        )}
       </div>
       <Dialog
         open={open}
@@ -468,7 +479,12 @@ const AddDriverPendingApproval = ({ ViewDetailsData, SetAddDriverOpen,isView }) 
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button type="submit" onClick={() =>{ msg != "" && approveDriver(false,msg)}}>
+          <Button
+            type="submit"
+            onClick={() => {
+              msg != "" && approveDriver(false, msg);
+            }}
+          >
             Reject Driver
           </Button>
         </DialogActions>
@@ -483,6 +499,30 @@ const AddDriverPendingApproval = ({ ViewDetailsData, SetAddDriverOpen,isView }) 
           <IframeComponent url={documentUrl} title={documentTitle} />
         </Box>
       </Modal>
+      {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "fixed",
+            // backgroundColor: "#000000",
+            zIndex: 1,
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            opacity: 1,
+            color: "#000000",
+            // height: "100vh",
+            // width: "100vw",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        ""
+      )}
     </div>
   );
 };

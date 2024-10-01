@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from "formik";
 import { validationSchema } from './escort/validationSchema';
 import { toggleToast } from '@/redux/company.slice';
+import LoaderComponent from '../loader';
 
 const AddEscort = ({
     onUserSuccess,
@@ -25,6 +26,8 @@ const AddEscort = ({
         address: "",
         email: ""
     });
+
+    const [loading, setLoading] = useState(false);
 
     useState(() => {
         if (editEmployeeData?.id) {
@@ -45,9 +48,13 @@ const AddEscort = ({
             });
             try {
                 if (initialValues?.id) {
+                    setLoading(true);
+                    // await new Promise((resolve) => setTimeout(resolve, 5000));
                     await OfficeService.updateEscort({escort: {...initialValues, ...allValues}});
                     dispatch(toggleToast({ message: 'Escort updated successfully!', type: 'success' }));
                 } else {
+                    setLoading(true);
+                    // await new Promise((resolve) => setTimeout(resolve, 5000));
                     await OfficeService.createEscort({escort: allValues});
                     dispatch(toggleToast({ message: 'Escort added successfully!', type: 'success' }));
                 }
@@ -55,6 +62,8 @@ const AddEscort = ({
             } catch (e) {
                 console.error(e);
                 dispatch(toggleToast({ message: e?.response?.data?.message || 'Error adding escort, please try again later!', type: 'error' }));
+            } finally {
+                setLoading(false);
             }
         }
     });
@@ -193,6 +202,30 @@ const AddEscort = ({
                     </div>
                 </div>
             </div>
+            {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "fixed",
+                // backgroundColor: "#000000",
+                zIndex: 1,
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                opacity: 1,
+                color: "#000000",
+                // height: "100vh",
+                // width: "100vw",
+              }}
+            >
+              <LoaderComponent />
+            </div>
+            ) : (
+              " "
+            )}
         </div>
     );
 }

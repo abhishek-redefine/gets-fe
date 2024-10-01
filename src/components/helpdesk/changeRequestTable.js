@@ -3,10 +3,12 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
+import LoaderComponent from "../loader";
 
-const ChangeRequestTable = ({ list, onRowsSelected }) => {
+const ChangeRequestTable = ({ list, onRowsSelected, isLoading }) => {
   const [data, setData] = useState([]);
   const [rowSelection, setRowSelection] = useState({});
+  // const [isLoading, setIsLoading] = useState(false);
 
   const columns = useMemo(
     () => [
@@ -55,21 +57,28 @@ const ChangeRequestTable = ({ list, onRowsSelected }) => {
     enableRowSelection: true,
     enableMultiRowSelection: false,
     getRowId: (originalRow) => originalRow?.id,
-    state: { rowSelection },
+    // state: { rowSelection },
+    state: {
+      rowSelection,
+      isLoading,
+    },
     onRowSelectionChange: setRowSelection,
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />,
+    },
   });
 
   useEffect(() => {
-    tableInstance.getSelectedRowModel().flatRows[0]?.original ?
-      onRowsSelected(tableInstance.getSelectedRowModel().flatRows[0]?.original)
-      :
-      onRowsSelected(null);
+    tableInstance.getSelectedRowModel().flatRows[0]?.original
+      ? onRowsSelected(
+          tableInstance.getSelectedRowModel().flatRows[0]?.original
+        )
+      : onRowsSelected(null);
   }, [rowSelection]);
 
   useEffect(() => {
     setData(list);
   }, [list]);
-
 
   return (
     <div>

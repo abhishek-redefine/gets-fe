@@ -235,6 +235,52 @@ const raiseRequest = (data) => {
     });
 };
 
+const getUserByEmail = (email) => {
+  ///api/v1/emp/findByEmail/{email}
+  ///api/v1/emp/findByEmail/saifali@gmail.com
+  return axiosInstance
+    .get(
+      `${API_PATH.API_VERSION}${API_PATH.EMP}${API_PATH.FIND_BY_EMAIL}/${email}`
+    )
+    .then((response) => {
+      return response;
+    });
+};
+
+const createPreference = (data) => {
+  ///api/v1/preference/create
+  return axiosInstance
+    .post(
+      `${API_PATH.API_VERSION}${API_PATH.PREFERENCE}${API_PATH.CREATE}`,
+      data
+    )
+    .then((response) => {
+      return response;
+    });
+};
+
+const getPreferenceById = (id) => {
+  ///api/v1/preference/{id}
+  return axiosInstance
+    .get(`${API_PATH.API_VERSION}${API_PATH.PREFERENCE}/${id}`)
+    .then((response) => {
+      return response;
+    });
+};
+
+const raiseRequest = (data) => {
+  ///api/v1/emp/raiseRequest
+  console.log("Raised request address/phone: ", data);
+  return axiosInstance
+    .post(
+      `${API_PATH.API_VERSION}${API_PATH.EMP}${API_PATH.RAISE_REQUEST}`,
+      data
+    )
+    .then((response) => {
+      return response;
+    });
+};
+
  
  const getUserByEmail = (email) => {
   ///api/v1/emp/findByEmail/{email}
@@ -276,6 +322,8 @@ const OfficeService = {
   uploadForm,
   raiseRequest,
   getUserByEmail,
+  createPreference,
+  getPreferenceById,
 };
 
 export default OfficeService;

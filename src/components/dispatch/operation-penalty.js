@@ -1,11 +1,12 @@
-import React, { useMemo, useState,useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
+import LoaderComponent from "../loader";
 
-const OperationPenaltyTable = ({ onRowSelect, list }) => {
-  const[data, setData] = useState([])
+const OperationPenaltyTable = ({ onRowSelect, list, isLoading }) => {
+  const [data, setData] = useState([]);
   const [rowSelection, setRowSelection] = useState({});
 
   const columns = useMemo(
@@ -47,17 +48,17 @@ const OperationPenaltyTable = ({ onRowSelect, list }) => {
         },
       },
       {
-        accessorKey : 'penaltyType',
+        accessorKey: "penaltyType",
         header: "Penalty Type",
-        size : 200,
+        size: 200,
         Cell: ({ cell }) => {
           return <div>{cell?.getValue() || "N/A"}</div>;
         },
       },
       {
-        accessorKey : 'penaltyAmount',
+        accessorKey: "penaltyAmount",
         header: "Penalty Amount",
-        size : 200,
+        size: 200,
         Cell: ({ cell }) => {
           return <div>{cell?.getValue() || "N/A"}</div>;
         },
@@ -81,24 +82,27 @@ const OperationPenaltyTable = ({ onRowSelect, list }) => {
     []
   );
 
-
   const tableInstance = useMaterialReactTable({
     columns,
     data,
     enableRowSelection: true,
     enableMultiRowSelection: false,
-    getRowId: (originalRow) => originalRow?.tripId,
-    state : {rowSelection},
+    getRowId: (originalRow) => originalRow?.id,
+    state: { rowSelection, isLoading },
     onRowSelectionChange: setRowSelection,
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />,
+    },
   });
 
-  useEffect(()=>{
-    tableInstance.getSelectedRowModel().flatRows[0]?.original && onRowSelect(tableInstance.getSelectedRowModel().flatRows[0]?.original);
-  },[rowSelection]);
+  useEffect(() => {
+    tableInstance.getSelectedRowModel().flatRows[0]?.original &&
+      onRowSelect(tableInstance.getSelectedRowModel().flatRows[0]?.original);
+  }, [rowSelection]);
 
-  useEffect(()=>{
-    setData(list)
-  },[list])
+  useEffect(() => {
+    setData(list);
+  }, [list]);
 
   return (
     <div>
@@ -111,7 +115,7 @@ const OperationPenaltyTable = ({ onRowSelect, list }) => {
       >
         <MaterialReactTable
           table={tableInstance}
-          getRowId={(row) => row.tripId}
+          getRowId={(row) => row.id}
         />
       </div>
     </div>

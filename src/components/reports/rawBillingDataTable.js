@@ -3,8 +3,9 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
+import LoaderComponent from "../loader";
 
-const RawBillingDataTable = ({ list }) => {
+const RawBillingDataTable = ({ list, isLoading }) => {
   const [data, setData] = useState([]);
 
   const columns = useMemo(
@@ -173,14 +174,14 @@ const RawBillingDataTable = ({ list }) => {
         accessorKey: "escortTraveled",
         header: "Escort Traveled",
         size: 150,
-      },		
+      },
       {
         accessorKey: "physicalId",
         header: "Physical ID",
         size: 150,
-      },				
+      },
       {
-        accessorKey: "tripReferenceKM",
+        accessorKey: "tripReferenceKMs",
         header: "Trip Reference KM",
         size: 150,
       },
@@ -215,12 +216,10 @@ const RawBillingDataTable = ({ list }) => {
         size: 150,
       },
       {
-        accessorKey: "tripsheetComment",
+        accessorKey: "tripSheetComment",
         header: "Tripsheet Comment",
         size: 150,
       },
-
-
     ],
     []
   );
@@ -228,6 +227,12 @@ const RawBillingDataTable = ({ list }) => {
   const tableInstance = useMaterialReactTable({
     columns,
     data,
+    state: {
+      isLoading,
+    },
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />,
+    },
   });
 
   useEffect(() => {

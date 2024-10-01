@@ -53,6 +53,7 @@ const VendorTeamManagement = ({
     });
     const [employeeListing, setEmployeeListing] = useState();
     const [editEmployeeData, setEditEmployeeData] = useState({});
+    const [loading, setLoading] = useState(false);
 
     const onUserSuccess = () => {
         setIsAddEdit(false);
@@ -69,6 +70,8 @@ const VendorTeamManagement = ({
 
     const fetchAllVendors = async () => {
         try {
+            setLoading(true);
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
             const params = new URLSearchParams(pagination);
             const response = await OfficeService.getAllVendors(params.toString());
             const { data } = response || {};
@@ -79,6 +82,8 @@ const VendorTeamManagement = ({
             setPaginationData(localPaginationData);
         } catch (e) {
             console.error(e);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -114,7 +119,7 @@ const VendorTeamManagement = ({
                     </div>
                 </div>
                 <div className='gridContainer'>
-                    <Grid onMenuItemClick={onMenuItemClick} handlePageChange={handlePageChange} pagination={paginationData} headers={headers} listing={employeeListing} />
+                    <Grid onMenuItemClick={onMenuItemClick} handlePageChange={handlePageChange} pagination={paginationData} headers={headers} listing={employeeListing} isLoading={loading} />
                 </div>
             </div>}
             {isAddEdit && <div>

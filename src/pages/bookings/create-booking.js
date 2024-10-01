@@ -17,6 +17,7 @@ import BookingService from '@/services/booking.service';
 import Grid from '@/components/grid';
 import { toggleToast } from '@/redux/company.slice';
 import { useRouter } from 'next/router';
+import LoaderComponent from '@/components/loader';
 
 const CreateBooking = () => {
 
@@ -75,6 +76,7 @@ const CreateBooking = () => {
     const [loginShiftId, setLoginShiftId] = useState();
     const [logoutShiftId, setLogoutShiftId] = useState();
     const [areaName, setAreaName] = useState("")
+    const [loading, setLoading] = useState(false);
 
     const teamHeaders = [
         {
@@ -312,9 +314,13 @@ const CreateBooking = () => {
             console.log(allValues);
             try {
                 if (editFlag) {
+                    setLoading(true);
+                    // await new Promise((resolve) => setTimeout(resolve, 5000));
                     await BookingService.updateBooking([allValues]);
                 }
                 else {
+                    setLoading(true);
+                    // await new Promise((resolve) => setTimeout(resolve, 5000));
                     await BookingService.createBooking({ booking: allValues });
                 }
 
@@ -325,6 +331,8 @@ const CreateBooking = () => {
             } catch (e) {
                 console.error(e);
                 dispatch(toggleToast({ message: e?.response?.data?.message || 'Error creating booking, please try again later!', type: 'error' }));
+            } finally {
+                setLoading(false);
             }
         }
     });
@@ -1021,6 +1029,8 @@ const CreateBooking = () => {
 
     const getOtherUserDetails = async (id) => {
         try {
+            setLoading(true);
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
             const response = await OfficeService.getEmployeeDetails(id);
             const { data } = response;
             console.log(data.areaName)
@@ -1028,6 +1038,8 @@ const CreateBooking = () => {
             setAreaName(data?.areaName);
         } catch (e) {
             console.error(e);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -1370,6 +1382,30 @@ const CreateBooking = () => {
                     </div>
                 </div>
             </div>}
+            {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "fixed",
+                // backgroundColor: "#000000",
+                zIndex: 1,
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                opacity: 1,
+                color: "#000000",
+                // height: "100vh",
+                // width: "100vw",
+              }}
+            >
+              <LoaderComponent />
+            </div>
+            ) : (
+              " "
+            )}
         </div>
     )
 }

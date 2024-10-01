@@ -34,6 +34,7 @@ import { toggleToast } from "@/redux/company.slice";
 import moment from "moment";
 import RoutingService from "@/services/route.service";
 import GeocodeModal from "./geocodeModal";
+import LoaderComponent from "../loader";
 
 const style = {
   position: "absolute",
@@ -85,6 +86,8 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
     pickupTime: null,
   });
   const [defaultRM, setDefaultRM] = useState({});
+
+  const [loading, setLoading] = useState(false);
 
   useState(() => {
     if (editEmployeeData?.id) {
@@ -176,6 +179,8 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
         //formik.setFieldValue('transportEligibilities',transportString.slice(0,-1));
         console.log(transportString.slice(0, -1));
         if (initialValues?.id) {
+          setLoading(true);
+          // await new Promise((resolve) => setTimeout(resolve, 5000));
           await OfficeService.updateEmployee({
             employee: { ...initialValues, ...payload },
           });
@@ -187,6 +192,8 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
           );
         } else {
           console.log(payload);
+          setLoading(true);
+          // await new Promise((resolve) => setTimeout(resolve, 5000));
           await OfficeService.createEmployee({ employee: payload });
           dispatch(
             toggleToast({
@@ -206,6 +213,8 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
             type: "error",
           })
         );
+      } finally {
+        setLoading(false);
       }
     },
   });
@@ -1058,12 +1067,36 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
             <button onClick={onUserSuccess} className="btn btn-secondary">
               Back
             </button>
-            <button onClick={handleSubmit} className="btn btn-primary">
+            <button type='submit' onClick={handleSubmit} className="btn btn-primary">
               {editEmployeeData?.id ? "Update" : "Create"} Employee
             </button>
           </div>
         </div>
       </div>
+      {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "fixed",
+                // backgroundColor: "#000000",
+                zIndex: 1,
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                opacity: 1,
+                color: "#000000",
+                // height: "100vh",
+                // width: "100vw",
+              }}
+            >
+              <LoaderComponent />
+            </div>
+            ) : (
+              " "
+            )}
     </div>
   );
 };

@@ -1,25 +1,46 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
 import { liveTrackingData } from "@/sampleData/liveTrackingData";
+import LoaderComponent from "../loader";
 
-
-const LiveTrackingTable = () => {
-  const [data, setData] = useState(liveTrackingData);
+const LiveTrackingTable = ({ tripData, isLoading }) => {
+  const [data, setData] = useState(tripData || []);
 
   const columns = useMemo(
     () => [
       {
-        accessorKey: "vehicleNo",
-        header: "Office ID",
+        accessorKey: "id",
+        header: "Trip ID",
+        size: 150,
+        Cell: ({ cell }) => {
+          return <div>TRIP-{cell.getValue()}</div>;
+        },
+      },
+      {
+        accessorKey: "vehicleNumber",
+        header: "Vehicle Number",
         size: 100,
       },
       {
-        accessorKey: "tripId",
-        header: "Trip ID",
+        accessorKey: "officeId",
+        header: "Office",
+        size: 170,
+      },
+      {
+        accessorKey: "tripState",
+        header: "Trip State",
         size: 100,
+      },
+      {
+        accessorKey: "isCabAllocated",
+        header: "Cab Allocated",
+        size: 100,
+        Cell: ({ cell }) => {
+          return <div>{cell.getValue() ? "True" : "False"}</div>;
+        },
       },
       {
         accessorKey: "shiftTime",
@@ -32,7 +53,7 @@ const LiveTrackingTable = () => {
         size: 100,
       },
       {
-        accessorKey: "employee",
+        accessorKey: "empIds",
         header: "Employee",
         size: 100,
       },
@@ -42,24 +63,22 @@ const LiveTrackingTable = () => {
         size: 100,
       },
       {
-        accessorKey: "route",
+        accessorKey: "routeName",
         header: "Route",
         size: 150,
       },
       {
-        accessorKey: "office",
-        header: "Office",
-        size: 170,
-      },
-      {
-        accessorKey: "eta",
+        accessorKey: "pickupTime",
         header: "ETA",
         size: 170,
       },
       {
-        accessorKey: "vehicleType",
+        accessorKey: "noOfSeats",
         header: "Vehicle Type",
-        size: 230,
+        size: 130,
+        Cell: ({ cell }) => {
+          return <div>{cell.getValue()}s</div>;
+        },
       },
     ],
     []
@@ -68,9 +87,20 @@ const LiveTrackingTable = () => {
   const tableInstance = useMaterialReactTable({
     columns,
     data,
-    enableRowSelection: true, 
+    enableRowSelection: true,
     enableMultiRowSelection: true,
+    state: { isLoading },
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />,
+    },
   });
+
+  useEffect(() => {
+    if (tripData) {
+      console.log(tripData);
+      setData(tripData);
+    }
+  }, [tripData]);
 
   return (
     <div>

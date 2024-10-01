@@ -4,9 +4,16 @@ import TripDetails from "@/components/helpdesk/tripDetails";
 import SearchModuleUsers from "@/components/helpdesk/searchModuleUsers";
 import SearchModuleTrips from "@/components/helpdesk/searchModuleTrips";
 import SearchModuleVehiclesAndDrivers from "@/components/helpdesk/searchModuleVehicles&Drivers";
+import {
+  Box,
+  FormControl,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
+} from "@mui/material";
 
 const MainComponent = () => {
-  const [selectFormat, setSelectFormat] = useState("Users");
+  const [selectFormat, setSelectFormat] = useState("users");
   const [selectedTripId, setSelectedTripId] = useState("");
   const [tripDetailFlag, setTripDetailFlag] = useState(false);
 
@@ -34,61 +41,47 @@ const MainComponent = () => {
         />
       ) : (
         <div>
-          <div
+          <Box
             style={{
               display: "flex",
-              margin: "40px 0",
               backgroundColor: "#f9f9f9",
               borderRadius: "10px",
               margin: "30px 0 10px",
-              padding: "20px 13px",
+              padding: "20px 30px",
             }}
           >
-            <input
-              type="radio"
-              id="users"
-              name="selectFormat"
-              value="Users"
-              className="radio-item"
-              style={{ margin: "0 10px 0 25px" }}
-              checked={selectFormat === "Users"}
-              onChange={handleFormatChange}
-            />
-            <label for="users" style={{ marginRight: "15px" }}>
-              Users
-            </label>
-            <input
-              type="radio"
-              id="trips"
-              name="selectFormat"
-              value="Trips"
-              className="radio-item"
-              style={{ margin: "0 10px 0 25px" }}
-              checked={selectFormat === "Trips"}
-              onChange={handleFormatChange}
-            />
-            <label for="trips" style={{ marginRight: "15px" }}>
-              Trips
-            </label>
-            <input
-              type="radio"
-              id="vehicles&Drives"
-              name="selectFormat"
-              value="Vehicle & Drivers"
-              className="radio-item"
-              style={{ margin: "0 10px 0 25px" }}
-              checked={selectFormat === "Vehicle & Drivers"}
-              onChange={handleFormatChange}
-            />
-            <label for="vehicles&Drives" style={{ marginRight: "15px" }}>
-              Vehicle & Drivers
-            </label>
-          </div>
-          {selectFormat === "Users" && <SearchModuleUsers />}
-          {selectFormat === "Trips" && (
+            <FormControl>
+              <RadioGroup
+                row
+                aria-labelledby="demo-row-radio-buttons-group-label"
+                name="row-radio-buttons-group"
+                value={selectFormat}
+                onChange={handleFormatChange}
+              >
+                <FormControlLabel
+                  value="users"
+                  control={<Radio />}
+                  label="Users"
+                />
+                <FormControlLabel
+                  value="trips"
+                  control={<Radio />}
+                  label="Trips"
+                />
+                <FormControlLabel
+                  value="vehicles&Drives"
+                  control={<Radio />}
+                  label="Vehicle & Drivers"
+                />
+              </RadioGroup>
+            </FormControl>
+          </Box>
+
+          {selectFormat === "users" && <SearchModuleUsers />}
+          {selectFormat === "trips" && (
             <SearchModuleTrips tripIdClicked={handleTripClick} />
           )}
-          {selectFormat === "Vehicle & Drivers" && (
+          {selectFormat === "vehicles&Drives" && (
             <SearchModuleVehiclesAndDrivers tripIdClicked={handleTripClick} />
           )}
         </div>

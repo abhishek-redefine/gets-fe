@@ -3,8 +3,13 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
+import LoaderComponent from "../loader";
 
-const EmployeeTripTable = ({ pointHeaderLabel, tripMembersList }) => {
+const EmployeeTripTable = ({
+  pointHeaderLabel,
+  tripMembersList,
+  isLoading,
+}) => {
   const [data, setData] = useState(tripMembersList);
   const [point, setPoint] = useState("");
 
@@ -87,6 +92,10 @@ const EmployeeTripTable = ({ pointHeaderLabel, tripMembersList }) => {
         fontFamily: "DM Sans",
         fontSize: "14px",
       },
+    },
+    state: { isLoading },
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />
     },
   });
 

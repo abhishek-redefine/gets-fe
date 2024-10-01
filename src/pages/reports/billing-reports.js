@@ -10,10 +10,11 @@ import { useDispatch, useSelector } from "react-redux";
 import reports from "@/layouts/reports";
 import { setMasterData } from "@/redux/master.slice";
 import MasterDataService from "@/services/masterdata.service";
-import DispatchService from "@/services/dispatch.service";
 import AdjustmentPenaltyTable from "@/components/reports/adjustmentPenaltyTable";
 import RawBillingDataTable from "@/components/reports/rawBillingDataTable";
 import TripCompletionVendorWiseTable from "@/components/reports/tripCompletionVendorWiseTable";
+import ReportService from "@/services/report.service";
+import xlsx from "json-as-xlsx";
 
 const MainComponent = () => {
   const [office, setOffice] = useState([]);
@@ -23,17 +24,16 @@ const MainComponent = () => {
     date: moment().format("YYYY-MM-DD"),
     reportType: "Adjustment Penalty Reports",
   });
-  const [list, setList] = useState([]);
+  const [adjustmentPenaltyReport, setAdjustmentPenaltyReport] = useState([]);
+  const [rawBillingReport, setRawBillingReport] = useState([]);
+  const [tripCompletionReport, setTripCompletionReport] = useState([]);
   const dispatch = useDispatch();
-  const [pagination, setPagination] = useState({
-    page: 0,
-    size: 100,
-  });
+  const [loading, setLoading] = useState(false);
 
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
-
-  const [selectedTable, setSelectedTable] = useState(<AdjustmentPenaltyTable list={list} />);
-  const [reportHeading, setReportHeading] = useState("Adjustment Penalty Reports");
+  const [reportHeading, setReportHeading] = useState(
+    "Adjustment Penalty Reports"
+  );
 
   const reports = [
     "Adjustment Penalty Reports",
@@ -86,9 +86,52 @@ const MainComponent = () => {
     setSearchValues(allSearchValue);
   };
 
+  // const fetchSummary = async () => {
+  //   try {
+  //     setLoading(true);
+  //     await new Promise((resolve) => setTimeout(resolve, 5000));
+  //     let allSearchValues = { ...searchValues };
+  //     Object.keys(allSearchValues).forEach((objKey) => {
+  //       if (
+  //         allSearchValues[objKey] === null ||
+  //         allSearchValues[objKey] === ""
+  //       ) {
+  //         delete allSearchValues[objKey];
+  //       }
+  //     });
+  //     switch (searchValues.reportType) {
+  //       case "Adjustment Penalty Reports":
+  //         setReportHeading("Adjustment Penalty Reports");
+  //         setSelectedTable(<AdjustmentPenaltyTable list={list} isLoading={loading} />);
+  //         break;
+  //       case "Raw Billing Data Reports":
+  //         setReportHeading("Raw Billing Data Reports");
+  //         setSelectedTable(<RawBillingDataTable list={rawBillingReport} isLoading={loading} />);
+  //         const response = await ReportService.RawBillingReport(
+  //           allSearchValues
+  //         );
+  //         console.log("RawBillingReport data >>>>", response.data);
+  //         setRawBillingReport(response.data);
+  //         break;
+  //       case "Trip Completion Vendor-wise Reports":
+  //         setReportHeading("Trip Completion Vendor-wise Reports");
+  //         setSelectedTable(<TripCompletionVendorWiseTable list={list} isLoading={loading} />);
+  //         break;
+  //       default:
+  //         setReportHeading("Adjustment Penalty Reports");
+  //         setSelectedTable(<AdjustmentPenaltyTable list={list} isLoading={loading} />);
+  //     }
+  //   } catch (err) {
+  //     console.log(err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const fetchSummary = async () => {
     try {
-      let params = new URLSearchParams(pagination);
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
         if (
@@ -98,38 +141,373 @@ const MainComponent = () => {
           delete allSearchValues[objKey];
         }
       });
-      const response = await DispatchService.getTripSearchByBean(
-        params,
-        allSearchValues
-      );
-      console.log("response data", response.data.data);
-      // setList(data);
-      // var requestType = data[0].requestType;
-      switch (searchValues.reportType) {
-        case "Adjustment Penalty Reports":
-          setReportHeading("Adjustment Penalty Reports");
-          setSelectedTable(<AdjustmentPenaltyTable list={list} />);
-          break;
-        case "Raw Billing Data Reports":
-          setReportHeading("Raw Billing Data Reports");
-          setSelectedTable(<RawBillingDataTable list={list} />);
-          break;
-        case "Trip Completion Vendor-wise Reports":
-          setReportHeading("Trip Completion Vendor-wise Reports");
-          setSelectedTable(<TripCompletionVendorWiseTable list={list} />);
-          break;
-        default:
-          setReportHeading("Adjustment Penalty Reports");
-          setSelectedTable(<AdjustmentPenaltyTable list={list} />);
+      if (searchValues.reportType === "Adjustment Penalty Reports") {
+        setReportHeading("Adjustment Penalty Reports");
+      } else if (searchValues.reportType === "Raw Billing Data Reports") {
+        setReportHeading("Raw Billing Data Reports");
+        const response = await ReportService.RawBillingReport(allSearchValues);
+        console.log("RawBillingReport data >>>>", response.data);
+        setRawBillingReport(response.data);
+      } else if (
+        searchValues.reportType === "Trip Completion Vendor-wise Reports"
+      ) {
+        setReportHeading("Trip Completion Vendor-wise Reports");
       }
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const downloadReport = () => {
+    if (reportHeading) {
+      if (reportHeading && reportHeading === "Adjustment Penalty Reports") {
+        var data = [
+          {
+            sheet: reportHeading,
+            columns: [
+              {
+                value: "date",
+                label: "Date",
+              },
+              {
+                value: "tripId",
+                label: "Trip ID",
+              },
+              {
+                value: "vendorName",
+                label: "Vendor Name",
+              },
+              {
+                value: "cabID",
+                label: "Cab ID",
+              },
+              {
+                value: "registrationNo",
+                label: "Registration no.",
+              },
+              {
+                value: "seatingCapacity",
+                label: "Seating Capacity",
+              },
+              {
+                value: "penaltyType",
+                label: "Penalty Type",
+              },
+              {
+                value: "amount",
+                label: "Amount",
+              },
+              {
+                value: "comment",
+                label: "Comment",
+              },
+            ],
+            content: adjustmentPenaltyReport,
+          },
+        ];
+      } else if (
+        reportHeading &&
+        reportHeading === "Raw Billing Data Reports"
+      ) {
+        var data = [
+          {
+            sheet: reportHeading,
+            columns: [
+              {
+                label: "Facility",
+                value: "facility",
+              },
+              {
+                label: "Offices",
+                value: "offices",
+              },
+              {
+                label: "Trip Office",
+                value: "tripOffice",
+              },
+              {
+                label: "Vendor",
+                value: "vendor",
+              },
+              {
+                label: "Billing Contract",
+                value: "billingContract",
+              },
+              {
+                label: "Cab ID",
+                value: "cabId",
+              },
+              {
+                label: "Registration",
+                value: "registration",
+              },
+              {
+                label: "Seating Capacity",
+                value: "seatingCapacity",
+              },
+              {
+                label: "Duty Start",
+                value: "dutyStart",
+              },
+              {
+                label: "Duty End",
+                value: "dutyEnd",
+              },
+              {
+                label: "Trip Source",
+                value: "tripSource",
+              },
+              {
+                label: "Trip Type",
+                value: "tripType",
+              },
+              {
+                label: "Shift",
+                value: "shift",
+              },
+              {
+                label: "Direction",
+                value: "direction",
+              },
+              {
+                label: "Trip ID",
+                value: "tripId",
+              },
+              {
+                label: "Trip Date",
+                value: "tripDate",
+              },
+              {
+                label: "Trip Start Time",
+                value: "tripStartTime",
+              },
+              {
+                label: "Trip End Time",
+                value: "tripEndTime",
+              },
+              {
+                label: "Traveled Employee Count",
+                value: "traveledEmployeeCount",
+              },
+              {
+                label: "Planned Trip Employees",
+                value: "plannedTripEmployees",
+              },
+              {
+                label: "Garage KM",
+                value: "garageKM",
+              },
+              {
+                label: "Audit Results",
+                value: "auditResults",
+              },
+              {
+                label: "Billing Comment",
+                value: "billingComment",
+              },
+              {
+                label: "Issue Resolved By",
+                value: "issueResolvedBy",
+              },
+              {
+                label: "Audit Done By",
+                value: "auditDoneBy",
+              },
+              {
+                label: "Location",
+                value: "location",
+              },
+              {
+                label: "Start Location Address",
+                value: "startLocationAddress",
+              },
+              {
+                label: "Start Location Landmark",
+                value: "startLocationLandmark",
+              },
+              {
+                label: "End Location Address",
+                value: "endLocationAddress",
+              },
+              {
+                label: "End Location Landmark",
+                value: "endLocationLandmark",
+              },
+              {
+                label: "Traveled Escort Count",
+                value: "traveledEscortCount",
+              },
+              {
+                label: "Planned Escort Count",
+                value: "plannedEscortCount",
+              },
+              {
+                label: "Escort Traveled",
+                value: "escortTraveled",
+              },
+              {
+                label: "Physical ID",
+                value: "physicalId",
+              },
+              {
+                label: "Trip Reference KM",
+                value: "tripReferenceKMs",
+              },
+              {
+                label: "Empty Leg Reference KM",
+                value: "emptyLegReferenceKM",
+              },
+              {
+                label: "Trip Distance Approved KMs",
+                value: "tripDistanceApprovedKMs",
+              },
+              {
+                label: "Empty Leg Approved KM",
+                value: "emptyLegApprovedKM",
+              },
+              {
+                label: "Duty KM",
+                value: "dutyKM",
+              },
+              {
+                label: "Trip Audited",
+                value: "tripAudited",
+              },
+              {
+                label: "Trip Status",
+                value: "tripStatus",
+              },
+              {
+                label: "Tripsheet Comment",
+                value: "tripSheetComment",
+              },
+            ],
+            content: rawBillingReport,
+          },
+        ];
+      } else if (
+        reportHeading &&
+        reportHeading === "Trip Completion Vendor-wise Reports"
+      ) {
+        var data = [
+          {
+            sheet: "Trip Completion Report",
+            columns: [
+              {
+                value: "bunitId",
+                label: "Bunit Id",
+              },
+              {
+                value: "office",
+                label: "Office",
+              },
+              {
+                value: "vendorId",
+                label: "Vendor Id",
+              },
+              {
+                value: "tripDate",
+                label: "Trip Date",
+              },
+              {
+                value: "tripId",
+                label: "Trip Id",
+              },
+              {
+                value: "tripDirection",
+                label: "Trip Direction",
+              },
+              {
+                value: "shift",
+                label: "Shift",
+              },
+              {
+                value: "source",
+                label: "Source",
+              },
+              {
+                value: "tripStatus",
+                label: "Trip Status",
+              },
+              {
+                value: "delayReason",
+                label: "Delay Reason",
+              },
+              {
+                value: "cabType",
+                label: "Cab Type",
+              },
+              {
+                value: "actualVendorCabId",
+                label: "Actual Vendor Cab Id",
+              },
+              {
+                value: "actualCabRegistration",
+                label: "Actual Cab Registration",
+              },
+              {
+                value: "traveledKm",
+                label: "Traveled Km",
+              },
+              {
+                value: "tripStatusReason",
+                label: "Trip Status Reason",
+              },
+              {
+                value: "billingZone",
+                label: "Billing Zone",
+              },
+              {
+                value: "actualEscort",
+                label: "Actual Escort",
+              },
+              {
+                value: "landmark",
+                label: "Landmark",
+              },
+              {
+                value: "plannedcabRegistration",
+                label: "Planned cab Registration",
+              },
+              {
+                value: "plannedkm",
+                label: "Planned km",
+              },
+              {
+                value: "plannedEmpCount",
+                label: "Planned Emp Count",
+              },
+              {
+                value: "travelledEmpCount",
+                label: "Travelled Emp Count",
+              },
+              {
+                value: "nodalPoint",
+                label: "Nodal Point",
+              },
+            ],
+            content: tripCompletionReport,
+          },
+        ];
+      }
+    }
+
+    var settings = {
+      fileName: reportHeading,
+      extraLength: 20,
+      writeMode: "writeFile",
+      writeOptions: {},
+      RTL: false,
+    };
+
+    xlsx(data, settings);
+  };
+
   useEffect(() => {
-    console.log("list>>>", list);
-  }, [list]);
+    console.log("rawBillingReport data>>>", rawBillingReport);
+  }, [rawBillingReport]);
 
   useEffect(() => {
     if (!shiftTypes?.length) {
@@ -156,7 +534,7 @@ const MainComponent = () => {
             // backgroundColor: "yellow"
           }}
         >
-          <div className="filterContainer" style={{}}>
+          <div className="filterContainer" style={{ flexWrap: "wrap" }}>
             {office.length > 0 && (
               <div style={{ minWidth: "180px" }} className="form-control-input">
                 <FormControl fullWidth>
@@ -289,7 +667,6 @@ const MainComponent = () => {
             borderRadius: "20px 20px 0 0",
           }}
         >
-          
           <h3>{reportHeading}</h3>
           <div style={{ display: "flex" }}>
             <button
@@ -299,12 +676,33 @@ const MainComponent = () => {
                 padding: "10px",
                 margin: "0 10px",
               }}
+              onClick={() => downloadReport()}
             >
               Download File
             </button>
           </div>
         </div>
-        {selectedTable}
+        {reportHeading === "" && (
+          <AdjustmentPenaltyTable
+            list={adjustmentPenaltyReport}
+            isLoading={loading}
+          />
+        )}
+        {reportHeading === "Adjustment Penalty Reports" && (
+          <AdjustmentPenaltyTable
+            list={adjustmentPenaltyReport}
+            isLoading={loading}
+          />
+        )}
+        {reportHeading === "Raw Billing Data Reports" && (
+          <RawBillingDataTable list={rawBillingReport} isLoading={loading} />
+        )}
+        {reportHeading === "Trip Completion Vendor-wise Reports" && (
+          <TripCompletionVendorWiseTable
+            list={tripCompletionReport}
+            isLoading={loading}
+          />
+        )}
       </div>
     </div>
   );

@@ -20,6 +20,8 @@ import helpdesk from "@/layouts/helpdesk";
 import TripFeedbackTable from "@/components/helpdesk/tripFeedbackTable";
 import TripFeedbackModal from "@/components/helpdesk/tripFeedbackModal";
 import TripService from "@/services/trip.service";
+import { toggleToast } from "@/redux/company.slice";
+import LoaderComponent from "@/components/loader";
 
 const style = {
   position: "absolute",
@@ -55,6 +57,7 @@ const MainComponent = () => {
   const [selectedUserEmail, setSelectedUserEmail] = useState();
   const [feedbackId, setFeedbackId] = useState("");
   // const [feedbackStatus, setFeedbackStatus] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const rating = ["1", "2", "3", "4", "5"];
 
@@ -148,6 +151,8 @@ const MainComponent = () => {
 
   const fetchSummary = async () => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       let params = new URLSearchParams(pagination);
       console.log("Search values>>>", searchValues);
       let allSearchValues = { ...searchValues };
@@ -165,8 +170,18 @@ const MainComponent = () => {
       );
       console.log("feedback response data", response.data.data);
       setList(response.data.data);
+      if (response.status === 500) {
+        dispatch(
+          toggleToast({
+            message: `Failed! Please try again later.`,
+            type: "error",
+          })
+        );
+      }
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -174,6 +189,8 @@ const MainComponent = () => {
     // console.log("New Status>>>", newStatus);
     try {
       console.log("New Status>>>", newStatus);
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const response = await TripService.tripFeedbackUpdateStatus(
         feedbackId,
         newStatus
@@ -192,6 +209,8 @@ const MainComponent = () => {
       }
     } catch (err) {
       console.log("Error updating feedback status", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -405,6 +424,7 @@ const MainComponent = () => {
         <TripFeedbackTable
           list={list}
           onRowsSelected={(row) => handleRowsSelected(row)}
+          isLoading={loading}
         />
       </div>
     </div>

@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux';
 import { useFormik } from "formik";
 import { validationSchema } from './office-mapping/validationSchema';
 import { toggleToast } from '@/redux/company.slice';
+import LoaderComponent from '../loader';
 
 const AddOfficeMapping = ({
     onUserSuccess
@@ -15,6 +16,7 @@ const AddOfficeMapping = ({
         primaryOfficeId: "",
         secondaryOfficeId: []
     });
+    const [loading, setLoading] = useState(false);
     
     const formik = useFormik({
         initialValues: initialValues,
@@ -25,12 +27,16 @@ const AddOfficeMapping = ({
                 secondaryOfficeId: values.secondaryOfficeId.toString()
             };
             try {
+                setLoading(true);
+                // await new Promise((resolve) => setTimeout(resolve, 5000));
                 await OfficeService.createOfficeMapping({officeMappingDTO: {...initialValues, ...allValues}});
                 dispatch(toggleToast({ message: 'Employee updated successfully!', type: 'success' }));
                 onUserSuccess(true);
             } catch (e) {
                 console.error(e);
                 dispatch(toggleToast({ message: e?.response?.data?.message || 'Error adding employee, please try again later!', type: 'error' }));
+            } finally {
+                setLoading(false);
             }
         }
     });
@@ -114,6 +120,30 @@ const AddOfficeMapping = ({
                     </div>
                 </div>
             </div>
+            {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "fixed",
+                // backgroundColor: "#000000",
+                zIndex: 1,
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                opacity: 1,
+                color: "#000000",
+                // height: "100vh",
+                // width: "100vw",
+              }}
+            >
+              <LoaderComponent />
+            </div>
+            ) : (
+              " "
+            )}
         </div>
     );
 }

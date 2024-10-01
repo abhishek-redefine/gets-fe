@@ -12,6 +12,7 @@ import ComplianceService from "@/services/compliance.service";
 import MasterDataService from "@/services/masterdata.service";
 import { useDispatch } from "react-redux";
 import EhsEntryComponent from "./ehsEntryComponent";
+import LoaderComponent from "../loader";
 
 const DriverEhsEntry = () => {
   const headers = [
@@ -55,6 +56,7 @@ const DriverEhsEntry = () => {
     pageSize: 100,
   });
   const [firstEhs, setFirstEhs] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const onChangeDriverHandler = (newValue, name, key) => {
     console.log("on change handler", newValue);
@@ -63,7 +65,7 @@ const DriverEhsEntry = () => {
   const searchDriverEhs = async (id) => {
     try {
       const response = await ComplianceService.getSelectedDriverEHS(id);
-      const {data} = response || {};
+      const { data } = response || {};
       console.log(data);
     } catch (err) {
       console.log(err);
@@ -102,12 +104,16 @@ const DriverEhsEntry = () => {
   };
   const getAllEhsByDriverId = async (driverId) => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const response = await ComplianceService.getAllEHSByDriverId(driverId);
       const { data } = response || {};
       console.log(data.driverEhsDTO);
       setEhsList(data.driverEhsDTO);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -234,10 +240,27 @@ const DriverEhsEntry = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {ehsList.length > 0 &&
-                      ehsList.map((item, i) => {
-                        return <EhsEntryComponent listing={item} key={i} ehsStatusList={ehsStatusList} type={"driver"}/>;
-                      })}
+                    {loading ? (
+                      <tr>
+                        <td colSpan={headers.length}>
+                          <LoaderComponent />
+                        </td>
+                      </tr>
+                    ) : (
+                      <div>
+                        {ehsList.length > 0 &&
+                          ehsList.map((item, i) => {
+                            return (
+                              <EhsEntryComponent
+                                listing={item}
+                                key={i}
+                                ehsStatusList={ehsStatusList}
+                                type={"driver"}
+                              />
+                            );
+                          })}
+                      </div>
+                    )}
                   </tbody>
                 </table>
               </div>

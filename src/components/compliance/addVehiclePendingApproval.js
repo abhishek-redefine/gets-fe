@@ -12,6 +12,7 @@ import TextField from "@mui/material/TextField";
 import IframeComponent from "../iframe/Iframe";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
+import LoaderComponent from "../loader";
 
 const style = {
   position: "absolute",
@@ -23,7 +24,11 @@ const style = {
   height: 600,
 };
 
-const AddVehiclePendingApproval = ({ ViewDetailsData,viewVehicleOpen,isView }) => {
+const AddVehiclePendingApproval = ({
+  ViewDetailsData,
+  viewVehicleOpen,
+  isView,
+}) => {
   const [initialValues, setInitialValues] = useState({
     vehicleId: "",
     vehicleRegistrationNumber: "",
@@ -74,6 +79,7 @@ const AddVehiclePendingApproval = ({ ViewDetailsData,viewVehicleOpen,isView }) =
   const handleModalClose = () => setOpenModal(false);
   const [documentUrl, setDocumentUrl] = useState();
   const [documentTitle, setDocumentTitle] = useState();
+  const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -87,30 +93,37 @@ const AddVehiclePendingApproval = ({ ViewDetailsData,viewVehicleOpen,isView }) =
     link.click();
   };
 
-  const approveVehicle = async (approveOrReject,msg="approved") => {
-    const response = await ComplianceService.approveVehicle(
-      initialValues.id,
-      approveOrReject,
-      msg
-    );
-    if (response.status === 200) {
-      if (approveOrReject) {
-        dispatch(
-          toggleToast({
-            message: "Vehicle approved successfully!",
-            type: "success",
-          })
-        );
-        viewVehicleOpen();
-      } else {
-        dispatch(
-          toggleToast({
-            message: "Vehicle rejected successfully!",
-            type: "success",
-          })
-        );
-        viewVehicleOpen();
+  const approveVehicle = async (approveOrReject, msg = "approved") => {
+    try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
+      const response = await ComplianceService.approveVehicle(
+        initialValues.id,
+        approveOrReject,
+        msg
+      );
+      if (response.status === 200) {
+        if (approveOrReject) {
+          dispatch(
+            toggleToast({
+              message: "Vehicle approved successfully!",
+              type: "success",
+            })
+          );
+          viewVehicleOpen();
+        } else {
+          dispatch(
+            toggleToast({
+              message: "Vehicle rejected successfully!",
+              type: "success",
+            })
+          );
+          viewVehicleOpen();
+        }
       }
+    } catch (e) {
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -187,7 +200,10 @@ const AddVehiclePendingApproval = ({ ViewDetailsData,viewVehicleOpen,isView }) =
                 type="button"
                 onClick={() => {
                   setDocumentUrl(
-                    ViewDetailsData.registrationCertificateUrl.replace("/getsdev1/", "/")
+                    ViewDetailsData.registrationCertificateUrl.replace(
+                      "/getsdev1/",
+                      "/"
+                    )
                   );
                   handleModalOpen();
                 }}
@@ -233,7 +249,10 @@ const AddVehiclePendingApproval = ({ ViewDetailsData,viewVehicleOpen,isView }) =
                 type="button"
                 onClick={() => {
                   setDocumentUrl(
-                    ViewDetailsData.roadTaxCertificateUrl.replace("/getsdev1/", "/")
+                    ViewDetailsData.roadTaxCertificateUrl.replace(
+                      "/getsdev1/",
+                      "/"
+                    )
                   );
                   handleModalOpen();
                 }}
@@ -256,7 +275,10 @@ const AddVehiclePendingApproval = ({ ViewDetailsData,viewVehicleOpen,isView }) =
                 type="button"
                 onClick={() => {
                   setDocumentUrl(
-                    ViewDetailsData.pollutionCertificateUrl.replace("/getsdev1/", "/")
+                    ViewDetailsData.pollutionCertificateUrl.replace(
+                      "/getsdev1/",
+                      "/"
+                    )
                   );
                   handleModalOpen();
                 }}
@@ -279,7 +301,10 @@ const AddVehiclePendingApproval = ({ ViewDetailsData,viewVehicleOpen,isView }) =
                 type="button"
                 onClick={() => {
                   setDocumentUrl(
-                    ViewDetailsData.fitnessCertificateUrl.replace("/getsdev1/", "/")
+                    ViewDetailsData.fitnessCertificateUrl.replace(
+                      "/getsdev1/",
+                      "/"
+                    )
                   );
                   handleModalOpen();
                 }}
@@ -342,30 +367,28 @@ const AddVehiclePendingApproval = ({ ViewDetailsData,viewVehicleOpen,isView }) =
             )}
           </div>
         </div>
-        {
-          !isView ?
-            <div className="addBtnContainer" style={{ justifyContent: "end" }}>
-              <button className="btn btn-secondary" onClick={() => handleOpen()}>
-                Reject
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={() => approveVehicle(true)}
-              >
-                Approve
-              </button>
-            </div>
-            :
-            <div className="addBtnContainer" style={{ justifyContent: "end" }}>
-              <button
-                className="btn btn-primary"
-                onClick={() => viewVehicleOpen()}
-              >
-                Back
-              </button>
-            </div>
-        }
-        
+        {!isView ? (
+          <div className="addBtnContainer" style={{ justifyContent: "end" }}>
+            <button className="btn btn-secondary" onClick={() => handleOpen()}>
+              Reject
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={() => approveVehicle(true)}
+            >
+              Approve
+            </button>
+          </div>
+        ) : (
+          <div className="addBtnContainer" style={{ justifyContent: "end" }}>
+            <button
+              className="btn btn-primary"
+              onClick={() => viewVehicleOpen()}
+            >
+              Back
+            </button>
+          </div>
+        )}
       </div>
       <Dialog
         open={open}
@@ -402,7 +425,7 @@ const AddVehiclePendingApproval = ({ ViewDetailsData,viewVehicleOpen,isView }) =
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button type="submit" onClick={() => approveVehicle(false,msg)}>
+          <Button type="submit" onClick={() => approveVehicle(false, msg)}>
             Reject Vehicle
           </Button>
         </DialogActions>
@@ -417,6 +440,30 @@ const AddVehiclePendingApproval = ({ ViewDetailsData,viewVehicleOpen,isView }) =
           <IframeComponent url={documentUrl} title={documentTitle} />
         </Box>
       </Modal>
+      {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "fixed",
+            // backgroundColor: "#000000",
+            zIndex: 1,
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            opacity: 1,
+            color: "#000000",
+            // height: "100vh",
+            // width: "100vw",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        ""
+      )}
     </div>
   );
 };
