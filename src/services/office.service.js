@@ -268,6 +268,32 @@ const getPreferenceById = (id) => {
     });
 };
 
+const raiseRequest = (data) => {
+  ///api/v1/emp/raiseRequest
+  console.log("Raised request address/phone: ", data);
+  return axiosInstance
+    .post(
+      `${API_PATH.API_VERSION}${API_PATH.EMP}${API_PATH.RAISE_REQUEST}`,
+      data
+    )
+    .then((response) => {
+      return response;
+    });
+};
+
+ 
+ const getUserByEmail = (email) => {
+  ///api/v1/emp/findByEmail/{email}
+  ///api/v1/emp/findByEmail/saifali@gmail.com
+  return axiosInstance
+    .get(`${API_PATH.API_VERSION}${API_PATH.EMP}${API_PATH.FIND_BY_EMAIL}/${email}`)
+    .then((response) => {
+      return response;
+    });
+};
+
+
+
 const OfficeService = {
   getAllOffices,
   createEmployee,

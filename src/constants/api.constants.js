@@ -171,6 +171,4 @@ export const API_PATH = {
   REPORT : '/report',
   RAW_BILLING : '/rawBilling',
   NO_SHOW_SUMMARY_REPORT : '/tripNoShowRosterReportSummary'
-
-
 };
