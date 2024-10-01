@@ -4,6 +4,8 @@ import {
   Paper,
   FormControl,
   InputLabel,
+  Select,
+  MenuItem
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import OfficeService from "@/services/office.service";
@@ -13,6 +15,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { TimeField } from "@mui/x-date-pickers/TimeField";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
+import BillingService from "@/services/billing.service";
 
 const ScrollablePaper = (props) => (
   <Paper
@@ -25,26 +28,30 @@ const ScrollablePaper = (props) => (
 );
 
 const AddEmployeeModal = (props) => {
-  const { onClose, onAddEmployeeData } = props;
+  const { onClose, onAddEmployeeData, tripDetails,officeId } = props;
 
   const dispatch = useDispatch();
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [searchedUsers, setSearchedUsers] = useState([]);
   const [isSearchUser, setIsSearchUser] = useState(false);
+  const [empDetails, setEmpDetails] = useState(null);
+
+  const [statusList, setStatusList] = useState(["Completed","No Show"]);
 
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
   const [values, setValues] = useState({
-    employeeId: selectedEmployeeId,
-    signInTime: "",
-    signOutTime: "",
+    email: selectedEmployeeId,
+    signInTime: "00:00",
+    signOutTime: "00:00",
     tripStatus: "",
+    vehicleReportingTime : "00:00",
   });
   const [error, setError] = useState(false);
 
   const onChangeHandler = (val) => {
     console.log("val>>>", val);
     if (val?.empId) {
-      const alreadySelected = selectedUsers.some((user) => user === val.empId);
+      const alreadySelected = selectedUsers.some((user) => user === val.data);
 
       if (alreadySelected) {
         setSelectedEmployeeId(null);
@@ -55,10 +62,11 @@ const AddEmployeeModal = (props) => {
           })
         );
       } else {
-        setSelectedEmployeeId(val.empId);
-        console.log("Saved Employee ID: ", val.empId);
-        setSelectedUsers([...selectedUsers, val.empId]);
+        setSelectedEmployeeId(val.data);
+        console.log("Saved Employee ID: ", val.data);
+        setSelectedUsers([...selectedUsers, val.data]);
         console.log("selecetd employee", selectedUsers);
+        getEmployeeDetails(val.empId);
       }
     } else {
       setSelectedEmployeeId(null);
@@ -92,11 +100,11 @@ const AddEmployeeModal = (props) => {
     if (!selectedEmployeeId) {
       setError((prevError) => ({
         ...prevError,
-        employeeId: "Employee Id is mandatory.",
+        email: "Employee Id is mandatory.",
       }));
       hasError = true;
     } else {
-      setError((prevError) => ({ ...prevError, employeeId: "" }));
+      setError((prevError) => ({ ...prevError, email: "" }));
     }
 
     if (!values.signInTime) {
@@ -152,13 +160,10 @@ const AddEmployeeModal = (props) => {
 
     const employeeData = {
       ...values,
-      employeeId: selectedEmployeeId,
+      email: selectedEmployeeId,
     };
     console.log("Added employee details>>", employeeData);
-    onAddEmployeeData(employeeData);
-    setSelectedUsers([...selectedUsers, selectedEmployeeId]);
-    setError({});
-    onClose();
+    addTripMember(employeeData);
     dispatch(
       toggleToast({
         message: "Employee added successfully!",
@@ -166,6 +171,37 @@ const AddEmployeeModal = (props) => {
       })
     );
   };
+
+  const addTripMember = async(data) =>{
+    try{
+      let payload = {...data};
+      payload.officeId = officeId;
+      payload.tripId = tripDetails.tripId;
+      payload.tripState = "END";
+      payload.tripMemberType = "frombilling";
+      payload.signInGeo = empDetails.geoCode;
+      payload.signOutGeo = "28.61108,77.36119";
+      const response = await BillingService.addMember(payload);
+      console.log(response.data);
+      // onAddEmployeeData(employeeData);
+      // setSelectedUsers([...selectedUsers, selectedEmployeeId]);
+      setError({});
+      onClose();
+    }catch(err){
+      console.log(err);
+    }
+  }
+
+  const getEmployeeDetails = async(id) =>{
+    try{
+      const response = await OfficeService.getEmployeeDetails(id);
+      const data = response.data;
+      setEmpDetails(data);
+      console.log(response.data);
+    }catch(err){
+      console.log(err);
+    }
+  }
 
   useEffect(() => {
     console.log("selected users: ", selectedUsers);
@@ -211,8 +247,8 @@ const AddEmployeeModal = (props) => {
               {...params}
               label="Search by employee ID *"
               onChange={searchForRM}
-              error={!!error.employeeId}
-              helperText={error.employeeId}
+              error={!!error.email}
+              helperText={error.email}
             />
           )}
         />
@@ -271,21 +307,50 @@ const AddEmployeeModal = (props) => {
           </LocalizationProvider>
         </FormControl>
       </div>
-      <div style={{ minWidth: "180px" }} className="form-control-input">
-        <FormControl variant="outlined">
-          {/* <InputLabel id="status-label">Trip Status *</InputLabel> */}
-          <TextField
-            style={{ width: "240px" }}
-            id="outlined-basic"
-            name="tripStatus"
-            label="Trip Status *"
+      <div style={{ minWidth: "240px" }} className="form-control-input">
+        <FormControl required>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <TimeField
+              label="Vehicle Reporting Time"
+              format="HH:mm"
+              value={dayjs()
+                .hour(Number(values.vehicleReportingTime.slice(0, 2)))
+                .minute(Number(values.vehicleReportingTime.slice(3, 5)))}
+              onChange={(e) => {
+                var ShiftTime = e.$d.toLocaleTimeString("it-IT").slice(0, -3);
+                handleFilterChange({
+                  target: { name: "vehicleReportingTime", value: ShiftTime },
+                });
+              }}
+              style={{ width: "240px" }}
+              inputProps={{
+                style: {
+                  fontFamily: "DM Sans",
+                },
+              }}
+            />
+          </LocalizationProvider>
+        </FormControl>
+      </div>
+      <div style={{ minWidth: "240px" }} className="form-control-input">
+        <FormControl fullWidth>
+          <InputLabel id="trip-status-label">Trip Status</InputLabel>
+          <Select
+            style={{ width: "240px", backgroundColor: "white" }}
+            labelId="trip-status-label"
+            id="tripStatus"
             value={values.tripStatus}
-            variant="outlined"
-            fullWidth
+            name="tripStatus"
+            label="tripStatus"
             onChange={handleFilterChange}
-            error={!!error.tripStatus}
-            helperText={error.tripStatus}
-          />
+          >
+            {!!statusList?.length &&
+              statusList.map((status, idx) => (
+                <MenuItem key={idx} value={status}>
+                  {status}
+                </MenuItem>
+              ))}
+          </Select>
         </FormControl>
       </div>
       <div style={{ display: "flex", justifyContent: "center" }}>

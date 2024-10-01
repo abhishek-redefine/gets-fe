@@ -92,7 +92,7 @@ const TripSheetEntryDetailsTable = ({
       },
     },
     autoResetPageIndex: false,
-    enableRowOrdering: true,
+    // enableRowOrdering: true,
     enableSorting: false,
     muiRowDragHandleProps: ({ table }) => ({
       onDragEnd: () => {

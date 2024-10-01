@@ -37,7 +37,7 @@ const calculateRoutewiseDistance = async (tripId, routeWiseDistance) => {
 
 const deleteMember = async (tripId, memberId) => {
     let url = `${API_PATH.API_VERSION}${API_PATH.TRIP}${API_PATH.DELETE_MEMBER}/${tripId}/${memberId}`;
-    return axiosInstance.post(url).then((response) => {
+    return axiosInstance.delete(url).then((response) => {
         return response;
     })
 }
@@ -107,6 +107,20 @@ const billingTripMember = async (tripId) => {
     })
 }
 
+const getTripHistory = async(tripId) =>{
+    let url = `${API_PATH.API_VERSION}${API_PATH.TRIP}${API_PATH.TRIP_HISTORY}/${tripId}`;
+    return axiosInstance.get(url).then((response)=>{
+        return response;
+    });
+}
+
+const markNoShow = async(tripId, id, flag) =>{
+    let url = `${API_PATH.API_VERSION}${API_PATH.BILLING}${API_PATH.MARK_NO_SHOW}/${tripId}/${id}/${flag}`;
+    return axiosInstance.put(url).then((response)=>{
+        return response;
+    })
+}
+
 const BillingService = {
     billingIssuesSearchByBean,
     addMember,
@@ -120,7 +134,9 @@ const BillingService = {
     updateTrip,
     billingOpsIssueSearchByBean,
     auditApproval,
-    billingAuditSearchByBean
+    billingAuditSearchByBean,
+    getTripHistory,
+    markNoShow
 }
 
 export default BillingService;

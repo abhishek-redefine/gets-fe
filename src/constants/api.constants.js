@@ -170,5 +170,7 @@ export const API_PATH = {
   PREFERENCE : "/preference", 
   REPORT : '/report',
   RAW_BILLING : '/rawBilling',
-  NO_SHOW_SUMMARY_REPORT : '/tripNoShowRosterReportSummary'
+  NO_SHOW_SUMMARY_REPORT : '/tripNoShowRosterReportSummary',
+  TRIP_HISTORY: "/tripHistory",
+  MARK_NO_SHOW: "/markNoShow",
 };

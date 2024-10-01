@@ -14,6 +14,14 @@ const TripSheetEntryTable = ({list, onRowsSelected, selectedRow}) => {
   const columns = useMemo(
     () => [
       {
+        accessorKey: 'id', 
+        header: 'Trip ID',
+        size: 150,
+        Cell: ({ cell }) => {
+          return <div>TRIP-{cell.getValue()}</div>;
+        },
+      },
+      {
         accessorKey: 'vehicleId',
         header: 'Vehicle ID',
         size: 150,
@@ -29,23 +37,11 @@ const TripSheetEntryTable = ({list, onRowsSelected, selectedRow}) => {
         size: 150,
       },
       {
-        accessorKey: 'vendor',
-        header: 'Vendor',
-        size: 150,
-      },
-      {
         accessorKey: 'date',
         header: 'Date',
         size: 100,
       },
-      {
-        accessorKey: 'id', 
-        header: 'Trip ID',
-        size: 150,
-        Cell: ({ cell }) => {
-          return <div>TRIP-{cell.getValue()}</div>;
-        },
-      },
+      
       {
         accessorKey: 'km',
         header: 'Km.',
@@ -55,11 +51,6 @@ const TripSheetEntryTable = ({list, onRowsSelected, selectedRow}) => {
         accessorKey: 'hrs',
         header: 'Hrs',
         size: 100,
-      },
-      {
-        accessorKey: 'issueType',
-        header: 'Issue Type',
-        size: 150,
       },
       {
         accessorKey: 'shiftTime',

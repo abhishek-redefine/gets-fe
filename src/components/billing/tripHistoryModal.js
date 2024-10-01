@@ -1,41 +1,20 @@
 import { Autocomplete, Box, Grid, TextField } from "@mui/material";
+import moment from "moment";
 import React, { useEffect, useState } from "react";
 
 const TripHistoryModal = (props) => {
-  const { onClose } = props;
+  const { onClose,historyData } = props;
 
   const handleModalClose = () => {
     console.log("modal closed");
     onClose();
   };
 
-  const editedByData = [
-    {
-      editedBy: "Mohit.Kumar@ganagatourism.com",
-      changes: ["Marked No Show to employee name", "Km changed from 40 to 42"],
-      dateTime: "12-08-2024 / 09:20",
-    },
-    {
-      editedBy: "Jane.Doe@ganagatourism.com",
-      changes: ["Km changed from 30 to 33", "Marked No Show to employee name"],
-      dateTime: "11-08-2024 / 14:30",
-    },
-    {
-      editedBy: "John.Smith@ganagatourism.com",
-      changes: ["Marked No Show to employee name"],
-      dateTime: "10-08-2024 / 10:45",
-    },
-    {
-      editedBy: "Emily.Jones@ganagatourism.com",
-      changes: ["Marked No Show to employee name", "Km changed from 50 to 48"],
-      dateTime: "09-08-2024 / 16:20",
-    },
-    {
-      editedBy: "Michael.Brown@ganagatourism.com",
-      changes: ["Km changed from 29 to 30"],
-      dateTime: "08-08-2024 / 11:15",
-    },
-  ];
+  const [editedByData, setEditedByData] = useState(historyData);;
+
+  useEffect(()=>{
+    setEditedByData(historyData);
+  },[historyData])
 
   return (
     <div
@@ -72,10 +51,10 @@ const TripHistoryModal = (props) => {
           >
             <div style={{ display: "flex" }}>
               <p style={{ marginRight: "10px", fontWeight: "bold" }}>
-                Edited By:
+                Edited By: {entry.changedBy}
               </p>
               <p style={{ marginRight: "10px" }}>{entry.editedBy}</p>
-              <p>({entry.dateTime})</p>
+              <p>({entry.changeAt})</p>
             </div>
             <ul
               style={{
@@ -83,9 +62,9 @@ const TripHistoryModal = (props) => {
                 marginTop: "10px",
               }}
             >
-              {entry.changes.map((change, idx) => (
-                <li key={idx}>{change}</li>
-              ))}
+              <li key={index}>{entry.changedDataName}</li>
+              <li>Previous value : {entry.changedDataPreviousValue}</li>
+              <li>Current value: {entry.changedDataPreviousValue}</li>
             </ul>
           </div>
         ))}

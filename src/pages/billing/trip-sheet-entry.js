@@ -216,16 +216,15 @@ const MainComponent = () => {
       const data = [
         {
           vehicleId: "4",
-          vehicleRegistration: "DL04C196",
+          vehicleRegistration: "DL5CQ4456",
           vehicleType: "Cab",
-          vendor: "Active",
-          date: "04-08-2024",
-          id: "747",
-          km: "20",
-          hrs: "4",
-          issueType: "Km. Issue",
-          shiftTime: "09:30",
-          shiftType: "LOGOUT",
+          vendorName: "Ganga Tourism",
+          date: "30-09-2024",
+          id: "1",
+          km: "",
+          hrs: "",
+          shiftTime: "09:00",
+          shiftType: "LOGIN",
         },
       ];
       setList(data);

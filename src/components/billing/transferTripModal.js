@@ -32,7 +32,7 @@ const TransferTripModal = (props) => {
           // const vendorName = rowData.original.vendorName;
           // console.log(vendorName);
           const response = await DispatchService.autoSuggestVehicleByVendor(
-            vendorName,
+            "Ganga Tourism",
             text
           );
           console.log(response.data);
