@@ -13,6 +13,7 @@ import MasterDataService from "@/services/masterdata.service";
 import BillingIssuesTable from "@/components/billing/billingIssuesTable";
 import BillingIssuesDetails from "@/components/billing/billingIssuesDetails";
 import ComplianceService from "@/services/compliance.service";
+import BillingService from "@/services/billing.service";
 
 const MainComponent = () => {
   const [office, setOffice] = useState([]);
@@ -20,14 +21,19 @@ const MainComponent = () => {
     officeId: "",
     shiftType: "",
     tripDate: moment().format("YYYY-MM-DD"),
-    issueName: "Trip Not Ended",
-    vendorName : ""
+    issueName: "DISTANCE_ISSUE",
+    vendorName : "",
+    tripBillingState : "BILLING_ISSUE"
   });
   const [list, setList] = useState([]);
   const [searchVendor, setSearchVendor] = useState([]);
   const [openSearchVendor, setOpenSearchVendor] = useState(false);
 
+  const [tripId, setTripId] = useState(null);
+  const [tripList,setTripList] = useState([]);
+
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
+  const { TripIssue : tripIssue} = useSelector((state) => state.master);
   const dispatch = useDispatch();
   const [pagination, setPagination] = useState({
     page: 0,
@@ -60,8 +66,6 @@ const MainComponent = () => {
     allSearchValues[name] = newValue;
     setSearchValues(allSearchValues);
   };
-
-  const issueCategory = ["Trip Not Ended", "Km. Issue", "Attendance Issue"];
 
   const handleFilterChange = (e) => {
     const { target } = e;
@@ -100,8 +104,10 @@ const MainComponent = () => {
   const resetFilter = () => {
     let allSearchValue = {
       officeId: office[0].officeId,
-      date: moment().format("YYYY-MM-DD"),
       shiftType: "",
+      tripDate: moment().format("YYYY-MM-DD"),
+      issueName: "DISTANCE_ISSUE",
+      vendorName : ""
     };
     setSearchValues(allSearchValue);
   };
@@ -118,31 +124,19 @@ const MainComponent = () => {
           delete allSearchValues[objKey];
         }
       });
-      console.log(allSearchValues);
-      const data = [
-        {
-          vehicleId: "4",
-          vehicleRegistration: "DL04C196",
-          vehicleType: "Cab",
-          vendor: "Active",
-          date: "04-08-2024",
-          id: "747",
-          km: "20",
-          hrs: "4",
-          issueType: "Km. Issue",
-          shiftTime: "09:30",
-          shiftType: "LOGIN",
-        },
-      ];
-      setList(data);
-      console.log("Table data: ", data);
+      const response = await BillingService.billingIssuesSearchByBean(params, allSearchValues);
+      const data = response.data;
+      console.log(data.content);
+      setList(data.content);
     } catch (err) {
       console.log(err);
     }
   };
 
-  const handleTripClick = () => {
+  const handleTripClick = (tripId,row) => {
     setSelectedTripId(true);
+    setTripId(tripId || null);
+    setTripList([row]);
   };
 
   useEffect(() => {
@@ -150,14 +144,23 @@ const MainComponent = () => {
       fetchMasterData(MASTER_DATA_TYPES.SHIFT_TYPE);
     }
     fetchAllOffices();
+    fetchMasterData(MASTER_DATA_TYPES.ISSUE_TYPE);
   }, []);
+
+  useEffect(()=>{
+    console.log("Issue Type:",tripIssue);
+  },[tripIssue])
 
   return (
     <div>
       {selectedTripId ? (
         <BillingIssuesDetails
           onClose={handleTripInfoScreenClose}
-          tripdetails={list}
+          tripId={tripId}
+          tripdetails={tripList}
+          officeId={searchValues.officeId}
+          date={searchValues.tripDate}
+          IssueType={tripIssue}
         />
       ) : (
         <div>
@@ -203,12 +206,12 @@ const MainComponent = () => {
               </InputLabel>
               <LocalizationProvider dateAdapter={AdapterMoment}>
                 <DatePicker
-                  name="date"
+                  name="tripDate"
                   format={DATE_FORMAT}
-                  value={searchValues.date ? moment(searchValues.date) : null}
+                  value={searchValues.tripDate ? moment(searchValues.tripDate) : null}
                   onChange={(e) =>
                     handleFilterChange({
-                      target: { name: "date", value: e },
+                      target: { name: "tripDate", value: e },
                     })
                   }
                 />
@@ -232,8 +235,9 @@ const MainComponent = () => {
                   label="Issue Category"
                   onChange={handleFilterChange}
                 >
-                  {issueCategory.map((item) => (
-                    <MenuItem value={item}>{item}</MenuItem>
+                  {tripIssue && tripIssue.length > 0 && 
+                    tripIssue.map((item) => (
+                      <MenuItem value={item.value}>{item.displayName}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
@@ -345,7 +349,7 @@ const MainComponent = () => {
             </div>
             <BillingIssuesTable
               list={list}
-              vehicleIdClicked={handleTripClick}
+              vehicleIdClicked={(tripId,row)=>handleTripClick(tripId,row)}
             />
           </div>
         </div>

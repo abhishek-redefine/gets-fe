@@ -56,7 +56,7 @@ const TripSheetEntryDetails = ({ onClose, tripdetails }) => {
     "Shift Type": tripdetails[0].shiftType,
     "Shift Time": tripdetails[0].shiftTime,
     "Trip Type": "Planned",
-    "Escort Trip": "Yes",
+    "Escort Trip": "No",
     "Trip Status": "Completed",
     "Planned Employees": data.length,
     "Travelled Employees": data.length - noShowCount,
@@ -64,35 +64,35 @@ const TripSheetEntryDetails = ({ onClose, tripdetails }) => {
 
   const [vehicleInformation, setVehicleInformation] = useState({
     "Vehicle ID": tripdetails[0].vehicleId,
-    "Registration ID": "",
-    "Vehicle Type": "",
-    "Vehicle Model": "",
-    "Driver Name": "",
-    "Driver Phone No.": "",
-    "Sticker No.": "",
+    "Registration ID": "DL5CQ4456",
+    "Vehicle Type": "CAB",
+    "Vehicle Model": "TUV",
+    "Driver Name": "Sudhesh Singh",
+    "Driver Phone No.": "8857273912",
+    "Sticker No.": "STICKER123",
   });
 
   const [billingInformation1, setBillingInformation1] = useState({
-    "Planned Vendor Name": "",
-    "Actual Vendor Name": "",
-    "Planned Vehicle Type": "",
-    "Vehicle Fuel Type": "",
-    "Billing Zone": "",
-    Location: "Noida Sector 59",
-    "Planned Km.": "99",
-    "Actual Km.": "97",
-    "Reference Km.": "101",
+    "Planned Vendor Name": "Ganga Tourism",
+    "Actual Vendor Name": "Ganga Tourism",
+    "Planned Vehicle Type": "CAB",
+    "Vehicle Fuel Type": "PETROL",
+    // "Billing Zone": "",
+    // Location: "Noida Sector 59",
+    "Planned Km.": "",
+    "Actual Km.": "",
+    "Reference Km.": "",
     "Final Km.": "",
   });
 
   const billingInformation1Fields = ["Billing Zone", "Final Km."];
 
   const [billingInformation2, setBillingInformation2] = useState({
-    "Contract ID": "CID0001",
-    "Contract Type": "T&M",
-    "Trip Start Time": "",
-    "Trip End Time": "",
-    "Trip Duration": "",
+    // "Contract ID": "CID0001",
+    // "Contract Type": "T&M",
+    "Trip Start Time": "07:00",
+    "Trip End Time": "09:00",
+    "Trip Duration": "120 min",
     "On Time Status": "",
     "Delay Reason": "",
     "Trip Remarks": "",
@@ -605,7 +605,7 @@ const TripSheetEntryDetails = ({ onClose, tripdetails }) => {
                   >
                     Distance Recalculate
                   </button>
-                  <button
+                  {/* <button
                     className="btn btn-primary"
                     style={{
                       width: "100px",
@@ -615,7 +615,7 @@ const TripSheetEntryDetails = ({ onClose, tripdetails }) => {
                     onClick={handleViewMapModalOpen}
                   >
                     View Map
-                  </button>
+                  </button> */}
                   <Modal
                     open={openViewMapModal}
                     onClose={handleViewMapModalClose}

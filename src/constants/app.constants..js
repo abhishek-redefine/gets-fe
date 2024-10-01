@@ -15,7 +15,8 @@ export const MASTER_DATA_TYPES = {
     TRANSPORT_TYPE: "TransportType",
     SHIFT_TYPE: "ShiftType",
     ROUTE_TYPE: "RouteType",
-    GENDER: "Gender"
+    GENDER: "Gender",
+    ISSUE_TYPE : "TripIssue",
 };
 
 export const ROLE_TYPES = {

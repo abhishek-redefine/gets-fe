@@ -15,6 +15,9 @@ import TripHistoryModal from "./tripHistoryModal";
 import AddEmployeeModal from "./addEmployeeModal";
 import { issueTypeData } from "@/sampleData/travelledEmployeesInfoData";
 import ComplianceService from "@/services/compliance.service";
+import BillingService from "@/services/billing.service";
+import moment from "moment";
+import GoogleService from "@/services/google.service";
 
 const style = {
   position: "absolute",
@@ -27,44 +30,45 @@ const style = {
   borderRadius: 5,
 };
 
-const BillingIssuesDetails = ({ onClose, tripdetails }) => {
-  const [data, setData] = useState(issueTypeData);
+const BillingIssuesDetails = ({ onClose, tripId, tripdetails, officeId, date, IssueType }) => {
+  const [data, setData] = useState([]);
   const [selectedRow, setSelectedRow] = useState(null);
   const [remarks, setRemarks] = useState("");
   const [statusHistory, setStatusHistory] = useState([]);
   const [vehicleData, setVehicleData] = useState([]);
   const [noShowCount, setNoShowCount] = useState(0);
   const [travelledEmployeeCount, setTravelledEmployeeCount] = useState(null);
+  const [tripDuration, setTripDuration] = useState(null);
 
   const pointHeaderLabel =
     tripdetails[0].shiftType === "LOGIN" ? "Pickup Point" : "Drop Point";
 
   const [searchValues, setSearchValues] = useState({
-    issueType: "",
+    issueType: tripdetails[0].issueName,
   });
 
-  const IssueType = [
-    "Vehicle Not Assigned",
-    "Trip Not Started",
-    "Trip Not Ended",
-    "None",
-  ];
+  // const IssueType = [
+  //   "Vehicle Not Assigned",
+  //   "Trip Not Started",
+  //   "Trip Not Ended",
+  //   "None",
+  // ];
 
-  const TripInformation = {
-    "Trip Id": `Trip-${tripdetails[0].id}`,
-    "Office Id": vehicleData[0]?.officeId,
-    Date: tripdetails[0].date,
-    "Shift Type": tripdetails[0].shiftType,
-    "Shift Time": tripdetails[0].shiftTime,
-    "Trip Type": "Planned",
-    "Escort Trip": "Yes",
-    "Trip Status": "Completed",
-    "Planned Employees": data.length,
-    "Travelled Employees": data.length - noShowCount,
-  };
+  const [TripInformation, setTripInformation] = useState({
+    "Trip Id": "",
+    "Office Id": "",
+    "Date": "",
+    "Shift Type": "",
+    "Shift Time": "",
+    "Trip Type": "",
+    "Escort Trip": "",
+    "Trip Status": "",
+    "Planned Employees": "",
+    "Travelled Employees": "",
+  });
 
   const [vehicleInformation, setVehicleInformation] = useState({
-    "Vehicle ID": tripdetails[0].vehicleId,
+    "Vehicle ID": "",
     "Registration ID": "",
     "Vehicle Type": "",
     "Vehicle Model": "",
@@ -78,24 +82,24 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
     "Actual Vendor Name": "",
     "Planned Vehicle Type": "",
     "Vehicle Fuel Type": "",
-    "Billing Zone": "",
-    Location: "Noida Sector 59",
-    "Planned Km.": "99",
-    "Actual Km.": "97",
-    "Reference Km.": "101",
+    // "Billing Zone": "",
+    // "Location": "",
+    "Planned Km.": "",
+    "Actual Km.": "",
+    "Reference Km.": "",
     "Final Km.": "",
   });
 
   const billingInformation1Fields = ["Billing Zone", "Final Km."];
 
   const [billingInformation2, setBillingInformation2] = useState({
-    "Contract ID": "CID0001",
-    "Contract Type": "T&M",
-    "Trip Start Time": "",
-    "Trip End Time": "",
+    // "Contract ID": "",
+    // "Contract Type": "",
+    "Trip Start Time": tripdetails[0].tripStartTime,
+    "Trip End Time": tripdetails[0].tripEndTime,
     "Trip Duration": "",
     "On Time Status": "",
-    "Delay Reason": "",
+    // "Delay Reason": "",
     "Trip Remarks": "",
   });
 
@@ -111,8 +115,17 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
     setOpenViewMapModal(false);
   };
 
+  const [historyData, setHistoryData] = useState([]);
   const [openTripHistoryModal, setOpenTripHistoryModal] = useState(false);
-  const handleTripHistoryModalOpen = () => {
+  const handleTripHistoryModalOpen = async () => {
+    try {
+      const response = await BillingService.getTripHistory(tripId);
+      const data = response.data;
+      console.log(data);
+      setHistoryData(data);
+    } catch (err) {
+      console.log(err);
+    }
     console.log("Trip History modal open");
     setOpenTripHistoryModal(true);
   };
@@ -129,6 +142,7 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
   const handleAddEmployeeModalClose = () => {
     console.log("Add Employee modal close");
     setOpenAddEmployeeModal(false);
+    getTripMembers(tripdetails[0].tripId);
   };
 
   const convertTimeToDate = (timeString) => {
@@ -156,9 +170,8 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
       const remainingMinutes = minutes % 60;
       return remainingMinutes === 0
         ? `${hours} hour${hours > 1 ? "s" : ""}`
-        : `${hours} hour${hours > 1 ? "s" : ""} ${remainingMinutes} minute${
-            remainingMinutes > 1 ? "s" : ""
-          }`;
+        : `${hours} hour${hours > 1 ? "s" : ""} ${remainingMinutes} minute${remainingMinutes > 1 ? "s" : ""
+        }`;
     }
   };
 
@@ -209,14 +222,27 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
     console.log("slected row id: ", selectedRowId.empId);
   };
 
+  const deleteTripMemeber = async (tripId, id) => {
+    try {
+      const response = await BillingService.deleteMember(tripId, id);
+      const data = response.data;
+      if (response.status === 200) {
+        console.log(data);
+        getTripMembers(tripId);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   const handleDelete = () => {
     console.log("delete button clicked");
     let updatedData = data;
     if (selectedRow) {
       console.log("data: ", data);
       console.log("selectedRow: ", selectedRow);
-
-      updatedData = data.filter((row) => row.empId !== selectedRow.empId);
+      deleteTripMemeber(selectedRow.tripId, selectedRow.id);
+      // updatedData = data.filter((row) => row.empId !== selectedRow.empId);
     }
     setData(updatedData);
     console.log("updatedData: ", updatedData);
@@ -224,54 +250,54 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
     console.log("Selected row deleted");
   };
 
+  const markNoShow = async (tripId, id, flag) => {
+    try {
+      const response = await BillingService.markNoShow(tripId, id, flag);
+      console.log(response.data);
+      if (response.status === 200) {
+        getTripMembers(tripId);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   const handleNoShow = () => {
     if (selectedRow) {
-      console.log("No show >>> selected row Status: ", selectedRow.status);
-      setStatusHistory((prevHistory) => [
-        ...prevHistory,
-        { empId: selectedRow.empId, status: selectedRow.status },
-      ]);
-      console.log("Status history: ", statusHistory);
-      let updatedData = data;
-      data.filter((row, index) => {
-        if (row.empId === selectedRow.empId) {
-          console.log("row empId", row.empId);
-          updatedData[index].status = "No show";
-        }
-      });
-      console.log("Updated Data>>>", updatedData);
-      setData([...updatedData]);
+      console.log("No show >>> selected row Status: ", selectedRow.noShow);
+      markNoShow(tripdetails[0].tripId, selectedRow.id, true);
     }
   };
 
   const handleUndoNoShow = () => {
     if (selectedRow) {
-      console.log("No show >>> selected row Status: ", selectedRow.status);
-      const previousStatus = statusHistory.find(
-        (item) => item.empId === selectedRow.empId
-      );
+      console.log("No show >>> selected row Status: ", selectedRow.noShow);
+      markNoShow(tripdetails[0].tripId, selectedRow.id, false);
+      // const previousStatus = statusHistory.find(
+      //   (item) => item.empId === selectedRow.empId
+      // );
 
-      if (previousStatus) {
-        console.log("Previous status: ", previousStatus);
-        let updatedData = data;
-        data.filter((row, index) => {
-          if (row.empId === selectedRow.empId) {
-            console.log("row empId", row.empId);
-            updatedData[index].status = previousStatus.status;
-          }
-        });
-        console.log("Updated Data>>>", updatedData);
-        setData([...updatedData]);
+      // if (previousStatus) {
+      //   console.log("Previous status: ", previousStatus);
+      //   let updatedData = data;
+      //   data.filter((row, index) => {
+      //     if (row.empId === selectedRow.empId) {
+      //       console.log("row empId", row.empId);
+      //       updatedData[index].noShow = previousStatus.noShow;
+      //     }
+      //   });
+      //   console.log("Updated Data>>>", updatedData);
+      //   setData(() => [...updatedData]);
 
-        setStatusHistory((prevHistory) =>
-          prevHistory.filter((item) => item.empId !== selectedRow.empId)
-        );
-        console.log("Status history after undo no show: ", statusHistory);
-      }
+      //   setStatusHistory((prevHistory) =>
+      //     prevHistory.filter((item) => item.empId !== selectedRow.empId)
+      //   );
+      //   console.log("Status history after undo no show: ", statusHistory);
+      // }
     }
     console.log(
       "Undo no show >>> selected row status after undo no show: ",
-      selectedRow.status
+      selectedRow.noShow
     );
   };
 
@@ -308,13 +334,6 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
     }
   };
 
-  const handleVehicleInfoChange = (key, value) => {
-    setVehicleInformation((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-  };
-
   const handleBillingInfo1Change = (key, value) => {
     setBillingInformation1((prev) => ({
       ...prev,
@@ -334,41 +353,48 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
   }, [selectedRow]);
 
   useEffect(() => {
-    // console.log("Saifali>>>>>>>>>>>>> ", data);
+    console.log("Saifali>>>>>>>>>>>>> ", data);
     if (data.length > 0) {
-      const count = data.filter((row) => row.status === "No show").length;
+      const count = data.filter((row) => row.noShow === true).length;
       setNoShowCount(count);
-      console.log("No show count", noShowCount);
+      console.log("No show count", count);
+
+      let empCount = data.length - count;
+      setTripInformation((prev) => ({
+        ...prev,
+        ["Travelled Employees"]: data.length,
+        ["Planned Employees"]: empCount
+      }));
     }
   }, [data]);
 
-  useEffect(() => {
-    const newKey =
-      tripdetails[0].shiftType === "LOGIN"
-        ? "First Pickup Location"
-        : "Last Drop Location";
+  // useEffect(() => {
+  //   const newKey =
+  //     tripdetails[0].shiftType === "LOGIN"
+  //       ? "First Pickup Location"
+  //       : "Last Drop Location";
 
-    setBillingInformation1((prev) => {
-      const { Location: oldValue, ...rest } = prev;
-      console.log("newKey: ", newKey);
-      return {
-        ...rest,
-        [newKey]: oldValue,
-      };
-    });
-    if (data.length > 0 && newKey === "First Pickup Location") {
-      setBillingInformation1((prev) => ({
-        ...prev,
-        "First Pickup Location": data[0]?.point,
-      }));
-    }
-    if (data.length > 0 && newKey === "Last Drop Location") {
-      setBillingInformation1((prev) => ({
-        ...prev,
-        "Last Drop Location": data[data.length - 1]?.point,
-      }));
-    }
-  }, [tripdetails[0].shiftType, data]);
+  //   setBillingInformation1((prev) => {
+  //     const { Location: oldValue, ...rest } = prev;
+  //     console.log("newKey: ", newKey);
+  //     return {
+  //       ...rest,
+  //       [newKey]: oldValue,
+  //     };
+  //   });
+  //   if (data.length > 0 && newKey === "First Pickup Location") {
+  //     setBillingInformation1((prev) => ({
+  //       ...prev,
+  //       "First Pickup Location": data[0]?.point,
+  //     }));
+  //   }
+  //   if (data.length > 0 && newKey === "Last Drop Location") {
+  //     setBillingInformation1((prev) => ({
+  //       ...prev,
+  //       "Last Drop Location": data[data.length - 1]?.point,
+  //     }));
+  //   }
+  // }, [tripdetails[0].shiftType, data]);
 
   useEffect(() => {
     fetchVehicle();
@@ -378,10 +404,13 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
     if (vehicleData.length > 0) {
       setVehicleInformation((prev) => ({
         ...prev,
+        "Vehicle ID": vehicleData[0]?.vehicleId,
         "Registration ID": vehicleData[0].vehicleRegistrationNumber,
         "Vehicle Type": vehicleData[0]?.vehicleType,
         "Vehicle Model": vehicleData[0]?.vehicleModel,
         "Sticker No.": vehicleData[0]?.stickerNumber,
+        "Driver Name": vehicleData[0]?.driverName,
+        "Driver Phone No.": vehicleData[0]?.driverMobile,
       }));
       setBillingInformation1((prev) => ({
         ...prev,
@@ -396,40 +425,184 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
   useEffect(() => {
     if (data.length > 0) {
       if (tripdetails[0].shiftType === "LOGIN") {
-        const newTripStartTime = data[0]?.signIn;
-        const newTripEndTime = data[data.length - 1]?.signIn;
 
-        const newTripStartDate = convertTimeToDate(newTripStartTime);
-        const newTripEndDate = convertTimeToDate(newTripEndTime);
-        const tripDurationInMinutes =
-          (newTripEndDate - newTripStartDate) / (1000 * 60);
-        const formattedTripDuration = formatDuration(tripDurationInMinutes);
+        const timeA = moment(tripdetails[0].tripStartTime, 'HH:mm');
+        const timeB = moment(tripdetails[0].tripEndTime, 'HH:mm');
 
+        let diffInMinutes = timeB.diff(timeA, 'minutes');
+        let diffInHours = timeB.diff(timeA, 'hours');
+
+        console.log(`Difference in minutes: ${diffInMinutes} minutes`);
+        console.log(`Difference in hours: ${diffInHours} hours`, billingInformation2);
+
+        setTripDuration(diffInMinutes);
         setBillingInformation2((prev) => ({
           ...prev,
-          "Trip Start Time": data[0]?.signIn,
-          "Trip End Time": data[data.length - 1]?.signIn,
-          "Trip Duration": formattedTripDuration,
+          "Trip Duration": `${diffInMinutes} min`,
         }));
+
+        // const newTripStartTime = data[0]?.signIn;
+        // const newTripEndTime = data[data.length - 1]?.signIn;
+
+        // const newTripStartDate = convertTimeToDate(newTripStartTime);
+        // const newTripEndDate = convertTimeToDate(newTripEndTime);
+        // const tripDurationInMinutes =
+        //   (newTripEndDate - newTripStartDate) / (1000 * 60);
+        // const formattedTripDuration = formatDuration(tripDurationInMinutes);
+
+        // setBillingInformation2((prev) => ({
+        //   ...prev,
+        //   "Trip Start Time": data[0]?.signIn,
+        //   "Trip End Time": data[data.length - 1]?.signIn,
+        //   "Trip Duration": formattedTripDuration,
+        // }));
       } else {
-        const newTripStartTime = data[0]?.signOut;
-        const newTripEndTime = data[data.length - 1]?.signOut;
+        const timeA = moment(tripdetails[0].tripStartTime, 'HH:mm');
+        const timeB = moment(tripdetails[0].tripEndTime, 'HH:mm');
 
-        const newTripStartDate = convertTimeToDate(newTripStartTime);
-        const newTripEndDate = convertTimeToDate(newTripEndTime);
-        const tripDurationInMinutes =
-          (newTripEndDate - newTripStartDate) / (1000 * 60);
-        const formattedTripDuration = formatDuration(tripDurationInMinutes);
+        let diffInMinutes = timeB.diff(timeA, 'minutes');
+        let diffInHours = timeB.diff(timeA, 'hours');
 
+        console.log(`Difference in minutes: ${diffInMinutes} minutes`);
+        console.log(`Difference in hours: ${diffInHours} hours`, billingInformation2);
+
+        setTripDuration(diffInMinutes);
         setBillingInformation2((prev) => ({
           ...prev,
-          "Trip Start Time": data[0]?.signOut,
-          "Trip End Time": data[data.length - 1]?.signOut,
-          "Trip Duration": formattedTripDuration,
+          "Trip Duration": `${diffInMinutes} min`,
         }));
+        // const newTripStartTime = data[0]?.signOut;
+        // const newTripEndTime = data[data.length - 1]?.signOut;
+
+        // const newTripStartDate = convertTimeToDate(newTripStartTime);
+        // const newTripEndDate = convertTimeToDate(newTripEndTime);
+        // const tripDurationInMinutes =
+        //   (newTripEndDate - newTripStartDate) / (1000 * 60);
+        // const formattedTripDuration = formatDuration(tripDurationInMinutes);
+
+        // setBillingInformation2((prev) => ({
+        //   ...prev,
+        //   "Trip Start Time": data[0]?.signOut,
+        //   "Trip End Time": data[data.length - 1]?.signOut,
+        //   "Trip Duration": formattedTripDuration,
+        // }));
       }
     }
   }, [data]);
+
+  const getTripMembers = async (tripId) => {
+    try {
+      const response = await BillingService.billingTripMember(tripId);
+      console.log(response.data);
+      setData(response.data);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  useEffect(() => {
+    if (tripdetails) {
+      getTripMembers(tripdetails[0].tripId);
+      let empCount = data.length - noShowCount;
+      setTripInformation({
+        "Trip Id": `TRIP-${tripdetails[0].tripId}`,
+        "Office Id": officeId,
+        "Date": moment(date).format("DD-MM-YYYY"),
+        "Shift Type": tripdetails[0].shiftType,
+        "Shift Time": tripdetails[0].shiftTime,
+        "Trip Type": tripdetails[0].tripType,
+        "Escort Trip": tripdetails[0].escortTrip ? "Yes" : "No",
+        "Trip Status": tripdetails[0].tripState,
+        "Travelled Employees": data.length,
+        "Planned Employees": empCount,
+      })
+    }
+    console.log("Trip Details>>>>>>", tripdetails)
+  }, [tripdetails])
+
+  const CalculateGoogleDistance = async () => {
+    try {
+      let distance = 0;
+      const length = data.length;
+      const coordA = data[0].empSignInGeo;
+      const coordB = data[length - 1].empSignOutGeo;
+      const response = await GoogleService.calculateDistance(coordA, coordB);
+      const distancePromises = data.map(async (val, index) => {
+        if (index === 0) {
+          if (length === 1 && !val.noShow) {
+            const pointA = val.empSignInGeo;
+            const pointB = val.empSignOutGeo;
+            const totalDistanceRes = await GoogleService.calculateDistance(pointA, pointB);
+            const item = totalDistanceRes.distance.split(" ");
+            const totalDistance = parseFloat(item[0]);
+            distance += totalDistance;
+            console.log(index, ">>>>>>", distance);
+          } else if (!val.noShow) {
+            const pointA = val.empSignInGeo;
+            const pointB = data[index + 1].empSignInGeo;
+            const totalDistanceRes = await GoogleService.calculateDistance(pointA, pointB);
+            const item = totalDistanceRes.distance.split(" ");
+            const totalDistance = parseFloat(item[0]);
+            distance += totalDistance;
+            console.log(index, ">>>>>>", distance);
+          }
+        } else {
+          if (index === length - 1 && !val.noShow) {
+            const pointA = val.empSignInGeo;
+            const pointB = val.empSignOutGeo;
+            const totalDistanceRes = await GoogleService.calculateDistance(pointA, pointB);
+            const item = totalDistanceRes.distance.split(" ");
+            const totalDistance = parseFloat(item[0]);
+            distance += totalDistance;
+            console.log(index, ">>>>>>", distance);
+          } else if (!val.noShow) {
+            const pointA = val.empSignInGeo;
+            const pointB = data[index + 1].empSignInGeo;
+            const totalDistanceRes = await GoogleService.calculateDistance(pointA, pointB);
+            const item = totalDistanceRes.distance.split(" ");
+            const totalDistance = parseFloat(item[0]);
+            distance += totalDistance;
+            console.log(index, ">>>>>>", distance);
+          }
+        }
+      })
+
+      await Promise.all(distancePromises);
+      console.log("Trip Distance >>>>>>>>", distance);
+
+      setBillingInformation1((prev) => ({
+        ...prev,
+        ["Planned Km."]: response.distance,
+        ["Reference Km."]: response.distance,
+        ["Actual Km."]: `${parseFloat(distance).toFixed(2)} km`
+      }));
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  useEffect(() => {
+    if (data.length > 0) {
+      CalculateGoogleDistance();
+    }
+  }, [data]);
+
+  const updateTrip = async () => {
+    try {
+      const payload = {
+        "finalDistance": parseFloat(billingInformation1["Final Km."]),
+        "onTime": billingInformation2["On Time Status"] === "Yes" ? true : false,
+        "onTimeRemarks": billingInformation2["Trip Remarks"],
+        "tripId": tripdetails[0].tripId
+      }
+      console.log("Hello", payload);
+      const response = await BillingService.updateTrip(payload);
+      console.log(response.data);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
 
   return (
     <div
@@ -603,10 +776,11 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
                       padding: "10px",
                       marginLeft: "20px",
                     }}
+                    onClick={CalculateGoogleDistance}
                   >
                     Distance Recalculate
                   </button>
-                  <button
+                  {/* <button
                     className="btn btn-primary"
                     style={{
                       width: "100px",
@@ -616,7 +790,7 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
                     onClick={handleViewMapModalOpen}
                   >
                     View Map
-                  </button>
+                  </button> */}
                   <Modal
                     open={openViewMapModal}
                     onClose={handleViewMapModalClose}
@@ -647,6 +821,7 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
                     <Box sx={style}>
                       <TripHistoryModal
                         onClose={() => handleTripHistoryModalClose()}
+                        historyData={historyData}
                       />
                     </Box>
                   </Modal>
@@ -671,6 +846,8 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
                       <AddEmployeeModal
                         onClose={() => handleAddEmployeeModalClose()}
                         onAddEmployeeData={handleAddEmployee}
+                        tripDetails={tripdetails[0]}
+                        officeId={officeId}
                       />
                     </Box>
                   </Modal>
@@ -776,69 +953,47 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
                     columnSpacing={{ xs: 1, sm: 2, md: 3 }}
                   >
                     <Grid item xs={12}>
-                      {Object.entries(vehicleInformation).map(([key]) => (
-                        <Box
-                          display="flex"
-                          // justifyContent="space-between"
-                          alignItems="center"
-                          sx={{
-                            width: "100%",
-                            marginBottom: "15px",
-                          }}
-                          key={key}
-                        >
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "flex-start",
-                              width: "50%",
-                              marginRight: 30,
-                              marginBottom: "10px",
+                      {Object.entries(vehicleInformation).map(([key]) => {
+                        return (
+                          <Box
+                            display="flex"
+                            // justifyContent="space-between"
+                            alignItems="center"
+                            sx={{
+                              width: "100%",
+                              marginBottom: "15px",
                             }}
+                            key={key}
                           >
-                            <p
-                              key={key}
+                            <div
                               style={{
-                                fontSize: "15px",
-                                fontWeight: "600",
+                                display: "flex",
+                                justifyContent: "flex-start",
+                                width: "50%",
+                                marginRight: 30,
+                                marginBottom: "10px",
                               }}
                             >
-                              {key}
-                            </p>
-                          </div>
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "flex-start",
-                              width: "45%",
-                              marginBottom: "10px",
-                              // backgroundColor: "pink",
-                            }}
-                          >
-                            <Grid item xs={12} key={key}>
-                              {vehicleInformation[key] ===
-                                vehicleInformation["Driver Name"] ||
-                              vehicleInformation[key] ===
-                                vehicleInformation["Driver Phone No."] ? (
-                                <TextField
-                                  key={key}
-                                  placeholder="Enter value"
-                                  size="small"
-                                  value={vehicleInformation[key]}
-                                  onChange={(e) =>
-                                    handleVehicleInfoChange(key, e.target.value)
-                                  }
-                                  style={{
-                                    width: "90%",
-                                  }}
-                                  inputProps={{
-                                    style: {
-                                      fontFamily: "DM Sans",
-                                      fontSize: 15,
-                                    },
-                                  }}
-                                />
-                              ) : (
+                              <p
+                                key={key}
+                                style={{
+                                  fontSize: "15px",
+                                  fontWeight: "600",
+                                }}
+                              >
+                                {key}
+                              </p>
+                            </div>
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "flex-start",
+                                width: "45%",
+                                marginBottom: "10px",
+                                // backgroundColor: "pink",
+                              }}
+                            >
+                              <Grid item xs={12} key={key}>
                                 <p
                                   style={{
                                     fontSize: "15px",
@@ -846,11 +1001,10 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
                                 >
                                   {vehicleInformation[key]}
                                 </p>
-                              )}
-                            </Grid>
-                          </div>
-                        </Box>
-                      ))}
+                              </Grid>
+                            </div>
+                          </Box>)
+                      })}
                     </Grid>
                     <FormControl
                       fullWidth
@@ -879,17 +1033,17 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
                       >
                         {IssueType.map((item) => (
                           <MenuItem
-                            value={item}
+                            value={item.value}
                             style={{
                               fontSize: "15px",
                             }}
                           >
-                            {item}
+                            {item.displayName}
                           </MenuItem>
                         ))}
                       </Select>
                     </FormControl>
-                    <Box
+                    {/* <Box
                       component="form"
                       style={{
                         width: 500,
@@ -917,7 +1071,7 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
                           },
                         }}
                       />
-                    </Box>
+                    </Box> */}
                   </Grid>
                 </Box>
               </div>
@@ -933,7 +1087,9 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
               }}
             >
               <div
+                className="d-flex"
                 style={{
+                  justifyContent: 'space-between',
                   fontSize: "20px",
                   fontWeight: "600",
                   padding: "20px 25px 20px",
@@ -943,8 +1099,25 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
                   marginBottom: "25px",
                 }}
               >
-                Billing Information
+                <div>
+                  Billing Information
+                </div>
+
+                <div>
+                  <button
+                    className="btn btn-primary"
+                    style={{
+                      width: "170px",
+                      padding: "10px",
+                      marginLeft: "20px",
+                    }}
+                    onClick={() => updateTrip()}
+                  >
+                    Submit
+                  </button>
+                </div>
               </div>
+
               <div class="">
                 <Box
                   sx={{
@@ -1084,7 +1257,7 @@ const BillingIssuesDetails = ({ onClose, tripdetails }) => {
                           >
                             <Grid item xs={12} key={key}>
                               {key === "Delay Reason" ||
-                              key === "Trip Remarks" ? (
+                                key === "Trip Remarks" ? (
                                 <TextField
                                   placeholder="Enter value"
                                   size="small"

@@ -32,37 +32,44 @@ const BillingIssuesDetailsTable = ({
         size: 150,
       },
       {
-        accessorKey: "point",
+        accessorKey: "areaName",
         header: pointHeaderLabel,
         size: 150,
       },
       {
-        accessorKey: "landmark",
+        accessorKey: "landMark",
         header: "Landmark",
         size: 150,
       },
       {
-        accessorKey: "vehicleReportTime",
+        accessorKey: "vehicleReportingTime",
         header: "Vehicle Report Time",
         size: 200,
       },
       {
-        accessorKey: "signIn",
+        accessorKey: "empSignInTime",
         header: "Sign In",
         size: 100,
       },
       {
-        accessorKey: "signOut",
+        accessorKey: "empSignOutTime",
         header: "sign Out",
         size: 100,
       },
       {
-        accessorKey: "status",
+        accessorKey: "noShow",
         header: "Status",
         size: 150,
+        Cell: ({ cell, row }) => {
+          return <div>
+            <p>
+              {cell.getValue() ? "No Show" : "Completed"}
+            </p>
+          </div>;
+        },
       },
       {
-        accessorKey: "phoneNo",
+        accessorKey: "empMobile",
         header: "Phone No.",
         size: 150,
       },
@@ -92,22 +99,22 @@ const BillingIssuesDetailsTable = ({
       },
     },
     autoResetPageIndex: false,
-    enableRowOrdering: true,
+    // enableRowOrdering: true,
     enableSorting: false,
-    muiRowDragHandleProps: ({ table }) => ({
-      onDragEnd: () => {
-        const { draggingRow, hoveredRow } = table.getState();
-        if (hoveredRow && draggingRow) {
-          data.splice(
-            hoveredRow.index,
-            0,
-            data.splice(draggingRow.index, 1)[0]
-          );
-          setData([...data]);
-          setIssueTypeData([...data]);
-        }
-      },
-    }),
+    // muiRowDragHandleProps: ({ table }) => ({
+    //   onDragEnd: () => {
+    //     const { draggingRow, hoveredRow } = table.getState();
+    //     if (hoveredRow && draggingRow) {
+    //       data.splice(
+    //         hoveredRow.index,
+    //         0,
+    //         data.splice(draggingRow.index, 1)[0]
+    //       );
+    //       setData([...data]);
+    //       setIssueTypeData([...data]);
+    //     }
+    //   },
+    // }),
     getRowId: (originalRow) => originalRow?.empId,
     state: { rowSelection },
     onRowSelectionChange: setRowSelection,

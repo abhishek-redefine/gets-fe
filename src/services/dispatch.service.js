@@ -28,7 +28,7 @@ const downloadTrip = async (shiftId, tripDate) => {
 };
 
 const tripMembers = async (id) => {
-  let url = `${API_PATH.API_VERSION}${API_PATH.TRIP}${API_PATH.TRIP_MEMBERS}?tripId=${id}`;
+  let url = `${API_PATH.API_VERSION}${API_PATH.BILLING}${API_PATH.TRIP_MEMBERS}?tripId=${id}`;
   return axiosInstance.get(url).then((response) => {
     return response;
   });

@@ -9,31 +9,45 @@ import {
 const BillingIssuesTable = ({ list, vehicleIdClicked }) => {
   const [data, setData] = useState([]);
 
-  const handleTripClick = () => {
+  const handleTripClick = (tripId,row) => {
     console.log("Billing Issues Vehicle ID clicked");
-    vehicleIdClicked();
+    vehicleIdClicked(tripId,row.original);
   };
 
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'vehicleId',
-        header: 'Vehicle ID',
+        accessorKey: 'tripId',
+        header: 'Trip ID',
         size: 150,
-        Cell: ({ cell }) => {
-          const vehicleId = cell.getValue();
-          return (
+        Cell: ({ cell,row }) => {
+          return <div>
             <a
-              onClick={handleTripClick}
+              onClick={()=>handleTripClick(cell.getValue(),row)}
               style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
-            >
-              {vehicleId}
+            >TRIP-{cell.getValue()}
             </a>
-          );
-        }
+          </div>;
+        },
       },
+      // {
+      //   accessorKey: 'vehicleId',
+      //   header: 'Vehicle ID',
+      //   size: 150,
+      //   Cell: ({ cell }) => {
+      //     const vehicleId = cell.getValue();
+      //     return (
+      //       <a
+      //         // onClick={handleTripClick}
+      //         // style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
+      //       >
+      //         {vehicleId}
+      //       </a>
+      //     );
+      //   }
+      // },
       {
-        accessorKey: 'vehicleRegistration',
+        accessorKey: 'vehicleNumber',
         header: 'Vehicle Registration',
         size: 250,
       },
@@ -43,7 +57,7 @@ const BillingIssuesTable = ({ list, vehicleIdClicked }) => {
         size: 150,
       },
       {
-        accessorKey: 'vendor',
+        accessorKey: 'actualVendor',
         header: 'Vendor',
         size: 150,
       },
@@ -51,20 +65,6 @@ const BillingIssuesTable = ({ list, vehicleIdClicked }) => {
         accessorKey: 'date',
         header: 'Date',
         size: 100,
-      },
-      {
-        accessorKey: 'id',
-        header: 'Trip ID',
-        size: 150,
-        Cell: ({ cell }) => {
-          return <div>
-            <a
-              onClick={handleTripClick}
-              style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
-            >TRIP-{cell.getValue()}
-            </a>
-          </div>;
-        },
       },
       {
         accessorKey: 'km',
@@ -77,7 +77,7 @@ const BillingIssuesTable = ({ list, vehicleIdClicked }) => {
         size: 100,
       },
       {
-        accessorKey: 'issueType',
+        accessorKey: 'issueName',
         header: 'Issue Type',
         size: 150,
       },
