@@ -3,79 +3,71 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
+import LoaderComponent from "../loader";
 
-
-
-const UsersTable = ({list, usersTripIdClicked }) => {
+const UsersTable = ({ list, isLoading }) => {
   const [data, setData] = useState([]);
-
-
-  const handleTripClick = () => {
-    console.log("Users trip clicked");
-    usersTripIdClicked();
-  };
 
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'id',
-        header: 'Trip ID',
-        size: 150,
-        Cell: ({ cell }) => {
-          const tripId = cell.getValue();
-          return (
-            <a
-              onClick={handleTripClick}
-              style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
-            >
-              TRIP-{tripId}
-            </a>
-          );
-        },
-      },
-      {
-        accessorKey: 'tripState',
-        header: 'Trip Status',
+        accessorKey: "id",
+        header: "Booking ID",
         size: 150,
       },
       {
-        accessorKey: 'shiftTime', 
-        header: 'Shift Time',
+        accessorKey: "bookingDate",
+        header: "Booking Date",
         size: 150,
       },
       {
-        accessorKey: 'shiftType',
-        header: 'Shift Type',
+        accessorKey: "employeeId",
+        header: "Employee ID",
         size: 150,
       },
       {
-        accessorKey: 'vehicleNumber',
-        header: 'Cab Details',
+        accessorKey: "officeId",
+        header: "Office ID",
+        size: 150,
+      },
+      // {
+      //   accessorKey: "teamName",
+      //   header: "Team Name",
+      //   size: 150,
+      // },
+      {
+        accessorKey: "bookingType",
+        header: "Shift Type",
         size: 150,
       },
       {
-        accessorKey: 'signIn',
-        header: 'Sign In',
-        size: 100,
+        accessorKey: "transportType",
+        header: "Transport type",
+        size: 150,
       },
       {
-        accessorKey: 'signOut',
-        header: 'Sign Out',
-        size: 100,
+        accessorFn: (row) =>
+          row.bookingType === "LOGIN" ? row.loginShift : row.logoutShift,
+        header: "Shift Time",
+        size: 150,
       },
     ],
-    [],
+    []
   );
 
   const tableInstance = useMaterialReactTable({
     columns,
     data,
-    getRowId: row => row.tripId,
+    getRowId: (row) => row.id,
+    state: { isLoading},
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />,
+    },
   });
 
-  useEffect(()=>{
-    setData(list)
-  },[list])
+  useEffect(() => {
+    setData(list);
+  }, [list]);
 
   return (
     <div>
@@ -91,7 +83,3 @@ const UsersTable = ({list, usersTripIdClicked }) => {
 };
 
 export default UsersTable;
-
-
-
-

@@ -60,6 +60,7 @@ const DriverPendingApproval = () => {
     const [viewDriverOpen, setViewDriverOpen] = useState(false)
     const [editDriverData, setEditDriverData] = useState(false)
     const [driverData, setDriverData] = useState();
+    const [loading, setLoading] = useState(false);
 
     //////////////////////////////////////////////////
     const [pagination, setPagination] = useState({
@@ -127,6 +128,8 @@ const DriverPendingApproval = () => {
 
     const initializer = async () => {
         try {
+            setLoading(true);
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
             var filter = { complianceStatus : "PENDING"}
             let params = new URLSearchParams(pagination);
             const response = await ComplianceService.getAllDrivers(params.toString(),filter);
@@ -138,6 +141,8 @@ const DriverPendingApproval = () => {
             setPaginationData(localPaginationData);
         } catch (e) {
             console.log(e);
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -158,7 +163,7 @@ const DriverPendingApproval = () => {
                     </div>
                 </div>
                 <div className='gridContainer'>
-                    <Grid headers={headers} listing={driverData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} handlePageChange={handlePageChange} pagination={paginationData}/>
+                    <Grid headers={headers} listing={driverData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} handlePageChange={handlePageChange} pagination={paginationData} isLoading={loading} />
                 </div>
             </div>}
             {

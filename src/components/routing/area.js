@@ -18,6 +18,7 @@ import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 import MasterDataService from "@/services/masterdata.service";
 import { param } from "jquery";
+import LoaderComponent from "../loader";
 
 const style = {
   position: "absolute",
@@ -93,6 +94,7 @@ const Area = ({ roleType, onSuccess }) => {
     setOpenModal(false);
   };
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
 
   const formik = useFormik({
     initialValues: initialValues,
@@ -100,6 +102,8 @@ const Area = ({ roleType, onSuccess }) => {
     onSubmit: async (values) => {
       console.log("clicked", values);
       try {
+        setLoading(true);
+        // await new Promise((resolve) => setTimeout(resolve, 5000));
         const response = await RoutingService.createArea({ areaDTO: values });
         console.log(response);
         if (response.status === 201) {
@@ -122,6 +126,8 @@ const Area = ({ roleType, onSuccess }) => {
         handleModalClose();
       } catch (err) {
         console.log(err);
+      } finally {
+        setLoading(false);
       }
     },
   });
@@ -187,7 +193,7 @@ const Area = ({ roleType, onSuccess }) => {
       setZones(clientZoneDTO);
     } catch (err) {
       console.log(err);
-    }
+    } 
   };
 
   const fetchMasterData = async () => {
@@ -213,12 +219,14 @@ const Area = ({ roleType, onSuccess }) => {
   const handlePageChange = (page) => {
     console.log(page);
     let updatedPagination = { ...pagination };
-    updatedPagination.pageNo = page;
+    updatedPagination.page = page;
     setPagination(updatedPagination);
   };
 
   const fetchAllArea = async (search = false) => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       let params = new URLSearchParams(pagination);
       let allSearchValues = {...searchValues};
       Object.keys(allSearchValues).map((objKey)=>{
@@ -232,11 +240,13 @@ const Area = ({ roleType, onSuccess }) => {
       setAreaList(areaDTO);
 
       const data = response;
-      let localPaginationData = { ...data };
+      let localPaginationData = { ...data.data };
       delete localPaginationData?.data;
       setPaginationData(localPaginationData);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -355,6 +365,7 @@ const Area = ({ roleType, onSuccess }) => {
           pageNoText="pageNumber"
           handlePageChange={handlePageChange}
           pagination={paginationData}
+          isLoading={loading}
         />
         <Modal
           open={openModal}
@@ -500,6 +511,30 @@ const Area = ({ roleType, onSuccess }) => {
                 </div>
               </div>
             </div>
+            {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "fixed",
+                // backgroundColor: "#000000",
+                zIndex: 1,
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                opacity: 1,
+                color: "#000000",
+                // height: "100vh",
+                // width: "100vw",
+              }}
+            >
+              <LoaderComponent />
+            </div>
+            ) : (
+              " "
+            )}
           </Box>
         </Modal>
       </div>

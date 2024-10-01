@@ -14,6 +14,7 @@ import AddIcon from '@mui/icons-material/Add';
 import IframeComponent from '../iframe/Iframe';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
+import LoaderComponent from '../loader';
 
 const validationSchemaStepOneA = object({
     vendorOfficeId: string().required('Vendor Office Id is required'),
@@ -207,6 +208,8 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
+    const [loading, setLoading] = useState(false);
+
     const [message,setMessage] = useState("");
     const [uniqueModal,setUniqueModal] = useState(false);
     const handleShow = () => setUniqueModal(true);
@@ -258,6 +261,8 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
                     }]
                 }
                 console.log("on submit>>>>",values);
+                setLoading(true);
+                // await new Promise((resolve) => setTimeout(resolve, 5000));
                 const response = await ComplianceService.updateVendorCompany({ "vendorCompany": values });
                 console.log("response of update>>>>>>",response);
                 if (response.status === 200) {
@@ -310,6 +315,8 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
                         "contact": values.escalationMatrixL3MobileNo
                     }]
                 }
+                setLoading(true);
+                // await new Promise((resolve) => setTimeout(resolve, 5000));
                 const response = await ComplianceService.createVendorCompany({ "vendorCompany": values });
                 console.log(response.status)
                 if (response.status === 201) {
@@ -339,6 +346,8 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
                 console.log(e.response.data.message)
                 handleShow();
             }
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -845,7 +854,29 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
                     </div>
                 </Box>
             </Modal>
-        </div >
+            {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "fixed",
+                // backgroundColor: "#000000",
+                zIndex: 1,
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                opacity: 1,
+                color: "#000000",
+                // height: "100vh",
+                // width: "100vw",
+              }}
+            >
+              <LoaderComponent />
+            </div>
+            ) : ("")}
+        </div>
     )
 }
 

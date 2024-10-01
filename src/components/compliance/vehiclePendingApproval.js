@@ -82,6 +82,7 @@ const VehiclePendingApproval = () => {
     const [viewVehicleOpen, setViewVehicleOpen] = useState(false)
     const [editVehicleData, setEditVehicleData] = useState(false)
     const [vehicleData, setVehicleData] = useState()
+    const [loading, setLoading] = useState(false);
 
     const onMenuItemClick = async (key, clickedItem) => {
         if (key === "viewVehicle") {
@@ -166,6 +167,8 @@ const VehiclePendingApproval = () => {
 
     const initializer = async () => {
         try {
+            setLoading(true);
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
             var filter = { complianceStatus : "PENDING"}
             let params = new URLSearchParams(pagination);
             const response = await ComplianceService.getAllVehicles(params.toString(),filter);
@@ -176,6 +179,8 @@ const VehiclePendingApproval = () => {
             delete localPaginationData?.data;
             setPaginationData(localPaginationData);
         } catch (e) {
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -197,7 +202,7 @@ const VehiclePendingApproval = () => {
                     </div>
                 </div>
                 <div className='gridContainer'>
-                    <Grid headers={headers} listing={vehicleData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} handlePageChange={handlePageChange} pagination={paginationData}/>
+                    <Grid headers={headers} listing={vehicleData} onMenuItemClick={onMenuItemClick} enableDisableRow={true} handlePageChange={handlePageChange} pagination={paginationData} isLoading={loading} />
                 </div>
             </div>}
             {

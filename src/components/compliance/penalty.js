@@ -49,6 +49,8 @@ const Penalty = () => {
         pageNo : 0,
         pageSize : 10,
     })
+    const [loading, setLoading] = useState(false);
+
     const handlePageChange = (page) => {
         console.log(page);
         let updatedPagination = {...pagination};
@@ -58,6 +60,8 @@ const Penalty = () => {
 
     const fetchAllPenalties = async () => {
         try {
+            setLoading(true);
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
             const params = new URLSearchParams(pagination)
             const response = await ComplianceService.getAllPenalty(params);
             setPenaltyListing(response.data.paginatedResponse.content);
@@ -68,6 +72,8 @@ const Penalty = () => {
             setPaginationData(localPaginationData.paginatedResponse);
         } catch (e) {
             console.error(e);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -98,7 +104,8 @@ const Penalty = () => {
                             listing={penaltyListing} 
                             pageNoText="pageNo"
                             handlePageChange={handlePageChange}
-                            pagination={paginationData}    
+                            pagination={paginationData}  
+                            isLoading={loading}  
                         />
                     </div>
                 </div>

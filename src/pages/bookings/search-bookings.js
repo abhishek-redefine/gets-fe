@@ -26,7 +26,7 @@ const SearchBookings = () => {
         display: "Booking Date"
     },
     {
-        key: "employeeId",
+        key: "employeeEmailId",
         display: "Employee Id"
     },
     {
@@ -91,6 +91,7 @@ const SearchBookings = () => {
         page: 0,
         size: DEFAULT_PAGE_SIZE,        
     });
+    const [loading, setLoading] = useState(false);
 
     const fetchInOutTimes = async (isIn, newSearchValues) => {
         try {
@@ -108,6 +109,8 @@ const SearchBookings = () => {
 
     const fetchAllBookings = async (resetFlag) => {
         try {
+            setLoading(true);
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
             const role = JSON.parse(localStorage.getItem('userRoles'));
             const userDetails = JSON.parse(localStorage.getItem('userDetails'));
             const params = new URLSearchParams(pagination);
@@ -149,6 +152,8 @@ const SearchBookings = () => {
             setPaginationData(localPaginationData);
         } catch (e) {
             console.error(e);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -378,7 +383,7 @@ const SearchBookings = () => {
                         <button type='submit' onClick={resetFilter} className='btn btn-primary filterApplyBtn'>Reset</button>
                     </div>
                 </div>
-                <Grid pageNoText="pageNumber" onMenuItemClick={onMenuItemClick} headers={headers} handlePageChange={handlePageChange} pagination={paginationData} listing={bookingListing} bookingGrid={true} />
+                <Grid pageNoText="pageNumber" onMenuItemClick={onMenuItemClick} headers={headers} handlePageChange={handlePageChange} pagination={paginationData} listing={bookingListing} bookingGrid={true} isLoading={loading}/>
             </div>
             <Dialog open={isRemoveDialogOpen} onClose={handleCancelBooking}>
                 <DialogTitle id="alert-dialog-title">Cancel Booking</DialogTitle>

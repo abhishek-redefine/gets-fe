@@ -1,73 +1,80 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
-import { issueTypeData } from "@/sampleData/travelledEmployeesInfoData";
+import LoaderComponent from "../loader";
 
+const EmployeeTripTable = ({
+  pointHeaderLabel,
+  tripMembersList,
+  isLoading,
+}) => {
+  const [data, setData] = useState(tripMembersList);
+  const [point, setPoint] = useState("");
 
-const EmployeeTripTable = () => {
-  const [data, setData] = useState(issueTypeData);
+  const handleRespectiveHeaderLabel = () => {
+    if (pointHeaderLabel == "LOGIN") {
+      setPoint("Pickup Point");
+    } else if (pointHeaderLabel == "LOGOUT") {
+      setPoint("Drop Point");
+    }
+  };
 
-  const columns = useMemo(
+  const [columns, setColumns] = useState(
     () => [
       {
-        accessorKey: 'empId',
-        header: 'Employee ID',
+        accessorKey: "empId",
+        header: "Employee ID",
         size: 150,
       },
       {
-        accessorKey: 'empName', 
-        header: 'Employee Name',
+        accessorKey: "name",
+        header: "Employee Name",
         size: 150,
       },
       {
-        accessorKey: 'gender',
-        header: 'Gender',
+        accessorKey: "gender",
+        header: "Gender",
         size: 150,
       },
       {
-        accessorKey: 'pickup/dropPoint',
-        header: 'Pickup/Drop Point',
+        accessorKey: "areaName",
+        header: point,
         size: 150,
       },
       {
-        accessorKey: 'landmark',
-        header: 'Landmark',
+        accessorKey: "vehicleReportTime",
+        header: "Vehicle Report Time",
         size: 200,
       },
       {
-        accessorKey: 'vehicleReportTime',
-        header: 'Vehicle Report Time',
-        size: 200,
+        accessorKey: "signIn",
+        header: "Sign In",
+        size: 100,
       },
       {
-        accessorKey: 'signIn',
-        header: 'Sign In',
+        accessorKey: "signOut",
+        header: "sign Out",
+        size: 100,
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
         size: 150,
       },
       {
-        accessorKey: 'signOut',
-        header: 'sign Out',
+        accessorKey: "mob",
+        header: "Phone No.",
         size: 150,
       },
-      {
-        accessorKey: 'status',
-        header: 'Status',
-        size: 150,
-      },
-      {
-        accessorKey: 'phoneNo',
-        header: 'Phone No.',
-        size: 150,
-      },
-      {
-        accessorKey: 'action',
-        header: 'Action',
-        size: 150,
-      }, 
+      // {
+      //   accessorKey: "action",
+      //   header: "Action",
+      //   size: 150,
+      // },
     ],
-    [],
+    []
   );
 
   const tableInstance = useMaterialReactTable({
@@ -76,15 +83,37 @@ const EmployeeTripTable = () => {
     enableRowSelection: false,
     enableMultiRowSelection: false,
     enableTopToolbar: false,
-    initialState: { density: 'compact' },
+    initialState: {
+      density: "compact",
+      pagination: { pageIndex: 0, pageSize: 12 },
+    },
     muiTableBodyCellProps: {
-        sx: {
-          fontFamily: 'DM Sans',  
-          fontSize: "14px", 
-        },
+      sx: {
+        fontFamily: "DM Sans",
+        fontSize: "14px",
       },
+    },
+    state: { isLoading },
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />
+    },
   });
 
+  useEffect(() => {
+    if (tripMembersList) {
+      setData(tripMembersList);
+      let prev = [...columns];
+      prev.map((columns) => {
+        if (columns.accessorKey === "areaName") {
+          if (pointHeaderLabel === "LOGIN") {
+            columns.header = "Pickup Point";
+          } else {
+            columns.header = "Drop Point";
+          }
+        }
+      });
+    }
+  }, [tripMembersList]);
 
   return (
     <div>
@@ -96,7 +125,3 @@ const EmployeeTripTable = () => {
 };
 
 export default EmployeeTripTable;
-
-
-
-

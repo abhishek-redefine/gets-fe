@@ -10,9 +10,10 @@ import {
 import React, { useEffect, useState } from "react";
 import ComplianceService from "@/services/compliance.service";
 import DispatchService from "@/services/dispatch.service";
+import LoaderComponent from "../loader";
 
 const IssueTypeModal = (props) => {
-  const { data,onClose } = props;
+  const { data, onClose } = props;
   const [issueData, setIssueData] = useState({
     "Vehicle Id": "",
     "Registration Id": "",
@@ -26,7 +27,8 @@ const IssueTypeModal = (props) => {
     pageNo: 0,
     pageSize: 100,
   });
-  const [remark,setRemark] = useState("");
+  const [remark, setRemark] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [searchValues, setSearchValues] = useState({
     issueType: data?.tripState,
@@ -82,21 +84,34 @@ const IssueTypeModal = (props) => {
     }
   };
 
-  const addOpsIssue =async() =>{
-    try{
-      var tripState = searchValues.issueType === "Vehicle Not Assigned" ? "VECHICLE_NOT_ASSIGNED" : searchValues.issueType === "Trip Not Started" ? "TRIP_NOT_STARTED" : "TRIP_NOT_ENDED";
-      const response = await DispatchService.addOpsIssue(data.id,tripState,remark);
-      if(response.status === 200){
+  const addOpsIssue = async () => {
+    try {
+      var tripState =
+        searchValues.issueType === "Vehicle Not Assigned"
+          ? "VECHICLE_NOT_ASSIGNED"
+          : searchValues.issueType === "Trip Not Started"
+          ? "TRIP_NOT_STARTED"
+          : "TRIP_NOT_ENDED";
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
+      const response = await DispatchService.addOpsIssue(
+        data.id,
+        tripState,
+        remark
+      );
+      if (response.status === 200) {
         onClose();
       }
-    }catch(err){
+    } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     console.log("data: ", data);
-    if(data){
+    if (data) {
       data?.vehicleNumber && fetchVehicleData();
     }
   }, [data]);
@@ -230,7 +245,7 @@ const IssueTypeModal = (props) => {
                     },
                   }}
                   InputLabelProps={{ style: { fontSize: 14 } }}
-                  onChange={(e)=>setRemark(e.target.value)}
+                  onChange={(e) => setRemark(e.target.value)}
                 />
               </Box>
             </div>
@@ -257,6 +272,30 @@ const IssueTypeModal = (props) => {
           Submit
         </button>
       </div>
+      {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "fixed",
+            // backgroundColor: "#000000",
+            zIndex: 1,
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            opacity: 1,
+            color: "#000000",
+            // height: "100vh",
+            // width: "100vw",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )}
     </div>
   );
 };

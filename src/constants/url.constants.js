@@ -10,4 +10,7 @@ export const MODULE_NAMES = {
     DISPATCH: "D",
     TRACKING: "T",
     HELPDESK: "H",
+    BILLING: "Bi",
+    REPORTS: "R",
+    CONFIGURATIONS: "AS",
 };

@@ -28,6 +28,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { TimeField } from "@mui/x-date-pickers/TimeField";
 import dayjs from "dayjs";
 import BookingService from "@/services/booking.service";
+import LoaderComponent from "../loader";
 
 const style = {
   position: "absolute",
@@ -184,11 +185,14 @@ const BusShuttleRoute = () => {
   const [busRouteId, setBusRouteId] = useState();
   const [busRoutingListing, setBusRoutingLisiting] = useState([]);
   const [shuttleRoutingListing, setShuttleRoutingListing] = useState([]);
+  const [paginationDataBus, setPaginationDataBus] = useState();
+  const [paginationDataShuttle, setPaginationDataShuttle] = useState()
   const [pagination, setPagination] = useState({
     page: 0,
     size: 10,
   });
   const [busEPReportingTime, setBusEPReportingTime] = useState("00:00");
+  const [loading, setLoading] = useState(false);
 
   const addClickHandler = () => {
     setMiddlePointCount(middlePointCount - 1);
@@ -268,6 +272,8 @@ const BusShuttleRoute = () => {
           if (step === 0) {
             console.log(values);
             console.log(busRouteDTO);
+            setLoading(true);
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
             const response = await RoutingService.createBusRouting(busRouteDTO);
             if (response.status === 201) {
               console.log(response.data.busRouteDTO.id);
@@ -302,6 +308,8 @@ const BusShuttleRoute = () => {
             busRouteDTO.busRouteDTO.middlePoint = stringMiddlePoint.join(",");
             busRouteDTO.busRouteDTO.id = busRouteId;
             console.log(busRouteDTO);
+            setLoading(true);
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
             const response = await RoutingService.updateBusRouting(busRouteDTO);
             console.log(response);
             setRouteType("Bus Route");
@@ -309,6 +317,8 @@ const BusShuttleRoute = () => {
           }
         } catch (err) {
           console.log(err);
+        } finally {
+          setLoading(false);
         }
       } else {
         if (shuttleStartingPoint === "" || shuttleEndPoint === "") {
@@ -335,6 +345,8 @@ const BusShuttleRoute = () => {
         };
         console.log(shuttleRouteDTO);
         try {
+          setLoading(true);
+          // await new Promise((resolve) => setTimeout(resolve, 5000));
           const response = await RoutingService.createShuttleRouting(
             shuttleRouteDTO
           );
@@ -345,6 +357,8 @@ const BusShuttleRoute = () => {
           }
         } catch (err) {
           console.log(err);
+        } finally {
+          setLoading(false);
         }
       }
     },
@@ -421,12 +435,16 @@ const BusShuttleRoute = () => {
 
   const fetchAllBusRoute = async () => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const response = await RoutingService.getAllBusRoute();
       const { data } = response || {};
       setBusRoutingLisiting(data.data);
-      console.log(data.data);
+      console.log(data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
   const onMenuItemClick = (key, clickedItem) => {
@@ -473,12 +491,17 @@ const BusShuttleRoute = () => {
 
   const fetchAllShuttleRoute = async () => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const response = await RoutingService.getAllShuttleRoute();
       const { data } = response || {};
+      console.log(data);
       console.log(data);
       setShuttleRoutingListing(data.data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -702,6 +725,8 @@ const BusShuttleRoute = () => {
             onMenuItemClick={onMenuItemClick}
             handlePageChange={handlePageChange}
             enableDisableRow={true}
+            pagination={paginationDataBus}
+            isLoading={loading}
           />
         ) : (
           <>
@@ -711,6 +736,8 @@ const BusShuttleRoute = () => {
               onMenuItemClick={onMenuItemClick}
               handlePageChange={handlePageChange}
               enableDisableRow={true}
+              pagination={paginationDataShuttle}
+              isLoading={loading}
             />
           </>
         )}
@@ -1589,6 +1616,30 @@ const BusShuttleRoute = () => {
                   </div>
                 </div>
               </>
+            )}
+            {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "fixed",
+                // backgroundColor: "#000000",
+                zIndex: 1,
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                opacity: 1,
+                color: "#000000",
+                // height: "100vh",
+                // width: "100vw",
+              }}
+            >
+              <LoaderComponent />
+            </div>
+            ) : (
+              " "
             )}
           </Box>
         </Modal>

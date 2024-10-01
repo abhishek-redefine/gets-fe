@@ -96,6 +96,7 @@ const EhsEntryDriver = ({ EhsDriverData, ehsStatusList, SetEhsDriverOpen }) => {
     ehsStatus: "",
     entityId: EhsDriverData.id,
   });
+  const [loading, setLoading] = useState(false);
 
   const [documentUrl, setDocumentUrl] = useState();
   const [noFile, setNoFile] = useState(false);
@@ -119,6 +120,8 @@ const EhsEntryDriver = ({ EhsDriverData, ehsStatusList, SetEhsDriverOpen }) => {
 
   const searchEhsHistory = async (resetFlag = false) => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       var date = moment(searchDate).format("YYYY-MM-DD");
       let params = new URLSearchParams(pagination);
       var filter = { ...searchBean };
@@ -143,6 +146,8 @@ const EhsEntryDriver = ({ EhsDriverData, ehsStatusList, SetEhsDriverOpen }) => {
       setEhsDriverData(response.data.data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -283,6 +288,7 @@ const EhsEntryDriver = ({ EhsDriverData, ehsStatusList, SetEhsDriverOpen }) => {
               headers={headers}
               listing={ehsDriverData}
               onMenuItemClick={onMenuItemClick}
+              isLoading={loading}
             />
           </div>
           <Modal

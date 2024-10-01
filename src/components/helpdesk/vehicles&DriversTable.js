@@ -3,73 +3,89 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
+import LoaderComponent from "../loader";
 
-
-
-const VehiclesNDriversTable = ({list, vehicleTripIdClicked }) => {
+const VehiclesNDriversTable = ({ list, vehicleTripIdClicked, isLoading }) => {
   const [data, setData] = useState([]);
 
-  const handleTripClick = () => {
-    console.log("Vehicles & Drivers trip clicked");
-    vehicleTripIdClicked();
+  const handleTripClick = (id) => {
+    if (vehicleTripIdClicked) {
+      // console.log(`Trip-${id} clicked`);
+      vehicleTripIdClicked(id);
+    } else {
+      console.log("tripIdClicked function not working");
+    }
   };
 
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'id',
-        header: 'Trip ID',
+        accessorKey: "id",
+        header: "Trip ID",
         size: 150,
         Cell: ({ cell }) => {
-          const tripId = cell.getValue();
+          const id = cell.getValue();
           return (
             <a
-              onClick={handleTripClick}
-              style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
+              onClick={() => handleTripClick(id)}
+              style={{
+                color: "blue",
+                textDecoration: "underline",
+                cursor: "pointer",
+              }}
             >
-              TRIP-{tripId}
+              TRIP-{id}
             </a>
           );
         },
       },
       {
-        accessorKey: 'tripState',
-        header: 'Trip Status',
+        accessorKey: "officeId",
+        header: "Office ID",
         size: 150,
       },
       {
-        accessorKey: 'shiftTime', 
-        header: 'Shift Time',
+        accessorKey: "shiftType",
+        header: "Shift Type",
         size: 150,
       },
       {
-        accessorKey: 'firstPickupLastDrop',
-        header: 'First Pickup / Last Drop',
+        accessorKey: "shiftTime",
+        header: "Shift Time",
         size: 150,
       },
       {
-        accessorKey: 'tripDistance',
-        header: 'Trip Distance',
+        accessorKey: "tripState",
+        header: "Trip Status",
         size: 150,
       },
       {
-        accessorKey: 'officeId',
-        header: 'Office ID',
+        accessorKey: "pickupTime",
+        header: "Pickup Time",
+        size: 150,
+      },
+      {
+        accessorKey: "tripDistance",
+        header: "Trip Distance",
         size: 150,
       },
     ],
-    [],
+    []
   );
 
   const tableInstance = useMaterialReactTable({
     columns,
     data,
-    getRowId: row => row.tripId,
+    state: { isLoading },
+    getRowId: (row) => row.id,
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />,
+    },
   });
 
-  useEffect(()=>{
-    setData(list)
-  },[list])
+  useEffect(() => {
+    setData(list);
+  }, [list]);
 
   return (
     <div>
@@ -78,14 +94,10 @@ const VehiclesNDriversTable = ({list, vehicleTripIdClicked }) => {
           padding: "8px 20px 0",
         }}
       >
-        <MaterialReactTable table={tableInstance} />
+        <MaterialReactTable table={tableInstance} getRowId={(row) => row.id} />
       </div>
     </div>
   );
 };
 
 export default VehiclesNDriversTable;
-
-
-
-

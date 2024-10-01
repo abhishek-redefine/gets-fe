@@ -1,105 +1,146 @@
 import * as React from "react";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import Modal from "@mui/material/Modal";
-import IconButton from "@mui/material/IconButton";
-import CloseIcon from "@mui/icons-material/Close";
+import { useState } from "react";
 
-const style = {
-  text: {
-    fontSize: "16px",
-    fontWeight: "bold",
-    margin: "3px 0 35px",
-    textAlign: "center",
-    fontFamily: "DM Sans, sans-serif",
-    margin:'20px 0 15%'
-  },
-};
+const ConfirmationModal = ({ pass, onClose, type, reason }) => {
+  const onHandleClose = () => {
+    onClose();
+  };
 
-export default function ConfirmationModal({ pass, onClose, type}) {
+  useState(() => {
+    console.log("Failure Reason>>>", reason);
+  }, []);
 
   return (
-    <div style={{height:'600px'}}>
+    <div
+      style={{
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        width: 800,
+        height: 650,
+        borderRadius: 5,
+        backgroundColor: "white",
+        padding: "10px 0 30px",
+      }}
+    >
       {pass ? (
         <>
           <div
             style={{
               display: "flex",
               flexFlow: "column",
-              alignItems: 'center',
+              alignItems: "center",
               padding: "50px",
             }}
           >
             <img
-              src="/images/confirmationCheck.jpg"
-              width={230}
-              height={230}
+              src="/images/greenTick.svg"
+              width={150}
+              height={150}
               alt="Confirmation"
-              style={{margin: '20px 0 0'}}
-            /> 
-            <Typography id="modal-modal-title" sx={style.text}>
-              Successfully Trips {type === 'replicate' ? 'Replicated!' : 'Generated!'}
+              style={{ margin: "30px 0 0 " }}
+            />
+            <Typography
+              id="modal-modal-title"
+              style={{
+                fontSize: "25px",
+                fontWeight: "bold",
+                margin: "70px 0 190px",
+                textAlign: "center",
+                fontFamily: "DM Sans, sans-serif",
+                // backgroundColor: "green"
+              }}
+            >
+              Successfully Trips{" "}
+              {type === "replicate" ? "Replicated!" : "Generated!"}
             </Typography>
-              <Button
-                style={{
-                  color: "black",
-                  width:'160px',
-                  backgroundColor: '#f6ce47',
-                  borderRadius: "6px",
-                  padding: "6px 10px",
-                  fontSize: "16px",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  textTransform: "unset",
-                }}
-                onClick={onClose}
-                
-              >
-                Close
-              </Button>
+            <button
+              type="button"
+              style={{
+                color: "black",
+                width: "180px",
+                backgroundColor: "#f6ce47",
+                border: "none",
+                borderRadius: "6px",
+                padding: "15px 35px",
+                fontSize: "16px",
+                cursor: "pointer",
+                zIndex: 1,
+              }}
+              onClick={onHandleClose}
+            >
+              Close
+            </button>
           </div>
         </>
       ) : (
         <>
-        <div
+          <div
             style={{
               display: "flex",
               flexFlow: "column",
-              alignItems: 'center',
+              alignItems: "center",
               padding: "50px",
-              height: '100%'
+              height: "100%",
             }}
           >
             <img
-              src="/images/confirmationCross.jpg"
-              width={140}
-              height={140}
+              src="/images/cross.svg"
+              width={150}
+              height={150}
               alt="Confirmation"
-              style={{margin: '70px 0 0'}}
-            /> 
-            <Typography style={{marginTop:'60px'}} id="modal-modal-title" sx={style.text}>
+              style={{ margin: "30px 0 0 " }}
+            />
+            <Typography
+              id="modal-modal-title"
+              style={{
+                fontSize: "25px",
+                fontWeight: "bold",
+                margin: "70px 0 30px",
+                textAlign: "center",
+                fontFamily: "DM Sans, sans-serif",
+                // backgroundColor: "green"
+              }}
+            >
               Trip generation failed!
             </Typography>
-              <Button
-                style={{
-                  color: "black",
-                  width:'160px',
-                  backgroundColor: '#f6ce47',
-                  borderRadius: "6px",
-                  padding: "6px 10px",
-                  fontSize: "16px",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  textTransform: "unset",
-                }}
-                onClick={onClose}
-              >
-                Close
-              </Button>
+            <Typography
+              style={{ marginTop: "20px" }}
+              id="modal-modal-title"
+              sx={{
+                fontSize: "20px",
+                fontWeight: "bold",
+                margin: "0 0 80px",
+                textAlign: "center",
+                fontFamily: "DM Sans, sans-serif",
+                // color: "pink"
+              }}
+            >
+              {reason}.
+            </Typography>
+            <button
+              type="button"
+              style={{
+                color: "black",
+                width: "180px",
+                backgroundColor: "#f6ce47",
+                border: "none",
+                borderRadius: "6px",
+                padding: "15px 35px",
+                fontSize: "16px",
+                cursor: "pointer",
+              }}
+              onClick={onHandleClose}
+            >
+              Close
+            </button>
           </div>
         </>
       )}
     </div>
   );
-}
+};
+
+export default ConfirmationModal;

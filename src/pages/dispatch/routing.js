@@ -36,6 +36,7 @@ import { useRouter } from "next/router";
 import TripEditorNew from "@/components/dispatch/tripEditorNew";
 import { toggleToast } from "@/redux/company.slice";
 import TripEditor2 from "@/components/dispatch/tripEditor2";
+import LoaderComponent from "@/components/loader";
 // import TripEditorManual from "@/components/dispatch/tripEditor-pq";
 
 const style = {
@@ -58,7 +59,8 @@ const Routing = () => {
     { field: "bookingCount" },
     { field: "routingStatus" },
     { field: "dispatchStatus" },
-    { field: "tripCount",
+    {
+      field: "tripCount",
       cellRenderer: (params) => {
         const tripCount = params.value;
 
@@ -68,11 +70,18 @@ const Routing = () => {
         };
 
         return (
-          <div style={{ cursor: 'pointer', textDecoration: 'underline', color: "blue"}} onClick={handleClick}>
+          <div
+            style={{
+              cursor: "pointer",
+              textDecoration: "underline",
+              color: "blue",
+            }}
+            onClick={handleClick}
+          >
             {tripCount}
           </div>
         );
-      }
+      },
     },
     { field: "allocatedVendorCount" },
     { field: "allocatedCabCount" },
@@ -154,6 +163,7 @@ const Routing = () => {
   const handleModalOpen = () => setOpenModal(true);
   const handleModalClose = () => setOpenModal(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const searchByChangeHandler = (event) => {
     const { target } = event;
@@ -218,6 +228,8 @@ const Routing = () => {
 
   const fetchSummary = async () => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       console.log("search values>>>>>", searchValues);
       let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
@@ -233,6 +245,8 @@ const Routing = () => {
       setData(response.data);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -643,6 +657,7 @@ const Routing = () => {
               data={data}
               headers={headers}
               setShowAction={(flag, row) => selectedRowHandler(flag, row)}
+              isLoading={loading}
             />
           </div>
 
@@ -704,6 +719,30 @@ const Routing = () => {
         />
         // <TripEditorManual/>
       )}
+      {/* {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "fixed",
+            // backgroundColor: "#000000",
+            zIndex: 1,
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            opacity: 1,
+            color: "#000000",
+            // height: "100vh",
+            // width: "100vw",
+          }}
+        >
+          <LoaderComponent />
+        </div>
+      ) : (
+        " "
+      )} */}
     </div>
   );
 };

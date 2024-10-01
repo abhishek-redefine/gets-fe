@@ -34,6 +34,7 @@ import { toggleToast } from "@/redux/company.slice";
 import moment from "moment";
 import RoutingService from "@/services/route.service";
 import GeocodeModal from "./geocodeModal";
+import LoaderComponent from "../loader";
 
 const style = {
   position: "absolute",
@@ -85,6 +86,8 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
     pickupTime: null,
   });
   const [defaultRM, setDefaultRM] = useState({});
+
+  const [loading, setLoading] = useState(false);
 
   useState(() => {
     if (editEmployeeData?.id) {
@@ -152,7 +155,7 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
           role: allValues.role,
           transportEligibilities: transportString.slice(0, -1),
           address: allValues.address,
-          geoCode: allValues.geoCode,
+          geoCode: coordinates.geoCode,
           isAddHocBooking: allValues.isAddHocBooking,
           mobAppAccess: allValues.mobAppAccess,
           notificationModes: allValues.notificationModes,
@@ -167,7 +170,7 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
           specialStatus: allValues.specialStatus,
           enabled: true,
           isManager: allValues.reportingManager ? false : true,
-          landmark: allValues.landmark,
+          landMark: allValues.landmark,
           zoneName: allValues.zoneName,
           areaName: allValues.areaName,
           nodal: allValues.nodal,
@@ -176,6 +179,8 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
         //formik.setFieldValue('transportEligibilities',transportString.slice(0,-1));
         console.log(transportString.slice(0, -1));
         if (initialValues?.id) {
+          setLoading(true);
+          // await new Promise((resolve) => setTimeout(resolve, 5000));
           await OfficeService.updateEmployee({
             employee: { ...initialValues, ...payload },
           });
@@ -186,7 +191,9 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
             })
           );
         } else {
-          console.log(allValues.transportEligibilities);
+          console.log(payload);
+          setLoading(true);
+          // await new Promise((resolve) => setTimeout(resolve, 5000));
           await OfficeService.createEmployee({ employee: payload });
           dispatch(
             toggleToast({
@@ -206,6 +213,8 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
             type: "error",
           })
         );
+      } finally {
+        setLoading(false);
       }
     },
   });
@@ -229,12 +238,10 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
   const [openModal, setOpenModal] = useState(false);
   const handleModalOpen = () => setOpenModal(true);
   const handleModalClose = () => {
-    console.log("in close")
+    console.log("in close");
     setOpenModal(false);
-  }
+  };
   const [coordinates, setCoordinates] = useState({ geoCode: "" });
-
-
 
   const fetchMasterData = async (type) => {
     try {
@@ -379,9 +386,12 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
 
   const handleGeocode = (geocode) => {
     console.log("Here in parent geocode: " + geocode);
+    let geocodeSeparate = geocode.split(",");
+    geocodeSeparate[0] = parseFloat(geocodeSeparate[0]).toFixed(5);
+    geocodeSeparate[1] = parseFloat(geocodeSeparate[1]).toFixed(5);
     setCoordinates((prevValues) => ({
       ...prevValues,
-      geoCode: geocode,
+      geoCode: `${geocodeSeparate[0]}, ${geocodeSeparate[1]}`,
     }));
   };
 
@@ -635,11 +645,13 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
               aria-describedby="modal-modal-description"
             >
               <Box sx={style}>
-                <GeocodeModal  geocode={handleGeocode} onClose={handleModalClose} />
+                <GeocodeModal
+                  geocode={handleGeocode}
+                  onClose={handleModalClose}
+                />
               </Box>
             </Modal>
           </div>
-          
         </div>
         <div>
           <div className="form-control-input">
@@ -1055,12 +1067,36 @@ const AddEmployee = ({ roleType, onUserSuccess, editEmployeeData }) => {
             <button onClick={onUserSuccess} className="btn btn-secondary">
               Back
             </button>
-            <button onClick={handleSubmit} className="btn btn-primary">
+            <button type='submit' onClick={handleSubmit} className="btn btn-primary">
               {editEmployeeData?.id ? "Update" : "Create"} Employee
             </button>
           </div>
         </div>
       </div>
+      {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "fixed",
+                // backgroundColor: "#000000",
+                zIndex: 1,
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                opacity: 1,
+                color: "#000000",
+                // height: "100vh",
+                // width: "100vw",
+              }}
+            >
+              <LoaderComponent />
+            </div>
+            ) : (
+              " "
+            )}
     </div>
   );
 };

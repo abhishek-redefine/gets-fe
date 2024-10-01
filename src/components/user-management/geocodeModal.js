@@ -1,5 +1,6 @@
 import { Box, FormControl, MenuItem, TextField } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
+import LoaderComponent from "../loader";
 
 const GeocodeModal = ({ geocode, onClose }) => {
   const [loading, setLoading] = useState(true);
@@ -10,7 +11,6 @@ const GeocodeModal = ({ geocode, onClose }) => {
   const [predictions, setPredictions] = useState([]);
   const [searchText, setSearchText] = useState("");
   const searchTextFieldRef = useRef(null);
-
 
   const mapDetails = async () => {
     setLoading(true);
@@ -28,10 +28,7 @@ const GeocodeModal = ({ geocode, onClose }) => {
     mapDetails();
   }, []);
 
-
-
   const initializeMap = async () => {
-    
     const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 
     const newMap = new window.google.maps.Map(document.getElementById("map"), {
@@ -47,22 +44,20 @@ const GeocodeModal = ({ geocode, onClose }) => {
       title: "This marker is draggable.",
     });
 
-    newMarker.addListener('dragend', (event) => {
+    newMarker.addListener("dragend", (event) => {
       setLat(event.latLng.lat());
       setLng(event.latLng.lng());
     });
-  
+
     setMap(newMap);
     setMarker(newMarker);
     setLoading(false);
   };
 
-
-
   useEffect(() => {
     const loadMapScript = () => {
       const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyC3XA5d-1ff6W3bK_NDxqKSb05ovVtQk68&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCjCSA_F-jzjEfZ6UbJteUHICgmGguuGUA&libraries=places`;
       script.async = true;
       script.onload = () => {
         initializeMap();
@@ -90,7 +85,10 @@ const GeocodeModal = ({ geocode, onClose }) => {
     const service = new window.google.maps.places.AutocompleteService();
 
     service.getPlacePredictions({ input }, (predictions, status) => {
-      if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
+      if (
+        status === window.google.maps.places.PlacesServiceStatus.OK &&
+        predictions
+      ) {
         setPredictions(predictions);
       } else {
         setPredictions([]);
@@ -111,7 +109,10 @@ const GeocodeModal = ({ geocode, onClose }) => {
   const handlePlaceSelect = (placeId) => {
     const service = new window.google.maps.places.PlacesService(map);
     service.getDetails({ placeId }, (place, status) => {
-      if (status === window.google.maps.places.PlacesServiceStatus.OK && place.geometry) {
+      if (
+        status === window.google.maps.places.PlacesServiceStatus.OK &&
+        place.geometry
+      ) {
         const location = place.geometry.location;
         setLat(location.lat());
         setLng(location.lng());
@@ -123,21 +124,19 @@ const GeocodeModal = ({ geocode, onClose }) => {
           map.panTo(location);
         }
         setPredictions([]);
-        setSearchText(''); 
+        setSearchText("");
       }
     });
   };
 
   const handleSave = () => {
-    if (typeof geocode === 'function') {
-      console.log('in geocode');
+    if (typeof geocode === "function") {
+      console.log("in geocode");
       geocode(`${lat}, ${lng}`);
     }
     onClose();
-    console.log("lat: ", lat, "lng :", lng)
+    console.log("lat: ", lat, "lng :", lng);
   };
-
-
 
   return (
     <div
@@ -159,48 +158,52 @@ const GeocodeModal = ({ geocode, onClose }) => {
         }}
       >
         <h3>Geocode</h3>
-          <FormControl
+        <FormControl
+          style={{
+            fontFamily: "DM Sans",
+            width: "290px",
+            // backgroundColor: "pink",
+          }}
+        >
+          <TextField
+            label="Address"
+            size="small"
+            fullWidth
+            value={searchText}
             style={{
-              fontFamily: "DM Sans",
-              width: "290px",
-              // backgroundColor: "pink",
+              backgroundColor: "white",
+              height: "40px",
+              fontSize: "15px",
             }}
-          >
-            <TextField
-              label="Address"
-              size="small"
-              fullWidth
-              value={searchText}
-              style={{ backgroundColor: "white", height: "40px", fontSize: "15px", }}
-              inputRef={searchTextFieldRef}
-              onChange={handleInputChange}
-            />
-            {predictions.length > 0 && (
-              <Box
-                style={{
-                  width: "100%",
-                  backgroundColor: "white",
-                  border: "1px solid #ccc",
-                  maxHeight: "100px",
-                  overflowY: "auto",
-                  position: "absolute",
-                  top: "41px",
-                  zIndex: 2,
-                }}
-              >
-                {predictions.map((prediction) => (
-                  <MenuItem
-                    key={prediction.place_id}
-                    value={prediction.place_id}
-                    style={{ fontSize: "15px", zIndex: 1 }}
-                    onClick={() => handlePlaceSelect(prediction.place_id)}
-                  >
-                    {prediction.description}
-                  </MenuItem>
-                ))}
-              </Box>
-            )}
-          </FormControl>
+            inputRef={searchTextFieldRef}
+            onChange={handleInputChange}
+          />
+          {predictions.length > 0 && (
+            <Box
+              style={{
+                width: "100%",
+                backgroundColor: "white",
+                border: "1px solid #ccc",
+                maxHeight: "100px",
+                overflowY: "auto",
+                position: "absolute",
+                top: "41px",
+                zIndex: 2,
+              }}
+            >
+              {predictions.map((prediction) => (
+                <MenuItem
+                  key={prediction.place_id}
+                  value={prediction.place_id}
+                  style={{ fontSize: "15px", zIndex: 1 }}
+                  onClick={() => handlePlaceSelect(prediction.place_id)}
+                >
+                  {prediction.description}
+                </MenuItem>
+              ))}
+            </Box>
+          )}
+        </FormControl>
       </div>
       <Box
         style={{
@@ -209,7 +212,9 @@ const GeocodeModal = ({ geocode, onClose }) => {
         }}
       >
         {loading ? (
-          <div>Loading...</div>
+          <div style={{width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center"}}>
+            <LoaderComponent />
+          </div>
         ) : (
           <div id="map" style={{ width: "100%", height: "100%" }}></div>
         )}

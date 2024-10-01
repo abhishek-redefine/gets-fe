@@ -6,7 +6,8 @@ import {
   Pagination,
 } from "@mui/material";
 import moment from "moment";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import LoaderComponent from "../loader";
 
 const Grid = ({
   headers,
@@ -19,6 +20,7 @@ const Grid = ({
   pageNoText = "pageNo",
   enableDisableRow = false,
   bookingGrid = false,
+  isLoading
 }) => {
   const [isMenu, setIsMenu] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -100,7 +102,10 @@ const Grid = ({
     return listItem[header.key];
   };
 
-  const changeRadio = () => {};
+  useEffect(() => {
+    console.log(pagination);
+    console.log("pagination>>>", pagination);
+  }, [pagination]);
 
   return (
     <div>
@@ -131,7 +136,7 @@ const Grid = ({
             })}
           </tr>
         </thead>
-        <tbody>
+        {/* <tbody>
           {listing.map((listItem, idx) => (
             <tr key={`${idx}tr`}>
               {headers.map((header, ix) => {
@@ -184,6 +189,83 @@ const Grid = ({
               })}
             </tr>
           ))}
+          {pagination && pagination?.totalPages > 1 && (
+            <tr>
+              <td colSpan={headers.length}>
+                <Pagination
+                  variant="outlined"
+                  showFirstButton={true}
+                  showLastButton={true}
+                  className="paginationContainer"
+                  count={pagination.totalPages}
+                  page={pagination[pageNoText] + 1}
+                  onChange={handleChange}
+                />
+              </td>
+            </tr>
+          )}
+        </tbody> */}
+        <tbody>
+          {isLoading ? (
+            <tr>
+              <td colSpan={headers.length}>
+                <LoaderComponent />
+              </td>
+            </tr>
+          ) : (
+            listing.map((listItem, idx) => (
+              <tr key={`${idx}tr`}>
+                {headers.map((header, ix) => {
+                  let tdContent;
+                  if (!listItem[header.key] && header.html) {
+                    let additionalProps = {};
+                    if (header.radio) {
+                      additionalProps.checked = radioCheckedValue === idx;
+                    }
+                    tdContent = (
+                      <td
+                        key={`${ix}td`}
+                        style={{ cursor: "pointer" }}
+                        onClick={(e) => htmlClick(header, e, listItem, idx)}
+                      >
+                        {React.cloneElement(header.html, additionalProps)}
+                      </td>
+                    );
+                  } else {
+                    tdContent = bookingGrid ? (
+                      <td
+                        key={`${ix}td`}
+                        style={{
+                          color: !listItem.isCancelled
+                            ? "#000"
+                            : listItem.isCancelled
+                            ? "#ccc"
+                            : "#000",
+                        }}
+                      >
+                        {getText(header, listItem)}
+                      </td>
+                    ) : (
+                      <td
+                        key={`${ix}td`}
+                        style={{
+                          color:
+                            enableDisableRow && listItem.enabled
+                              ? "#000"
+                              : enableDisableRow && !listItem.enabled
+                              ? "#ccc"
+                              : "#000",
+                        }}
+                      >
+                        {getText(header, listItem)}
+                      </td>
+                    );
+                  }
+                  return tdContent;
+                })}
+              </tr>
+            ))
+          )}
           {pagination && pagination?.totalPages > 1 && (
             <tr>
               <td colSpan={headers.length}>

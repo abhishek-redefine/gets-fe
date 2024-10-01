@@ -22,6 +22,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { TimeField } from "@mui/x-date-pickers/TimeField";
 import dayjs from "dayjs";
 import GeocodeModal from "../user-management/geocodeModal";
+import LoaderComponent from "../loader";
 
 const style = {
   position: "absolute",
@@ -118,6 +119,7 @@ const NodalPoint = () => {
     page: 0,
     size: 10,
   });
+  const [loading, setLoading] = useState(false);
 
   const [openGeocodeModal, setOpenGeocodeModal] = useState(false);
   const handleGeocodeModalOpen = () => setOpenGeocodeModal(true);
@@ -148,6 +150,8 @@ const NodalPoint = () => {
       values.reportingTime = reportingTime;
       console.log("clicked", values);
       try {
+        setLoading(true);
+        // await new Promise((resolve) => setTimeout(resolve, 5000));
         const response = await RoutingService.createNodalPoint({
           nodalDTO: values,
         });
@@ -171,6 +175,8 @@ const NodalPoint = () => {
         handleModalClose();
       } catch (err) {
         console.log(err);
+      } finally {
+        setLoading(false);
       }
     },
   });
@@ -184,7 +190,7 @@ const NodalPoint = () => {
       const { data } = response || {};
       const { clientOfficeDTO } = data || {};
       setOffice(clientOfficeDTO);
-    } catch (e) { }
+    } catch (e) {}
   };
   // const fetchAllZones = async () => {
   //   try {
@@ -206,9 +212,9 @@ const NodalPoint = () => {
     try {
       const page = {
         page: 0,
-        size: 100
-      }
-      let params = new URLSearchParams(page)
+        size: 100,
+      };
+      let params = new URLSearchParams(page);
       const response = await RoutingService.getAllArea(params);
       console.log(response.data);
       const areaDTO = response.data.data;
@@ -222,12 +228,14 @@ const NodalPoint = () => {
     setSearchValues({
       officeId: "",
       areaName: "",
-    })
+    });
     fetchAllNodalPoints(true);
-  }
+  };
 
   const fetchAllNodalPoints = async (search = false) => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       let params = new URLSearchParams(pagination);
       let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
@@ -238,15 +246,9 @@ const NodalPoint = () => {
           delete allSearchValues[objKey];
         }
       });
-      const response = search ? await RoutingService.getAllNodalPoints(
-        params,
-        {}
-      ) 
-      :
-      await RoutingService.getAllNodalPoints(
-        params,
-        allSearchValues
-      );
+      const response = search
+        ? await RoutingService.getAllNodalPoints(params, {})
+        : await RoutingService.getAllNodalPoints(params, allSearchValues);
       const { data } = response;
       console.log(data);
       setNodalPoints(data.data);
@@ -255,6 +257,8 @@ const NodalPoint = () => {
       setPaginationData(localPaginationData);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -289,11 +293,18 @@ const NodalPoint = () => {
 
   const handleGeocode = (geocode) => {
     console.log("Here in parent geocode: " + geocode);
-    formik.setFieldValue("geoCode", geocode);
+    let geocodeSeparate = geocode.split(",");
+    geocodeSeparate[0] = parseFloat(geocodeSeparate[0]).toFixed(5);
+    geocodeSeparate[1] = parseFloat(geocodeSeparate[1]).toFixed(5);
+    formik.setFieldValue(
+      "geoCode",
+      `${geocodeSeparate[0]}, ${geocodeSeparate[1]}`
+    );
     setCoordinates((prevValues) => ({
       ...prevValues,
-      geoCode: geocode,
+      geoCode: `${geocodeSeparate[0]}, ${geocodeSeparate[1]}`,
     }));
+    // console.log("Field value: " + coordinates.geoCode)
   };
 
   useEffect(() => {
@@ -375,7 +386,7 @@ const NodalPoint = () => {
                     MenuListProps: {
                       sx: {
                         maxHeight: 200,
-                        overflowY: 'auto',
+                        overflowY: "auto",
                       },
                     },
                   }}
@@ -425,6 +436,8 @@ const NodalPoint = () => {
           onMenuItemClick={onMenuItemClick}
           handlePageChange={handlePageChange}
           enableDisableRow={true}
+          pagination={paginationData}
+          isLoading={loading}
         />
         <Modal
           open={openModal}
@@ -476,7 +489,7 @@ const NodalPoint = () => {
                         MenuListProps: {
                           sx: {
                             maxHeight: 200,
-                            overflowY: 'auto',
+                            overflowY: "auto",
                           },
                         },
                       }}
@@ -603,6 +616,30 @@ const NodalPoint = () => {
                 </div>
               </div>
             </div>
+            {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "fixed",
+                // backgroundColor: "#000000",
+                zIndex: 1,
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                opacity: 1,
+                color: "#000000",
+                // height: "100vh",
+                // width: "100vw",
+              }}
+            >
+              <LoaderComponent />
+            </div>
+            ) : (
+              " "
+            )}
           </Box>
         </Modal>
       </div>

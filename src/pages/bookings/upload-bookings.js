@@ -57,13 +57,18 @@ const UploadBooking = ({}) => {
   const dispatch = useDispatch();
 
   const [bookingListing, setBookingListing] = useState();
+  const [loading, setLoading] = useState(false);
 
   const fetchAllUploadBookings = async () => {
     try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
       const response = await BookingService.listAllBookings();
       setBookingListing(response.data.data);
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -144,6 +149,7 @@ const UploadBooking = ({}) => {
           headers={headers}
           listing={bookingListing}
           onMenuItemClick={onMenuItemClick}
+          isLoading={loading}
         />
       </div>
     </div>
