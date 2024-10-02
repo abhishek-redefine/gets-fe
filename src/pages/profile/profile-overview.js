@@ -133,6 +133,34 @@ const ProfileOverview = () => {
             }}
           />
         )}
+        {/* {userDetails.gender === "MALE" && (
+          <img
+            src="/images/maleUserIcon.svg"
+            width={60}
+            height={60}
+            alt="profile-img"
+            style={{
+              borderRadius: "50%",
+              marginRight: "20px",
+              padding: "8px 5px 5px",
+              backgroundColor: "#e5e5e5",
+            }}
+          />
+        )}
+        {userDetails.gender === "FEMALE" && (
+          <img
+            src="/images/femaleUserIcon.svg"
+            width={60}
+            height={60}
+            alt="profile-img"
+            style={{
+              borderRadius: "50%",
+              marginRight: "20px",
+              padding: "8px 5px 5px",
+              backgroundColor: "#e5e5e5",
+            }}
+          />
+        )} */}
         <div>
           <h3>{userDetails.name}</h3>
           <p style={{ marginTop: 2 }}>Joined {userDetails.startDate}</p>
