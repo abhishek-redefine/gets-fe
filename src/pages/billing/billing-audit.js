@@ -32,6 +32,7 @@ const MainComponent = () => {
   });
 
   const [selectedTripId, setSelectedTripId] = useState(false);
+  const [tripDetails, setTripDetails] = useState({});
   const handleTripInfoScreenClose = () => {
     console.log("Screen closed");
     setSelectedTripId(false);
@@ -115,9 +116,12 @@ const MainComponent = () => {
     }
   };
 
-  const handleTripClick = () => {
+  const handleVehicleIdClick = (row) => {
+    console.log("Clicked vehicle id row>>>", row)
     setSelectedTripId(true);
+    setTripDetails(row);
   };
+
 
   useEffect(() => {
     if (!shiftTypes?.length) {
@@ -129,7 +133,7 @@ const MainComponent = () => {
   return (
     <div>
       {selectedTripId ? (
-        <BillingAuditDetails onClose={handleTripInfoScreenClose} />
+        <BillingAuditDetails onClose={handleTripInfoScreenClose} tripDetails={tripDetails}/>
       ) : (
         <div>
           <div
@@ -285,7 +289,7 @@ const MainComponent = () => {
             >
               <h3>Details</h3>
             </div>
-            <BillingAuditTable list={list} vehicleIdClicked={handleTripClick} />
+            <BillingAuditTable list={list} vehicleIdClicked={handleVehicleIdClick}/>
             <div
               style={{
                 display: "flex",

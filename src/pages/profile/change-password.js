@@ -16,7 +16,7 @@ const style = {
   borderRadius: 5,
 };
 
-const ProfileOverview = () => {
+const ChangePassword = () => {
   const [userDetails, setUserDetails] = useState({});
   const [userEmail, setUserEmail] = useState("");
 
@@ -78,17 +78,33 @@ const ProfileOverview = () => {
       <div
         style={{ display: "flex", alignItems: "center", marginBottom: "30px" }}
       >
-        <img
-          src=""
-          alt="profile-img"
-          style={{
-            borderRadius: "50%",
-            width: "80px",
-            height: "80px",
-            marginRight: "20px",
-            backgroundColor: "pink",
-          }}
-        />
+        {userDetails.gender === "MALE" ? (
+          <img
+            src="/images/maleUserIcon.svg"
+            width={60}
+            height={60}
+            alt="profile-img"
+            style={{
+              borderRadius: "50%",
+              marginRight: "20px",
+              padding: "8px 5px 5px",
+              backgroundColor: "#e5e5e5",
+            }}
+          />
+        ) : (
+          <img
+            src="/images/femaleUserIcon.svg"
+            width={60}
+            height={60}
+            alt="profile-img"
+            style={{
+              borderRadius: "50%",
+              marginRight: "20px",
+              padding: "8px 5px 5px",
+              backgroundColor: "#e5e5e5",
+            }}
+          />
+        )}
         <div>
           <h3>{userDetails.name}</h3>
           <p style={{ marginTop: 2 }}>Joined {userDetails.startDate}</p>
@@ -126,7 +142,7 @@ const ProfileOverview = () => {
                   value={value}
                   size="small"
                   onChange={(e) => handleChange(key, e)}
-                  style={{ width: "250px", marginTop: 8, overflow: 'hidden' }}
+                  style={{ width: "250px", marginTop: 8, overflow: "hidden" }}
                 />
               </Grid>
             ))}
@@ -137,4 +153,4 @@ const ProfileOverview = () => {
   );
 };
 
-export default Profile(ProfileOverview);
+export default Profile(ChangePassword);

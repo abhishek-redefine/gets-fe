@@ -1,12 +1,4 @@
-import {
-  Box,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Modal,
-  Select,
-  TextField,
-} from "@mui/material";
+import { Box, Modal } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import React, { useState } from "react";
 import BillingApprovalsDetailsTable from "./billingApprovalsDetailsTable";
@@ -105,13 +97,6 @@ const BillingApprovalsDetails = ({ onClose }) => {
     handleModalOpen();
   };
 
-  const IssueType = [
-    "Vehicle Not Assigned",
-    "Trip Not Started",
-    "Trip Not Ended",
-    "None",
-  ];
-
   const TripInformation = {
     "Trip Id": "TR-001",
     "Office Id": "98776556",
@@ -130,8 +115,8 @@ const BillingApprovalsDetails = ({ onClose }) => {
     "Registration ID": "RJ-8997-7899087",
     "Vehicle Type": "Cab",
     "Vehicle Model": "Punch",
-    "Driver Name": "",
-    "Driver Phone No.": "",
+    "Driver Name": "Kishan",
+    "Driver Phone No.": "9874567054",
     "Sticker No.": "Sticker1",
   });
 
@@ -390,7 +375,8 @@ const BillingApprovalsDetails = ({ onClose }) => {
               style={{
                 backgroundColor: "white",
                 borderRadius: "20px",
-                paddingBottom: 60,
+                height: "100%",
+                // paddingBottom: 60,
               }}
             >
               <div
@@ -419,172 +405,58 @@ const BillingApprovalsDetails = ({ onClose }) => {
                     columnSpacing={{ xs: 1, sm: 2, md: 3 }}
                   >
                     <Grid item xs={12}>
-                      {Object.entries(vehicleInformation).map(([key]) => (
-                        <Box
-                          display="flex"
-                          // justifyContent="space-between"
-                          alignItems="center"
-                          sx={{
-                            width: "100%",
-                            marginBottom: "15px",
-                          }}
-                          key={key}
-                        >
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "flex-start",
-                              width: "50%",
-                              marginRight: 30,
-                              marginBottom: "10px",
+                      {Object.entries(vehicleInformation).map(
+                        ([key, value]) => (
+                          <Box
+                            display="flex"
+                            // justifyContent="space-between"
+                            alignItems="center"
+                            sx={{
+                              width: "100%",
+                              marginBottom: "15px",
                             }}
+                            key={key}
                           >
-                            <p
-                              key={key}
+                            <div
                               style={{
-                                fontSize: "15px",
-                                fontWeight: "600",
+                                display: "flex",
+                                justifyContent: "flex-start",
+                                width: "50%",
+                                marginRight: 30,
+                                marginBottom: "10px",
                               }}
                             >
-                              {key}
-                            </p>
-                          </div>
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "flex-start",
-                              width: "45%",
-                              marginBottom: "10px",
-                              // backgroundColor: "pink",
-                            }}
-                          >
-                            <Grid item xs={12} key={key}>
-                              {vehicleInformation[key] === "" ? (
-                                <TextField
-                                  key={key}
-                                  placeholder="Enter value"
-                                  size="small"
-                                  value={vehicleInformation[key]}
-                                  onChange={(e) =>
-                                    handleVehicleInfoChange(key, e.target.value)
-                                  }
-                                  style={{
-                                    width: "90%",
-                                  }}
-                                  inputProps={{
-                                    style: {
-                                      fontFamily: "DM Sans",
-                                      fontSize: 15,
-                                    },
-                                  }}
-                                />
-                              ) : (
-                                <p
-                                  style={{
-                                    fontSize: "15px",
-                                  }}
-                                >
-                                  {vehicleInformation[key]}
-                                </p>
-                              )}
-                            </Grid>
-                          </div>
-                        </Box>
-                      ))}
+                              <p
+                                key={key}
+                                style={{
+                                  fontSize: "15px",
+                                  fontWeight: "600",
+                                }}
+                              >
+                                {key}
+                              </p>
+                            </div>
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "flex-start",
+                                width: "45%",
+                                marginBottom: "10px",
+                                // backgroundColor: "pink",
+                              }}
+                            >
+                              <p
+                                style={{
+                                  fontSize: "15px",
+                                }}
+                              >
+                                {value}
+                              </p>
+                            </div>
+                          </Box>
+                        )
+                      )}
                     </Grid>
-                    {/* <Grid item xs={6}>
-                      {Object.keys(VehicleInformation).map((key) => (
-                        <Grid item xs={12} key={key}>
-                          {VehicleInformation[key] === "" ? (
-                            <input
-                              placeholder="Enter value"
-                              style={{
-                                fontSize: "15px",
-                                marginBottom: "24px",
-                                padding: "2px 8px",
-                                fontFamily: "DM Sans",
-                                border: "0.05rem solid #b2b2b2de",
-                                borderRadius: "4px",
-                                width: "90%",
-                              }}
-                            />
-                          ) : (
-                            <p
-                              style={{
-                                fontSize: "15px",
-                                marginBottom: "30px",
-                              }}
-                            >
-                              {VehicleInformation[key]}
-                            </p>
-                          )}
-                        </Grid>
-                      ))}
-                    </Grid> */}
-                    <FormControl
-                      fullWidth
-                      style={{
-                        margin: "0 19px 20px 25px",
-                        padding: "4px 0",
-                        fontFamily: "DM Sans",
-                      }}
-                    >
-                      <InputLabel id="shiftType-label">Issue Type *</InputLabel>
-                      <Select
-                        sx={{
-                          backgroundColor: "white",
-                          fontSize: "15px",
-                          padding: "0px",
-                          ".MuiSelect-select": {
-                            padding: "12px",
-                          },
-                        }}
-                        label="Issue Type *"
-                        labelId="issue-type-label"
-                        id="issueType"
-                        name="issueType"
-                        value={searchValues.issueType}
-                        onChange={handleFilterChange}
-                      >
-                        {IssueType.map((item) => (
-                          <MenuItem
-                            value={item}
-                            style={{
-                              fontSize: "15px",
-                            }}
-                          >
-                            {item}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                    <Box
-                      component="form"
-                      style={{
-                        width: 500,
-                        height: 20,
-                        maxWidth: "100%",
-                        margin: "0 19px 20px 25px",
-                      }}
-                      noValidate
-                      autoComplete="off"
-                    >
-                      <TextField
-                        id="outlined-basic"
-                        label="Write your remarks"
-                        variant="outlined"
-                        fullWidth
-                        multiline
-                        rows={3}
-                        size="small"
-                        inputProps={{
-                          style: {
-                            fontFamily: "DM Sans",
-                            fontSize: 15,
-                          },
-                        }}
-                      />
-                    </Box>
                   </Grid>
                 </Box>
               </div>

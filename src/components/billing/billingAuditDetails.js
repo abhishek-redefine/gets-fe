@@ -13,6 +13,7 @@ import BillingAuditDetailsTable from "./billingAuditDetailsTable";
 import ViewMapModal from "./viewMapModal";
 import TripHistoryModal from "./tripHistoryModal";
 import ConfirmationModal from "./confirmationModal";
+import TripService from "@/services/trip.service";
 
 const style = {
   topModals: {
@@ -37,10 +38,12 @@ const style = {
   },
 };
 
-const BillingAuditDetails = ({ onClose }) => {
+const BillingAuditDetails = ({ onClose, tripDetails }) => {
   const [searchValues, setSearchValues] = useState({
-    issueType: "",
+    issueType: tripDetails.issueType,
   });
+
+  console.log("issue type: ", tripDetails.issueType);
 
   const [openViewMapModal, setOpenViewMapModal] = useState(false);
   const handleViewMapModalOpen = () => {
@@ -106,10 +109,11 @@ const BillingAuditDetails = ({ onClose }) => {
   };
 
   const IssueType = [
-    "Vehicle Not Assigned",
-    "Trip Not Started",
-    "Trip Not Ended",
-    "None",
+    searchValues.issueType,
+    // "Vehicle Not Assigned",
+    // "Trip Not Started",
+    // "Trip Not Ended",
+    // "None",
   ];
 
   const TripInformation = {
@@ -158,6 +162,28 @@ const BillingAuditDetails = ({ onClose }) => {
     "Delay Reason": "NA",
     "Trip Remarks": "Good",
   };
+
+  // const fetchTripDetails = async () => {
+  //   try {
+  //     setLoading(true);
+  //     // await new Promise((resolve) => setTimeout(resolve, 5000));
+  //     const response = await TripService.getTripByTripId(tripId);
+  //     console.log("Clicked trip data>>>", response.data);
+  //     setTripDetails(response.data);
+  //     if (response.status === 500) {
+  //       dispatch(
+  //         toggleToast({
+  //           message: `Failed! Please try again later.`,
+  //           type: "error",
+  //         })
+  //       );
+  //     }
+  //   } catch (err) {
+  //     console.log(err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
     <div
@@ -472,7 +498,9 @@ const BillingAuditDetails = ({ onClose }) => {
                         fontFamily: "DM Sans",
                       }}
                     >
-                      <InputLabel id="shiftType-label">Issue Type *</InputLabel>
+                      <InputLabel id="issue-type-label">
+                        Issue Type *
+                      </InputLabel>
                       <Select
                         sx={{
                           backgroundColor: "white",
@@ -487,10 +515,11 @@ const BillingAuditDetails = ({ onClose }) => {
                         id="issueType"
                         name="issueType"
                         value={searchValues.issueType}
-                        onChange={handleFilterChange}
+                        disabled
                       >
                         {IssueType.map((item) => (
                           <MenuItem
+                            key={item}
                             value={item}
                             style={{
                               fontSize: "15px",
@@ -501,6 +530,7 @@ const BillingAuditDetails = ({ onClose }) => {
                         ))}
                       </Select>
                     </FormControl>
+
                     <Box
                       component="form"
                       style={{
