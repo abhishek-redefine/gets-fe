@@ -3,7 +3,7 @@ import Grid from "@/components/grid";
 import { display } from "@mui/system";
 import AddContract from "./addContract";
 
-const Contract = () => {
+const ContractType = () => {
   const headers = [
     {
       key: "contractId",
@@ -145,4 +145,4 @@ const Contract = () => {
   );
 };
 
-export default Contract;
+export default ContractType;
