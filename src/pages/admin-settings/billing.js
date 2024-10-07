@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import Configurations from "@/layouts/configurations";
-import BillingConfigurations from "@/components/configurations/billing/billing";
+import ContractType from "@/components/admin-settings/billing/contractType";
+import adminSettings from "@/layouts/admin-settings";
 
 const Billing = () => {
-  const [currentState, setCurrentState] = useState("Billing");
+  const [currentState, setCurrentState] = useState("Contract Type");
 
   const changeState = (newState) => {
     setCurrentState(newState.displayName);
@@ -11,7 +11,7 @@ const Billing = () => {
 
   const ComplianceType = [
     {
-      displayName: "Billing",
+      displayName: "Contract Type",
     },
   ];
 
@@ -32,10 +32,10 @@ const Billing = () => {
       </div>
 
       <div style={{ padding: "20px 0" }}>
-        <div>{currentState === "Billing" && <BillingConfigurations />}</div>
+        <div>{currentState === "Contract Type" && <ContractType />}</div>
       </div>
     </div>
   );
 };
 
-export default Configurations(Billing);
+export default adminSettings(Billing);

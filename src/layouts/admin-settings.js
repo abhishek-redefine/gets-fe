@@ -31,6 +31,7 @@ const adminSettings = (WrappedComponent) => {
                         <Link onClick={() => changeRoute('shift-time')} className={currentActiveState === 'shift-time' && styles.selected || ''} href='shift-time'>Shift Time</Link><br />
                         <Link onClick={() => changeRoute('user-management')} className={currentActiveState === 'user-management' && styles.selected || ''} href='user-management'>User Management</Link><br />
                         <Link onClick={() => changeRoute('routing')} className={currentActiveState === 'routing' && styles.selected || ''} href='routing'>Routing</Link><br />
+                        <Link onClick={() => changeRoute('billing')} className={currentActiveState === 'billing' && styles.selected || ''} href='billing'>Billing</Link><br />
                         <Link onClick={() => changeRoute('compliance')} className={currentActiveState === 'compliance' && styles.selected || ''} href='compliance'>Compliance</Link><br />
                         {/* <Link onClick={() => changeRoute('booking')} className={currentActiveState === 'booking' && styles.selected || ''} href='booking'>Booking</Link><br />
                     <Link onClick={() => changeRoute('routing')} className={currentActiveState === 'routing' && styles.selected || ''} href='routing'>Routing</Link><br />
