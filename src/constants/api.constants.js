@@ -173,4 +173,7 @@ export const API_PATH = {
   NO_SHOW_SUMMARY_REPORT : '/tripNoShowRosterReportSummary',
   TRIP_HISTORY: "/tripHistory",
   MARK_NO_SHOW: "/markNoShow",
+  CONTRACT : "/contract",
+  UPDATE_CONTRACT : "/updateContract",
+  CONTRACTS : "/contacts",
 };
