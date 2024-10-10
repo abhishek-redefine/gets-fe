@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { toggleToast } from '@/redux/company.slice';
 import { useDispatch } from 'react-redux';
 import ComplianceService from '@/services/compliance.service';
-import { object, string } from 'yup';
+import { object, string, array } from 'yup';
 import TextInputField from '@/components/multistepForm/TextInputField';
 import MultiStepForm, { FormStep } from '@/components/multistepForm/MultiStepForm';
 import SelectInputField from '../multistepForm/SelectInputField';
@@ -15,12 +15,15 @@ import IframeComponent from '../iframe/Iframe';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import LoaderComponent from '../loader';
+import ContractService from '@/services/contract.service';
+import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 
 const validationSchemaStepOneA = object({
     vendorOfficeId: string().required('Vendor Office Id is required'),
     name: string().required('Vendor Name is required'),
     address: string().required('Vendor Address is required'),
     gst: string().required('Vendor GST is required'),
+    contractIds: array().of(string()).required('Contract is required'),
     pan: string().required('Pan Card is required'),
     contactPersonName: string().required('Contact Person Name is required'),
     contactPersonMobile: string().required('Contact Person No is required'),
@@ -40,6 +43,7 @@ const validationSchemaStepOneB = object({
     name: string().required('Vendor Name is required'),
     address: string().required('Vendor Address is required'),
     gst: string().required('Vendor GST is required'),
+    contractIds: array().of(string()).required('Contract is required'),
     pan: string().required('Pan Card is required'),
     contactPersonName: string().required('Contact Person Name is required'),
     contactPersonMobile: string().required('Contact Person No is required'),
@@ -63,6 +67,7 @@ const validationSchemaStepOneC = object({
     name: string().required('Vendor Name is required'),
     address: string().required('Vendor Address is required'),
     gst: string().required('Vendor GST is required'),
+    contractIds: array().of(string()).required('Contract is required'),
     pan: string().required('Pan Card is required'),
     contactPersonName: string().required('Contact Person Name is required'),
     contactPersonMobile: string().required('Contact Person No is required'),
@@ -126,6 +131,7 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
         name: "",
         address: "",
         gst: "",
+        contractIds: [],
         pan: "",
         contactPersonName: "",
         contactPersonMobile: "",
@@ -147,6 +153,7 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
         name: "",
         address: "",
         gst: "",
+        contractIds: [],
         pan: "",
         contactPersonName: "",
         contactPersonMobile: "",
@@ -172,6 +179,7 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
         name: "",
         address: "",
         gst: "",
+        contractIds: [],
         pan: "",
         contactPersonName: "",
         contactPersonMobile: "",
@@ -208,6 +216,12 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
+    const [pagination, setPagination] = useState({
+      page: 0,
+      size: 10,
+    });
+    const [contracts, setContracts] = useState([]);
+
     const [loading, setLoading] = useState(false);
 
     const [message,setMessage] = useState("");
@@ -216,139 +230,141 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
     const handleHide = () => setUniqueModal(false);
 
     const addNewVendorDetailsSubmit = async (values) => {
-        try {
-            if (EditVendorData.id || vendorId) {
-                //values.vendorOfficeId = initialValues.vendorOfficeId;
-                values.id = vendorId;
-                if (escalationNumber === 1) {
-                    values.escalationMatrices = [{
-                        "name": values.escalationMatrixL1Name,
-                        "email": values.escalationMatrixL1Email,
-                        "designation": values.escalationMatrixL1Designation,
-                        "contact": values.escalationMatrixL1MobileNo
-                    }]
-                } else if (escalationNumber === 2) {
-                    values.escalationMatrices = [{
-                        "name": values.escalationMatrixL1Name,
-                        "email": values.escalationMatrixL1Email,
-                        "designation": values.escalationMatrixL1Designation,
-                        "contact": values.escalationMatrixL1MobileNo
-                    },
-                    {
-                        "name": values.escalationMatrixL2Name,
-                        "email": values.escalationMatrixL2Email,
-                        "designation": values.escalationMatrixL2Designation,
-                        "contact": values.escalationMatrixL2MobileNo
-                    }]
-                } else if (escalationNumber === 3) {
-                    values.escalationMatrices = [{
-                        "name": values.escalationMatrixL1Name,
-                        "email": values.escalationMatrixL1Email,
-                        "designation": values.escalationMatrixL1Designation,
-                        "contact": values.escalationMatrixL1MobileNo
-                    },
-                    {
-                        "name": values.escalationMatrixL2Name,
-                        "email": values.escalationMatrixL2Email,
-                        "designation": values.escalationMatrixL2Designation,
-                        "contact": values.escalationMatrixL2MobileNo
-                    },
-                    {
-                        "name": values.escalationMatrixL3Name,
-                        "email": values.escalationMatrixL3Email,
-                        "designation": values.escalationMatrixL3Designation,
-                        "contact": values.escalationMatrixL3MobileNo
-                    }]
-                }
-                console.log("on submit>>>>",values);
-                setLoading(true);
-                // await new Promise((resolve) => setTimeout(resolve, 5000));
-                const response = await ComplianceService.updateVendorCompany({ "vendorCompany": values });
-                console.log("response of update>>>>>>",response);
-                if (response.status === 200) {
-                    setVendorId(response.data.vendorCompany.id);
-                    dispatch(toggleToast({ message: 'Vendor details updated successfully!', type: 'success' }));
-                    console.log("return true");
-                    return true;
-                } else if (response.status === 500) {
-                    dispatch(toggleToast({ message: 'Vendor details not updated. Please try again after some time.', type: 'error' }));
-                    return false;
-                }
-            } else {
-                if (escalationNumber === 1) {
-                    values.escalationMatrices = [{
-                        "name": values.escalationMatrixL1Name,
-                        "email": values.escalationMatrixL1Email,
-                        "designation": values.escalationMatrixL1Designation,
-                        "contact": values.escalationMatrixL1MobileNo
-                    }]
-                } else if (escalationNumber === 2) {
-                    values.escalationMatrices = [{
-                        "name": values.escalationMatrixL1Name,
-                        "email": values.escalationMatrixL1Email,
-                        "designation": values.escalationMatrixL1Designation,
-                        "contact": values.escalationMatrixL1MobileNo
-                    },
-                    {
-                        "name": values.escalationMatrixL2Name,
-                        "email": values.escalationMatrixL2Email,
-                        "designation": values.escalationMatrixL2Designation,
-                        "contact": values.escalationMatrixL2MobileNo
-                    }]
-                } else if (escalationNumber === 3) {
-                    values.escalationMatrices = [{
-                        "name": values.escalationMatrixL1Name,
-                        "email": values.escalationMatrixL1Email,
-                        "designation": values.escalationMatrixL1Designation,
-                        "contact": values.escalationMatrixL1MobileNo
-                    },
-                    {
-                        "name": values.escalationMatrixL2Name,
-                        "email": values.escalationMatrixL2Email,
-                        "designation": values.escalationMatrixL2Designation,
-                        "contact": values.escalationMatrixL2MobileNo
-                    },
-                    {
-                        "name": values.escalationMatrixL3Name,
-                        "email": values.escalationMatrixL3Email,
-                        "designation": values.escalationMatrixL3Designation,
-                        "contact": values.escalationMatrixL3MobileNo
-                    }]
-                }
-                setLoading(true);
-                // await new Promise((resolve) => setTimeout(resolve, 5000));
-                const response = await ComplianceService.createVendorCompany({ "vendorCompany": values });
-                console.log(response.status)
-                if (response.status === 201) {
-                    setVendorId(response.data.vendorCompany.id);
-                    EditVendorData.gstFilePath = "";
-                    EditVendorData.panFilePath = "";
-                    dispatch(toggleToast({ message: 'Vendor details added successfully!', type: 'success' }));
-                    return true;
-                } else if (response.status === 500) {
-                    dispatch(toggleToast({ message: 'Vendor details not added. Please try again after some time.', type: 'error' }));
-                    return false;
-                }
-            }
-        } catch (e) {
-            console.log("Error: ", e);
-            if(e.response.status === 409){
-                var message = e.response.data.message;
-                if(message.search('gst') != -1){
-                    setMessage("This GST number is already in use.");
-                }
-                else if(message.search('pan') != -1){
-                    setMessage("The PAN number is already in use.")
-                }
-                else if(message.search('contact_person_mobile') != -1){
-                    setMessage("The Contact person number is already in use.")
-                }
-                console.log(e.response.data.message)
-                handleShow();
-            }
-        } finally {
-            setLoading(false);
-        }
+        console.log("values>>>", values)
+        // try {
+        //    setLoading(true);
+        //     if (EditVendorData.id || vendorId) {
+        //         //values.vendorOfficeId = initialValues.vendorOfficeId;
+        //         values.id = vendorId;
+        //         if (escalationNumber === 1) {
+        //             values.escalationMatrices = [{
+        //                 "name": values.escalationMatrixL1Name,
+        //                 "email": values.escalationMatrixL1Email,
+        //                 "designation": values.escalationMatrixL1Designation,
+        //                 "contact": values.escalationMatrixL1MobileNo
+        //             }]
+        //         } else if (escalationNumber === 2) {
+        //             values.escalationMatrices = [{
+        //                 "name": values.escalationMatrixL1Name,
+        //                 "email": values.escalationMatrixL1Email,
+        //                 "designation": values.escalationMatrixL1Designation,
+        //                 "contact": values.escalationMatrixL1MobileNo
+        //             },
+        //             {
+        //                 "name": values.escalationMatrixL2Name,
+        //                 "email": values.escalationMatrixL2Email,
+        //                 "designation": values.escalationMatrixL2Designation,
+        //                 "contact": values.escalationMatrixL2MobileNo
+        //             }]
+        //         } else if (escalationNumber === 3) {
+        //             values.escalationMatrices = [{
+        //                 "name": values.escalationMatrixL1Name,
+        //                 "email": values.escalationMatrixL1Email,
+        //                 "designation": values.escalationMatrixL1Designation,
+        //                 "contact": values.escalationMatrixL1MobileNo
+        //             },
+        //             {
+        //                 "name": values.escalationMatrixL2Name,
+        //                 "email": values.escalationMatrixL2Email,
+        //                 "designation": values.escalationMatrixL2Designation,
+        //                 "contact": values.escalationMatrixL2MobileNo
+        //             },
+        //             {
+        //                 "name": values.escalationMatrixL3Name,
+        //                 "email": values.escalationMatrixL3Email,
+        //                 "designation": values.escalationMatrixL3Designation,
+        //                 "contact": values.escalationMatrixL3MobileNo
+        //             }]
+        //         }
+        //         console.log("on submit>>>>",values);
+        //         setLoading(true);
+        //         // await new Promise((resolve) => setTimeout(resolve, 5000));
+        //         const response = await ComplianceService.updateVendorCompany({ "vendorCompany": values });
+        //         console.log("response of update>>>>>>",response);
+        //         if (response.status === 200) {
+        //             setVendorId(response.data.vendorCompany.id);
+        //             dispatch(toggleToast({ message: 'Vendor details updated successfully!', type: 'success' }));
+        //             console.log("return true");
+        //             return true;
+        //         } else if (response.status === 500) {
+        //             dispatch(toggleToast({ message: 'Vendor details not updated. Please try again after some time.', type: 'error' }));
+        //             return false;
+        //         }
+        //     } else {
+        //         if (escalationNumber === 1) {
+        //             values.escalationMatrices = [{
+        //                 "name": values.escalationMatrixL1Name,
+        //                 "email": values.escalationMatrixL1Email,
+        //                 "designation": values.escalationMatrixL1Designation,
+        //                 "contact": values.escalationMatrixL1MobileNo
+        //             }]
+        //         } else if (escalationNumber === 2) {
+        //             values.escalationMatrices = [{
+        //                 "name": values.escalationMatrixL1Name,
+        //                 "email": values.escalationMatrixL1Email,
+        //                 "designation": values.escalationMatrixL1Designation,
+        //                 "contact": values.escalationMatrixL1MobileNo
+        //             },
+        //             {
+        //                 "name": values.escalationMatrixL2Name,
+        //                 "email": values.escalationMatrixL2Email,
+        //                 "designation": values.escalationMatrixL2Designation,
+        //                 "contact": values.escalationMatrixL2MobileNo
+        //             }]
+        //         } else if (escalationNumber === 3) {
+        //             values.escalationMatrices = [{
+        //                 "name": values.escalationMatrixL1Name,
+        //                 "email": values.escalationMatrixL1Email,
+        //                 "designation": values.escalationMatrixL1Designation,
+        //                 "contact": values.escalationMatrixL1MobileNo
+        //             },
+        //             {
+        //                 "name": values.escalationMatrixL2Name,
+        //                 "email": values.escalationMatrixL2Email,
+        //                 "designation": values.escalationMatrixL2Designation,
+        //                 "contact": values.escalationMatrixL2MobileNo
+        //             },
+        //             {
+        //                 "name": values.escalationMatrixL3Name,
+        //                 "email": values.escalationMatrixL3Email,
+        //                 "designation": values.escalationMatrixL3Designation,
+        //                 "contact": values.escalationMatrixL3MobileNo
+        //             }]
+        //         }
+        //         setLoading(true);
+        //         // await new Promise((resolve) => setTimeout(resolve, 5000));
+        //         const response = await ComplianceService.createVendorCompany({ "vendorCompany": values });
+        //         console.log(response.status)
+        //         if (response.status === 201) {
+        //             setVendorId(response.data.vendorCompany.id);
+        //             EditVendorData.gstFilePath = "";
+        //             EditVendorData.panFilePath = "";
+        //             dispatch(toggleToast({ message: 'Vendor details added successfully!', type: 'success' }));
+        //             return true;
+        //         } else if (response.status === 500) {
+        //             dispatch(toggleToast({ message: 'Vendor details not added. Please try again after some time.', type: 'error' }));
+        //             return false;
+        //         }
+        //     }
+        // } catch (e) {
+        //     console.log("Error: ", e);
+        //     if(e.response.status === 409){
+        //         var message = e.response.data.message;
+        //         if(message.search('gst') != -1){
+        //             setMessage("This GST number is already in use.");
+        //         }
+        //         else if(message.search('pan') != -1){
+        //             setMessage("The PAN number is already in use.")
+        //         }
+        //         else if(message.search('contact_person_mobile') != -1){
+        //             setMessage("The Contact person number is already in use.")
+        //         }
+        //         console.log(e.response.data.message)
+        //         handleShow();
+        //     }
+        // } finally {
+        //     setLoading(false);
+        // }
     }
 
     const completeNewVendorFormSubmit = async () => {
@@ -386,6 +402,7 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
                 name: "",
                 address: "",
                 gst: "",
+                contractIds: [],
                 pan: "",
                 contactPersonName: "",
                 contactPersonMobile: "",
@@ -454,6 +471,16 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
         }
     }
 
+    const fetchAllContract = async () => {
+        try {
+            let params = new URLSearchParams(pagination);
+            const response = await ContractService.GetAllContract(params, {});
+            setContracts(response.data.data);
+        } catch (e) {
+            console.error("Error fetching contracts:", e);
+        }
+      };
+
     const initializer = async () => {
         var officeResponse;
 
@@ -516,12 +543,12 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
         }
     }, [EditVendorData]);
 
-    // const onChangeHandler = (e) =>{
-    //     let allValues = {...initialValues};
-    //     allValues.vendorOfficeId = e.target.value;
-    //     console.log(allValues)
-    //     setInitialValues(allValues);
-    // }
+    const onChangeHandler = (e) =>{
+        let allValues = {...initialValues};
+        allValues.contractIds = e.target.value;
+        console.log(allValues)
+        setInitialValues(allValues);
+    }
 
     useEffect(() => {
         initializer();
@@ -553,6 +580,10 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
         }
     },[uploadCount])
 
+    useEffect(()=>{
+        fetchAllContract();
+    }, [pagination])
+
     return (
         <div>
             <MultiStepForm
@@ -568,6 +599,7 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
                     stepName="Vendor Details"
                     onSubmit={(values) => {
                         console.log("clicked submit btn");
+                        console.log("values>>>", values);
                         const status = addNewVendorDetailsSubmit(values)
                         return status;
                     }}
@@ -604,6 +636,27 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
                         <TextInputField
                             name="gst"
                             label="Vendor GST" />
+                        <FormControl fullWidth>
+                            <InputLabel id="contracts-label">Contract ID</InputLabel>
+                            <Select
+                                style={{width: "250px"}}                                
+                                labelId="contracts-label"
+                                id="contractIds"
+                                value={initialValues?.contractIds}
+                                // error={initialValues?.contractIds && initialValues?.contractIds === ""}
+                                name="contractIds"
+                                label="Contract ID"
+                                onChange={(e) => {onChangeHandler(e)}}
+                                multiple
+                            >
+                                {!!contracts?.length && contracts.map((contract, idx) => (
+                                    <MenuItem key={idx} value={contract.id}>{getFormattedLabel(contract.contractType)}, {contract.contractId}</MenuItem>
+                                ))}
+                            </Select>
+                            {/* {touched.contractIds && errors.contractIds && (
+                                <FormHelperText className='errorHelperText'>{errors.contractIds}</FormHelperText>
+                            )} */}
+                        </FormControl>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                         <TextInputField

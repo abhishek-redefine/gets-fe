@@ -25,6 +25,7 @@ import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import OfficeService from "@/services/office.service";
 import { getFormattedLabel } from "@/utils/utils";
+import ContractService from "@/services/contract.service";
 
 export const validationSchema = yup.object({
   officeId: yup.string("Select Office Id").required("Select Office Id"),
@@ -32,96 +33,96 @@ export const validationSchema = yup.object({
   contractName: yup
     .string("Enter Contract Name")
     .required("Enter Contract Name"),
-  endDate: yup.date("Enter End Date").required("Enter End Date"),
   startDate: yup.date("Enter Start Date").required("Enter Start Date"),
-  vehicleAcOption: yup
-    .string("Select Vehicle AC Option")
-    .required("Select Vehicle AC Option"),
-  fuelType: yup.string("Select Fuel Type").required("Select Fuel Type"),
-  workingShift: yup
-    .string("Select Working Shift")
-    .required("Select Working Shift"),
-  ageCriteria: yup.string("Enter Age Criteria").required("Enter Age Criteria"),
-  vehicleType: yup
-    .string("Select Vehicle Type")
-    .required("Select Vehicle Type"),
+  // endDate: yup.date("Enter End Date").required("Enter End Date"),
+  // vehicleAcOption: yup
+  //   .string("Select Vehicle AC Option")
+  //   .required("Select Vehicle AC Option"),
+  // fuelType: yup.string("Select Fuel Type").required("Select Fuel Type"),
+  // workingShift: yup
+  //   .string("Select Working Shift")
+  //   .required("Select Working Shift"),
+  // ageCriteria: yup.number("Enter Age Criteria").required("Enter Age Criteria"),
+  // vehicleType: yup
+  //   .string("Select Vehicle Type")
+  //   .required("Select Vehicle Type"),
   sittingCapacity: yup
-    .string("Enter Sitting Capacity")
+    .number("Enter Sitting Capacity")
     .required("Enter Sitting Capacity"),
-  flatTripRate: yup.string("Enter Flat Trip Rate").required("Enter Flat Trip Rate"),
+  tripRate: yup.number("Enter Trip Rate").required("Enter Trip Rate"),
   escortTripRate: yup
-    .string("Enter Escort Trip Rate")
+    .number("Enter Escort Trip Rate")
     .required("Enter Escort Trip Rate"),
-  kmLimit: yup
-    .string("Enter Total No Of Kms")
+  totalNoOfKms: yup
+    .number("Enter Total No Of Kms")
     .required("Enter Total No Of Kms"),
-  workingHrs: yup
-    .string("Enter Total No Of Hrs")
+  totalNoOfHrs: yup
+    .number("Enter Total No Of Hrs")
     .required("Enter Total No Of Hrs"),
-  packageType: yup
-    .string("Select Package Type")
-    .required("Select Package Type"),
+  // packageType: yup
+  //   .string("Select Package Type")
+  //   .required("Select Package Type"),
   packageAmount: yup
-    .string("Enter Package Amount")
+    .number("Enter Package Amount")
     .required("Enter Package Amount"),
   extraKmRate: yup
-    .string("Enter Extra Km Rate")
+    .number("Enter Extra Km Rate")
     .required("Enter Extra Km Rate"),
   extraHrRate: yup
-    .string("Enter Extra Hr Rate")
+    .number("Enter Extra Hr Rate")
     .required("Enter Extra Hr Rate"),
-  workingDays: yup.string("Enter Working Days").required("Enter Working Days"),
+  workingDays: yup.number("Enter Working Days").required("Enter Working Days"),
   minBusinessDays: yup
-    .string("Enter Min. Business Days")
+    .number("Enter Min. Business Days")
     .required("Enter Min. Business Days"),
   adjustmentDays: yup
-    .string("Enter Adjustment Days")
+    .number("Enter Adjustment Days")
     .required("Enter Adjustment Days"),
   proDate: yup.string("Select Pro Date").required("Select Pro Date"),
-  perKmRate: yup.string("Enter Per Km Rate").required("Enter Per Km Rate"),
-  emptyDistanceApproval: yup
-    .string("Select Empty Distance Approval")
-    .required("Select Empty Distance Approval"),
+  kmTripRate: yup.number("Enter Per Km Rate").required("Enter Per Km Rate"),
+  // emptyDistanceApproval: yup
+  //   .string("Select Empty Distance Approval")
+  //   .required("Select Empty Distance Approval"),
 
   zoneFields: yup.array().of(
-    yup.object({
+    yup.object().shape({
       zoneName: yup.string("Enter Zone Name").required("Enter Zone Name"),
-      tripRate: yup.string("Enter Trip Rate").required("Enter Trip Rate"),
+      tripRate: yup.number("Enter Trip Rate").required("Enter Trip Rate"),
       escortTripRate: yup
-        .string("Enter Escort Trip Rate")
+        .number("Enter Escort Trip Rate")
         .required("Enter Escort Trip Rate"),
     })
   ),
 
   tripSlabFields: yup.array().of(
-    yup.object({
-      startKm: yup.string("Enter Start Km").required("Enter Start Km"),
+    yup.object().shape({
+      startKm: yup.number("Enter Start Km").required("Enter Start Km"),
       // endKm: yup.string("Enter End Km").required("Enter End Km"),
-      rate: yup.string("Enter Rate").required("Enter Rate"),
+      tripRate: yup.number("Enter Rate").required("Enter Rate"),
     })
   ),
 });
 
-const AddContract = ({ EditContractData, SetIsAddContract }) => {
+const AddContract = ({ EditContractData, onUserSuccess }) => {
   const [initialValues, setInitialValues] = useState({
-    type: "Flat Trip Based",
+    contractType: "FLAT_TRIP_BASED",
     officeId: "",
     contractId: "",
     contractName: "",
-    endDate: "",
     startDate: "",
-    vehicleAcOption: null,
-    fuelType: null,
-    workingShift: "",
-    ageCriteria: "",
-    vehicleType: "",
+    // endDate: "",
+    // vehicleAcOption: null,
+    // fuelType: null,
+    // workingShift: "",
+    // ageCriteria: "",
+    // vehicleType: "",
     sittingCapacity: "",
-    flatTripRate: "",
+    tripRate: "",
     escortTripRate: "",
-    zoneName: "",
-    workingHrs: "",
-    kmLimit: "",
-    packageType: "",
+    zoneFields: [{ zoneName: "", tripRate: "", escortTripRate: "" }],
+    totalNoOfHrs: "",
+    totalNoOfKms: "",
+    // packageType: "",
     packageAmount: "",
     extraKmRate: "",
     extraHrRate: "",
@@ -129,28 +130,21 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
     minBusinessDays: "",
     adjustmentDays: "",
     proDate: null,
-    startKm: "",
-    endKm: "",
-    rate: "",
-    perKmRate: "",
-    emptyDistanceApproval: null,
+    tripSlabFields: [{ startKm: "", endKm: "", tripRate: "" }],
+    kmTripRate: "",
+    // emptyDistanceApproval: null,
   });
 
-  const [zoneFields, setZoneFields] = useState([
-    { zoneName: "", tripRate: "", escortTripRate: "" },
-  ]);
-
-  const [tripSlabFields, setTripSlabFields] = useState([
-    { startKm: "", endKm: "", rate: "" },
-  ]);
-
   const [loading, setLoading] = useState(false);
+
+  const [error, setError] = useState({});
+
   const ContractType = [
-    "Flat Trip Based",
-    "Zone Based",
-    "Fix Monthly",
-    "Slab Trip",
-    "KM Based",
+    "FLAT_TRIP_BASED",
+    "ZONE_BASED",
+    "PACKAGE_BASED",
+    "TRIP_SLAB_BASED",
+    "KM_BASED",
   ];
 
   const WorkingShift = ["Day", "Night", "Flexible"];
@@ -163,84 +157,136 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
     console.log("EditContractData?.id>>>", EditContractData?.id);
     if (EditContractData?.id) {
       let newEditInfo = Object.assign(initialValues, EditContractData);
-      console.log(newEditInfo);
-      //   newEditInfo.ehsAppliedOnDriver
-      //     ? (newEditInfo.ehsAppliedOn = "Driver")
-      //     : (newEditInfo.ehsAppliedOn = "Vehicle");
-      //   newEditInfo.officeIds = newEditInfo.officeIds;
+      // console.log("newEditInfo>>>", newEditInfo);
       setInitialValues(newEditInfo);
     }
   }, [EditContractData]);
 
+  const handleResetField = () => {
+    handleReset();
+    initialValues.contractType = values.contractType;
+    formik.setFieldValue("zoneFields", [
+      { zoneName: "", tripRate: "", escortTripRate: "" },
+    ]);
+    formik.setFieldValue("tripSlabFields", [
+      { startKm: "", endKm: "", tripRate: "" },
+    ]);
+    console.log(initialValues);
+  };
+
   const formik = useFormik({
     initialValues: initialValues,
-    validationSchema: validationSchema,
+    // validationSchema: validationSchema,
     onSubmit: async (values) => {
-      onsole.log(values);
+      // console.log("validationSchema>>>", validationSchema);
+      console.log("values>>>", values);
       let allValues = { ...values };
-      if (allValues.vehicleAcOption) {
-        allValues.vehicleAcOption =
-          allValues.vehicleAcOption === "AC" ? "AC" : "Non AC";
-      }
-      if (allValues.fuelType) {
-        allValues.fuelType === "Petrol" ||
-        allValues.fuelType === "CNG" ||
-        allValues.fuelType === "Diesel"
-          ? allValues.fuelType
-          : "Petrol";
-      }
+      allValues.tripSlabFields = allValues.tripSlabFields
+        .map((slab, index) => {
+          let { startKm, endKm, tripRate } = slab;
+
+          if (index === allValues.tripSlabFields.length - 1 && endKm === "") {
+            const { endKm, ...slabWithoutEndKm } = slab;
+            return slabWithoutEndKm;
+          }
+
+          return slab;
+        })
+        .filter((slab) => slab.startKm !== "" && slab.tripRate !== "");
+      console.log("allValues>>>", allValues);
       if (allValues.proDate) {
-        allValues.proDate = allValues.proDate === "Yes" ? "Yes" : "No";
+        allValues.proDate = allValues.proDate === "true" ? "true" : "false";
       }
-      if (allValues.emptyDistanceApproval) {
-        allValues.emptyDistanceApproval =
-          allValues.emptyDistanceApproval === "Yes" ? "Yes" : "No";
-      }
+      Object.keys(allValues).forEach((objKey) => {
+        if (allValues[objKey] === null || allValues[objKey] === "") {
+          delete allValues[objKey];
+        }
+      });
       try {
-        if (EditContractData?.id) {
+        const payload = {
+          contractId: allValues.contractId,
+          contractName: allValues.contractName,
+          startDate: allValues.startDate,
+          sittingCapacity: allValues.sittingCapacity,
+        };
+
+        if (allValues.contractType === "FLAT_TRIP_BASED") {
+          payload.contractType = "FLAT_TRIP_BASED";
+          payload.tripRate = allValues.tripRate;
+          payload.escortTripRate = allValues.escortTripRate;
+        } else if (allValues.contractType === "ZONE_BASED") {
+          payload.contractType = "ZONE_BASED";
+          payload.zoneBasedContractDTOs = allValues.zoneFields;
+        } else if (allValues.contractType === "PACKAGE_BASED") {
+          payload.contractType = "PACKAGE_BASED";
+          payload.totalNoOfHrs = allValues.totalNoOfHrs;
+          payload.totalNoOfKms = allValues.totalNoOfKms;
+          payload.packageAmount = allValues.packageAmount;
+          payload.extraKmRate = allValues.extraKmRate;
+          payload.extraHrRate = allValues.extraHrRate;
+          payload.workingDays = allValues.workingDays;
+          payload.minBusinessDays = allValues.minBusinessDays;
+          payload.adjustmentDays = allValues.adjustmentDays;
+          payload.proDate = allValues.proDate;
+        } else if (allValues.contractType === "TRIP_SLAB_BASED") {
+          payload.contractType = "TRIP_SLAB_BASED";
+          payload.slabBasedContractDTOs = allValues.tripSlabFields.map(
+            (slab) => ({
+              startKm: parseInt(slab.startKm, 10),
+              endKm:
+                slab.endKm !== undefined ? parseInt(slab.endKm, 10) : undefined,
+              tripRate: parseInt(slab.tripRate, 10),
+            })
+          );
+        } else if (allValues.contractType === "KM_BASED") {
+          payload.contractType = "KM_BASED";
+          payload.kmTripRate = allValues.kmTripRate;
+        }
+        if (initialValues?.id) {
+          console.log("initialValues.id>>>", initialValues.id);
           setLoading(true);
           // await new Promise((resolve) => setTimeout(resolve, 5000));
-          //   const response = await ComplianceService.updateEHS({ ehs: values });
-          //   if (response.status === 200) {
-          //     dispatch(
-          //       toggleToast({
-          //         message: "Contract details updated successfully!",
-          //         type: "success",
-          //       })
-          //     );
-          //     SetIsAddContract(false);
-          //   } else if (response.status === 500) {
-          //     dispatch(
-          //       toggleToast({
-          //         message:
-          //           "Contract details not updated. Please try again later!",
-          //         type: "error",
-          //       })
-          //     );
-          SetIsAddContract(false);
-          //   }
+          const response = await ContractService.UpdateContract(
+            initialValues.id,
+            payload
+          );
+          if (response.status === 200) {
+            dispatch(
+              toggleToast({
+                message: "Contract details updated successfully!",
+                type: "success",
+              })
+            );
+          } else if (response.status === 500) {
+            dispatch(
+              toggleToast({
+                message:
+                  "Contract details not updated. Please try again later!",
+                type: "error",
+              })
+            );
+          }
         } else {
           setLoading(true);
           // await new Promise((resolve) => setTimeout(resolve, 5000));
-          //   const response = await ComplianceService.createEHS({ ehs: values });
-          //   if (response.status === 201) {
-          //     dispatch(
-          //       toggleToast({
-          //         message: "Contract details added successfully!",
-          //         type: "success",
-          //       })
-          //     );
-          //     SetIsAddContract(false);
-          //   } else if (response.status === 500) {
-          //     dispatch(
-          //       toggleToast({
-          //         message: "Contract details not added. Please try again later!",
-          //         type: "error",
-          //       })
-          //     );
-          SetIsAddContract(false);
-          //   }
+          const response = await ContractService.CreateContract(payload);
+          if (response.status === 201) {
+            dispatch(
+              toggleToast({
+                message: "Contract details added successfully!",
+                type: "success",
+              })
+            );
+          } else if (response.status === 500) {
+            dispatch(
+              toggleToast({
+                message: "Contract details not added. Please try again later!",
+                type: "error",
+              })
+            );
+          }
         }
+        onUserSuccess(true);
       } catch (err) {
         dispatch(
           toggleToast({
@@ -277,97 +323,103 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
 
   const handleZoneChange = (index, event) => {
     const { name, value } = event.target;
-    const updatedZones = [...zoneFields];
+    const updatedZones = [...formik.values.zoneFields];
     updatedZones[index][name] = value;
-    setZoneFields(updatedZones);
     formik.setFieldValue("zoneFields", updatedZones);
   };
 
   const addZoneField = () => {
-    setZoneFields([
-      ...zoneFields,
+    formik.setFieldValue("zoneFields", [
+      ...formik.values.zoneFields,
       { zoneName: "", tripRate: "", escortTripRate: "" },
     ]);
   };
 
   const removeZoneField = (index) => {
-    const updatedZones = zoneFields.filter((_, i) => i !== index);
-    setZoneFields(updatedZones);
+    const updatedZones = formik.values.zoneFields.filter((_, i) => i !== index);
+    formik.setFieldValue("zoneFields", updatedZones);
   };
 
   const handleTripSlabChange = (index, event) => {
     const { name, value } = event.target;
-    const updatedTripSlab = [...tripSlabFields];
+    const updatedTripSlab = [...formik.values.tripSlabFields];
     updatedTripSlab[index][name] = value;
-    setTripSlabFields(updatedTripSlab);
     formik.setFieldValue("tripSlabFields", updatedTripSlab);
   };
 
   const addTripSlabField = () => {
-    setTripSlabFields([
-      ...tripSlabFields,
-      { startKm: "", endKm: "", rate: "" },
+    formik.setFieldValue("tripSlabFields", [
+      ...formik.values.tripSlabFields,
+      { startKm: "", endKm: "", tripRate: "" },
     ]);
   };
 
   const removeTripSlabField = (index) => {
-    const updatedTripSlab = tripSlabFields.filter((_, i) => i !== index);
-    setTripSlabFields(updatedTripSlab);
+    const updatedTripSlab = formik.values.tripSlabFields.filter(
+      (_, i) => i !== index
+    );
+    formik.setFieldValue("tripSlabFields", updatedTripSlab);
   };
 
-  useEffect(() => {
-    console.log("zone fields>>", zoneFields);
-  }, [zoneFields]);
+  const handleSubmitForm = async () => {
+    let hasError = false;
+    const newError = {};
 
-  useEffect(() => {
-    console.log("Trip slab fields>>", tripSlabFields);
-  }, [tripSlabFields]);
+    Object.entries(values).forEach(([key, value]) => {
+      console.log("values: ", values, key, value)
+      if (!value) {
+        newError[key] = `This field is mandatory.`;
+        hasError = true;
+      }
+    });
 
-  useEffect(() => {
-    console.log("initialValues>>", values);
-  }, [values]);
+    setError(newError);
+
+    if (!hasError) {
+      handleSubmit();
+      console.log("Form submitted", values);
+    }
+  };
 
   useEffect(() => {
     fetchAllOffices();
   }, []);
 
   useEffect(() => {
-    formik.resetForm({
-      values: {
-        type: values.type,
-        officeId: "",
-        contractId: "",
-        contractName: "",
-        endDate: "",
-        startDate: "",
-        vehicleAcOption: null,
-        fuelType: null,
-        workingShift: "",
-        ageCriteria: "",
-        vehicleType: "",
-        sittingCapacity: "",
-        flatTripRate: "",
-        escortTripRate: "",
-        zoneName: "",
-        workingHrs: "",
-        kmLimit: "",
-        packageType: "",
-        packageAmount: "",
-        extraKmRate: "",
-        extraHrRate: "",
-        workingDays: "",
-        minBusinessDays: "",
-        adjustmentDays: "",
-        proDate: null,
-        startKm: "",
-        endKm: "",
-        rate: "",
-        perKmRate: "",
-        emptyDistanceApproval: null,
-      },
-    });
-    setZoneFields([{ zoneName: "", tripRate: "", escortTripRate: "" }]);
-    setTripSlabFields([{ startKm: "", endKm: "", rate: "" }]);
+    if (!EditContractData) {
+      formik.resetForm({
+        values: {
+          type: values.type,
+          officeId: "",
+          contractId: "",
+          contractName: "",
+          // endDate: "",
+          startDate: "",
+          // vehicleAcOption: null,
+          // fuelType: null,
+          // workingShift: "",
+          // ageCriteria: "",
+          // vehicleType: "",
+          sittingCapacity: "",
+          tripRate: "",
+          escortTripRate: "",
+          zoneFields: [{ zoneName: "", tripRate: "", escortTripRate: "" }],
+          totalNoOfHrs: "",
+          totalNoOfKms: "",
+          // packageType: "",
+          packageAmount: "",
+          extraKmRate: "",
+          extraHrRate: "",
+          workingDays: "",
+          minBusinessDays: "",
+          adjustmentDays: "",
+          proDate: null,
+          tripSlabFields: [{ startKm: "", endKm: "", tripRate: "" }],
+          kmTripRate: "",
+          // emptyDistanceApproval: null,
+        },
+      });
+    }
   }, [values.type]);
 
   return (
@@ -380,10 +432,10 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
           <FormControl required fullWidth>
             <InputLabel id="contractTypeLabel">Contract Type</InputLabel>
             <Select
-              labelId="typeLabel"
+              labelId="contractTypeLabel"
               id="contracType"
-              value={values.type}
-              name="type"
+              value={values.contractType}
+              name="contractType"
               label="Contract Type"
               onChange={handleChange}
             >
@@ -396,7 +448,7 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
             </Select>
           </FormControl>
         </div>
-        <div className="form-control-input">
+        {/* <div className="form-control-input">
           <FormControl required>
             <InputLabel id="office-id-label">Office ID</InputLabel>
             <Select
@@ -425,11 +477,11 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
               </FormHelperText>
             )}
           </FormControl>
-        </div>
+        </div> */}
         <div className="form-control-input">
           <TextField
-            error={touched.contractId && Boolean(errors.contractId)}
-            helperText={touched.contractId && errors.contractId}
+            // error={touched.contractId && Boolean(errors.contractId)}
+            // helperText={touched.contractId && errors.contractId}
             onChange={handleChange}
             required
             id="contractId"
@@ -437,12 +489,14 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
             value={values.contractId}
             label="Contract ID"
             variant="outlined"
+            error={!!error.contractId}
+            helperText={error.contractId}
           />
         </div>
         <div className="form-control-input">
           <TextField
-            error={touched.contractName && Boolean(errors.contractName)}
-            helperText={touched.contractName && errors.contractName}
+            // error={touched.contractName && Boolean(errors.contractName)}
+            // helperText={touched.contractName && errors.contractName}
             onChange={handleChange}
             required
             id="contractName"
@@ -450,6 +504,8 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
             value={values.contractName}
             label="Contract Name"
             variant="outlined"
+            error={!!error.contractName}
+            helperText={error.contractName}
           />
         </div>
         <div className="form-control-input">
@@ -463,14 +519,16 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
               onChange={(e) => handleDateChange(e, "startDate")}
               slotProps={{
                 textField: {
-                  error: touched.startDate && Boolean(errors.startDate),
-                  helperText: touched.startDate && errors.startDate,
+                  // error: touched.startDate && Boolean(errors.startDate),
+                  // helperText: touched.startDate && errors.startDate,
+                  error: Boolean(error.startDate),
+                  helperText: error.startDate,
                 },
               }}
             />
           </LocalizationProvider>
         </div>
-        <div className="form-control-input">
+        {/* <div className="form-control-input">
           <InputLabel htmlFor="end-date">End Date</InputLabel>
           <LocalizationProvider dateAdapter={AdapterMoment}>
             <DatePicker
@@ -487,8 +545,8 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
               }}
             />
           </LocalizationProvider>
-        </div>
-        <div>
+        </div> */}
+        {/* <div>
           <div className="form-control-input" style={{}}>
             <FormControl required>
               <FormLabel id="vehicle-ac-option-Label">
@@ -569,8 +627,8 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
               )}
             </FormControl>
           </div>
-        </div>
-        {formik.values.type !== "KM Based" && (
+        </div> */}
+        {/* {formik.values.type !== "KM_BASED" && (
           <div className="form-control-input">
             <FormControl required fullWidth>
               <InputLabel id="working-shift-Label">Working Shift</InputLabel>
@@ -600,8 +658,8 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
               )}
             </FormControl>
           </div>
-        )}
-        <div className="form-control-input">
+        )} */}
+        {/* <div className="form-control-input">
           <TextField
             error={touched.ageCriteria && Boolean(errors.ageCriteria)}
             helperText={touched.ageCriteria && errors.ageCriteria}
@@ -614,8 +672,8 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
             variant="outlined"
             type="number"
           />
-        </div>
-        <div className="form-control-input">
+        </div> */}
+        {/* <div className="form-control-input">
           <FormControl required fullWidth>
             <InputLabel id="vehicle-type-Label">Vehicle Type</InputLabel>
             <Select
@@ -643,11 +701,11 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
               </FormHelperText>
             )}
           </FormControl>
-        </div>
+        </div> */}
         <div className="form-control-input">
           <TextField
-            error={touched.sittingCapacity && Boolean(errors.sittingCapacity)}
-            helperText={touched.sittingCapacity && errors.sittingCapacity}
+            // error={touched.sittingCapacity && Boolean(errors.sittingCapacity)}
+            // helperText={touched.sittingCapacity && errors.sittingCapacity}
             onChange={handleChange}
             required
             type="number"
@@ -656,30 +714,34 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
             value={values.sittingCapacity}
             label="Sitting Capacity"
             variant="outlined"
+            error={!!error.sittingCapacity}
+            helperText={error.sittingCapacity}
           />
         </div>
 
-        {formik.values.type === "Flat Trip Based" && (
+        {formik.values.contractType === "FLAT_TRIP_BASED" && (
           <>
             <div className="form-control-input">
               <TextField
-                error={touched.flatTripRate && Boolean(errors.flatTripRate)}
-                helperText={touched.flatTripRate && errors.flatTripRate}
+                // error={touched.tripRate && Boolean(errors.tripRate)}
+                // helperText={touched.tripRate && errors.tripRate}
                 onChange={handleChange}
                 type="number"
                 required
-                id="flatTripRate"
-                name="flatTripRate"
-                value={values.flatTripRate}
-                label="Flat Trip Rate"
+                id="tripRate"
+                name="tripRate"
+                value={values.tripRate}
+                label="Trip Rate"
                 variant="outlined"
+                error={!!error.tripRate}
+                helperText={error.tripRate}
               />
             </div>
 
             <div className="form-control-input">
               <TextField
-                error={touched.escortTripRate && Boolean(errors.escortTripRate)}
-                helperText={touched.escortTripRate && errors.escortTripRate}
+                // error={touched.escortTripRate && Boolean(errors.escortTripRate)}
+                // helperText={touched.escortTripRate && errors.escortTripRate}
                 onChange={handleChange}
                 type="number"
                 required
@@ -688,14 +750,16 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
                 value={values.escortTripRate}
                 label="Escort Trip Rate"
                 variant="outlined"
+                error={!!error.escortTripRate}
+                helperText={error.escortTripRate}
               />
             </div>
           </>
         )}
 
-        {formik.values.type === "Zone Based" && (
+        {formik.values.contractType === "ZONE_BASED" && (
           <>
-            {zoneFields.map((zone, index) => (
+            {formik.values.zoneFields.map((zone, index) => (
               <div key={index} className="">
                 <div className="form-control-input">
                   <TextField
@@ -705,13 +769,13 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
                     onChange={(e) => handleZoneChange(index, e)}
                     required
                     variant="outlined"
-                    // error={touched.zoneName && Boolean(errors.zoneName)}
-                    // helperText={touched.zoneName && errors.zoneName}
-                    error={
-                      formik.errors.zoneFields?.[index]?.zoneName &&
-                      Boolean(formik.errors.zoneFields[index].zoneName)
-                    }
-                    helperText={formik.errors.zoneFields?.[index]?.zoneName}
+                    // error={
+                    //   formik.errors.zoneFields?.[index]?.zoneName &&
+                    //   Boolean(formik.errors.zoneFields[index].zoneName)
+                    // }
+                    // helperText={formik.errors.zoneFields?.[index]?.zoneName}
+                    error={!!error.zoneFields?.[index]?.zoneName}
+                    helperText={error.zoneFields?.[index]?.zoneName}
                   />
                 </div>
 
@@ -724,11 +788,13 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
                     required
                     type="number"
                     variant="outlined"
-                    error={
-                      formik.errors.zoneFields?.[index]?.tripRate &&
-                      Boolean(formik.errors.zoneFields[index].tripRate)
-                    }
-                    helperText={formik.errors.zoneFields?.[index]?.tripRate}
+                    // error={
+                    //   formik.errors.zoneFields?.[index]?.tripRate &&
+                    //   Boolean(formik.errors.zoneFields[index].tripRate)
+                    // }
+                    // helperText={formik.errors.zoneFields?.[index]?.tripRate}
+                    error={!!error.zoneFields?.[index]?.tripRate}
+                    helperText={error.zoneFields?.[index]?.tripRate}
                   />
                 </div>
 
@@ -741,16 +807,18 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
                     required
                     type="number"
                     variant="outlined"
-                    error={
-                      formik.errors.zoneFields?.[index]?.escortTripRate &&
-                      Boolean(formik.errors.zoneFields[index].escortTripRate)
-                    }
-                    helperText={
-                      formik.errors.zoneFields?.[index]?.escortTripRate
-                    }
+                    // error={
+                    //   formik.errors.zoneFields?.[index]?.escortTripRate &&
+                    //   Boolean(formik.errors.zoneFields[index].escortTripRate)
+                    // }
+                    // helperText={
+                    //   formik.errors.zoneFields?.[index]?.escortTripRate
+                    // }
+                    error={!!error.zoneFields?.[index]?.escortTripRate}
+                    helperText={error.zoneFields?.[index]?.escortTripRate}
                   />
                 </div>
-                {zoneFields.length > 1 && (
+                {formik.values.zoneFields.length > 1 && (
                   <IconButton
                     onClick={() => removeZoneField(index)}
                     aria-label="remove row"
@@ -766,9 +834,9 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
           </>
         )}
 
-        {formik.values.type === "Fix Monthly" && (
+        {formik.values.contractType === "PACKAGE_BASED" && (
           <>
-            <div className="form-control-input">
+            {/* <div className="form-control-input">
               <FormControl required fullWidth>
                 <InputLabel id="package-type-Label">Package Type</InputLabel>
                 <Select
@@ -796,7 +864,7 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
                   </FormHelperText>
                 )}
               </FormControl>
-            </div>
+            </div> */}
 
             <div className="form-control-input">
               <TextField
@@ -808,38 +876,44 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
                 type="number"
                 required
                 variant="outlined"
-                error={touched.packageAmount && Boolean(errors.packageAmount)}
-                helperText={touched.packageAmount && errors.packageAmount}
+                // error={touched.packageAmount && Boolean(errors.packageAmount)}
+                // helperText={touched.packageAmount && errors.packageAmount}
+                error={!!error.packageAmount}
+                helperText={error.packageAmount}
               />
             </div>
 
             <div className="form-control-input">
               <TextField
-                id="kmLimit"
-                name="kmLimit"
-                value={values.kmLimit}
-                label="Km Limit"
+                id="totalNoOfKms"
+                name="totalNoOfKms"
+                value={values.totalNoOfKms}
+                label="Total No Of Kms"
                 onChange={handleChange}
                 type="number"
                 required
                 variant="outlined"
-                error={touched.kmLimit && Boolean(errors.kmLimit)}
-                helperText={touched.kmLimit && errors.kmLimit}
+                // error={touched.totalNoOfKms && Boolean(errors.totalNoOfKms)}
+                // helperText={touched.totalNoOfKms && errors.totalNoOfKms}
+                error={!!error.totalNoOfKms}
+                helperText={error.totalNoOfKms}
               />
             </div>
 
             <div className="form-control-input">
               <TextField
-                error={touched.workingHrs && Boolean(errors.workingHrs)}
-                helperText={touched.workingHrs && errors.workingHrs}
+                // error={touched.totalNoOfHrs && Boolean(errors.totalNoOfHrs)}
+                // helperText={touched.totalNoOfHrs && errors.totalNoOfHrs}
                 onChange={handleChange}
                 type="number"
                 required
-                id="workingHrs"
-                name="workingHrs"
-                value={values.workingHrs}
-                label="Working Hrs"
+                id="totalNoOfHrs"
+                name="totalNoOfHrs"
+                value={values.totalNoOfHrs}
+                label="Total No Of Hours"
                 variant="outlined"
+                error={!!error.totalNoOfHrs}
+                helperText={error.totalNoOfHrs}
               />
             </div>
 
@@ -853,8 +927,10 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
                 type="number"
                 required
                 variant="outlined"
-                error={touched.workingDays && Boolean(errors.workingDays)}
-                helperText={touched.workingDays && errors.workingDays}
+                // error={touched.workingDays && Boolean(errors.workingDays)}
+                // helperText={touched.workingDays && errors.workingDays}
+                error={!!error.workingDays}
+                helperText={error.workingDays}
               />
             </div>
 
@@ -868,8 +944,10 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
                 type="number"
                 required
                 variant="outlined"
-                error={touched.extraKmRate && Boolean(errors.extraKmRate)}
-                helperText={touched.extraKmRate && errors.extraKmRate}
+                // error={touched.extraKmRate && Boolean(errors.extraKmRate)}
+                // helperText={touched.extraKmRate && errors.extraKmRate}
+                error={!!error.extraKmRate}
+                helperText={error.extraKmRate}
               />
             </div>
 
@@ -883,8 +961,10 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
                 type="number"
                 required
                 variant="outlined"
-                error={touched.extraHrRate && Boolean(errors.extraHrRate)}
-                helperText={touched.extraHrRate && errors.extraHrRate}
+                // error={touched.extraHrRate && Boolean(errors.extraHrRate)}
+                // helperText={touched.extraHrRate && errors.extraHrRate}
+                error={!!error.extraHrRate}
+                helperText={error.extraHrRate}
               />
             </div>
 
@@ -898,10 +978,12 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
                 type="number"
                 required
                 variant="outlined"
-                error={
-                  touched.minBusinessDays && Boolean(errors.minBusinessDays)
-                }
-                helperText={touched.minBusinessDays && errors.minBusinessDays}
+                // error={
+                //   touched.minBusinessDays && Boolean(errors.minBusinessDays)
+                // }
+                // helperText={touched.minBusinessDays && errors.minBusinessDays}
+                error={!!error.minBusinessDays}
+                helperText={error.minBusinessDays}
               />
             </div>
 
@@ -915,8 +997,10 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
                 type="number"
                 required
                 variant="outlined"
-                error={touched.adjustmentDays && Boolean(errors.adjustmentDays)}
-                helperText={touched.adjustmentDays && errors.adjustmentDays}
+                // error={touched.adjustmentDays && Boolean(errors.adjustmentDays)}
+                // helperText={touched.adjustmentDays && errors.adjustmentDays}
+                error={!!error.adjustmentDays}
+                helperText={error.adjustmentDays}
               />
             </div>
 
@@ -928,29 +1012,38 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
                     style={{ flexDirection: "row" }}
                     aria-labelledby="proDate-label"
                     value={values.proDate}
-                    error={touched.proDate && Boolean(errors.proDate)}
+                    // error={touched.proDate && Boolean(errors.proDate)}
+                    error={!!error.proDate}
                     name="proDate"
                     onChange={handleChange}
                   >
                     <FormControlLabel
-                      value={"Yes"}
+                      value={"true"}
                       onChange={handleChange}
                       control={<Radio />}
                       label={"Yes"}
                     />
                     <FormControlLabel
-                      value={"No"}
+                      value={"false"}
                       onChange={handleChange}
                       control={<Radio />}
                       label={"No"}
                     />
                   </RadioGroup>
-                  {touched.proDate && errors.proDate && (
+                  {/* {touched.proDate && errors.proDate && (
                     <FormHelperText
                       className="errorHelperText"
                       style={{ color: "#d32f2f" }}
                     >
                       {errors.proDate}
+                    </FormHelperText>
+                  )} */}
+                  {error.proDate && (
+                    <FormHelperText
+                      className="errorHelperText"
+                      style={{ color: "#d32f2f" }}
+                    >
+                      {error.proDate}
                     </FormHelperText>
                   )}
                 </FormControl>
@@ -959,9 +1052,9 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
           </>
         )}
 
-        {formik.values.type === "Slab Trip" && (
+        {formik.values.contractType === "TRIP_SLAB_BASED" && (
           <>
-            {tripSlabFields.map((tripSlab, index) => (
+            {formik.values.tripSlabFields.map((tripSlab, index) => (
               <div key={index} className="">
                 <div className="form-control-input">
                   <TextField
@@ -972,11 +1065,13 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
                     required
                     type="number"
                     variant="outlined"
-                    error={
-                      formik.errors.tripSlabFields?.[index]?.startKm &&
-                      Boolean(formik.errors.tripSlabFields[index].startKm)
-                    }
-                    helperText={formik.errors.tripSlabFields?.[index]?.startKm}
+                    // error={
+                    //   formik.errors.tripSlabFields?.[index]?.startKm &&
+                    //   Boolean(formik.errors.tripSlabFields[index].startKm)
+                    // }
+                    // helperText={formik.errors.tripSlabFields?.[index]?.startKm}
+                    error={!!error.tripSlabFields?.[index]?.startKm}
+                    helperText={error.tripSlabFields?.[index]?.startKm}
                   />
                 </div>
 
@@ -986,35 +1081,37 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
                     value={tripSlab.endKm}
                     label="End Km"
                     onChange={(e) => handleTripSlabChange(index, e)}
-                    required={index !== tripSlabFields.length - 1}
+                    required={index !== values.tripSlabFields.length - 1}
                     type="number"
                     variant="outlined"
-                    disabled={index === tripSlabFields.length - 1}
-                    error={
-                      formik.errors.tripSlabFields?.[index]?.endKm &&
-                      Boolean(formik.errors.tripSlabFields[index].endKm)
-                    }
-                    helperText={formik.errors.tripSlabFields?.[index]?.endKm}
+                    disabled={index === values.tripSlabFields.length - 1}
+                    // error={
+                    //   formik.errors.tripSlabFields?.[index]?.endKm &&
+                    //   Boolean(formik.errors.tripSlabFields[index].endKm)
+                    // }
+                    // helperText={formik.errors.tripSlabFields?.[index]?.endKm}
                   />
                 </div>
 
                 <div className="form-control-input">
                   <TextField
-                    name="rate"
-                    value={tripSlab.rate}
-                    label="Rate"
+                    name="tripRate"
+                    value={tripSlab.tripRate}
+                    label="Trip Rate"
                     onChange={(e) => handleTripSlabChange(index, e)}
                     required
                     type="number"
                     variant="outlined"
-                    error={
-                      formik.errors.tripSlabFields?.[index]?.rate &&
-                      Boolean(formik.errors.tripSlabFields[index].rate)
-                    }
-                    helperText={formik.errors.tripSlabFields?.[index]?.rate}
+                    // error={
+                    //   formik.errors.tripSlabFields?.[index]?.tripRate &&
+                    //   Boolean(formik.errors.tripSlabFields[index].tripRate)
+                    // }
+                    // helperText={formik.errors.tripSlabFields?.[index]?.tripRate}
+                    error={!!error.tripSlabFields?.[index]?.tripRate}
+                    helperText={error.tripSlabFields?.[index]?.tripRate}
                   />
                 </div>
-                {tripSlabFields.length > 1 && (
+                {formik.values.tripSlabFields.length > 1 && (
                   <IconButton
                     onClick={() => removeTripSlabField(index)}
                     aria-label="remove row"
@@ -1030,26 +1127,28 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
           </>
         )}
 
-        {formik.values.type === "KM Based" && (
+        {formik.values.contractType === "KM_BASED" && (
           <>
             <div className="form-control-input">
               <TextField
-                error={touched.perKmRate && Boolean(errors.perKmRate)}
-                helperText={touched.perKmRate && errors.perKmRate}
+                // error={touched.kmTripRate && Boolean(errors.kmTripRate)}
+                // helperText={touched.kmTripRate && errors.kmTripRate}
                 onChange={handleChange}
                 type="number"
                 required
-                id="perKmRate"
-                name="perKmRate"
-                value={values.perKmRate}
+                id="kmTripRate"
+                name="kmTripRate"
+                value={values.kmTripRate}
                 label="Per Km Rate"
                 variant="outlined"
+                error={!!error.kmTripRate}
+                helperText={error.kmTripRate}
               />
             </div>
           </>
         )}
 
-        <div>
+        {/* <div>
           <div className="form-control-input" style={{}}>
             <FormControl required>
               <FormLabel id="empty-distance-approval-Label">
@@ -1090,24 +1189,21 @@ const AddContract = ({ EditContractData, SetIsAddContract }) => {
                 )}
             </FormControl>
           </div>
-        </div>
+        </div> */}
 
         <div className="addBtnContainer">
           <div>
-            <button onClick={handleReset} className="btn btn-secondary">
+            <button onClick={handleResetField} className="btn btn-secondary">
               Reset
             </button>
           </div>
           <div>
-            <button
-              onClick={() => SetIsAddContract(false)}
-              className="btn btn-secondary"
-            >
+            <button onClick={onUserSuccess} className="btn btn-secondary">
               Back
             </button>
             <button
               type="submit"
-              onClick={handleSubmit}
+              onClick={handleSubmitForm}
               className="btn btn-primary"
             >
               {EditContractData?.id ? "Update" : "Create"} Contract

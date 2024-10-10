@@ -2,19 +2,24 @@ import React, { useEffect, useState } from "react";
 import Grid from "@/components/grid";
 import { display } from "@mui/system";
 import AddContract from "./addContract";
+import ContractService from "@/services/contract.service";
 
 const ContractType = () => {
   const headers = [
+    {
+      key: "id",
+      display: "ID",
+    },
     {
       key: "contractId",
       display: "Contract ID",
     },
     {
-      key: "ContractName",
+      key: "contractName",
       display: "Contract Name",
     },
     {
-      key: "type",
+      key: "contractType",
       display: "Type",
     },
     {
@@ -35,7 +40,7 @@ const ContractType = () => {
       navigation: true,
       menuItems: [
         {
-          display: "Edit",
+          display: "Edit Contract",
           key: "edit",
         },
         // {
@@ -52,8 +57,8 @@ const ContractType = () => {
 
   const [paginationData, setPaginationData] = useState();
   const [pagination, setPagination] = useState({
-    pageNo: 0,
-    pageSize: 10,
+    page: 0,
+    size: 10,
   });
   const [loading, setLoading] = useState(false);
 
@@ -64,26 +69,21 @@ const ContractType = () => {
     setPagination(updatedPagination);
   };
 
+  const onUserSuccess = () => {
+    setIsAddContract(false);
+    setEditContractData({});
+    fetchAllContract();
+  };
+
   const fetchAllContract = async () => {
     try {
       setLoading(true);
       // await new Promise((resolve) => setTimeout(resolve, 5000));
-      const listData = [
-        {
-          contractId: "CNRT001",
-          ContractName: "Contract1",
-          type: "Flat trip based",
-          startDate: "2024-10-01",
-          sittingCapacity: "12",
-        },
-      ];
-      setContractListing(listData);
-      const data = {
-        data: data,
-        pageNumber: 0,
-        totalElements: 1,
-        totalPages: 1,
-      };
+      let params = new URLSearchParams(pagination);
+      const response = await ContractService.GetAllContract(params, {});
+      console.log("response.data.data>>>", response.data.data);
+      setContractListing(response.data.data);
+      const data = response.data;
       let localPaginationData = { ...data };
       delete localPaginationData?.data;
       setPaginationData(localPaginationData);
@@ -96,10 +96,10 @@ const ContractType = () => {
 
   useEffect(() => {
     fetchAllContract();
-  }, [isAddContract,pagination]);
+  }, [pagination]);
 
   const onMenuItemClick = (key, values) => {
-    console.log("values>>>", values)
+    console.log("values>>>", values);
     if (key === "edit") {
       setEditContractData(values);
       setIsAddContract(true);
@@ -137,7 +137,7 @@ const ContractType = () => {
         <div>
           <AddContract
             EditContractData={editContractData}
-            SetIsAddContract={setIsAddContract}
+            onUserSuccess={onUserSuccess}
           />
         </div>
       )}
