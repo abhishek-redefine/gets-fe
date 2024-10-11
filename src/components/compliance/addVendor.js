@@ -23,7 +23,7 @@ const validationSchemaStepOneA = object({
     name: string().required('Vendor Name is required'),
     address: string().required('Vendor Address is required'),
     gst: string().required('Vendor GST is required'),
-    contractIds: array().of(string()).required('Contract is required'),
+    contractIds: array().of(string()).required('Contract is required'), // why it is array of strings ??
     pan: string().required('Pan Card is required'),
     contactPersonName: string().required('Contact Person Name is required'),
     contactPersonMobile: string().required('Contact Person No is required'),
@@ -230,12 +230,14 @@ const AddVendor = ({ EditVendorData, SetAddVendorOpen }) => {
     const handleHide = () => setUniqueModal(false);
 
     const addNewVendorDetailsSubmit = async (values) => {
-        console.log("values>>>", values)
+        values.contractIds = initialValues.contractIds;
+        console.log("values>>>", values); //resolved the contract Id issue
         // try {
         //    setLoading(true);
         //     if (EditVendorData.id || vendorId) {
         //         //values.vendorOfficeId = initialValues.vendorOfficeId;
         //         values.id = vendorId;
+        //         values.contractIds = initialValues.contractIds;
         //         if (escalationNumber === 1) {
         //             values.escalationMatrices = [{
         //                 "name": values.escalationMatrixL1Name,
