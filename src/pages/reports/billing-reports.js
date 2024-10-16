@@ -143,6 +143,11 @@ const MainComponent = () => {
       });
       if (searchValues.reportType === "Adjustment Penalty Reports") {
         setReportHeading("Adjustment Penalty Reports");
+        // const response = await ReportService.(
+        //   allSearchValues
+        // );
+        // console.log(" data >>>>", response.data);
+        // setAdjustmentPenaltyReport(response.data);
       } else if (searchValues.reportType === "Raw Billing Data Reports") {
         setReportHeading("Raw Billing Data Reports");
         const response = await ReportService.RawBillingReport(allSearchValues);
@@ -152,6 +157,11 @@ const MainComponent = () => {
         searchValues.reportType === "Trip Completion Vendor-wise Reports"
       ) {
         setReportHeading("Trip Completion Vendor-wise Reports");
+        const response = await ReportService.TripCompletionVendorReport(
+          allSearchValues
+        );
+        console.log("TripCompletionVendorReport data >>>>", response.data);
+        setTripCompletionReport(response.data);
       }
     } catch (err) {
       console.log(err);
@@ -682,12 +692,6 @@ const MainComponent = () => {
             </button>
           </div>
         </div>
-        {reportHeading === "" && (
-          <AdjustmentPenaltyTable
-            list={adjustmentPenaltyReport}
-            isLoading={loading}
-          />
-        )}
         {reportHeading === "Adjustment Penalty Reports" && (
           <AdjustmentPenaltyTable
             list={adjustmentPenaltyReport}

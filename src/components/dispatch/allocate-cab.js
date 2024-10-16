@@ -278,7 +278,6 @@ const AllocateCab = ({ tripList, allocationComplete, setTripList, isLoading }) =
                 border: "2px solid #f6ce47",
                 borderRadius: "6px",
                 fontSize: "15px",
-                fontWeight: "bold",
                 padding: "13px 10px",
                 cursor: "pointer",
               }}

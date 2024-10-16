@@ -10,10 +10,11 @@ import { useDispatch, useSelector } from "react-redux";
 import reports from "@/layouts/reports";
 import { setMasterData } from "@/redux/master.slice";
 import MasterDataService from "@/services/masterdata.service";
-import DispatchService from "@/services/dispatch.service";
 import OnTimeArrivalSummaryTable from "@/components/reports/otaSummaryTable";
 import OnTimeDepartureSummaryTable from "@/components/reports/otdSummaryTable";
 import OverSpeedingTable from "@/components/reports/overSpeedingTable";
+import ReportService from "@/services/report.service";
+import xlsx from "json-as-xlsx";
 
 const MainComponent = () => {
   const [office, setOffice] = useState([]);
@@ -23,17 +24,16 @@ const MainComponent = () => {
     date: moment().format("YYYY-MM-DD"),
     reportType: "On Time Arrival Summary Reports",
   });
-  const [list, setList] = useState([]);
+  const [onTimeArrivalReport, setOnTimeArrivalReport] = useState([]);
+  const [onTimeDepartureReport, setOnTimeDepartureReport] = useState([]);
+  const [overSpeedingReport, setOverSpeedingReport] = useState([]);
   const dispatch = useDispatch();
-  const [pagination, setPagination] = useState({
-    page: 0,
-    size: 100,
-  });
+  const [loading, setLoading] = useState(false);
 
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
-
-  const [selectedTable, setSelectedTable] = useState(<OnTimeArrivalSummaryTable list={list} />);
-  const [reportHeading, setReportHeading] = useState("On Time Arrival Summary Reports");
+  const [reportHeading, setReportHeading] = useState(
+    "On Time Arrival Summary Reports"
+  );
 
   const reports = [
     "On Time Arrival Summary Reports",
@@ -88,7 +88,7 @@ const MainComponent = () => {
 
   const fetchSummary = async () => {
     try {
-      let params = new URLSearchParams(pagination);
+      setLoading(true);
       let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
         if (
@@ -98,38 +98,257 @@ const MainComponent = () => {
           delete allSearchValues[objKey];
         }
       });
-      const response = await DispatchService.getTripSearchByBean(
-        params,
-        allSearchValues
-      );
-      console.log("response data", response.data.data);
-      // setList(data);
-      // var requestType = data[0].requestType;
-      switch (searchValues.reportType) {
-        case "On Time Arrival Summary Reports":
-          setReportHeading("On Time Arrival Summary Reports");
-          setSelectedTable(<OnTimeArrivalSummaryTable list={list} />);
-          break;
-        case "On Time Departure Reports":
-          setReportHeading("On Time Departure Reports");
-          setSelectedTable(<OnTimeDepartureSummaryTable list={list} />);
-          break;
-        case "Over Speeding Reports":
-          setReportHeading("Over Speeding Reports");
-          setSelectedTable(<OverSpeedingTable list={list} />);
-          break;
-        default:
-          setReportHeading("On Time Arrival Summary Reports");
-          setSelectedTable(<OnTimeArrivalSummaryTable list={list} />);
+      if (searchValues.reportType === "On Time Arrival Summary Reports") {
+        setReportHeading("On Time Arrival Summary Reports");
+        // const response = await ReportService(allSearchValues);
+        // console.log("data >>>>", response.data);
+        // setOnTimeArrivalReport(response.data);
+      } else if (searchValues.reportType === "On Time Departure Reports") {
+        setReportHeading("On Time Departure Reports");
+        // const response = await ReportService(allSearchValues);
+        // console.log("data >>>>", response.data);
+        // setOnTimeDepartureReport(response.data);
+      } else if (searchValues.reportType === "Over Speeding Reports") {
+        setReportHeading("Over Speeding Reports");
+        // const response = await ReportService(allSearchValues);
+        // console.log("data >>>>", response.data);
+        // setOverSpeedingReport(response.data);
       }
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const downloadReport = () => {
+    if (reportHeading) {
+      if (
+        reportHeading &&
+        reportHeading === "On Time Arrival Summary Reports"
+      ) {
+        var data = [
+          {
+            sheet: "OTA Summary Reports",
+            columns: [
+              {
+                value: "tripDate",
+                label: "Trip Date",
+              },
+              {
+                value: "shift",
+                label: "Shift",
+              },
+              {
+                value: "totalLoginTrips",
+                label: "Total Login Trips",
+              },
+              {
+                value: "completedLoginTrips",
+                label: "Completed Login Trips",
+              },
+              {
+                value: "incompleteTrips",
+                label: "Incomplete Trips",
+              },
+              {
+                value: "delayedTrips",
+                label: "Delayed Trips",
+              },
+              {
+                value: "otaTrips",
+                label: "OTA Trips",
+              },
+              {
+                value: "otaPercentage",
+                label: "% On Time Arrival",
+              },
+              {
+                value: "employeeDelay",
+                label: "Employee Delay",
+              },
+              {
+                value: "driverDelay",
+                label: "Driver Delay",
+              },
+              {
+                value: "trafficDelay",
+                label: "Traffic Delay",
+              },
+            ],
+            content: onTimeArrivalReport,
+          },
+        ];
+      } else if (
+        reportHeading &&
+        reportHeading === "On Time Departure Reports"
+      ) {
+        var data = [
+          {
+            sheet: reportHeading,
+            columns: [
+              {
+                value: "tripDate",
+                label: "Trip Date",
+              },
+              {
+                value: "shift",
+                label: "Shift",
+              },
+              {
+                value: "totalLogoutTrips",
+                label: "Total Logout Trips",
+              },
+              {
+                value: "completedLogoutTrips",
+                label: "Completed Logout Trips",
+              },
+              {
+                value: "incompleteTrips",
+                label: "Incomplete Trips",
+              },
+              {
+                value: "delayedTrips",
+                label: "Delayed Trips",
+              },
+              {
+                value: "otdTrips",
+                label: "OTD Trips",
+              },
+              {
+                value: "otdPercentage",
+                label: "% On Time Departure",
+              },
+              {
+                value: "employeeDelay",
+                label: "Employee Delay",
+              },
+              {
+                value: "driverDelay",
+                label: "Driver Delay",
+              },
+              {
+                value: "trafficDelay",
+                label: "Traffic Delay",
+              },
+            ],
+            content: onTimeDepartureReport,
+          },
+        ];
+      } else if (reportHeading && reportHeading === "Over Speeding Reports") {
+        var data = [
+          {
+            sheet: reportHeading,
+            columns: [
+              {
+                value: "sNo",
+                label: "S.No",
+              },
+              {
+                value: "facility",
+                label: "Facility",
+              },
+              {
+                value: "office",
+                label: "Office",
+              },
+              {
+                value: "vendorName",
+                label: "Vendor Name",
+              },
+              {
+                value: "vehicleId",
+                label: "Vehicle ID",
+              },
+              {
+                value: "vehicleRegNo",
+                label: "Vehicle Reg No",
+              },
+              {
+                value: "direction",
+                label: "Direction",
+              },
+              {
+                value: "shift",
+                label: "Shift",
+              },
+              {
+                value: "tripId",
+                label: "Trip ID",
+              },
+              {
+                value: "speedAtWhichAlertRaised",
+                label: "Speed At Which Alert Raised",
+              },
+              {
+                value: "maxSpeed",
+                label: "Max Speed",
+              },
+              {
+                value: "duration",
+                label: "Duration",
+              },
+              {
+                value: "driverName",
+                label: "Driver Name",
+              },
+              {
+                value: "driverContactNumber",
+                label: "Driver Contact Number",
+              },
+              {
+                value: "startTime",
+                label: "Start Time",
+              },
+              {
+                value: "updateTime",
+                label: "Update Time",
+              },
+              {
+                value: "closedBy",
+                label: "Closed By",
+              },
+              {
+                value: "comments",
+                label: "Comments",
+              },
+              {
+                value: "triggeredLocation",
+                label: "Triggered Location",
+              },
+              {
+                value: "state",
+                label: "State",
+              },
+              {
+                value: "severity",
+                label: "Severity",
+              },
+              {
+                value: "count",
+                label: "Count",
+              },
+            ],
+            content: overSpeedingReport,
+          },
+        ];
+      }
+    }
+
+    var settings = {
+      fileName: reportHeading,
+      extraLength: 20,
+      writeMode: "writeFile",
+      writeOptions: {},
+      RTL: false,
+    };
+
+    xlsx(data, settings);
+  };
+
   useEffect(() => {
-    console.log("list>>>", list);
-  }, [list]);
+    console.log("onTimeArrivalReport data>>>", onTimeArrivalReport);
+  }, [onTimeArrivalReport]);
 
   useEffect(() => {
     if (!shiftTypes?.length) {
@@ -156,7 +375,7 @@ const MainComponent = () => {
             // backgroundColor: "yellow"
           }}
         >
-          <div className="filterContainer" style={{flexWrap: "wrap"}}>
+          <div className="filterContainer" style={{ flexWrap: "wrap" }}>
             {office.length > 0 && (
               <div style={{ minWidth: "180px" }} className="form-control-input">
                 <FormControl fullWidth>
@@ -289,7 +508,6 @@ const MainComponent = () => {
             borderRadius: "20px 20px 0 0",
           }}
         >
-          
           <h3>{reportHeading}</h3>
           <div style={{ display: "flex" }}>
             <button
@@ -299,12 +517,27 @@ const MainComponent = () => {
                 padding: "10px",
                 margin: "0 10px",
               }}
+              onClick={() => downloadReport()}
             >
               Download File
             </button>
           </div>
         </div>
-        {selectedTable}
+        {reportHeading === "On Time Arrival Summary Reports" && (
+          <OnTimeArrivalSummaryTable
+            list={onTimeArrivalReport}
+            isLoading={loading}
+          />
+        )}
+        {reportHeading === "On Time Departure Reports" && (
+          <OnTimeDepartureSummaryTable
+            list={onTimeDepartureReport}
+            isLoading={loading}
+          />
+        )}
+        {reportHeading === "Over Speeding Reports" && (
+          <OverSpeedingTable list={overSpeedingReport} isLoading={loading} />
+        )}
       </div>
     </div>
   );

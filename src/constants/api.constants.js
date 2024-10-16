@@ -175,5 +175,7 @@ export const API_PATH = {
   MARK_NO_SHOW: "/markNoShow",
   CONTRACT : "/contract",
   UPDATE_CONTRACT : "/updateContract",
-  CONTRACTS : "/contacts",
+  CONTRACTS : "/contracts",
+  TRIP_COMPLETION_REPORT_VENDOR : "/tripCompletionReportVendor",
+  NO_SHOW_DETAILED_REPORT : "/noShowDetailedReport",
 };

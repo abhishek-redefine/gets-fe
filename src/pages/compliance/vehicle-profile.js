@@ -30,6 +30,15 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: 150,
+      width: 250,
+    },
+  },
+};
+
 const style = {
   position: "absolute",
   top: "50%",
@@ -162,36 +171,22 @@ const VehicleProfile = () => {
   const [contractList, setContractList] = useState([]);
   const [contractId, setContractId] = useState("");
 
-  const fetchVendorById = async () => {
-    try {
-        console.log("Saifali");
-      //   const response = await ComplianceService.getVendorCompanyContractsById(
-      //     editVehicleData.vendorId
-      //   );
-      //   console.log("response>>>", response);
-      setContractList([
-        { id: 1, contractId: "GANGA-16S", contractType: "FLAT_TRIP_BASED" },
-        { id: 2, contractId: "GANGA-11S", contractType: "ZONE_BASED" },
-        { id: 3, contractId: "GANGA-4S", contractType: "KM_BASED" },
-      ]);
-      // if(response.status === 200){
-      //     initializer(false);
-      //     handleCloseModal();
-      // }
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
   const addContractHandler = async () => {
     try {
       let updatedData = editVehicleData;
       updatedData.contractId = contractId;
-      const response = await ComplianceService.updateVehicle(updatedData);
+      console.log(
+        "type of updatedData.contractId>>>",
+        typeof updatedData.contractId
+      );
+      console.log("updatedData>>>", updatedData);
+      const response = await ComplianceService.updateVehicle({
+        vehicleDTO: updatedData,
+      });
       console.log(response.status);
       if (response.status === 200) {
         initializer(false);
-        handleCloseModal();
+        handleCloseContractModal();
       }
     } catch (err) {
       console.log(err);
@@ -288,10 +283,19 @@ const VehicleProfile = () => {
         !clickedItem?.driverId &&
         setOpenModal(true);
     } else if (key === "addContract") {
+      console.log("vendorId>>>", clickedItem?.vendorId);
+      let id = parseInt(clickedItem?.vendorId);
+      console.log("type of>>>", typeof id);
+      console.log("id>>", id);
+      const response = await ComplianceService.getVendorCompanyContractsById(
+        id
+      );
+      console.log("response>>>", response);
+      setContractList(response.data);
       setEditVehicleData(clickedItem);
-      // console.log(clickedItem?.driver);
+      console.log("contractId>>>", clickedItem?.contractId);
       clickedItem?.complianceStatus === "COMPLIANT" &&
-        !clickedItem?.vendorId &&
+        !clickedItem?.contractId &&
         setOpenContractModal(true);
     }
   };
@@ -495,7 +499,6 @@ const VehicleProfile = () => {
     fetchComplianceStatus();
     fetchEhsStatus();
     fetchVehicleState();
-    fetchVendorById();
   }, []);
 
   const onSuccess = () => {
@@ -583,6 +586,10 @@ const VehicleProfile = () => {
       console.log(err);
     }
   };
+
+  // useEffect= (() => {
+
+  // }, [])
 
   return (
     <div className="internalSettingContainer">
@@ -831,7 +838,7 @@ const VehicleProfile = () => {
             fullWidth
             maxWidth="sm"
           >
-            <DialogTitle>{`Add Contract for ${editVehicleData?.vendorName}-${editVehicleData?.vendorId}`}</DialogTitle>
+            <DialogTitle>{`Add Contract for ${editVehicleData?.vehicleRegistrationNumber}-${editVehicleData?.vendorName}`}</DialogTitle>
             <DialogContent>
               <DialogContentText>
                 Select contract from drop down
@@ -847,10 +854,12 @@ const VehicleProfile = () => {
                   onChange={(e) => {
                     setContractId(e.target.value);
                   }}
+                  MenuProps={MenuProps}
                 >
                   {!!contractList?.length &&
                     contractList.map((contract, idx) => (
                       <MenuItem key={idx} value={contract.id}>
+                        {contract.id},{" "}
                         {getFormattedLabel(contract.contractType)},{" "}
                         {contract.contractId}
                       </MenuItem>

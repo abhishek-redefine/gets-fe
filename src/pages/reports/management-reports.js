@@ -100,8 +100,18 @@ const MainComponent = () => {
       });
       if (searchValues.reportType === "BA Raw Data Reports") {
         setReportHeading("BA Raw Data Reports");
+        // const response = await ReportService.(
+        //   allSearchValues
+        // );
+        // console.log(" data >>>>", response.data);
+        // setBaRawReport(response.data);
       } else if (searchValues.reportType === "No Show Detailed Reports") {
         setReportHeading("No Show Detailed Reports");
+        const response = await ReportService.NoShowDetailedReport(
+          allSearchValues
+        );
+        console.log("NoShowDetailedReport data >>>>", response.data);
+        setNoShowDetailReport(response.data);
       } else if (searchValues.reportType === "No show Summary Reports") {
         setReportHeading("No show Summary Reports");
         const response = await ReportService.NoShowSummaryReport(
@@ -538,26 +548,28 @@ const MainComponent = () => {
               </LocalizationProvider>
             </div>
 
-            <div style={{ minWidth: "160px" }} className="form-control-input">
-              <FormControl fullWidth>
-                <InputLabel id="shiftType-label">Shift Type</InputLabel>
-                <Select
-                  style={{ width: "160px", backgroundColor: "white" }}
-                  labelId="shiftType-label"
-                  id="shiftType"
-                  name="shiftType"
-                  value={searchValues.shiftType}
-                  label="Shift Type"
-                  onChange={handleFilterChange}
-                >
-                  {shiftTypes.map((sT, idx) => (
-                    <MenuItem key={idx} value={sT.value}>
-                      {getFormattedLabel(sT.value)}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </div>
+            {reportHeading !== "No show Summary Reports" && (
+              <div style={{ minWidth: "160px" }} className="form-control-input">
+                <FormControl fullWidth>
+                  <InputLabel id="shiftType-label">Shift Type</InputLabel>
+                  <Select
+                    style={{ width: "160px", backgroundColor: "white" }}
+                    labelId="shiftType-label"
+                    id="shiftType"
+                    name="shiftType"
+                    value={searchValues.shiftType}
+                    label="Shift Type"
+                    onChange={handleFilterChange}
+                  >
+                    {shiftTypes.map((sT, idx) => (
+                      <MenuItem key={idx} value={sT.value}>
+                        {getFormattedLabel(sT.value)}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </div>
+            )}
 
             <div
               style={{ backgroundColor: "white" }}
@@ -640,9 +652,6 @@ const MainComponent = () => {
             </button>
           </div>
         </div>
-        {reportHeading === "" && (
-          <BARawDataTable list={baRawReport} isLoading={loading} />
-        )}
         {reportHeading === "BA Raw Data Reports" && (
           <BARawDataTable list={baRawReport} isLoading={loading} />
         )}

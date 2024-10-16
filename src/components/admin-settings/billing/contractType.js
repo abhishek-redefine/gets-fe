@@ -65,7 +65,7 @@ const ContractType = () => {
   const handlePageChange = (page) => {
     console.log(page);
     let updatedPagination = { ...pagination };
-    updatedPagination.pageNo = page;
+    updatedPagination.page = page;
     setPagination(updatedPagination);
   };
 
@@ -79,14 +79,19 @@ const ContractType = () => {
     try {
       setLoading(true);
       // await new Promise((resolve) => setTimeout(resolve, 5000));
-      let params = new URLSearchParams(pagination);
-      const response = await ContractService.GetAllContract(params, {});
-      console.log("response.data.data>>>", response.data.data);
-      setContractListing(response.data.data);
-      const data = response.data;
-      let localPaginationData = { ...data };
-      delete localPaginationData?.data;
-      setPaginationData(localPaginationData);
+      // let params = new URLSearchParams(pagination);
+      const response = await ContractService.GetAllContract();
+      console.log("response>>>", response);
+      const { data } = response || {};
+      // console.log("data>>>", data);
+      setContractListing(data);
+      // let localPaginationData = {
+      //   ...data,
+      //   // pageSize: 5,
+      //   // last: true,
+      // };
+      // delete localPaginationData?.data;
+      // setPaginationData(localPaginationData);
     } catch (e) {
       console.error(e);
     } finally {
