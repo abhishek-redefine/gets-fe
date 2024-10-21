@@ -178,4 +178,5 @@ export const API_PATH = {
   CONTRACTS : "/contracts",
   TRIP_COMPLETION_REPORT_VENDOR : "/tripCompletionReportVendor",
   NO_SHOW_DETAILED_REPORT : "/noShowDetailedReport",
+  BY_VEHICLE : "/byVehicle",
 };

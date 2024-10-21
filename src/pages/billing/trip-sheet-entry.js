@@ -12,9 +12,7 @@ import {
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
-import { getFormattedLabel } from "@/utils/utils";
 import { DATE_FORMAT, MASTER_DATA_TYPES } from "@/constants/app.constants.";
-import OfficeService from "@/services/office.service";
 import { useDispatch, useSelector } from "react-redux";
 import billing from "@/layouts/billing";
 import { setMasterData } from "@/redux/master.slice";
@@ -25,7 +23,7 @@ import TransferTripModal from "@/components/billing/transferTripModal";
 import ManualGenerateTripModal from "@/components/billing/manualGenerateTripModal";
 import ManualCreateTripDetails from "@/components/billing/manualCreateTripDetails";
 import ComplianceService from "@/services/compliance.service";
-import dayjs from "dayjs";
+import BillingService from "@/services/billing.service";
 
 const style = {
   tripTransferStyle: {
@@ -51,16 +49,12 @@ const style = {
 };
 
 const MainComponent = () => {
-  // const [office, setOffice] = useState([]);
   const [vehicleNumber, setVehicleNumber] = useState("");
   const [searchValues, setSearchValues] = useState({
     tripId: "",
     vehicleNumber: vehicleNumber,
-    fromDate: "",
-    toDate: "",
-    // officeId: "",
-    // shiftType: "",
-    // shiftTime: "",
+    startDate: "",
+    endDate: "",
   });
   const [list, setList] = useState([]);
   const [selectedFilter, setSelectedFilter] = useState("");
@@ -68,16 +62,12 @@ const MainComponent = () => {
 
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
-  const [pagination, setPagination] = useState({
-    page: 0,
-    size: 100,
-  });
+  const [loading, setLoading] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
   const [selectedVehicleId, setSelectedVehicleId] = useState("");
   const [selectedVehicleRegistrationNo, setSelectedVehicleRegistrationNo] =
     useState("");
   const [searchValuesData, setSearchValuesData] = useState({});
-  const [tripId, setTripId] = useState(null);
   const [searchedVehicle, setSearchedvehicle] = useState([]);
   const [openSearchVehicle, setOpenSearchVehicle] = useState(false);
 
@@ -198,25 +188,11 @@ const MainComponent = () => {
     const { target } = e;
     const { value, name } = target;
     let newSearchValues = { ...searchValues };
-    if (name === "fromDate" || name === "toDate")
+    if (name === "startDate" || name === "endDate")
       newSearchValues[name] = value.format("YYYY-MM-DD");
     else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
   };
-
-  // const fetchAllOffices = async () => {
-  //   try {
-  //     const response = await OfficeService.getAllOffices();
-  //     const { data } = response || {};
-  //     const { clientOfficeDTO } = data || {};
-  //     console.log(clientOfficeDTO);
-  //     setSearchValues(
-  //       { ...searchValues },
-  //       (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
-  //     );
-  //     setOffice(clientOfficeDTO);
-  //   } catch (e) {}
-  // };
 
   const fetchMasterData = async (type) => {
     try {
@@ -233,8 +209,8 @@ const MainComponent = () => {
     let allSearchValue = {
       tripId: "",
       vehicleNumber: "",
-      fromDate: "",
-      toDate: "",
+      startDate: "",
+      endDate: "",
     };
     setSearchValues(allSearchValue);
     setVehicleNumber("");
@@ -245,7 +221,6 @@ const MainComponent = () => {
 
   const fetchSummary = async () => {
     try {
-      let params = new URLSearchParams(pagination);
       let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
         if (
@@ -255,23 +230,28 @@ const MainComponent = () => {
           delete allSearchValues[objKey];
         }
       });
-      const data = [
-        {
-          vehicleId: "4",
-          vehicleRegistration: "DL5CQ4456",
-          vehicleType: "Cab",
-          vendorName: "Ganga Tourism",
-          date: "30-09-2024",
-          id: "1",
-          km: "",
-          hrs: "",
-          shiftTime: "09:00",
-          shiftType: "LOGIN",
-        },
-      ];
-      setList(data);
+      let tripId = allSearchValues.tripId;
+      console.log("tripId>>>", tripId);
+      setLoading(true);
+      if (selectedFilter === "Trip Id") {
+        const response = await BillingService.getTripByTripId(tripId);
+        console.log("response>>>", response.data);
+        setList([response.data]);
+      }
+      if (selectedFilter === "Vehicle Number") {
+        console.log("allSearchValues>>>", allSearchValues);
+        const params = new URLSearchParams(allSearchValues);
+        const response = await BillingService.getTripByVehicleNumber(
+          params.toString()
+        );
+        console.log("response>>>", response);
+        setList(response.data);
+      }
+      resetFilter();
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -295,8 +275,19 @@ const MainComponent = () => {
   }, [selectedRow]);
 
   useEffect(() => {
+    setSearchValues((prevSearchValues) => ({
+      ...prevSearchValues,
+      vehicleNumber: vehicleNumber,
+    }));
+  }, [vehicleNumber]);
+
+  useEffect(() => {
     console.log("searchValues changed: ", searchValues);
   }, [searchValues]);
+
+  useEffect(() => {
+    console.log("list>>>", list);
+  }, [list]);
 
   return (
     <div>
@@ -463,27 +454,21 @@ const MainComponent = () => {
                   className="form-control-input"
                   style={{ backgroundColor: "white" }}
                 >
-                  {/* <InputLabel
-                    style={{ backgroundColor: "#f9f9f9" }}
-                    htmlFor="date"
-                  >
-                    From Date
-                  </InputLabel> */}
                   <LocalizationProvider dateAdapter={AdapterMoment}>
                     <DatePicker
-                      name="fromDate"
+                      name="startDate"
                       format={DATE_FORMAT}
                       value={
-                        searchValues.fromDate
-                          ? moment(searchValues.fromDate)
+                        searchValues.startDate
+                          ? moment(searchValues.startDate)
                           : null
                       }
                       onChange={(e) =>
                         handleFilterChange({
-                          target: { name: "fromDate", value: e },
+                          target: { name: "startDate", value: e },
                         })
                       }
-                      label="From Date"
+                      label="Start Date"
                     />
                   </LocalizationProvider>
                 </div>
@@ -492,28 +477,24 @@ const MainComponent = () => {
                   className="form-control-input"
                   style={{ backgroundColor: "white" }}
                 >
-                  {/* <InputLabel
-                    style={{ backgroundColor: "#f9f9f9" }}
-                    htmlFor="date"
-                  >
-                    To Date
-                  </InputLabel> */}
                   <LocalizationProvider dateAdapter={AdapterMoment}>
                     <DatePicker
-                      name="toDate"
+                      name="endDate"
                       format={DATE_FORMAT}
                       value={
-                        searchValues.toDate ? moment(searchValues.toDate) : null
+                        searchValues.endDate
+                          ? moment(searchValues.endDate)
+                          : null
                       }
                       onChange={(e) =>
                         handleFilterChange({
-                          target: { name: "toDate", value: e },
+                          target: { name: "endDate", value: e },
                         })
                       }
-                      label="To Date"
+                      label="End Date"
                       minDate={
-                        searchValues.fromDate
-                          ? moment(searchValues.fromDate)
+                        searchValues.startDate
+                          ? moment(searchValues.startDate)
                           : null
                       }
                     />
@@ -628,6 +609,7 @@ const MainComponent = () => {
               </div>
             </div>
             <TripSheetEntryTable
+              isLoading={loading}
               list={list}
               onRowsSelected={handleRowsSelected}
               selectedRow={selectedRow}
