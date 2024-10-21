@@ -490,7 +490,7 @@ const VehicleProfile = () => {
   };
 
   const cancelHandler = () => {
-    setEditVehicleData([]);
+    setEditVehicleData(null);
     setAddVehicleOpen(false);
   };
 
