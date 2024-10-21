@@ -137,7 +137,7 @@ const AddContract = ({ EditContractData, onUserSuccess }) => {
   });
 
   const [loading, setLoading] = useState(false);
-
+  const dispatch = useDispatch();
   const [error, setError] = useState({});
 
   const ContractType = [
@@ -156,25 +156,12 @@ const AddContract = ({ EditContractData, onUserSuccess }) => {
 
   useState(() => {
     console.log("EditContractData>>>", EditContractData);
-    console.log("EditContractData?.id>>>", EditContractData?.id);
     if (EditContractData?.id) {
       let newEditInfo = Object.assign(initialValues, EditContractData);
       // console.log("newEditInfo>>>", newEditInfo);
       setInitialValues(newEditInfo);
     }
   }, [EditContractData]);
-
-  const handleResetField = () => {
-    handleReset();
-    initialValues.contractType = values.contractType;
-    formik.setFieldValue("zoneBasedContractDTOs", [
-      { zoneName: "", tripRate: "", escortTripRate: "" },
-    ]);
-    formik.setFieldValue("slabBasedContractDTOs", [
-      { startKm: "", endKm: "", tripRate: "" },
-    ]);
-    console.log(initialValues);
-  };
 
   const formik = useFormik({
     initialValues: initialValues,
@@ -260,7 +247,7 @@ const AddContract = ({ EditContractData, onUserSuccess }) => {
           setLoading(true);
           // await new Promise((resolve) => setTimeout(resolve, 5000));
           const response = await ContractService.UpdateContract(id, payload);
-          if (response.status === 200) {
+          if (response.status === 201) {
             dispatch(
               toggleToast({
                 message: "Contract details updated successfully!",
@@ -362,7 +349,6 @@ const AddContract = ({ EditContractData, onUserSuccess }) => {
   const { errors, touched, values, handleChange, handleSubmit, handleReset } =
     formik;
 
-  const dispatch = useDispatch();
   const [office, setOffice] = useState([]);
   // const fetchAllOffices = async () => {
   //   try {
@@ -449,48 +435,51 @@ const AddContract = ({ EditContractData, onUserSuccess }) => {
   //   fetchAllOffices();
   // }, []);
 
-  // useEffect(() => {
-  //   console.log("start km >>>", startKm)
-  // }, [])
+  const handleResetField = () => {
+    const resetValues = {
+      ...initialValues,
+      contractType: values.contractType,
+      zoneBasedContractDTOs: [
+        { zoneName: "", tripRate: "", escortTripRate: "" },
+      ],
+      slabBasedContractDTOs: [{ startKm: "", endKm: "", tripRate: "" }],
+    };
 
-  useEffect(() => {
-    if (!EditContractData) {
-      formik.resetForm({
-        values: {
-          type: values.type,
-          // officeId: "",
-          contractId: "",
-          contractName: "",
-          // endDate: "",
-          startDate: "",
-          // vehicleAcOption: null,
-          // fuelType: null,
-          // workingShift: "",
-          // ageCriteria: "",
-          // vehicleType: "",
-          sittingCapacity: "",
-          tripRate: "",
-          escortTripRate: "",
-          zoneBasedContractDTOs: [
-            { zoneName: "", tripRate: "", escortTripRate: "" },
-          ],
-          totalNoOfHrs: "",
-          totalNoOfKms: "",
-          // packageType: "",
-          packageAmount: "",
-          extraKmRate: "",
-          extraHrRate: "",
-          workingDays: "",
-          minBusinessDays: "",
-          adjustmentDays: "",
-          proDate: null,
-          slabBasedContractDTOs: [{ startKm: "", endKm: "", tripRate: "" }],
-          kmTripRate: "",
-          // emptyDistanceApproval: null,
-        },
-      });
+    formik.resetForm({ values: resetValues });
+    console.log("Form reset", resetValues);
+
+    if (EditContractData) {
+      const resetValues = {
+        ...initialValues,
+        contractType: values.contractType,
+        contractId: "",
+        contractName: "",
+        startDate: "",
+        sittingCapacity: "",
+        tripRate: "",
+        escortTripRate: "",
+        totalNoOfHrs: "",
+        totalNoOfKms: "",
+        packageAmount: "",
+        extraKmRate: "",
+        extraHrRate: "",
+        workingDays: "",
+        minBusinessDays: "",
+        adjustmentDays: "",
+        proDate: null,
+        kmTripRate: "",
+        zoneBasedContractDTOs: [
+          { zoneName: "", tripRate: "", escortTripRate: "" },
+        ],
+        slabBasedContractDTOs: [{ startKm: "", endKm: "", tripRate: "" }],
+      };
+
+      formik.resetForm({ values: resetValues });
+      console.log("Form reset", resetValues);
     }
-  }, [values.type]);
+  };
+
+
 
   return (
     <div>
