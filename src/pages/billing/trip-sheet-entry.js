@@ -6,13 +6,13 @@ import {
   MenuItem,
   Modal,
   Box,
+  TextField,
+  Autocomplete,
 } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
-import { getFormattedLabel } from "@/utils/utils";
 import { DATE_FORMAT, MASTER_DATA_TYPES } from "@/constants/app.constants.";
-import OfficeService from "@/services/office.service";
 import { useDispatch, useSelector } from "react-redux";
 import billing from "@/layouts/billing";
 import { setMasterData } from "@/redux/master.slice";
@@ -22,6 +22,8 @@ import TripSheetEntryTable from "@/components/billing/tripSheetEntryTable";
 import TransferTripModal from "@/components/billing/transferTripModal";
 import ManualGenerateTripModal from "@/components/billing/manualGenerateTripModal";
 import ManualCreateTripDetails from "@/components/billing/manualCreateTripDetails";
+import ComplianceService from "@/services/compliance.service";
+import BillingService from "@/services/billing.service";
 
 const style = {
   tripTransferStyle: {
@@ -47,26 +49,50 @@ const style = {
 };
 
 const MainComponent = () => {
-  const [office, setOffice] = useState([]);
+  const [vehicleNumber, setVehicleNumber] = useState("");
   const [searchValues, setSearchValues] = useState({
-    officeId: "",
-    shiftType: "",
-    date: moment().format("YYYY-MM-DD"),
-    shiftTime: "",
+    tripId: "",
+    vehicleNumber: vehicleNumber,
+    startDate: "",
+    endDate: "",
   });
   const [list, setList] = useState([]);
+  const [selectedFilter, setSelectedFilter] = useState("");
+  const [filterValue, setFilterValue] = useState("");
 
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
-  const [pagination, setPagination] = useState({
-    page: 0,
-    size: 100,
-  });
+  const [loading, setLoading] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
   const [selectedVehicleId, setSelectedVehicleId] = useState("");
   const [selectedVehicleRegistrationNo, setSelectedVehicleRegistrationNo] =
     useState("");
   const [searchValuesData, setSearchValuesData] = useState({});
+  const [searchedVehicle, setSearchedvehicle] = useState([]);
+  const [openSearchVehicle, setOpenSearchVehicle] = useState(false);
+
+  const searchForVehicle = async (e) => {
+    try {
+      if (e.target.value) {
+        console.log("searchForVehicle", e.target.value);
+        const response = await ComplianceService.searchVehicle(e.target.value);
+        console.log(response);
+        const { data } = response || {};
+        setSearchedvehicle(data);
+        console.log("Searched vehicle>>", searchedVehicle);
+      } else {
+        setSearchedvehicle([]);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const onChangeVehicleHandler = (newValue) => {
+    console.log("on vehicle change handler", newValue);
+    setVehicleNumber(newValue?.vehicleRegistrationNumber);
+    // setVehicleId(newValue?.vehicleId);
+  };
 
   const handleRowsSelected = (selectedRow) => {
     setSelectedRow(selectedRow);
@@ -162,23 +188,10 @@ const MainComponent = () => {
     const { target } = e;
     const { value, name } = target;
     let newSearchValues = { ...searchValues };
-    if (name === "date") newSearchValues[name] = value.format("YYYY-MM-DD");
+    if (name === "startDate" || name === "endDate")
+      newSearchValues[name] = value.format("YYYY-MM-DD");
     else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
-  };
-
-  const fetchAllOffices = async () => {
-    try {
-      const response = await OfficeService.getAllOffices();
-      const { data } = response || {};
-      const { clientOfficeDTO } = data || {};
-      console.log(clientOfficeDTO);
-      setSearchValues(
-        { ...searchValues },
-        (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
-      );
-      setOffice(clientOfficeDTO);
-    } catch (e) {}
   };
 
   const fetchMasterData = async (type) => {
@@ -194,16 +207,20 @@ const MainComponent = () => {
 
   const resetFilter = () => {
     let allSearchValue = {
-      officeId: office[0].officeId,
-      date: moment().format("YYYY-MM-DD"),
-      shiftType: "",
+      tripId: "",
+      vehicleNumber: "",
+      startDate: "",
+      endDate: "",
     };
     setSearchValues(allSearchValue);
+    setVehicleNumber("");
+    setSearchedvehicle([]);
+    setSelectedFilter("");
+    setFilterValue("");
   };
 
   const fetchSummary = async () => {
     try {
-      let params = new URLSearchParams(pagination);
       let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
         if (
@@ -213,23 +230,28 @@ const MainComponent = () => {
           delete allSearchValues[objKey];
         }
       });
-      const data = [
-        {
-          vehicleId: "4",
-          vehicleRegistration: "DL5CQ4456",
-          vehicleType: "Cab",
-          vendorName: "Ganga Tourism",
-          date: "30-09-2024",
-          id: "1",
-          km: "",
-          hrs: "",
-          shiftTime: "09:00",
-          shiftType: "LOGIN",
-        },
-      ];
-      setList(data);
+      let tripId = allSearchValues.tripId;
+      console.log("tripId>>>", tripId);
+      setLoading(true);
+      if (selectedFilter === "Trip Id") {
+        const response = await BillingService.getTripByTripId(tripId);
+        console.log("response>>>", response.data);
+        setList([response.data]);
+      }
+      if (selectedFilter === "Vehicle Number") {
+        console.log("allSearchValues>>>", allSearchValues);
+        const params = new URLSearchParams(allSearchValues);
+        const response = await BillingService.getTripByVehicleNumber(
+          params.toString()
+        );
+        console.log("response>>>", response);
+        setList(response.data);
+      }
+      resetFilter();
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -237,7 +259,7 @@ const MainComponent = () => {
     if (!shiftTypes?.length) {
       fetchMasterData(MASTER_DATA_TYPES.SHIFT_TYPE);
     }
-    fetchAllOffices();
+    // fetchAllOffices();
   }, []);
 
   const handleSearchValues = (data) => {
@@ -252,12 +274,30 @@ const MainComponent = () => {
     }
   }, [selectedRow]);
 
+  useEffect(() => {
+    setSearchValues((prevSearchValues) => ({
+      ...prevSearchValues,
+      vehicleNumber: vehicleNumber,
+    }));
+  }, [vehicleNumber]);
+
+  useEffect(() => {
+    console.log("searchValues changed: ", searchValues);
+  }, [searchValues]);
+
+  useEffect(() => {
+    console.log("list>>>", list);
+  }, [list]);
+
   return (
     <div>
       {detailsScreenFlag ? (
         <div>
           {tripDetailsScreenOpen ? (
-            <TripSheetEntryDetails onClose={handleTripInfoScreenClose} tripdetails={list}/>
+            <TripSheetEntryDetails
+              onClose={handleTripInfoScreenClose}
+              tripdetails={list}
+            />
           ) : (
             ""
           )}
@@ -275,97 +315,194 @@ const MainComponent = () => {
           <div
             className="filterContainer"
             style={{
+              flexWrap: "wrap",
+              alignItems: "center",
               backgroundColor: "#f9f9f9",
               borderRadius: "10px",
               margin: "30px 0",
               padding: "0 13px",
+              // gap: "10px",
             }}
           >
-            {office.length > 0 && (
-              <div style={{ minWidth: "180px" }} className="form-control-input">
-                <FormControl fullWidth>
-                  <InputLabel id="primary-office-label">Office ID</InputLabel>
+            <div
+              className="form-control-input"
+              style={{ minWidth: 350, display: "flex" }}
+            >
+              <div
+                style={{
+                  marginRight: 0,
+                  borderRadius: "4px 0 4px 4px",
+                  borderColor: "red",
+                  width: "160px",
+                }}
+              >
+                <FormControl
+                  sx={{
+                    backgroundColor: "#ffffff",
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "4px 0 0 4px",
+                      "& fieldset": {
+                        borderRight: "1px solid white",
+                      },
+                    },
+                  }}
+                >
+                  <InputLabel id="filter-select-label">Search By</InputLabel>
                   <Select
-                    style={{ width: "180px", backgroundColor: "white" }}
-                    labelId="primary-office-label"
-                    id="officeId"
-                    value={searchValues.officeId}
-                    name="officeId"
-                    label="Office ID"
-                    onChange={handleFilterChange}
+                    labelId="filter-select-label"
+                    value={selectedFilter}
+                    onChange={(e) => {
+                      setSelectedFilter(e.target.value);
+                      setFilterValue("");
+                    }}
+                    sx={{
+                      width: "160px",
+                      // backgroundColor: "pink",
+                    }}
                   >
-                    {!!office?.length &&
-                      office.map((office, idx) => (
-                        <MenuItem key={idx} value={office.officeId}>
-                          {getFormattedLabel(office.officeId)}, {office.address}
-                        </MenuItem>
-                      ))}
+                    <MenuItem value="Trip Id">Trip Id</MenuItem>
+                    <MenuItem value="Vehicle Number">Vehicle Number</MenuItem>
                   </Select>
                 </FormControl>
               </div>
+              <div
+                style={{
+                  width: "230px",
+                }}
+              >
+                {selectedFilter === "" && (
+                  <div
+                    style={{
+                      backgroundColor: "#ffffff",
+                      borderRadius: "0 4px 4px 0",
+                      borderWidth: 1,
+                      borderColor: "#c4c4c4",
+                      borderStyle: "solid",
+                      height: 56,
+                    }}
+                  ></div>
+                )}
+                {selectedFilter === "Trip Id" && (
+                  <TextField
+                    id="outlined-basic"
+                    variant="outlined"
+                    label="Trip Id"
+                    name="tripId"
+                    sx={{
+                      backgroundColor: "#ffffff",
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: "0 4px 4px 0",
+                      },
+                    }}
+                    value={searchValues.tripId}
+                    onChange={handleFilterChange}
+                    type="number"
+                  />
+                )}
+                {selectedFilter === "Vehicle Number" && (
+                  <FormControl
+                    variant="outlined"
+                    sx={{
+                      backgroundColor: "#ffffff",
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: "0 4px 4px 0",
+                      },
+                    }}
+                  >
+                    <Autocomplete
+                      disablePortal
+                      id="search-vehicle"
+                      options={searchedVehicle}
+                      autoComplete
+                      open={openSearchVehicle}
+                      onOpen={() => {
+                        setOpenSearchVehicle(true);
+                      }}
+                      onClose={() => {
+                        setOpenSearchVehicle(false);
+                      }}
+                      onChange={(e, val) => onChangeVehicleHandler(val)}
+                      getOptionKey={(vehicle) => vehicle.vehicleNumber}
+                      getOptionLabel={(vehicle) =>
+                        vehicle.vehicleRegistrationNumber
+                      }
+                      freeSolo
+                      name="vehicle"
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Search Vehicle"
+                          onChange={searchForVehicle}
+                          value={searchValues.vehicleNumber}
+                        />
+                      )}
+                    />
+                  </FormControl>
+                )}
+              </div>
+            </div>
+
+            {selectedFilter === "Vehicle Number" && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  // backgroundColor: "pink",
+                }}
+              >
+                <div
+                  className="form-control-input"
+                  style={{ backgroundColor: "white" }}
+                >
+                  <LocalizationProvider dateAdapter={AdapterMoment}>
+                    <DatePicker
+                      name="startDate"
+                      format={DATE_FORMAT}
+                      value={
+                        searchValues.startDate
+                          ? moment(searchValues.startDate)
+                          : null
+                      }
+                      onChange={(e) =>
+                        handleFilterChange({
+                          target: { name: "startDate", value: e },
+                        })
+                      }
+                      label="Start Date"
+                    />
+                  </LocalizationProvider>
+                </div>
+
+                <div
+                  className="form-control-input"
+                  style={{ backgroundColor: "white" }}
+                >
+                  <LocalizationProvider dateAdapter={AdapterMoment}>
+                    <DatePicker
+                      name="endDate"
+                      format={DATE_FORMAT}
+                      value={
+                        searchValues.endDate
+                          ? moment(searchValues.endDate)
+                          : null
+                      }
+                      onChange={(e) =>
+                        handleFilterChange({
+                          target: { name: "endDate", value: e },
+                        })
+                      }
+                      label="End Date"
+                      minDate={
+                        searchValues.startDate
+                          ? moment(searchValues.startDate)
+                          : null
+                      }
+                    />
+                  </LocalizationProvider>
+                </div>
+              </div>
             )}
 
-            <div
-              className="form-control-input"
-              style={{ backgroundColor: "white" }}
-            >
-              <InputLabel style={{ backgroundColor: "#f9f9f9" }} htmlFor="date">
-                Date
-              </InputLabel>
-              <LocalizationProvider dateAdapter={AdapterMoment}>
-                <DatePicker
-                  name="date"
-                  format={DATE_FORMAT}
-                  value={searchValues.date ? moment(searchValues.date) : null}
-                  onChange={(e) =>
-                    handleFilterChange({
-                      target: { name: "date", value: e },
-                    })
-                  }
-                />
-              </LocalizationProvider>
-            </div>
-
-            <div style={{ minWidth: "160px" }} className="form-control-input">
-              <FormControl fullWidth>
-                <InputLabel id="shiftType-label">Shift Type</InputLabel>
-                <Select
-                  style={{ width: "160px", backgroundColor: "white" }}
-                  labelId="shiftType-label"
-                  id="shiftType"
-                  name="shiftType"
-                  value={searchValues.shiftType}
-                  label="Shift Type"
-                  onChange={handleFilterChange}
-                >
-                  {shiftTypes.map((sT, idx) => (
-                    <MenuItem key={idx} value={sT.value}>
-                      {getFormattedLabel(sT.value)}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </div>
-            {/* <div style={{ minWidth: "160px", backgroundColor: 'white', }} className="form-control-input">
-              <FormControl fullWidth>
-                <InputLabel id="shiftType-label">Shift Time</InputLabel>
-                <Select
-                  style={{ width: "160px" }}
-                  labelId="shiftType-label"
-                  id="shiftType"
-                  name="shiftType"
-                  value={searchValues.shiftType}
-                  label="Shift Type"
-                  onChange={handleFilterChange}
-                >
-                  {shiftTypes.map((sT, idx) => (
-                    <MenuItem key={idx} value={sT.value}>
-                      {getFormattedLabel(sT.value)}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </div> */}
             <div className="form-control-input" style={{ minWidth: "70px" }}>
               <button
                 type="submit"
@@ -472,6 +609,7 @@ const MainComponent = () => {
               </div>
             </div>
             <TripSheetEntryTable
+              isLoading={loading}
               list={list}
               onRowsSelected={handleRowsSelected}
               selectedRow={selectedRow}

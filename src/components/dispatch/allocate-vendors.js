@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toggleToast } from "@/redux/company.slice";
 import LoaderComponent from "../loader";
 
-const AllocateVendor = ({ tripList, isLoading }) => {
+const AllocateVendor = ({ tripList, isLoading, allocationComplete }) => {
   const [data, setData] = useState([]);
   const [selectedRows, setSelectedRows] = useState({});
   const [vendorList, setVendorList] = useState([]);
@@ -199,8 +199,11 @@ const AllocateVendor = ({ tripList, isLoading }) => {
   useEffect(() => {
     setData(tripList);
     getAllVendor();
-  }, []);
+  }, [tripList]);
 
+  // useEffect(() => {
+  //   console.log("alocate-vendor data>>>", data)
+  // }, [data])
 
   return (
     <div>
@@ -234,11 +237,11 @@ const AllocateVendor = ({ tripList, isLoading }) => {
                 color: "black",
                 border: "2px solid #f6ce47",
                 borderRadius: "6px",
-                padding: "3px 10px",
+                padding: "10px 15px",
                 margin: "0 20px 0 0",
-                fontWeight: "bold",
                 cursor: "pointer",
                 textTransform: "unset",
+                width: 220
               }}
             >
               {selectedVendor || "Vendor Name"}
@@ -274,8 +277,8 @@ const AllocateVendor = ({ tripList, isLoading }) => {
                 color: "black",
                 border: "2px solid #f6ce47",
                 borderRadius: "6px",
-                fontWeight: "bold",
-                padding: "6px 10px",
+                fontSize: "15px",
+                padding: "13px 10px",
                 cursor: "pointer",
                 marginLeft: "30px",
               }}
@@ -284,21 +287,22 @@ const AllocateVendor = ({ tripList, isLoading }) => {
             </button>
           </div>
 
-          {/* <div>
+          <div>
             <button
+              onClick={() => allocationComplete()}
               style={{
                 backgroundColor: "#f6ce47",
                 color: "black",
                 border: "2px solid #f6ce47",
                 borderRadius: "6px",
-                fontWeight: "bold",
-                padding: "6px 10px",
+                fontSize: "15px",
+                padding: "13px 10px",
                 cursor: "pointer",
               }}
             >
               Allocation Complete
             </button>
-          </div> */}
+          </div>
         </div>
       </div>
 

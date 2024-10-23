@@ -64,7 +64,7 @@ const BillingConfigurations = () => {
   const [loading, setLoading] = useState(false);
   const [values, setValues] = useState({
     "sign.in.out": { slider: false, value: "" },
-    "gps.loss": { slider: false, value: "" },
+    "gps.loss": { slider: false, option: "", value: "" },
     "improper.duty.hrs": {
       slider: false,
       value: {
@@ -79,7 +79,7 @@ const BillingConfigurations = () => {
     "escort.round.trip": { slider: false },
     "first.employee.no.show": { slider: false, value: "" },
     "employee.duplication": { slider: false, value: "" },
-    "percentage.to.approve": { slider: false, value: "" },
+    "percentage.to.approve": { slider: false, option: "", value: "" },
   });
 
   const [errors, setErrors] = useState({
@@ -87,7 +87,6 @@ const BillingConfigurations = () => {
     "gps.loss": "",
     "improper.duty.hrs": "",
     "escort.trip.time.hrs": "",
-    // "escort.round.trip": "",
     "first.employee.no.show": "",
     "employee.duplication": "",
     "percentage.to.approve": "",
@@ -100,8 +99,23 @@ const BillingConfigurations = () => {
       textfield: "Geo fence value (meter)",
     },
     {
+      name: "first.employee.no.show",
+      label: "First Employee No Show",
+      textfield: "Geo fence value (meter)",
+    },
+    {
+      name: "employee.duplication",
+      label: "Employee Duplication",
+      textfield: "Minimum minutes",
+    },
+    {
       name: "gps.loss",
       label: "GPS Loss",
+      textfield: "Percentage",
+    },
+    {
+      name: "percentage.to.approve",
+      label: "Percentage to approve Kms",
       textfield: "Percentage",
     },
     {
@@ -113,38 +127,16 @@ const BillingConfigurations = () => {
       },
     },
     {
-      name: "escort.trip.time.hrs",
-      label: "Escort Trip Time Hours",
-    },
-    {
       name: "escort.round.trip",
       label: "Escort Round Trip",
     },
     {
-      name: "first.employee.no.show",
-      label: "First Employee No Show",
-      textfield: "Geo fence value (meter)",
-    },
-    {
-      name: "employee.duplication",
-      label: "Employee Duplication",
-      textfield: "Minimum minutes",
-    },
-    {
-      name: "percentage.to.approve",
-      label: "Percentage to approve Kms",
-      textfield: "Percentage",
+      name: "escort.trip.time.hrs",
+      label: "Escort Trip Time Hours",
     },
   ];
 
   const KmOptions = ["Planned Km", "Reference Km"];
-
-  const handleValueChange = (key, value) => {
-    setValues((prev) => ({
-      ...prev,
-      [key]: { ...prev[key], value: value },
-    }));
-  };
 
   const handleSwitchChange = (name) => (event) => {
     setValues({
@@ -153,15 +145,33 @@ const BillingConfigurations = () => {
     });
   };
 
-  //   const handleTimeChange = (key, timeKey, newValue) => {
-  //     setValues((prevValues) => ({
-  //       ...prevValues,
-  //       [key]: {
-  //         ...prevValues[key],
-  //         [timeKey]: newValue ? newValue.format("HH:mm") : "",
-  //       },
-  //     }));
-  //   };
+  const handleValueChange = (key, field, value) => {
+    console.log("key>>>", key)
+    console.log("field>>>", field)
+    console.log("value>>>", value)
+    // setValues((prev) => ({
+    //   ...prev,
+    //   [key]: { ...prev[key], value: value },
+    // }));
+
+    if (key === "improper.duty.hrs") {
+      setValues((prev) => ({
+        ...prev,
+        [key]: {
+          ...prev[key],
+          value: {
+            ...prev[key].value,
+            [field]: value,
+          },
+        },
+      }));
+    } else {
+    setValues((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], value: field },
+    }));
+    }
+  };
 
   const handleTimeChange = (key, timeKey, newValue) => {
     setValues((prevValues) => ({
@@ -169,6 +179,16 @@ const BillingConfigurations = () => {
       [key]: {
         ...prevValues[key],
         [timeKey]: newValue ? newValue.format("HH:mm") : "",
+      },
+    }));
+  };
+
+  const handleSelectChange = (key, optionValue) => {
+    setValues((prev) => ({
+      ...prev,
+      [key]: {
+        ...prev[key],
+        option: optionValue,
       },
     }));
   };
@@ -239,16 +259,35 @@ const BillingConfigurations = () => {
 
   const handleReset = () => {
     let allValues = {
+      "sign.in.out": { slider: false, value: "" },
+      "gps.loss": { slider: false, option: "", value: "" },
+      "improper.duty.hrs": {
+        slider: false,
+        value: {
+          "Max. Time Limit Of Trip (minutes)": "",
+          "Min. Time Limit Of Trip (minutes)": "",
+        },
+      },
+      "escort.trip.time.hrs": {
+        "start time": "",
+        "end time": "",
+      },
+      "escort.round.trip": { slider: false },
+      "first.employee.no.show": { slider: false, value: "" },
+      "employee.duplication": { slider: false, value: "" },
+      "percentage.to.approve": { slider: false, option: "", value: "" },
+    };
+    let allErrors = {
       "sign.in.out": "",
       "gps.loss": "",
       "improper.duty.hrs": "",
       "escort.trip.time.hrs": "",
-      "escort.round.trip": "",
       "first.employee.no.show": "",
       "employee.duplication": "",
       "percentage.to.approve": "",
     };
     setValues(allValues);
+    setErrors(allErrors);
   };
 
   const handleSave = () => {
@@ -256,11 +295,22 @@ const BillingConfigurations = () => {
     const newErrors = { ...errors };
 
     fieldText.forEach(({ name, label }) => {
-      if (!values[name] || values[name].value === "") {
-        newErrors[name] = `${label} is required`;
-        hasErrors = true;
-      } else {
-        newErrors[name] = "";
+      if (values[name].slider) {
+        // if (!values[name] || values[name].value === "") {
+        if (values[name].value === "" || !values["escort.round.trip"]) {
+          if (
+            !values[name].value ||
+            (["gps.loss", "percentage.to.approve"].includes(name) &&
+              (!values[name].option || values[name].value === ""))
+          ) {
+            newErrors[name] = `${label} is required`;
+            hasErrors = true;
+          } else {
+            newErrors[name] = "";
+          }
+        } else {
+          newErrors[name] = "";
+        }
       }
     });
 
@@ -269,6 +319,7 @@ const BillingConfigurations = () => {
     if (!hasErrors) {
       // CreatePreference();
       console.log("Saved Values: ", values);
+      handleReset();
     } else {
       console.log("Validation errors occurred:", newErrors);
     }
@@ -278,9 +329,9 @@ const BillingConfigurations = () => {
     // fetchPreferenceValues();
   }, []);
 
-  useEffect(() => {
-    console.log("values>>>", values["sign.in.out"].value);
-  }, [values]);
+  // useEffect(() => {
+  //   console.log("values>>>", values);
+  // }, [values]);
 
   return (
     <div
@@ -316,51 +367,55 @@ const BillingConfigurations = () => {
                 style={{
                   display: "flex",
                   flex: 1,
-                  justifyContent: "space-between",
+                  marginLeft: 20,
                 }}
               >
-                <FormControl>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <TimeField
-                      label="Start Time"
-                      format="HH:mm"
-                      size="small"
-                      //   value={dayjs()
-                      //     .hour(Number(values[name]["start time"].slice(0, 2)))
-                      //     .minute(Number(values[name]["start time"].slice(3, 5)))}
-                      //   onChange={(e) => {
-                      //     var ShiftTime = e.$d
-                      //       .toLocaleTimeString("it-IT")
-                      //       .slice(0, -3);
-                      //     handleTimeChange(name, ShiftTime);
-                      //   }}
-                      value={dayjs()
-                        .hour(Number(values[name]["start time"].slice(0, 2)))
-                        .minute(Number(values[name]["start time"].slice(3, 5)))}
-                      onChange={(newValue) => {
-                        handleTimeChange(name, "start time", newValue);
-                      }}
-                      sx={{ flex: 0.5 }}
-                    />
-                  </LocalizationProvider>
-                </FormControl>
+                <div style={{ flex: 0.5 }}></div>
+                <Box
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    flex: 1.1,
+                  }}
+                >
+                  <FormControl>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <TimeField
+                        label="Start Time"
+                        format="HH:mm"
+                        size="small"
+                        value={dayjs()
+                          .hour(Number(values[name]["start time"]?.slice(0, 2)))
+                          .minute(
+                            Number(values[name]["start time"]?.slice(3, 5))
+                          )}
+                        onChange={(newValue) => {
+                          handleTimeChange(name, "start time", newValue);
+                        }}
+                        sx={{ width: 200, flex: 0.5, marginLeft: 5 }}
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
 
-                <FormControl>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <TimeField
-                      label="End Time"
-                      format="HH:mm"
-                      size="small"
-                      value={dayjs()
-                        .hour(Number(values[name]["end time"].slice(0, 2)))
-                        .minute(Number(values[name]["end time"].slice(3, 5)))}
-                      onChange={(newValue) => {
-                        handleTimeChange(name, "end time", newValue);
-                      }}
-                      sx={{ flex: 0.5, marginLeft: 20 }}
-                    />
-                  </LocalizationProvider>
-                </FormControl>
+                  <FormControl>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <TimeField
+                        label="End Time"
+                        format="HH:mm"
+                        size="small"
+                        value={dayjs()
+                          .hour(Number(values[name]["end time"]?.slice(0, 2)))
+                          .minute(
+                            Number(values[name]["end time"]?.slice(3, 5))
+                          )}
+                        onChange={(newValue) => {
+                          handleTimeChange(name, "end time", newValue);
+                        }}
+                        sx={{ width: 200, flex: 0.5, marginLeft: 5 }}
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
+                </Box>
               </Box>
             ) : (
               <div
@@ -390,7 +445,7 @@ const BillingConfigurations = () => {
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
-                      flex: 1.5,
+                      flex: 1.1,
                     }}
                   >
                     <TextField
@@ -399,8 +454,16 @@ const BillingConfigurations = () => {
                       label={textfield.Max}
                       variant="outlined"
                       size="small"
-                      value={values[name].value}
-                      onChange={(e) => handleValueChange(name, e.target.value)}
+                      value={
+                        values[name].value["Max. Time Limit Of Trip (minutes)"]
+                      }
+                      onChange={(e) =>
+                        handleValueChange(
+                          name,
+                          "Max. Time Limit Of Trip (minutes)",
+                          e.target.value
+                        )
+                      }
                       type="number"
                       inputProps={{ min: "0", step: "1" }}
                       error={!!errors[name]}
@@ -414,8 +477,16 @@ const BillingConfigurations = () => {
                       label={textfield.Min}
                       variant="outlined"
                       size="small"
-                      value={values[name].value}
-                      onChange={(e) => handleValueChange(name, e.target.value)}
+                      value={
+                        values[name].value["Min. Time Limit Of Trip (minutes)"]
+                      }
+                      onChange={(e) =>
+                        handleValueChange(
+                          name,
+                          "Min. Time Limit Of Trip (minutes)",
+                          e.target.value
+                        )
+                      }
                       type="number"
                       inputProps={{ min: "0", step: "1" }}
                       error={!!errors[name]}
@@ -443,24 +514,16 @@ const BillingConfigurations = () => {
                           id="onTimeStatus"
                           name="onTimeStatus"
                           size="small"
-                          // value={billingInformation2[key]}
-                          // onChange={(e) =>
-                          //   handleBillingInfo2Change(
-                          //     key,
-                          //     e.target.value
-                          //   )
-                          // }
+                          value={values[name].option}
+                          onChange={(e) =>
+                            handleSelectChange(name, e.target.value)
+                          }
                           disabled={!values[name].slider}
+                          error={!!errors[name]}
                         >
-                          {KmOptions.map((item) => (
-                            <MenuItem
-                              key={item}
-                              value={item}
-                              style={{
-                                fontSize: "14px",
-                              }}
-                            >
-                              {item}
+                          {KmOptions.map((option) => (
+                            <MenuItem key={option} value={option}>
+                              {option}
                             </MenuItem>
                           ))}
                         </Select>
@@ -500,7 +563,6 @@ const BillingConfigurations = () => {
           </button>
         </div>
         <div style={{ display: "flex" }}>
-          <button className="btn btn-secondary">Cancel</button>
           <button className="btn btn-primary" onClick={handleSave}>
             Save
           </button>
