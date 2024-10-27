@@ -24,7 +24,8 @@ const AddEscort = ({
         gender: "",
         officeIds: [],
         address: "",
-        email: ""
+        email: "",
+        isAssigned: false
     });
 
     const [loading, setLoading] = useState(false);

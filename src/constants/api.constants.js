@@ -179,4 +179,7 @@ export const API_PATH = {
   TRIP_COMPLETION_REPORT_VENDOR : "/tripCompletionReportVendor",
   NO_SHOW_DETAILED_REPORT : "/noShowDetailedReport",
   BY_VEHICLE : "/byVehicle",
+  AUTO_SUGGEST_ESCORT : "/autoSuggestEscort",
+  ESCORT : '/escort',
+  ASSIGN_TRIP : '/assignTrip',
 };
