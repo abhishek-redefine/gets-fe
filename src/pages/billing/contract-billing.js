@@ -1,0 +1,342 @@
+import React, { useState, useEffect } from "react";
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  TextField,
+  Autocomplete,
+} from "@mui/material";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
+import moment from "moment";
+import { DATE_FORMAT } from "@/constants/app.constants.";
+import { useDispatch } from "react-redux";
+import billing from "@/layouts/billing";
+import TripSheetEntryTable from "@/components/billing/tripSheetEntryTable";
+import BillingService from "@/services/billing.service";
+import { getFormattedLabel } from "@/utils/utils";
+import ComplianceService from "@/services/compliance.service";
+import { all } from "axios";
+
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: 150,
+      width: 250,
+    },
+  },
+};
+
+const MainComponent = () => {
+  const [searchValues, setSearchValues] = useState({
+    vendorId: "",
+    contractType: "",
+    tripFromDateStr: "",
+    tripToDateStr: "",
+  });
+  const [list, setList] = useState([]);
+
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [searchVendor, setSearchVendor] = useState([]);
+  const [openSearchVendor, setOpenSearchVendor] = useState(false);
+  const [contractList, setContractList] = useState([]);
+  const [vendorId, setVendorId] = useState("");
+
+  const handleRowsSelected = (selectedRow) => {
+    setSelectedRow(selectedRow);
+    console.log("Contract billing selected row >>>: ", selectedRow);
+  };
+
+  const handleFilterChange = (e) => {
+    const { target } = e;
+    const { value, name } = target;
+    let newSearchValues = { ...searchValues };
+    if (name === "tripFromDateStr" || name === "tripToDateStr")
+      newSearchValues[name] = value.format("YYYY-MM-DD");
+    else newSearchValues[name] = value;
+    setSearchValues(newSearchValues);
+  };
+
+  const searchForVendor = async (e) => {
+    try {
+      if (e.target.value) {
+        const response = await ComplianceService.searchVendor(e.target.value);
+        const { data } = response || {};
+        setSearchVendor(data);
+      } else {
+        setSearchVendor([]);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const fetchVendorContracts = async () => {
+    try {
+      console.log("vendorId: ", searchValues.vendorId);
+      let id = parseInt(searchValues.vendorId);
+      //   let id = parseInt(vendorId);
+      console.log("id: ", id);
+      const response = await ComplianceService.getVendorCompanyContractsById(
+        id
+      );
+      console.log("vendor contracts response>>>", response);
+      setContractList(response.data);
+    } catch (e) {
+      console.error("Error fetching contracts:", e);
+    }
+  };
+
+  const resetFilter = () => {
+    let allSearchValue = {
+      vendorId: "",
+      contractType: "",
+      tripFromDateStr: "",
+      tripToDateStr: "",
+    };
+    setSearchValues(allSearchValue);
+    setSearchVendor([]);
+    setContractList([]);
+  };
+
+  const fetchSummary = async () => {
+    try {
+      let allSearchValues = { ...searchValues };
+      let reqBody = {};
+      //   Object.keys(allSearchValues).forEach((objKey) => {
+      //     if (
+      //       allSearchValues[objKey] === null ||
+      //       allSearchValues[objKey] === ""
+      //     ) {
+      //       delete allSearchValues[objKey];
+      //     }
+      //   });
+      reqBody = {
+        vendorId: parseInt(allSearchValues.vendorId),
+        contractType: allSearchValues.contractType,
+        tripFromDateStr: allSearchValues.tripFromDateStr,
+        tripToDateStr: allSearchValues.tripToDateStr,
+      };
+      setLoading(true);
+      if (allSearchValues.contractType === "PACKAGE_BASED") {
+        const response = await BillingService.CalculatePackageBill(reqBody);
+        console.log("response>>>", response);
+      } else {
+        const response = await BillingService.CalculateBill(reqBody);
+        console.log("response>>>", response);
+      }
+
+      // setList(response.data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  //   useEffect(() => {
+  //   }, []);
+
+  useEffect(() => {
+    if (searchValues.vendorId) {
+      fetchVendorContracts();
+    }
+  }, [searchValues.vendorId]);
+
+  useEffect(() => {
+    if (!selectedRow) {
+      console.log("Row unselected");
+      // setSelectedRow(null);
+    }
+  }, [selectedRow]);
+
+  useEffect(() => {
+    console.log("searchValues changed: ", searchValues);
+  }, [searchValues]);
+
+  useEffect(() => {
+    console.log("list>>>", list);
+  }, [list]);
+
+  return (
+    <div>
+      <div>
+        <div
+          className="filterContainer"
+          style={{
+            flexWrap: "wrap",
+            alignItems: "center",
+            backgroundColor: "#f9f9f9",
+            borderRadius: "10px",
+            margin: "30px 0",
+            padding: "0 13px",
+            // gap: "10px",
+          }}
+        >
+          <div className="form-control-input">
+            <FormControl fullWidth>
+              <Autocomplete
+                disablePortal
+                id="search-vendor"
+                options={searchVendor}
+                autoComplete
+                open={openSearchVendor}
+                onOpen={() => {
+                  setOpenSearchVendor(true);
+                }}
+                onClose={() => {
+                  setOpenSearchVendor(false);
+                }}
+                onChange={(e, val) => {
+                  setSearchValues((prev) => ({
+                    ...prev,
+                    vendorId: val ? val.vendorId : "",
+                  }));
+                }}
+                getOptionKey={(vendor) => vendor.vendorId}
+                getOptionLabel={(vendor) => vendor.vendorName}
+                freeSolo
+                name="vendorId"
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Search Vendor Name"
+                    onChange={searchForVendor}
+                  />
+                )}
+                style={{ backgroundColor: "#ffffff" }}
+              />
+            </FormControl>
+          </div>
+
+          <div className="form-control-input">
+            <FormControl fullWidth>
+              <InputLabel id="contract-label">Contract Type</InputLabel>
+              <Select
+                labelId="contract-label"
+                id="contractType"
+                value={searchValues.contractType}
+                name="contractType"
+                label="Contract Type"
+                onChange={handleFilterChange}
+                MenuProps={MenuProps}
+                style={{ backgroundColor: "#ffffff" }}
+              >
+                {!!contractList?.length &&
+                  contractList.map((contract, idx) => (
+                    <MenuItem key={idx} value={contract.contractType}>
+                      {contract.id}, {getFormattedLabel(contract.contractType)},{" "}
+                      {contract.contractId}
+                    </MenuItem>
+                  ))}
+              </Select>
+            </FormControl>
+          </div>
+
+          <div
+            className="form-control-input"
+            style={{ backgroundColor: "white" }}
+          >
+            <LocalizationProvider dateAdapter={AdapterMoment}>
+              <DatePicker
+                name="tripFromDateStr"
+                format={DATE_FORMAT}
+                value={
+                  searchValues.tripFromDateStr
+                    ? moment(searchValues.tripFromDateStr)
+                    : null
+                }
+                onChange={(e) =>
+                  handleFilterChange({
+                    target: { name: "tripFromDateStr", value: e },
+                  })
+                }
+                label="Start Date"
+              />
+            </LocalizationProvider>
+          </div>
+
+          <div
+            className="form-control-input"
+            style={{ backgroundColor: "white" }}
+          >
+            <LocalizationProvider dateAdapter={AdapterMoment}>
+              <DatePicker
+                name="tripToDateStr"
+                format={DATE_FORMAT}
+                value={
+                  searchValues.tripToDateStr
+                    ? moment(searchValues.tripToDateStr)
+                    : null
+                }
+                onChange={(e) =>
+                  handleFilterChange({
+                    target: { name: "tripToDateStr", value: e },
+                  })
+                }
+                label="End Date"
+                minDate={
+                  searchValues.tripFromDateStr
+                    ? moment(searchValues.tripFromDateStr)
+                    : null
+                }
+              />
+            </LocalizationProvider>
+          </div>
+
+          <div className="form-control-input" style={{ minWidth: "70px" }}>
+            <button
+              type="submit"
+              onClick={() => fetchSummary()}
+              className="btn btn-primary filterApplyBtn"
+            >
+              Apply
+            </button>
+          </div>
+          <div className="form-control-input" style={{ minWidth: "70px" }}>
+            <button
+              type="submit"
+              onClick={resetFilter}
+              className="btn btn-primary filterApplyBtn"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+        <div
+          style={{
+            backgroundColor: "#f9f9f9",
+            borderRadius: "6px",
+            padding: "25px",
+            // backgroundColor: "green",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              backgroundColor: "white",
+              marginBottom: "10px",
+              padding: "20px 20px",
+              borderRadius: "20px 20px 0 0",
+            }}
+          >
+            <h3>Details</h3>
+          </div>
+          <TripSheetEntryTable
+            isLoading={loading}
+            list={list}
+            onRowsSelected={handleRowsSelected}
+            selectedRow={selectedRow}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default billing(MainComponent);

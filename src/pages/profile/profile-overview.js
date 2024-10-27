@@ -106,33 +106,22 @@ const ProfileOverview = () => {
       <div
         style={{ display: "flex", alignItems: "center", marginBottom: "30px" }}
       >
-        {userDetails.gender === "MALE" ? (
-          <img
-            src="/images/maleUserIcon.svg"
-            width={60}
-            height={60}
-            alt="profile-img"
-            style={{
-              borderRadius: "50%",
-              marginRight: "20px",
-              padding: "8px 5px 5px",
-              backgroundColor: "#e5e5e5",
-            }}
-          />
-        ) : (
-          <img
-            src="/images/femaleUserIcon.svg"
-            width={60}
-            height={60}
-            alt="profile-img"
-            style={{
-              borderRadius: "50%",
-              marginRight: "20px",
-              padding: "8px 5px 5px",
-              backgroundColor: "#e5e5e5",
-            }}
-          />
-        )}
+        <img
+          src={
+            userDetails.gender === "MALE"
+              ? "/images/maleUserIcon.svg"
+              : "/images/femaleUserIcon.svg"
+          }
+          width={60}
+          height={60}
+          alt="profile-img"
+          style={{
+            borderRadius: "50%",
+            marginRight: "20px",
+            padding: "8px 5px 5px",
+            backgroundColor: "#e5e5e5",
+          }}
+        />
         {/* {userDetails.gender === "MALE" && (
           <img
             src="/images/maleUserIcon.svg"
