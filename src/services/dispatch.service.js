@@ -110,6 +110,13 @@ const autoSuggestVehicleByVendor = async (vendor, text) => {
     });
 }
 
+const autoSuggestEscort = async(text) =>{
+  let url = `${API_PATH.API_VERSION}${API_PATH.SEARCH}${API_PATH.AUTO_SUGGEST_ESCORT}/${text}/0/15`;
+  return axiosInstance.get(url).then((response)=>{
+    return response;
+  })
+}
+
 const assignVehicle = async (tripId, VehicleId) => {
   return axiosInstance.post(`${API_PATH.API_VERSION}${API_PATH.ALLOCATION}${API_PATH.VEHICLE}?tripId=${tripId}&vehicleId=${VehicleId}`).then(
     response => {
@@ -156,6 +163,13 @@ const createCabSticker = async (payload) => {
   })
 }
 
+const allocateEscort = async(tripId, escortId) =>{
+  let url = `${API_PATH.API_VERSION}${API_PATH.ESCORT}${API_PATH.ASSIGN_TRIP}/${tripId}/${escortId}`;
+  return axiosInstance.put(url).then((response)=>{
+    return response;
+  })
+}
+
 const DispatchService = {
   getAllSummary,
   generateTrips,
@@ -175,7 +189,9 @@ const DispatchService = {
   deleteB2B,
   addPenalty,
   addOpsIssue,
-  createCabSticker
+  createCabSticker,
+  autoSuggestEscort,
+  allocateEscort
 };
 
 export default DispatchService;
