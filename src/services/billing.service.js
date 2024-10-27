@@ -143,6 +143,24 @@ const getTripByVehicleNumber = (queryParams) => {
   });
 };
 
+const CalculatePackageBill = async (body) => {
+  ///api/v1/vendorCompany/calculatePackageBill
+  ///api/v1/vendorCompany/calculatePackageBill
+  let url = `${API_PATH.API_VERSION}${API_PATH.VENDOR_COMPANY}${API_PATH.CALCULATE_PACKAGE_BILL}`;
+  return axiosInstance.post(url, body).then((response) => {
+    return response;
+  });
+};
+
+const CalculateBill = async (body) => {
+  ///api/v1/vendorCompany/calculateBill
+  ///api/v1/vendorCompany/calculateBill
+  let url = `${API_PATH.API_VERSION}${API_PATH.VENDOR_COMPANY}${API_PATH.CALCULATE_BILL}`;
+  return axiosInstance.post(url, body).then((response) => {
+    return response;
+  });
+};
+
 const BillingService = {
   billingIssuesSearchByBean,
   addMember,
@@ -161,6 +179,8 @@ const BillingService = {
   markNoShow,
   getTripByTripId,
   getTripByVehicleNumber,
+  CalculatePackageBill,
+  CalculateBill,
 };
 
 export default BillingService;

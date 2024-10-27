@@ -105,9 +105,9 @@ const Home = () => {
                   Login
                 </button>
               </div>
-              {/* <div className='forgotPwdTextContainer'>
+              <div className='forgotPwdTextContainer'>
                 <Link href="/forgot-pwd">Forgot password?</Link>
-              </div> */}
+              </div>
             </form>
           </div>
         </div>
