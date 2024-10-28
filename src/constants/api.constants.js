@@ -188,5 +188,6 @@ export const API_PATH = {
   FORGET: "/forget",
   RESET : "/reset",
   CALCULATE_PACKAGE_BILL : "/calculatePackageBill",
-  CALCULATE_BILL : "/calculateBill"
+  CALCULATE_BILL : "/calculateBill",
+  CONTRACT_TYPE : 'contractType',
 };

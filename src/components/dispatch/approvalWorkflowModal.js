@@ -75,7 +75,7 @@ const IssueTypeModal = (props) => {
         "Vehicle Type": vehicleDetails.vehicleType,
         "Vehicle Model": vehicleDetails.vehicleModel,
         "Driver Name": data.driverName,
-        "Driver Phone No.": "",
+        // "Driver Phone No.": "",
         "Sticker No": vehicleDetails.stickerNumber,
       };
       setIssueData(newObject);

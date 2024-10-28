@@ -36,6 +36,9 @@ const MainComponent = () => {
     tripToDateStr: "",
   });
   const [list, setList] = useState([]);
+  const [vendorName, setVendorName] = useState("");
+  const [billingData, setBillingData] = useState(null);
+  const [cost, setCost] = useState(0)
 
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
@@ -122,11 +125,30 @@ const MainComponent = () => {
       };
       setLoading(true);
       if (allSearchValues.contractType === "PACKAGE_BASED") {
-        const response = await BillingService.CalculatePackageBill(reqBody);
+        const response = await BillingService.CalculatePackageBill(allSearchValues.contractType, parseInt(allSearchValues.vendorId), allSearchValues.tripFromDateStr, allSearchValues.tripToDateStr);
         console.log("response>>>", response);
+        const data = response.data;
+        setBillingData(response.data)
+        setCost(data[0].amountForContractTypePackageBased)
       } else {
-        const response = await BillingService.CalculateBill(reqBody);
-        console.log("response>>>", response);
+        const response = await BillingService.CalculateBill(allSearchValues.contractType, parseInt(allSearchValues.vendorId), allSearchValues.tripFromDateStr, allSearchValues.tripToDateStr);
+        const data = response.data;
+        setBillingData(data);
+        data && data.map((val) => {
+          if (val.contractTypeKMBased === 'TRIP_SLAB_BASED') {
+            setCost(() => val.amountForContractTypeSlabBased)
+          }
+          else if (val.contractTypeKMBased === 'KM_BASED') {
+            setCost(() => val.amountForContractTypeKMBased)
+          }
+          else if (val.contractTypeKMBased === 'FLAT_TRIP_BASED') {
+            console.log(val)
+            setCost(val.amountForContractTypeFlatTripBased)
+          }
+          else if (val.contractTypeKMBased === 'ZONE_BASED') {
+            setCost(() => val.amountForContractTypeZoneBased)
+          }
+        })
       }
 
       // setList(response.data);
@@ -195,6 +217,7 @@ const MainComponent = () => {
                     ...prev,
                     vendorId: val ? val.vendorId : "",
                   }));
+                  setVendorName(val.vendorName)
                 }}
                 getOptionKey={(vendor) => vendor.vendorId}
                 getOptionLabel={(vendor) => vendor.vendorName}
@@ -327,12 +350,31 @@ const MainComponent = () => {
           >
             <h3>Details</h3>
           </div>
-          <TripSheetEntryTable
+          {
+            billingData &&
+            <div
+              style={{
+                backgroundColor: "white",
+                borderRadius: "6px",
+                padding: "25px",
+                // backgroundColor: "green",
+              }}
+            >
+              <div>
+                <p style={{ paddingBottom: 5 }}><span style={{ fontWeight: 'bold' }}>Vendor Name</span> : {vendorName}</p>
+                <p style={{ paddingBottom: 5 }}><span style={{ fontWeight: 'bold' }}>Contract Name</span> : {searchValues.contractType}</p>
+                <p style={{ paddingBottom: 5 }}><span style={{ fontWeight: 'bold' }}>Start Date</span> : {moment(searchValues.tripFromDateStr).format('DD-MM-YYYY')}</p>
+                <p style={{ paddingBottom: 5 }}><span style={{ fontWeight: 'bold' }}>End Date</span> : {moment(searchValues.tripToDateStr).format('DD-MM-YYYY')}</p>
+                <p style={{ paddingBottom: 5 }}><span style={{ fontWeight: 'bold' }}>Total Cost Generated</span> : Rs {cost}</p>
+              </div>
+            </div>
+          }
+          {/* <TripSheetEntryTable
             isLoading={loading}
             list={list}
             onRowsSelected={handleRowsSelected}
             selectedRow={selectedRow}
-          />
+          /> */}
         </div>
       </div>
     </div>

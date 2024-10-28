@@ -87,6 +87,7 @@ const BillingIssuesDetails = ({ onClose, tripId, tripdetails, officeId, date, Is
     "Planned Km.": "",
     "Actual Km.": "",
     "Reference Km.": "",
+    "Empty Km." : "",
     "Final Km.": "",
   });
 
@@ -252,7 +253,7 @@ const BillingIssuesDetails = ({ onClose, tripId, tripdetails, officeId, date, Is
 
   const markNoShow = async (tripId, id, flag) => {
     try {
-      const response = await BillingService.markNoShow(tripId, id, flag);
+      const response = await BillingService.markNoShow(tripId, id, flag,false);
       console.log(response.data);
       if (response.status === 200) {
         getTripMembers(tripId);
@@ -265,14 +266,14 @@ const BillingIssuesDetails = ({ onClose, tripId, tripdetails, officeId, date, Is
   const handleNoShow = () => {
     if (selectedRow) {
       console.log("No show >>> selected row Status: ", selectedRow.noShow);
-      markNoShow(tripdetails[0].tripId, selectedRow.id, true);
+      markNoShow(tripdetails[0].tripId, selectedRow.empEmail, true);
     }
   };
 
   const handleUndoNoShow = () => {
     if (selectedRow) {
       console.log("No show >>> selected row Status: ", selectedRow.noShow);
-      markNoShow(tripdetails[0].tripId, selectedRow.id, false);
+      markNoShow(tripdetails[0].tripId, selectedRow.empEmail, false);
       // const previousStatus = statusHistory.find(
       //   (item) => item.empId === selectedRow.empId
       // );

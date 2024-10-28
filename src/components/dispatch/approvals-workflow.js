@@ -43,7 +43,7 @@ const ApprovalsWorkflowTable = ({ onRowSelect, list, isLoading }) => {
         },
       },
       {
-        accessorKey: "remarks",
+        accessorKey: "opsRemarks",
         header: "Ops Remarks",
         size: 200,
         Cell: ({ cell }) => {

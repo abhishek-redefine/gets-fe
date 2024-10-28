@@ -62,17 +62,17 @@ const BillingIssuesTable = ({ list, vehicleIdClicked }) => {
         size: 150,
       },
       {
-        accessorKey: 'date',
+        accessorKey: 'tripDate',
         header: 'Date',
         size: 100,
       },
       {
-        accessorKey: 'km',
+        accessorKey: 'finalDistance',
         header: 'Km.',
         size: 100,
       },
       {
-        accessorKey: 'hrs',
+        accessorKey: 'hours',
         header: 'Hrs',
         size: 100,
       },

@@ -815,7 +815,7 @@ const TripSheetEntryDetails = ({ onClose, tripdetails }) => {
                             }}
                           >
                             <Grid item xs={12} key={key}>
-                              {vehicleInformation[key] ===
+                              {/* {vehicleInformation[key] ===
                                 vehicleInformation["Driver Name"] ||
                               vehicleInformation[key] ===
                                 vehicleInformation["Driver Phone No."] ? (
@@ -845,7 +845,14 @@ const TripSheetEntryDetails = ({ onClose, tripdetails }) => {
                                 >
                                   {vehicleInformation[key]}
                                 </p>
-                              )}
+                              )} */}
+                              <p
+                                  style={{
+                                    fontSize: "15px",
+                                  }}
+                                >
+                                  {vehicleInformation[key]}
+                                </p>
                             </Grid>
                           </div>
                         </Box>

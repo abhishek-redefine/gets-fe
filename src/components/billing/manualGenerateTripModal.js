@@ -20,6 +20,7 @@ import ComplianceService from "@/services/compliance.service";
 import ShiftService from "@/services/shift.service";
 import { useDispatch } from "react-redux";
 import { toggleToast } from '@/redux/company.slice';
+import BillingService from "@/services/billing.service";
 
 // const ScrollablePaper = (props) => (
 //   <Paper
@@ -45,7 +46,7 @@ const ManualGenerateTripModal = (props) => {
     vehicleNumber: "",
     vendorName: "",
     tripType: "Manual",
-    escortTrip: "",
+    escortTrip: false,
   });
   const [vehicleId, setVehicleId] = useState("");
   const [searchedVehicle, setSearchedvehicle] = useState([]);
@@ -59,12 +60,13 @@ const ManualGenerateTripModal = (props) => {
   const [viewShiftTimeData, setViewShiftTimeData] = useState([]);
   const [vendorName, setVendorName] = useState("");
 
-  const escortTripOptions = ["Yes", "No"];
+  const escortTripOptions = [{id : "Yes", value : true},{id : "No", value : false}];
 
   const handleFilterChange = (e) => {
     const { target } = e;
     const { value, name } = target;
     let newSearchValues = { ...searchValues };
+    console.log(value, name);
     if (name === "date") newSearchValues[name] = value.format("YYYY-MM-DD");
     else newSearchValues[name] = value;
     setSearchValues(newSearchValues);
@@ -143,7 +145,7 @@ const ManualGenerateTripModal = (props) => {
   const onChangeVehicleHandler = (newValue) => {
     console.log("on vehicle change handler", newValue);
     setVehicleId(newValue?.vehicleId);
-    searchValues["vehicleNumber"] = newValue?.vehicleId;
+    searchValues["vehicleNumber"] = newValue?.vehicleRegistrationNumber;
   };
 
   const fetchVendor = async () => {
@@ -162,7 +164,7 @@ const ManualGenerateTripModal = (props) => {
     }
   };
 
-  const onSubmitHandler = () => {
+  const onSubmitHandler = async() => {
     // console.log("Create trip button clicked");
     let hasError = false;
 
@@ -196,33 +198,34 @@ const ManualGenerateTripModal = (props) => {
       setError((prevError) => ({ ...prevError, vendorName: "" }));
     }
 
-    if (!searchValues.escortTrip) {
-      setError((prevError) => ({
-        ...prevError,
-        escortTrip: "Escort Trip is mandatory.",
-      }));
-      hasError = true;
-    } else {
-      setError((prevError) => ({ ...prevError, escortTrip: "" }));
-    }
-
     if (hasError) {
       console.log("Error: All mandatory fields must be filled");
       return;
     }
-
-    console.log("Submit trip details>>", searchValues);
-    searchValuesdata(searchValues);
-    setError({});
-    console.log("Form submission successful");
-    onClose();
-    createdTripScreenOpen();
-    dispatch(
-      toggleToast({
-        message: "Trip created successfully!",
-        type: "success",
-      })
-    );
+    try{
+      console.log("Submit trip details>>", searchValues);
+      const response = await BillingService.createManualTrip(searchValues);
+      console.log(response.data);
+      if(response.status === 200){
+        setError({});
+        console.log("Form submission successful");
+        let allSearchValue = {...searchValues};
+        allSearchValue.vehicleNumber = vehicleId;
+        let tripId = response.data.match(/TRIP-(\d+)/)[1];
+        allSearchValue.tripId = tripId;
+        searchValuesdata(allSearchValue);
+        onClose();
+        createdTripScreenOpen();
+        dispatch(
+          toggleToast({
+            message: "Trip created successfully!",
+            type: "success",
+          })
+        );
+      }
+    }catch(err){
+      console.log(err);
+    }
   };
 
   useEffect(() => {
@@ -341,7 +344,7 @@ const ManualGenerateTripModal = (props) => {
               error={!!error.shiftTime}
             >
               {viewShiftTimeData.map((sT, idx) => (
-                <MenuItem key={idx} value={sT.id}>
+                <MenuItem key={idx} value={sT.shiftTime}>
                   {sT.shiftTime}
                 </MenuItem>
               ))}
@@ -452,12 +455,12 @@ const ManualGenerateTripModal = (props) => {
             >
               {escortTripOptions.map((item) => (
                 <MenuItem
-                  value={item}
+                  value={item.value}
                   style={{
                     fontSize: "15px",
                   }}
                 >
-                  {item}
+                  {item.id}
                 </MenuItem>
               ))}
             </Select>
