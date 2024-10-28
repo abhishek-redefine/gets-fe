@@ -190,4 +190,5 @@ export const API_PATH = {
   CALCULATE_PACKAGE_BILL : "/calculatePackageBill",
   CALCULATE_BILL : "/calculateBill",
   CONTRACT_TYPE : 'contractType',
+  OPS_ISSUE_APPROVAL: '/opsIssueApproval',
 };

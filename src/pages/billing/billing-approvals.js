@@ -15,6 +15,9 @@ import BillingApprovalsTable from "@/components/billing/billingApprovalsTable";
 import BillingService from "@/services/billing.service";
 
 const MainComponent = () => {
+  const [tripId, setTripId] = useState(null);
+  const [tripList,setTripList] = useState([]);
+  const [tripIssue, setTripIssue] = useState(null);
   const [office, setOffice] = useState([]);
   const [searchValues, setSearchValues] = useState({
     officeId: "",
@@ -103,8 +106,11 @@ const MainComponent = () => {
     }
   };
 
-  const handleTripClick = () => {
+  const handleTripClick = (tripId,row) => {
     setSelectedTripId(true);
+    setTripId(tripId || null);
+    setTripList([row]);
+    setTripIssue(row.issueName);
   };
 
   useEffect(() => {
@@ -114,10 +120,19 @@ const MainComponent = () => {
     fetchAllOffices();
   }, []);
 
+  
+
   return (
     <div>
       {selectedTripId ? (
-        <BillingApprovalsDetails onClose={handleTripInfoScreenClose} />
+        <BillingApprovalsDetails 
+        onClose={handleTripInfoScreenClose}
+          tripId={tripId}
+          tripdetails={tripList}
+          officeId={searchValues.officeId}
+          date={searchValues.tripDate}
+          IssueType={tripIssue}
+        />
       ) : (
         <div>
           <div
@@ -273,7 +288,10 @@ const MainComponent = () => {
             >
               <h3>Details</h3>
             </div>
-            <BillingApprovalsTable list={list} vehicleIdClicked={handleTripClick} />
+            <BillingApprovalsTable 
+              list={list} 
+              vehicleIdClicked={(tripId,row)=>handleTripClick(tripId,row)}
+             />
           </div>
         </div>
       )}

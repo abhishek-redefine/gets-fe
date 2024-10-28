@@ -121,7 +121,15 @@ const markNoShow = async (tripId, id, flag, driverFlag) => {
   });
 };
 
-const getTripByTripId = (tripId) => {
+const getIssueIdUsingTripId = async(tripId) =>{
+  // http://localhost:3000/api/v1/tripIssue/trip/73
+  let url = `${API_PATH.API_VERSION}/tripIssue/trip/${tripId}`;
+  return axiosInstance.get(url).then((response)=>{
+    return response;
+  })
+}
+
+const getTripByTripId = async (tripId) => {
   ///api/v1/trip/search/{tripId}
   ///api/v1/trip/search/303
   return axiosInstance
@@ -171,6 +179,21 @@ const allIssueSearchByBean = async (queryParams, searchValues) =>{
   })
 }
 
+const resolveBillingIssue = async (issueId, status) =>{
+  let url = `${API_PATH.API_VERSION}/tripIssue/resolveIssue/${issueId}/${status}`;
+  return axiosInstance.post(url).then((response)=>{
+    return response;
+  })
+}
+
+const billingOpsIssueApproval = async(tripId, flag) =>{
+  // http://localhost:3000/api/v1/billing/opsIssueApproval/73/true
+  let url = `${API_PATH.API_VERSION}${API_PATH.BILLING}${API_PATH.OPS_ISSUE_APPROVAL}/${tripId}/${flag}`;
+  return axiosInstance.post(url).then((response)=>{
+    return response;
+  })
+}
+
 const BillingService = {
   billingIssuesSearchByBean,
   addMember,
@@ -191,7 +214,10 @@ const BillingService = {
   getTripByVehicleNumber,
   CalculatePackageBill,
   CalculateBill,
-  allIssueSearchByBean
+  allIssueSearchByBean,
+  getIssueIdUsingTripId,
+  resolveBillingIssue,
+  billingOpsIssueApproval,
 };
 
 export default BillingService;

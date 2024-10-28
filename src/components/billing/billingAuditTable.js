@@ -35,7 +35,7 @@ const BillingAuditTable = ({ list, vehicleIdClicked }) => {
         },
       },
       {
-        accessorKey: "vehicleRegistration",
+        accessorKey: "vehicleNumber",
         header: "Vehicle Registration",
         size: 250,
       },
@@ -45,17 +45,17 @@ const BillingAuditTable = ({ list, vehicleIdClicked }) => {
         size: 150,
       },
       {
-        accessorKey: "vendor",
+        accessorKey: "actualVendor",
         header: "Vendor",
         size: 150,
       },
       {
-        accessorKey: "date",
+        accessorKey: "tripDate",
         header: "Date",
         size: 100,
       },
       {
-        accessorKey: "id",
+        accessorKey: "tripId",
         header: "Trip ID",
         size: 150,
         Cell: ({ cell }) => {
@@ -72,11 +72,11 @@ const BillingAuditTable = ({ list, vehicleIdClicked }) => {
         header: "Hrs",
         size: 100,
       },
-      {
-        accessorKey: "issueType",
-        header: "Issue Type",
-        size: 150,
-      },
+      // {
+      //   accessorKey: "issueType",
+      //   header: "Issue Type",
+      //   size: 150,
+      // },
       {
         accessorKey: "shiftTime",
         header: "Shift Time",
@@ -94,8 +94,8 @@ const BillingAuditTable = ({ list, vehicleIdClicked }) => {
   const tableInstance = useMaterialReactTable({
     columns,
     data,
-    enableRowSelection: true,
-    enableMultiRowSelection: true,
+    // enableRowSelection: true,
+    // enableMultiRowSelection: true,
     getRowId: (row) => row.vehicleId,
   });
 
