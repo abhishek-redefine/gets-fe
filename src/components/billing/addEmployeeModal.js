@@ -37,7 +37,7 @@ const AddEmployeeModal = (props) => {
   const [empDetails, setEmpDetails] = useState(null);
 
   const [statusList, setStatusList] = useState(["Completed","No Show"]);
-
+  
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
   const [values, setValues] = useState({
     email: selectedEmployeeId,
@@ -173,10 +173,11 @@ const AddEmployeeModal = (props) => {
   };
 
   const addTripMember = async(data) =>{
+    console.log("addTripMember trip details: ", tripDetails)
     try{
       let payload = {...data};
       payload.officeId = officeId;
-      payload.tripId = tripDetails.tripId;
+      payload.tripId = tripDetails?.tripId || tripDetails?.id;
       payload.tripState = "END";
       payload.tripMemberType = "frombilling";
       payload.signInGeo = empDetails.geoCode;

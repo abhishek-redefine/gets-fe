@@ -60,6 +60,8 @@ const MainComponent = () => {
   const [selectedFilter, setSelectedFilter] = useState("Trip Id");
   const [filterValue, setFilterValue] = useState("");
 
+  const [tripId, setTripId] = useState(null);
+
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
@@ -97,8 +99,9 @@ const MainComponent = () => {
   const handleRowsSelected = (selectedRow) => {
     setSelectedRow(selectedRow);
     console.log("Trip sheet selected row >>>: ", selectedRow);
+    setTripId(selectedRow?.id || null);
   };
-
+  
   const handleEditTripClick = () => {
     // console.log("edit trip selected row>>", selectedRow);
     if (selectedRow) {
@@ -298,6 +301,7 @@ const MainComponent = () => {
           {tripDetailsScreenOpen ? (
             <TripSheetEntryDetails
               onClose={handleTripInfoScreenClose}
+              tripId={tripId}
               tripdetails={list}
             />
           ) : (
@@ -306,6 +310,7 @@ const MainComponent = () => {
           {manualCreateTripDetailsScreenOpen ? (
             <ManualCreateTripDetails
               onClose={handleCreateTripDetailsScreenClose}
+              tripId={tripId}
               tripdetails={searchValuesData}
             />
           ) : (
