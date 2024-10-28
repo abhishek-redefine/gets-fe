@@ -1177,11 +1177,11 @@ const CreateBooking = () => {
                                     <div className={styles.dateRangeInnerContainer}>
                                         <LocalizationProvider dateAdapter={AdapterMoment}>
                                             <FormControl>
-                                                <DatePicker disabled={editFlag || values.isCustomiseSchedule} name="bookingFromDate" format={'DD-MM-YYYY'} value={values.bookingFromDate ? moment(values.bookingFromDate) : null} onChange={(e) => handleDateChange(e, "bookingFromDate")} />
+                                                <DatePicker disabled={editFlag || values.isCustomiseSchedule} name="bookingFromDate" format={'DD-MM-YYYY'}  value={values.bookingFromDate ? moment(values.bookingFromDate) : null} onChange={(e) => handleDateChange(e, "bookingFromDate")} />
                                                 {touched.bookingFromDate && errors.bookingFromDate && <FormHelperText className='errorHelperText'>{errors.bookingFromDate}</FormHelperText>}
                                             </FormControl>
                                             <FormControl>
-                                                <DatePicker disabled={editFlag || values.isCustomiseSchedule} name="bookingToDate" format={'DD-MM-YYYY'} value={values.bookingToDate ? moment(values.bookingToDate) : null} onChange={(e) => handleDateChange(e, "bookingToDate")} />
+                                                <DatePicker disabled={editFlag || values.isCustomiseSchedule} name="bookingToDate" format={'DD-MM-YYYY'}  value={values.bookingToDate ? moment(values.bookingToDate) : null} onChange={(e) => handleDateChange(e, "bookingToDate")} />
                                                 {touched.bookingToDate && errors.bookingToDate && <FormHelperText className='errorHelperText'>{errors.bookingToDate}</FormHelperText>}
                                             </FormControl>
                                         </LocalizationProvider>

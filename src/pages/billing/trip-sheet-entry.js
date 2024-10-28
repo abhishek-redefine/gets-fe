@@ -57,7 +57,7 @@ const MainComponent = () => {
     endDate: "",
   });
   const [list, setList] = useState([]);
-  const [selectedFilter, setSelectedFilter] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState("Trip Id");
   const [filterValue, setFilterValue] = useState("");
 
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
@@ -215,7 +215,7 @@ const MainComponent = () => {
     setSearchValues(allSearchValue);
     setVehicleNumber("");
     setSearchedvehicle([]);
-    setSelectedFilter("");
+    setSelectedFilter("Trip Id");
     setFilterValue("");
   };
 
@@ -233,12 +233,14 @@ const MainComponent = () => {
       let tripId = allSearchValues.tripId;
       console.log("tripId>>>", tripId);
       setLoading(true);
-      if (selectedFilter === "Trip Id") {
+      if (selectedFilter === "Trip Id" && tripId) {
         const response = await BillingService.getTripByTripId(tripId);
         console.log("response>>>", response.data);
-        setList([response.data]);
+        if(response.data.id){
+          setList([response.data]);
+        }
       }
-      if (selectedFilter === "Vehicle Number") {
+      if (selectedFilter === "Vehicle Number" && allSearchValues.vehicleNumber && allSearchValues.startDate && allSearchValues.endDate) {
         console.log("allSearchValues>>>", allSearchValues);
         const params = new URLSearchParams(allSearchValues);
         const response = await BillingService.getTripByVehicleNumber(
@@ -247,7 +249,7 @@ const MainComponent = () => {
         console.log("response>>>", response);
         setList(response.data);
       }
-      resetFilter();
+      // resetFilter();
     } catch (err) {
       console.log(err);
     } finally {

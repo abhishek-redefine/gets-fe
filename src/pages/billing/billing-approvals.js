@@ -12,6 +12,7 @@ import { setMasterData } from "@/redux/master.slice";
 import MasterDataService from "@/services/masterdata.service";
 import BillingApprovalsDetails from "@/components/billing/billingApprovalsDetails";
 import BillingApprovalsTable from "@/components/billing/billingApprovalsTable";
+import BillingService from "@/services/billing.service";
 
 const MainComponent = () => {
   const [office, setOffice] = useState([]);
@@ -19,8 +20,7 @@ const MainComponent = () => {
     officeId: "",
     shiftType: "",
     date: moment().format("YYYY-MM-DD"),
-    tripStatus: "",
-    vendorType: "",
+    tripBillingState : "OPS_ISSUE"
   });
   const [list, setList] = useState([]);
 
@@ -94,21 +94,9 @@ const MainComponent = () => {
           delete allSearchValues[objKey];
         }
       });
-      const data = [
-        {
-          vehicleId: "VH740923",
-          vehicleRegistration: "RS-DEL-001",
-          vehicleType: "Cab",
-          vendor: "Active",
-          date: "04-08-2024",
-          id: "747",
-          km: "20",
-          hrs: "4",
-          issueType: "Km. Issue",
-          shiftTime: "09:30",
-          shiftType: "Login",
-        },
-      ];
+      const response = await BillingService.billingOpsIssueSearchByBean(params.toString(), allSearchValues);
+      console.log(response.data.content);
+      const data = response.data.content;
       setList(data);
     } catch (err) {
       console.log(err);
@@ -186,7 +174,7 @@ const MainComponent = () => {
               </LocalizationProvider>
             </div>
 
-            <div
+            {/* <div
               style={{ minWidth: "160px", backgroundColor: "white" }}
               className="form-control-input"
             >
@@ -206,7 +194,7 @@ const MainComponent = () => {
                   ))}
                 </Select>
               </FormControl>
-            </div>
+            </div> */}
 
             <div style={{ minWidth: "160px" }} className="form-control-input">
               <FormControl fullWidth>

@@ -65,7 +65,7 @@ const ManualCreateTripDetails = ({ onClose, tripdetails }) => {
   ];
 
   const TripInformation = {
-    "Trip Id": "TR-001",
+    "Trip Id": tripdetails.tripId,
     "Office Id": tripdetails.officeId,
     Date: tripdetails.date,
     "Shift Type": tripdetails.shiftType,
@@ -381,6 +381,8 @@ const ManualCreateTripDetails = ({ onClose, tripdetails }) => {
         "Vehicle Type": vehicleData[0]?.vehicleType,
         "Vehicle Model": vehicleData[0]?.vehicleModel,
         "Sticker No.": vehicleData[0]?.stickerNumber,
+        "Driver Name" : vehicleData[0]?.driverName,
+        "Driver Phone No." : vehicleData[0]?.driverMobile
       }));
       setBillingInformation1((prev) => ({
         ...prev,
@@ -777,7 +779,8 @@ const ManualCreateTripDetails = ({ onClose, tripdetails }) => {
                             }}
                           >
                             <Grid item xs={12} key={key}>
-                              {vehicleInformation[key] ===
+                              {/* {
+                              vehicleInformation[key] ===
                                 vehicleInformation["Driver Name"] ||
                               vehicleInformation[key] ===
                                 vehicleInformation["Driver Phone No."] ? (
@@ -807,7 +810,14 @@ const ManualCreateTripDetails = ({ onClose, tripdetails }) => {
                                 >
                                   {vehicleInformation[key]}
                                 </p>
-                              )}
+                              )} */}
+                              <p
+                                  style={{
+                                    fontSize: "15px",
+                                  }}
+                                >
+                                  {vehicleInformation[key]}
+                                </p>
                             </Grid>
                           </div>
                         </Box>

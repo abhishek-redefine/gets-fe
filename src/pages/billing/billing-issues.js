@@ -125,6 +125,7 @@ const MainComponent = () => {
         }
       });
       const response = await BillingService.billingIssuesSearchByBean(params, allSearchValues);
+      // const response = await BillingService.allIssueSearchByBean(params, allSearchValues);
       const data = response.data;
       console.log(data.content);
       setList(data.content);

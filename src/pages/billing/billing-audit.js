@@ -12,6 +12,7 @@ import { setMasterData } from "@/redux/master.slice";
 import MasterDataService from "@/services/masterdata.service";
 import BillingAuditTable from "@/components/billing/billingAuditTable";
 import BillingAuditDetails from "@/components/billing/billingAuditDetails";
+import BillingService from "@/services/billing.service";
 
 const MainComponent = () => {
   const [office, setOffice] = useState([]);
@@ -19,8 +20,7 @@ const MainComponent = () => {
     officeId: "",
     shiftType: "",
     date: moment().format("YYYY-MM-DD"),
-    tripStatus: "",
-    vendorType: "",
+    "tripBillingState": "AUDIT"
   });
   const [list, setList] = useState([]);
 
@@ -95,21 +95,9 @@ const MainComponent = () => {
           delete allSearchValues[objKey];
         }
       });
-      const data = [
-        {
-          vehicleId: "VH740923",
-          vehicleRegistration: "RS-DEL-001",
-          vehicleType: "Cab",
-          vendor: "Active",
-          date: "04-08-2024",
-          id: "747",
-          km: "20",
-          hrs: "4",
-          issueType: "Km. Issue",
-          shiftTime: "09:30",
-          shiftType: "Login",
-        },
-      ];
+      const response = await BillingService.billingAuditSearchByBean(params.toString(),"BILLING", allSearchValues);
+      console.log(response.data);
+      const data = response.data;
       setList(data);
     } catch (err) {
       console.log(err);
@@ -188,28 +176,6 @@ const MainComponent = () => {
                   }
                 />
               </LocalizationProvider>
-            </div>
-
-            <div
-              style={{ minWidth: "160px", backgroundColor: "white" }}
-              className="form-control-input"
-            >
-              <FormControl fullWidth>
-                <InputLabel id="vendor-type-label">Vendor</InputLabel>
-                <Select
-                  style={{ width: "180px", backgroundColor: "white" }}
-                  labelId="vendor-type-label"
-                  id="vendorType"
-                  name="vendorType"
-                  value={searchValues.vendorType}
-                  label="Vendor Type"
-                  onChange={handleFilterChange}
-                >
-                  {vendorType.map((item) => (
-                    <MenuItem value={item}>{item}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
             </div>
 
             <div style={{ minWidth: "160px" }} className="form-control-input">

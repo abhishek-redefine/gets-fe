@@ -46,12 +46,12 @@ const TripSheetEntryTable = ({
       },
 
       {
-        accessorKey: "km",
+        accessorKey: "finalDistance",
         header: "Km.",
         size: 100,
       },
       {
-        accessorKey: "hrs",
+        accessorKey: "hours",
         header: "Hrs",
         size: 100,
       },

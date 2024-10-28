@@ -114,8 +114,8 @@ const getTripHistory = async (tripId) => {
   });
 };
 
-const markNoShow = async (tripId, id, flag) => {
-  let url = `${API_PATH.API_VERSION}${API_PATH.BILLING}${API_PATH.MARK_NO_SHOW}/${tripId}/${id}/${flag}`;
+const markNoShow = async (tripId, id, flag, driverFlag) => {
+  let url = `${API_PATH.API_VERSION}${API_PATH.BILLING}${API_PATH.MARK_NO_SHOW}/${tripId}/${id}/${flag}/${driverFlag}`;
   return axiosInstance.put(url).then((response) => {
     return response;
   });
@@ -143,23 +143,33 @@ const getTripByVehicleNumber = (queryParams) => {
   });
 };
 
-const CalculatePackageBill = async (body) => {
+const CalculatePackageBill = async (contractType,vendorId,startDate,endDate) => {
   ///api/v1/vendorCompany/calculatePackageBill
   ///api/v1/vendorCompany/calculatePackageBill
-  let url = `${API_PATH.API_VERSION}${API_PATH.VENDOR_COMPANY}${API_PATH.CALCULATE_PACKAGE_BILL}`;
-  return axiosInstance.post(url, body).then((response) => {
+  let url = `${API_PATH.API_VERSION}${API_PATH.VENDOR_COMPANY}${API_PATH.CALCULATE_PACKAGE_BILL}?${API_PATH.CONTRACT_TYPE}=${contractType}&vendorId=${vendorId}&startDate=${startDate}&endDate=${endDate}`;
+  return axiosInstance.get(url).then((response) => {
     return response;
   });
 };
 
-const CalculateBill = async (body) => {
+const CalculateBill = async (contractType,vendorId,startDate,endDate) => {
   ///api/v1/vendorCompany/calculateBill
   ///api/v1/vendorCompany/calculateBill
-  let url = `${API_PATH.API_VERSION}${API_PATH.VENDOR_COMPANY}${API_PATH.CALCULATE_BILL}`;
-  return axiosInstance.post(url, body).then((response) => {
+  let url = `${API_PATH.API_VERSION}${API_PATH.VENDOR_COMPANY}${API_PATH.CALCULATE_BILL}?${API_PATH.CONTRACT_TYPE}=${contractType}&vendorId=${vendorId}&startDate=${startDate}&endDate=${endDate}`;
+  return axiosInstance.get(url).then((response) => {
     return response;
   });
 };
+
+const allIssueSearchByBean = async (queryParams, searchValues) =>{
+  let url = `${API_PATH.API_VERSION}/tripIssue/allIssue?`;
+  if(queryParams){
+    url += queryParams
+  }
+  return axiosInstance.post(url, searchValues).then((response)=>{
+    return response;
+  })
+}
 
 const BillingService = {
   billingIssuesSearchByBean,
@@ -181,6 +191,7 @@ const BillingService = {
   getTripByVehicleNumber,
   CalculatePackageBill,
   CalculateBill,
+  allIssueSearchByBean
 };
 
 export default BillingService;
