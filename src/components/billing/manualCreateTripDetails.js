@@ -18,6 +18,7 @@ import { TimeField } from "@mui/x-date-pickers/TimeField";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
 import ComplianceService from "@/services/compliance.service";
+import BillingService from "@/services/billing.service";
 
 const style = {
   topModals: {
@@ -133,8 +134,18 @@ const ManualCreateTripDetails = ({ onClose, tripdetails }) => {
     setOpenViewMapModal(false);
   };
 
+  const [historyData, setHistoryData] = useState([]);
   const [openTripHistoryModal, setOpenTripHistoryModal] = useState(false);
-  const handleTripHistoryModalOpen = () => {
+  const handleTripHistoryModalOpen = async () => {
+    try {
+      let tripId = tripdetails?.tripId;
+      const response = await BillingService.getTripHistory(tripId);
+      const data = response.data;
+      console.log(data);
+      setHistoryData(data);
+    } catch (err) {
+      console.log(err);
+    }
     console.log("Trip History modal open");
     setOpenTripHistoryModal(true);
   };
@@ -151,6 +162,19 @@ const ManualCreateTripDetails = ({ onClose, tripdetails }) => {
   const handleAddEmployeeModalClose = () => {
     console.log("Add Employee modal close");
     setOpenAddEmployeeModal(false);
+    console.log("trip details>>>", tripdetails);
+    console.log("tripdetails.tripId>>>", tripdetails.tripId);
+    getTripMembers(tripdetails.tripId);
+  };
+
+  const getTripMembers = async (tripId) => {
+    try {
+      const response = await BillingService.billingTripMember(tripId);
+      console.log(response.data);
+      setData(response.data);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const handleFilterChange = (e) => {
@@ -215,58 +239,75 @@ const ManualCreateTripDetails = ({ onClose, tripdetails }) => {
     console.log("Selected row deleted");
   };
 
+  const markNoShow = async (tripId, id, flag) => {
+    try {
+      const response = await BillingService.markNoShow(tripId, id, flag, false);
+      console.log(response.data);
+      if (response.status === 200) {
+        getTripMembers(tripId);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   const handleNoShow = () => {
     if (selectedRow) {
-      console.log("No show >>> selected row Status: ", selectedRow.status);
-      setStatusHistory((prevHistory) => [
-        ...prevHistory,
-        { empId: selectedRow.empId, status: selectedRow.status },
-      ]);
+      // console.log("No show >>> selected row Status: ", selectedRow.status);
+      // setStatusHistory((prevHistory) => [
+      //   ...prevHistory,
+      //   { empId: selectedRow.empId, status: selectedRow.status },
+      // ]);
 
-      console.log("Updated Status history: ", statusHistory);
+      // console.log("Updated Status history: ", statusHistory);
 
-      let updatedData = [...data];
-      console.log("Updated data: ", updatedData);
-      updatedData = updatedData.map((row) => {
-        if (row.empId === selectedRow.empId) {
-          return { ...row, status: "No show" };
-        }
-        return row;
-      });
+      // let updatedData = [...data];
+      // console.log("Updated data: ", updatedData);
+      // updatedData = updatedData.map((row) => {
+      //   if (row.empId === selectedRow.empId) {
+      //     return { ...row, status: "No show" };
+      //   }
+      //   return row;
+      // });
 
-      console.log("Updated Data>>>", updatedData);
-      setData(updatedData);
+      // console.log("Updated Data>>>", updatedData);
+      // setData(updatedData);
+      console.log("No show >>> selected row Status: ", selectedRow.noShow);
+      markNoShow(tripdetails.tripId, selectedRow.empEmail, true);
     }
   };
 
   const handleUndoNoShow = () => {
     if (selectedRow) {
-      console.log("No show >>> selected row Status: ", selectedRow.status);
-      const previousStatus = statusHistory.find(
-        (item) => item.empId === selectedRow.empId
-      );
+      console.log("No show >>> selected row Status: ", selectedRow.noShow);
+      markNoShow(tripdetails.tripId, selectedRow.empEmail, false);
 
-      if (previousStatus) {
-        console.log("Previous status: ", previousStatus);
-        let updatedData = data;
-        data.filter((row, index) => {
-          if (row.empId === selectedRow.empId) {
-            console.log("row empId", row.empId);
-            updatedData[index].status = previousStatus.status;
-          }
-        });
-        console.log("Updated Data>>>", updatedData);
-        setData([...updatedData]);
+      // console.log("No show >>> selected row Status: ", selectedRow.status);
+      // const previousStatus = statusHistory.find(
+      //   (item) => item.empId === selectedRow.empId
+      // );
 
-        setStatusHistory((prevHistory) =>
-          prevHistory.filter((item) => item.empId !== selectedRow.empId)
-        );
-        console.log("Status history after undo no show: ", statusHistory);
-      }
+      // if (previousStatus) {
+      //   console.log("Previous status: ", previousStatus);
+      //   let updatedData = data;
+      //   data.filter((row, index) => {
+      //     if (row.empId === selectedRow.empId) {
+      //       console.log("row empId", row.empId);
+      //       updatedData[index].status = previousStatus.status;
+      //     }
+      //   });
+      //   console.log("Updated Data>>>", updatedData);
+      //   setData([...updatedData]);
+
+      //   setStatusHistory((prevHistory) =>
+      //     prevHistory.filter((item) => item.empId !== selectedRow.empId)
+      //   );
+      //   console.log("Status history after undo no show: ", statusHistory);
+      // }
     }
     console.log(
       "Undo no show >>> selected row status after undo no show: ",
-      selectedRow.status
+      selectedRow.noShow
     );
   };
 
@@ -381,8 +422,8 @@ const ManualCreateTripDetails = ({ onClose, tripdetails }) => {
         "Vehicle Type": vehicleData[0]?.vehicleType,
         "Vehicle Model": vehicleData[0]?.vehicleModel,
         "Sticker No.": vehicleData[0]?.stickerNumber,
-        "Driver Name" : vehicleData[0]?.driverName,
-        "Driver Phone No." : vehicleData[0]?.driverMobile
+        "Driver Name": vehicleData[0]?.driverName,
+        "Driver Phone No.": vehicleData[0]?.driverMobile,
       }));
       setBillingInformation1((prev) => ({
         ...prev,
@@ -393,6 +434,13 @@ const ManualCreateTripDetails = ({ onClose, tripdetails }) => {
       }));
     }
   }, [vehicleData]);
+
+  useEffect(() => {
+    if (tripdetails) {
+      getTripMembers(tripdetails?.tripId);
+    }
+    console.log("Trip Details>>>>>>", tripdetails);
+  }, [tripdetails]);
 
   return (
     <div
@@ -610,6 +658,7 @@ const ManualCreateTripDetails = ({ onClose, tripdetails }) => {
                     <Box sx={style.topModals}>
                       <TripHistoryModal
                         onClose={() => handleTripHistoryModalClose()}
+                        historyData={historyData}
                       />
                     </Box>
                   </Modal>
@@ -634,6 +683,7 @@ const ManualCreateTripDetails = ({ onClose, tripdetails }) => {
                       <AddEmployeeModal
                         onClose={() => handleAddEmployeeModalClose()}
                         onAddEmployeeData={handleAddEmployee}
+                        tripDetails={tripdetails}
                       />
                     </Box>
                   </Modal>
@@ -812,12 +862,12 @@ const ManualCreateTripDetails = ({ onClose, tripdetails }) => {
                                 </p>
                               )} */}
                               <p
-                                  style={{
-                                    fontSize: "15px",
-                                  }}
-                                >
-                                  {vehicleInformation[key]}
-                                </p>
+                                style={{
+                                  fontSize: "15px",
+                                }}
+                              >
+                                {vehicleInformation[key]}
+                              </p>
                             </Grid>
                           </div>
                         </Box>

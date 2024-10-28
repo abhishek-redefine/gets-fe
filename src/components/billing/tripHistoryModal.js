@@ -64,7 +64,7 @@ const TripHistoryModal = (props) => {
             >
               <li key={index}>{entry.changedDataName}</li>
               <li>Previous value : {entry.changedDataPreviousValue}</li>
-              <li>Current value: {entry.changedDataPreviousValue}</li>
+              <li>Current value: {entry.changedDataCurrentValue}</li>
             </ul>
           </div>
         ))}
