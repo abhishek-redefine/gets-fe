@@ -32,7 +32,7 @@ const MainComponent = () => {
   });
 
   const [selectedTripId, setSelectedTripId] = useState(false);
-  const [tripDetails, setTripDetails] = useState({});
+  const [tripDetails, setTripDetails] = useState(null);
   const handleTripInfoScreenClose = () => {
     console.log("Screen closed");
     setSelectedTripId(false);
@@ -60,7 +60,7 @@ const MainComponent = () => {
         (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const fetchMasterData = async (type) => {
@@ -71,7 +71,7 @@ const MainComponent = () => {
         console.log(data);
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const resetFilter = () => {
@@ -95,9 +95,9 @@ const MainComponent = () => {
           delete allSearchValues[objKey];
         }
       });
-      const response = await BillingService.billingAuditSearchByBean(params.toString(),"BILLING", allSearchValues);
+      const response = await BillingService.billingAuditSearchByBean(params.toString(), "BILLING", allSearchValues);
       console.log(response.data);
-      const data = response.data;
+      const data = response.data.content;
       setList(data);
     } catch (err) {
       console.log(err);
@@ -118,10 +118,22 @@ const MainComponent = () => {
     fetchAllOffices();
   }, []);
 
+  const auditDone = async () => {
+    try {
+      if (tripDetails) {
+        const response = await BillingService.auditApproval(tripDetails.id, true);
+        console.log(response.data);
+        fetchSummary();
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   return (
     <div>
       {selectedTripId ? (
-        <BillingAuditDetails onClose={handleTripInfoScreenClose} tripDetails={tripDetails}/>
+        <BillingAuditDetails onClose={handleTripInfoScreenClose} tripDetails={tripDetails} />
       ) : (
         <div>
           <div
@@ -255,8 +267,11 @@ const MainComponent = () => {
             >
               <h3>Details</h3>
             </div>
-            <BillingAuditTable list={list} vehicleIdClicked={handleVehicleIdClick}/>
-            <div
+            <BillingAuditTable 
+              list={list} 
+              vehicleIdClicked={handleVehicleIdClick} 
+            />
+            {/* <div
               style={{
                 display: "flex",
                 justifyContent: "flex-end",
@@ -275,10 +290,11 @@ const MainComponent = () => {
                   padding: "15px",
                   margin: "0 10px",
                 }}
+                onClick={auditDone}
               >
                 Audit Done
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
       )}

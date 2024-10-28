@@ -91,6 +91,27 @@ const BillingIssuesDetails = ({ onClose, tripId, tripdetails, officeId, date, Is
     "Final Km.": "",
   });
 
+  const getTripByTripId = async() =>{
+    try{
+      const response = await BillingService.getTripByTripId(tripId);
+      console.log(response.data);
+      setBillingInformation1((prev)=>({
+        ...prev,
+        ["Planned Km."] : response.data?.actualDistance || 0,
+        ["Actual Km."] : response.data?.actualDistance || 0,
+        ["Empty Km."] : response.data?.emptyKm || 0,
+        ["Reference Km."] : response.data?.routeWiseDistance || 0,
+        ["Final Km."] : response.data?.finalDistance || 0
+      }))
+    }catch(err){
+      console.log(err);
+    }
+  }
+
+  useEffect(()=>{
+    getTripByTripId();
+  },[]);
+
   const billingInformation1Fields = ["Billing Zone", "Final Km."];
 
   const [billingInformation2, setBillingInformation2] = useState({
@@ -598,11 +619,48 @@ const BillingIssuesDetails = ({ onClose, tripId, tripdetails, officeId, date, Is
       }
       console.log("Hello", payload);
       const response = await BillingService.updateTrip(payload);
-      console.log(response.data);
+      if(response.status === 200 || response.status === 201){
+        console.log(response.data);
+        resolveTripIssue()
+        billingOpsIssueApproval();
+      }
     } catch (err) {
       console.log(err);
     }
   }
+
+  const resolveTripIssue = async() =>{
+    try{
+      const response = await BillingService.resolveBillingIssue(tripIssueId, true);
+      console.log(response.data);
+    }catch(err){
+      console.log(err);
+    }
+  }
+
+  const billingOpsIssueApproval = async() =>{
+    try{
+      const response = await BillingService.billingOpsIssueApproval(tripId, true);
+      console.log(response.data);
+    }catch(err){
+      console.log(err);
+    }
+  }
+
+  const [tripIssueId, setTripIssueId] = useState(null);
+  const getIssueIdUsingTripId = async () =>{
+    try{
+      const response = await BillingService.getIssueIdUsingTripId(tripId);
+      console.log(response.data);
+      setTripIssueId(response.data[0].id);
+    }catch(err){
+      console.log(err);
+    }
+  }
+
+  useEffect(()=>{
+    getIssueIdUsingTripId()
+  },[]);
 
 
   return (
