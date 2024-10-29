@@ -9,9 +9,9 @@ import {
 const BillingApprovalsTable = ({ list, vehicleIdClicked }) => {
   const [data, setData] = useState([]);
 
-  const handleTripClick = () => {
+  const handleTripClick = (tripId, row) => {
     console.log("Billing approvals Vehicle ID clicked");
-    vehicleIdClicked();
+    vehicleIdClicked(tripId,row.original);
   };
 
   const columns = useMemo(
@@ -20,10 +20,10 @@ const BillingApprovalsTable = ({ list, vehicleIdClicked }) => {
         accessorKey: 'tripId',
         header: 'Trip ID',
         size: 150,
-        Cell: ({ cell }) => {
+        Cell: ({ cell,row }) => {
           return (
           <a
-            onClick={handleTripClick}
+            onClick={()=>handleTripClick(cell.getValue(),row)}
             style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
           >
             TRIP-{cell.getValue()}

@@ -8,12 +8,17 @@ import {
   TextField,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import BillingAuditDetailsTable from "./billingAuditDetailsTable";
 import ViewMapModal from "./viewMapModal";
 import TripHistoryModal from "./tripHistoryModal";
 import ConfirmationModal from "./confirmationModal";
 import TripService from "@/services/trip.service";
+import BillingService from "@/services/billing.service";
+import moment from "moment";
+import BillingIssuesDetailsTable from "./billingIssuesDetailsTable";
+import ComplianceService from "@/services/compliance.service";
+import GoogleService from "@/services/google.service";
 
 const style = {
   topModals: {
@@ -39,11 +44,18 @@ const style = {
 };
 
 const BillingAuditDetails = ({ onClose, tripDetails }) => {
-  const [searchValues, setSearchValues] = useState({
-    issueType: tripDetails.issueType,
-  });
+  const [data, setData] = useState([]);
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [remarks, setRemarks] = useState("");
+  const [statusHistory, setStatusHistory] = useState([]);
+  const [vehicleData, setVehicleData] = useState([]);
+  const [noShowCount, setNoShowCount] = useState(0);
+  const [travelledEmployeeCount, setTravelledEmployeeCount] = useState(null);
+  const [tripDuration, setTripDuration] = useState(null);
 
-  console.log("issue type: ", tripDetails.issueType);
+  const [searchValues, setSearchValues] = useState({
+    issueType: "",
+  });
 
   const [openViewMapModal, setOpenViewMapModal] = useState(false);
   const handleViewMapModalOpen = () => {
@@ -55,22 +67,23 @@ const BillingAuditDetails = ({ onClose, tripDetails }) => {
     setOpenViewMapModal(false);
   };
 
+  const [historyData, setHistoryData] = useState([]);
   const [openTripHistoryModal, setOpenTripHistoryModal] = useState(false);
-  const handleTripHistoryModalOpen = () => {
+  const handleTripHistoryModalOpen = async () => {
+    try {
+      const response = await BillingService.getTripHistory(tripDetails.tripId);
+      const data = response.data;
+      console.log(data);
+      setHistoryData(data);
+    } catch (err) {
+      console.log(err);
+    }
     console.log("Trip History modal open");
     setOpenTripHistoryModal(true);
   };
   const handleTripHistoryModalClose = () => {
     console.log("Trip History modal close");
     setOpenTripHistoryModal(false);
-  };
-
-  const handleFilterChange = (e) => {
-    const { target } = e;
-    const { value, name } = target;
-    let newSearchValues = { ...searchValues };
-    newSearchValues[name] = value;
-    setSearchValues(newSearchValues);
   };
 
   const handleScreenClose = () => {
@@ -109,81 +122,358 @@ const BillingAuditDetails = ({ onClose, tripDetails }) => {
   };
 
   const IssueType = [
-    searchValues.issueType,
-    // "Vehicle Not Assigned",
-    // "Trip Not Started",
-    // "Trip Not Ended",
-    // "None",
+    "DISTANCE_ISSUE",
+    "ATTENDANCE_ISSUE",
+    "TRIP_NOT_ENDED"
   ];
 
-  const TripInformation = {
-    "Trip Id": "TR-001",
-    "Office Id": "98776556",
-    Date: "10 July 2024",
-    "Shift Type": "Logout",
-    "Shift Time": "25 Sept 2024",
-    "Trip Type": "Planned",
-    "Escort Trip": "Yes",
-    "Trip Status": "Completed",
-    "Planned Employees": "5",
-    "Travelled Employees": "2",
+  const [TripInformation, setTripInformation] = useState({
+    "Trip Id": "",
+    "Office Id": "",
+    "Date": "",
+    "Shift Type": "",
+    "Shift Time": "",
+    "Trip Type": "",
+    "Escort Trip": "",
+    "Trip Status": "",
+    "Planned Employees": "",
+    "Travelled Employees": "",
+  });
+
+  const [vehicleInformation, setVehicleInformation] = useState({
+    "Vehicle ID": "",
+    "Registration ID": "",
+    "Vehicle Type": "",
+    "Vehicle Model": "",
+    "Driver Name": "",
+    "Driver Phone No.": "",
+    "Sticker No.": "",
+  });
+
+  const [BillingInformation1, setBillingInformation1] = useState({
+    "Planned Vendor Name": "",
+    "Actual Vendor Name": "",
+    "Planned Vehicle Type": "",
+    "Vehicle Fuel Type": "",
+    // "Billing Zone": "",
+    // "Location": "",
+    "Planned Km.": "",
+    "Actual Km.": "",
+    "Reference Km.": "",
+    "Empty Km." : "",
+    "Final Km.": "",
+  });
+
+  const getTripByTripId = async() =>{
+    try{
+      const response = await BillingService.getTripByTripId(tripId);
+      console.log(response.data);
+      setBillingInformation1((prev)=>({
+        ...prev,
+        ["Planned Km."] : response.data?.actualDistance || 0,
+        ["Actual Km."] : response.data?.actualDistance || 0,
+        ["Empty Km."] : response.data?.emptyKm || 0,
+        ["Reference Km."] : response.data?.routeWiseDistance || 0,
+        ["Final Km."] : response.data?.finalDistance || 0
+      }))
+    }catch(err){
+      console.log(err);
+    }
+  }
+
+  useEffect(()=>{
+    getTripByTripId();
+  },[]);
+
+  const billingInformation1Fields = ["Billing Zone", "Final Km."];
+
+  const [BillingInformation2, setBillingInformation2] = useState({
+    // "Contract ID": "",
+    // "Contract Type": "",
+    "Trip Start Time": tripDetails?.tripStartTime,
+    "Trip End Time": tripDetails?.tripEndTime,
+    "Trip Duration": "",
+    "On Time Status": "",
+    // "Delay Reason": "",
+    "Trip Remarks": "",
+  });
+
+  const OnTimeStatus = ["Yes", "No"];
+
+  const fetchTripDetails = async() =>{
+    try{
+      const response = await BillingService.getTripByTripId(tripDetails.tripId);
+      console.log(response.data);
+      const data = response.data;
+      setTripInformation({
+        "Trip Id": `TRIP-${data.id}`,
+        "Office Id": data.officeId,
+        Date: data.date,
+        "Shift Type": data.shiftType,
+        "Shift Time": data.shiftTime,
+        "Trip Type": data.tripType,
+        "Escort Trip": data.isEscortRequired ? "Yes" : "No",
+        "Trip Status": data.tripState === "END" ? "Completed" : "Not Completed",
+      })
+      setBillingInformation2((prev)=>({
+        ...prev,
+        ["On Time Status"] : data.onTime ? "Yes" : "No",
+        ["Trip Remarks"] : data.onTimeRemark
+      }))
+      setBillingInformation1((prev)=>({
+        ...prev,
+        ["Final Km."] : data.finalDistance
+        // []
+      }))
+    }catch(err){
+      console.log(err);
+    }
+  }
+
+  const CalculateGoogleDistance = async () => {
+    try {
+      let distance = 0;
+      const length = data.length;
+      const coordA = data[0].empSignInGeo;
+      const coordB = data[length - 1].empSignOutGeo;
+      const response = await GoogleService.calculateDistance(coordA, coordB);
+      const distancePromises = data.map(async (val, index) => {
+        if (index === 0) {
+          if (length === 1 && !val.noShow) {
+            const pointA = val.empSignInGeo;
+            const pointB = val.empSignOutGeo;
+            const totalDistanceRes = await GoogleService.calculateDistance(pointA, pointB);
+            const item = totalDistanceRes.distance.split(" ");
+            const totalDistance = parseFloat(item[0]);
+            distance += totalDistance;
+            console.log(index, ">>>>>>", distance);
+          } else if (!val.noShow) {
+            const pointA = val.empSignInGeo;
+            const pointB = data[index + 1].empSignInGeo;
+            const totalDistanceRes = await GoogleService.calculateDistance(pointA, pointB);
+            const item = totalDistanceRes.distance.split(" ");
+            const totalDistance = parseFloat(item[0]);
+            distance += totalDistance;
+            console.log(index, ">>>>>>", distance);
+          }
+        } else {
+          if (index === length - 1 && !val.noShow) {
+            const pointA = val.empSignInGeo;
+            const pointB = val.empSignOutGeo;
+            const totalDistanceRes = await GoogleService.calculateDistance(pointA, pointB);
+            const item = totalDistanceRes.distance.split(" ");
+            const totalDistance = parseFloat(item[0]);
+            distance += totalDistance;
+            console.log(index, ">>>>>>", distance);
+          } else if (!val.noShow) {
+            const pointA = val.empSignInGeo;
+            const pointB = data[index + 1].empSignInGeo;
+            const totalDistanceRes = await GoogleService.calculateDistance(pointA, pointB);
+            const item = totalDistanceRes.distance.split(" ");
+            const totalDistance = parseFloat(item[0]);
+            distance += totalDistance;
+            console.log(index, ">>>>>>", distance);
+          }
+        }
+      })
+
+      await Promise.all(distancePromises);
+      console.log("Trip Distance >>>>>>>>", distance);
+
+      setBillingInformation1((prev) => ({
+        ...prev,
+        ["Planned Km."]: response.distance,
+        ["Reference Km."]: response.distance,
+        ["Actual Km."]: `${parseFloat(distance).toFixed(2)} km`
+      }));
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  useEffect(()=>{
+    fetchTripDetails();
+  },[])
+
+  const getTripMembers = async (tripId) => {
+    try {
+      const response = await BillingService.billingTripMember(tripId);
+      console.log(response.data);
+      setData(response.data);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  useEffect(() => {
+    if (tripDetails) {
+      getTripMembers(tripDetails.tripId);
+      let empCount = data.length - noShowCount;
+      setTripInformation((prev) => ({
+        ...prev,
+        "Travelled Employees": data.length,
+        "Planned Employees": empCount,
+      }))
+    }
+    console.log("Trip Details>>>>>>", tripDetails)
+  }, [tripDetails])
+
+  useEffect(() => {
+    if (data.length > 0) {
+      if (tripDetails.shiftType === "LOGIN") {
+
+        const timeA = moment(tripDetails.tripStartTime, 'HH:mm');
+        const timeB = moment(tripDetails.tripEndTime, 'HH:mm');
+
+        let diffInMinutes = timeB.diff(timeA, 'minutes');
+        let diffInHours = timeB.diff(timeA, 'hours');
+
+        console.log(`Difference in minutes: ${diffInMinutes} minutes`);
+        console.log(`Difference in hours: ${diffInHours} hours`, BillingInformation2);
+
+        setTripDuration(diffInMinutes);
+        setBillingInformation2((prev) => ({
+          ...prev,
+          "Trip Duration": `${diffInMinutes} min`,
+        }));
+
+        // const newTripStartTime = data[0]?.signIn;
+        // const newTripEndTime = data[data.length - 1]?.signIn;
+
+        // const newTripStartDate = convertTimeToDate(newTripStartTime);
+        // const newTripEndDate = convertTimeToDate(newTripEndTime);
+        // const tripDurationInMinutes =
+        //   (newTripEndDate - newTripStartDate) / (1000 * 60);
+        // const formattedTripDuration = formatDuration(tripDurationInMinutes);
+
+        // setBillingInformation2((prev) => ({
+        //   ...prev,
+        //   "Trip Start Time": data[0]?.signIn,
+        //   "Trip End Time": data[data.length - 1]?.signIn,
+        //   "Trip Duration": formattedTripDuration,
+        // }));
+      } else {
+        const timeA = moment(tripDetails.tripStartTime, 'HH:mm');
+        const timeB = moment(tripDetails.tripEndTime, 'HH:mm');
+
+        let diffInMinutes = timeB.diff(timeA, 'minutes');
+        let diffInHours = timeB.diff(timeA, 'hours');
+
+        console.log(`Difference in minutes: ${diffInMinutes} minutes`);
+        console.log(`Difference in hours: ${diffInHours} hours`, BillingInformation2);
+
+        setTripDuration(diffInMinutes);
+        setBillingInformation2((prev) => ({
+          ...prev,
+          "Trip Duration": `${diffInMinutes} min`,
+        }));
+        // const newTripStartTime = data[0]?.signOut;
+        // const newTripEndTime = data[data.length - 1]?.signOut;
+
+        // const newTripStartDate = convertTimeToDate(newTripStartTime);
+        // const newTripEndDate = convertTimeToDate(newTripEndTime);
+        // const tripDurationInMinutes =
+        //   (newTripEndDate - newTripStartDate) / (1000 * 60);
+        // const formattedTripDuration = formatDuration(tripDurationInMinutes);
+
+        // setBillingInformation2((prev) => ({
+        //   ...prev,
+        //   "Trip Start Time": data[0]?.signOut,
+        //   "Trip End Time": data[data.length - 1]?.signOut,
+        //   "Trip Duration": formattedTripDuration,
+        // }));
+      }
+    }
+  }, [data]);
+
+  useEffect(() => {
+    console.log("Saifali>>>>>>>>>>>>> ", data);
+    if (data.length > 0) {
+      const count = data.filter((row) => row.noShow === true).length;
+      setNoShowCount(count);
+      console.log("No show count", count);
+
+      let empCount = data.length - count;
+      setTripInformation((prev) => ({
+        ...prev,
+        ["Travelled Employees"]: data.length,
+        ["Planned Employees"]: empCount
+      }));
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if (data.length > 0) {
+      CalculateGoogleDistance();
+    }
+  }, [data]);
+
+  const pointHeaderLabel =
+    tripDetails.shiftType === "LOGIN" ? "Pickup Point" : "Drop Point";
+
+  const handleRowsSelected = (selectedRowId) => {
+    setSelectedRow(selectedRowId);
+    console.log("slected row id: ", selectedRowId.empId);
   };
 
-  const VehicleInformation = {
-    "Vehicle ID": "AT-878989",
-    "Registration ID": "RJ-8997-7899087",
-    "Vehicle Type": "Cab",
-    "Vehicle Model": "Maruti Ertiga",
-    "Driver Name": "Raj",
-    "Driver Phone No.": "8790356356",
-    "Sticker No.": "12",
+  useEffect(() => {
+    if (vehicleData.length > 0) {
+      setVehicleInformation((prev) => ({
+        ...prev,
+        "Vehicle ID": vehicleData[0]?.vehicleId,
+        "Registration ID": vehicleData[0].vehicleRegistrationNumber,
+        "Vehicle Type": vehicleData[0]?.vehicleType,
+        "Vehicle Model": vehicleData[0]?.vehicleModel,
+        "Sticker No.": vehicleData[0]?.stickerNumber,
+        "Driver Name": vehicleData[0]?.driverName,
+        "Driver Phone No.": vehicleData[0]?.driverMobile,
+      }));
+      setBillingInformation1((prev) => ({
+        ...prev,
+        "Planned Vendor Name": vehicleData[0]?.vendorName,
+        "Actual Vendor Name": vehicleData[0]?.vendorName,
+        "Planned Vehicle Type": vehicleData[0]?.vehicleType,
+        "Vehicle Fuel Type": vehicleData[0]?.fuelType,
+      }));
+    }
+  }, [vehicleData]);
+
+  const fetchVehicle = async () => {
+    try {
+      const response = await ComplianceService.getSingleVehicle(
+        tripDetails.vehicleId
+      );
+      console.log("vehicle response: ", response.data.vehicleDTO);
+
+      const { data } = response || {};
+      let fetchedVehicleData = [];
+      fetchedVehicleData.push(response.data.vehicleDTO);
+      setVehicleData(fetchedVehicleData);
+      console.log("Vehicle Data: ", vehicleData);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const BillingInformation1 = {
-    "Planned Vendor Name": "Ganga Tourism",
-    "Actual vendor Name": "Ganga Tourism",
-    "Planned Vehicle Type": "Cab",
-    "Vehicle Fuel Type": "Petrol",
-    "Billing Zone": "Noida",
-    "First Pickup/Last Drop Location": "Noida Sector 59",
-    "Planned Km.": "99",
-    "Actual Km.": "97",
-    "Reference Km.": "101",
-    "Final Km.": "97",
-  };
+  useEffect(() => {
+    fetchVehicle();
+  }, [tripDetails.vehicleId]);
 
-  const BillingInformation2 = {
-    "Contract ID": "CID0001",
-    "Contract Type": "T&M",
-    "Trip Start Time": "09:00 AM",
-    "Trip End Time": "11:00 AM",
-    "Trip Duration": "2 Hours",
-    "On Time Status": "Yes",
-    "Delay Reason": "NA",
-    "Trip Remarks": "Good",
-  };
+  const [tripIssueId, setTripIssueId] = useState(null);
+  const getIssueIdUsingTripId = async () =>{
+    try{
+      const response = await BillingService.getIssueIdUsingTripId(tripDetails.tripId);
+      console.log(response.data[0].issueName);
+      setTripIssueId(response.data[0].id);
+      setSearchValues({issueType : response.data[0].issueName})
+    }catch(err){
+      console.log(err);
+    }
+  }
 
-  // const fetchTripDetails = async () => {
-  //   try {
-  //     setLoading(true);
-  //     // await new Promise((resolve) => setTimeout(resolve, 5000));
-  //     const response = await TripService.getTripByTripId(tripId);
-  //     console.log("Clicked trip data>>>", response.data);
-  //     setTripDetails(response.data);
-  //     if (response.status === 500) {
-  //       dispatch(
-  //         toggleToast({
-  //           message: `Failed! Please try again later.`,
-  //           type: "error",
-  //         })
-  //       );
-  //     }
-  //   } catch (err) {
-  //     console.log(err);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+  useEffect(()=>{
+    getIssueIdUsingTripId()
+  },[]);
 
   return (
     <div
@@ -350,7 +640,7 @@ const BillingAuditDetails = ({ onClose, tripDetails }) => {
                     width: "40%",
                   }}
                 >
-                  <button
+                  {/* <button
                     className="btn btn-primary"
                     style={{
                       width: "110px",
@@ -360,7 +650,7 @@ const BillingAuditDetails = ({ onClose, tripDetails }) => {
                     onClick={handleViewMapModalOpen}
                   >
                     View Map
-                  </button>
+                  </button> */}
                   <Modal
                     open={openViewMapModal}
                     onClose={handleViewMapModalClose}
@@ -391,6 +681,7 @@ const BillingAuditDetails = ({ onClose, tripDetails }) => {
                     <Box sx={style.topModals}>
                       <TripHistoryModal
                         onClose={() => handleTripHistoryModalClose()}
+                        historyData={historyData}
                       />
                     </Box>
                   </Modal>
@@ -398,7 +689,13 @@ const BillingAuditDetails = ({ onClose, tripDetails }) => {
               </div>
               <div className="">
                 <div>
-                  <BillingAuditDetailsTable />
+                <BillingIssuesDetailsTable
+                    issueTypeData={data}
+                    setIssueTypeData={(newData) => setData(newData)}
+                    // setIssueTypeData={(newData) => console.log("newData: ", newData)}
+                    onRowsSelected={handleRowsSelected}
+                    pointHeaderLabel={pointHeaderLabel}
+                  />
                 </div>
               </div>
             </div>
@@ -438,7 +735,7 @@ const BillingAuditDetails = ({ onClose, tripDetails }) => {
                     columnSpacing={{ xs: 1, sm: 2, md: 3 }}
                   >
                     <Grid item xs={12}>
-                      {Object.entries(VehicleInformation).map(([key]) => (
+                      {Object.entries(vehicleInformation).map(([key]) => (
                         <Box
                           display="flex"
                           // justifyContent="space-between"
@@ -483,7 +780,7 @@ const BillingAuditDetails = ({ onClose, tripDetails }) => {
                                   fontSize: "15px",
                                 }}
                               >
-                                {VehicleInformation[key]}
+                                {vehicleInformation[key]}
                               </p>
                             </Grid>
                           </div>
@@ -549,6 +846,7 @@ const BillingAuditDetails = ({ onClose, tripDetails }) => {
                         fullWidth
                         multiline
                         rows={3}
+                        disabled
                         size="small"
                         inputProps={{
                           style: {
@@ -762,6 +1060,7 @@ const BillingAuditDetails = ({ onClose, tripDetails }) => {
                     onClose={handleModalClose}
                     pass={passFlag}
                     fail={failFlag}
+                    tripId={tripDetails.tripId}
                   />
                 </Box>
               </Modal>
