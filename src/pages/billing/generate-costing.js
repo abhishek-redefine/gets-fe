@@ -13,11 +13,10 @@ import moment from "moment";
 import { DATE_FORMAT } from "@/constants/app.constants.";
 import { useDispatch } from "react-redux";
 import billing from "@/layouts/billing";
-import TripSheetEntryTable from "@/components/billing/tripSheetEntryTable";
 import BillingService from "@/services/billing.service";
 import { getFormattedLabel } from "@/utils/utils";
 import ComplianceService from "@/services/compliance.service";
-import { all } from "axios";
+import GenerateCostingTable from "@/components/billing/generateCostingTable";
 
 const MenuProps = {
   PaperProps: {
@@ -31,14 +30,15 @@ const MenuProps = {
 const MainComponent = () => {
   const [searchValues, setSearchValues] = useState({
     vendorId: "",
-    contractType: "",
+    // contractType: "",
+    month: "",
     tripFromDateStr: "",
     tripToDateStr: "",
   });
   const [list, setList] = useState([]);
   const [vendorName, setVendorName] = useState("");
   const [billingData, setBillingData] = useState(null);
-  const [cost, setCost] = useState(0)
+  const [cost, setCost] = useState(0);
 
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
@@ -48,10 +48,20 @@ const MainComponent = () => {
   const [contractList, setContractList] = useState([]);
   const [vendorId, setVendorId] = useState("");
 
-  const handleRowsSelected = (selectedRow) => {
-    setSelectedRow(selectedRow);
-    console.log("Contract billing selected row >>>: ", selectedRow);
-  };
+  const monthList = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
 
   const handleFilterChange = (e) => {
     const { target } = e;
@@ -96,7 +106,8 @@ const MainComponent = () => {
   const resetFilter = () => {
     let allSearchValue = {
       vendorId: "",
-      contractType: "",
+      // contractType: "",
+      month: "",
       tripFromDateStr: "",
       tripToDateStr: "",
     };
@@ -108,7 +119,7 @@ const MainComponent = () => {
   const fetchSummary = async () => {
     try {
       let allSearchValues = { ...searchValues };
-      let reqBody = {};
+      // let reqBody = {};
       //   Object.keys(allSearchValues).forEach((objKey) => {
       //     if (
       //       allSearchValues[objKey] === null ||
@@ -117,38 +128,46 @@ const MainComponent = () => {
       //       delete allSearchValues[objKey];
       //     }
       //   });
-      reqBody = {
-        vendorId: parseInt(allSearchValues.vendorId),
-        contractType: allSearchValues.contractType,
-        tripFromDateStr: allSearchValues.tripFromDateStr,
-        tripToDateStr: allSearchValues.tripToDateStr,
-      };
+      // reqBody = {
+      //   vendorId: parseInt(allSearchValues.vendorId),
+      //   contractType: allSearchValues.contractType,
+      //   tripFromDateStr: allSearchValues.tripFromDateStr,
+      //   tripToDateStr: allSearchValues.tripToDateStr,
+      // };
       setLoading(true);
       if (allSearchValues.contractType === "PACKAGE_BASED") {
-        const response = await BillingService.CalculatePackageBill(allSearchValues.contractType, parseInt(allSearchValues.vendorId), allSearchValues.tripFromDateStr, allSearchValues.tripToDateStr);
+        const response = await BillingService.CalculatePackageBill(
+          allSearchValues.contractType,
+          parseInt(allSearchValues.vendorId),
+          allSearchValues.tripFromDateStr,
+          allSearchValues.tripToDateStr
+        );
         console.log("response>>>", response);
         const data = response.data;
-        setBillingData(response.data)
-        setCost(data[0].amountForContractTypePackageBased)
+        setBillingData(response.data);
+        setCost(data[0].amountForContractTypePackageBased);
       } else {
-        const response = await BillingService.CalculateBill(allSearchValues.contractType, parseInt(allSearchValues.vendorId), allSearchValues.tripFromDateStr, allSearchValues.tripToDateStr);
+        const response = await BillingService.CalculateBill(
+          allSearchValues.contractType,
+          parseInt(allSearchValues.vendorId),
+          allSearchValues.tripFromDateStr,
+          allSearchValues.tripToDateStr
+        );
         const data = response.data;
         setBillingData(data);
-        data && data.map((val) => {
-          if (val.contractTypeKMBased === 'TRIP_SLAB_BASED') {
-            setCost(() => val.amountForContractTypeSlabBased)
-          }
-          else if (val.contractTypeKMBased === 'KM_BASED') {
-            setCost(() => val.amountForContractTypeKMBased)
-          }
-          else if (val.contractTypeKMBased === 'FLAT_TRIP_BASED') {
-            console.log(val)
-            setCost(val.amountForContractTypeFlatTripBased)
-          }
-          else if (val.contractTypeKMBased === 'ZONE_BASED') {
-            setCost(() => val.amountForContractTypeZoneBased)
-          }
-        })
+        data &&
+          data.map((val) => {
+            if (val.contractTypeKMBased === "TRIP_SLAB_BASED") {
+              setCost(() => val.amountForContractTypeSlabBased);
+            } else if (val.contractTypeKMBased === "KM_BASED") {
+              setCost(() => val.amountForContractTypeKMBased);
+            } else if (val.contractTypeKMBased === "FLAT_TRIP_BASED") {
+              console.log(val);
+              setCost(val.amountForContractTypeFlatTripBased);
+            } else if (val.contractTypeKMBased === "ZONE_BASED") {
+              setCost(() => val.amountForContractTypeZoneBased);
+            }
+          });
       }
 
       // setList(response.data);
@@ -195,7 +214,6 @@ const MainComponent = () => {
             borderRadius: "10px",
             margin: "30px 0",
             padding: "0 13px",
-            // gap: "10px",
           }}
         >
           <div className="form-control-input">
@@ -217,7 +235,7 @@ const MainComponent = () => {
                     ...prev,
                     vendorId: val ? val.vendorId : "",
                   }));
-                  setVendorName(val.vendorName)
+                  setVendorName(val.vendorName);
                 }}
                 getOptionKey={(vendor) => vendor.vendorId}
                 getOptionLabel={(vendor) => vendor.vendorName}
@@ -235,7 +253,7 @@ const MainComponent = () => {
             </FormControl>
           </div>
 
-          <div className="form-control-input">
+          {/* <div className="form-control-input">
             <FormControl fullWidth>
               <InputLabel id="contract-label">Contract Type</InputLabel>
               <Select
@@ -255,6 +273,28 @@ const MainComponent = () => {
                       {contract.contractId}
                     </MenuItem>
                   ))}
+              </Select>
+            </FormControl>
+          </div> */}
+
+          <div className="form-control-input">
+            <FormControl fullWidth>
+              <InputLabel id="month-label">Month</InputLabel>
+              <Select
+                labelId="month-label"
+                id="month"
+                value={searchValues.month}
+                name="month"
+                label="Month"
+                onChange={handleFilterChange}
+                MenuProps={MenuProps}
+                style={{ backgroundColor: "#ffffff" }}
+              >
+                {monthList.map((month) => (
+                  <MenuItem key={month} value={month}>
+                    {month}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </div>
@@ -348,10 +388,9 @@ const MainComponent = () => {
               borderRadius: "20px 20px 0 0",
             }}
           >
-            <h3>Details</h3>
+            <h3>Billing Cycle</h3>
           </div>
-          {
-            billingData &&
+          {/* {billingData && (
             <div
               style={{
                 backgroundColor: "white",
@@ -361,20 +400,32 @@ const MainComponent = () => {
               }}
             >
               <div>
-                <p style={{ paddingBottom: 5 }}><span style={{ fontWeight: 'bold' }}>Vendor Name</span> : {vendorName}</p>
-                <p style={{ paddingBottom: 5 }}><span style={{ fontWeight: 'bold' }}>Contract Name</span> : {searchValues.contractType}</p>
-                <p style={{ paddingBottom: 5 }}><span style={{ fontWeight: 'bold' }}>Start Date</span> : {moment(searchValues.tripFromDateStr).format('DD-MM-YYYY')}</p>
-                <p style={{ paddingBottom: 5 }}><span style={{ fontWeight: 'bold' }}>End Date</span> : {moment(searchValues.tripToDateStr).format('DD-MM-YYYY')}</p>
-                <p style={{ paddingBottom: 5 }}><span style={{ fontWeight: 'bold' }}>Total Cost Generated</span> : Rs {cost}</p>
+                <p style={{ paddingBottom: 5 }}>
+                  <span style={{ fontWeight: "bold" }}>Vendor Name</span> :{" "}
+                  {vendorName}
+                </p>
+                <p style={{ paddingBottom: 5 }}>
+                  <span style={{ fontWeight: "bold" }}>Contract Name</span> :{" "}
+                  {searchValues.contractType}
+                </p>
+                <p style={{ paddingBottom: 5 }}>
+                  <span style={{ fontWeight: "bold" }}>Start Date</span> :{" "}
+                  {moment(searchValues.tripFromDateStr).format("DD-MM-YYYY")}
+                </p>
+                <p style={{ paddingBottom: 5 }}>
+                  <span style={{ fontWeight: "bold" }}>End Date</span> :{" "}
+                  {moment(searchValues.tripToDateStr).format("DD-MM-YYYY")}
+                </p>
+                <p style={{ paddingBottom: 5 }}>
+                  <span style={{ fontWeight: "bold" }}>
+                    Total Cost Generated
+                  </span>{" "}
+                  : Rs {cost}
+                </p>
               </div>
             </div>
-          }
-          {/* <TripSheetEntryTable
-            isLoading={loading}
-            list={list}
-            onRowsSelected={handleRowsSelected}
-            selectedRow={selectedRow}
-          /> */}
+          )} */}
+          <GenerateCostingTable isLoading={loading} list={list} />
         </div>
       </div>
     </div>

@@ -32,6 +32,7 @@ const configurations = (WrappedComponent) => {
                         <Link onClick={() => changeRoute('driver-app')} className={currentActiveState === 'driver-app' && styles.selected || ''} href='driver-app'>Driver App</Link><br />
                         <Link onClick={() => changeRoute('communication')} className={currentActiveState === 'communication' && styles.selected || ''} href='communication'>Communication</Link><br />
                         <Link onClick={() => changeRoute('billing')} className={currentActiveState === 'billing' && styles.selected || ''} href='billing'>Billing</Link><br />
+                        <Link onClick={() => changeRoute('invoice')} className={currentActiveState === 'invoice' && styles.selected || ''} href='invoice'>Invoice</Link><br />
                     </nav>
                 </div>
                 <div className={styles.rightContainer}>
