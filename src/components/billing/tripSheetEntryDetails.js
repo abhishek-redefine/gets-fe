@@ -46,10 +46,10 @@ const TripSheetEntryDetails = ({ onClose, tripId, tripdetails }) => {
   });
 
   const IssueType = [
-    "Vehicle Not Assigned",
-    "Trip Not Started",
-    "Trip Not Ended",
-    "None",
+    "DISTANCE_ISSUE",
+    "ATTENDANCE_ISSUE",
+    "TRIP_NOT_ENDED",
+    ""
   ];
 
   const TripInformation = {
@@ -88,16 +88,37 @@ const TripSheetEntryDetails = ({ onClose, tripId, tripdetails }) => {
     "Final Km.": "",
   });
 
+  const getTripByTripId = async() =>{
+    try{
+      const response = await BillingService.getTripByTripId(tripId);
+      console.log(response.data);
+      setBillingInformation1((prev)=>({
+        ...prev,
+        ["Planned Km."] : response.data?.actualDistance || 0,
+        ["Actual Km."] : response.data?.actualDistance || 0,
+        ["Empty Km."] : response.data?.emptyKm || 0,
+        ["Reference Km."] : response.data?.routeWiseDistance || 0,
+        ["Final Km."] : response.data?.finalDistance || 0
+      }))
+    }catch(err){
+      console.log(err);
+    }
+  }
+
+  useEffect(()=>{
+    getTripByTripId();
+  },[]);
+
   const billingInformation1Fields = ["Billing Zone", "Final Km."];
 
   const [billingInformation2, setBillingInformation2] = useState({
     // "Contract ID": "CID0001",
     // "Contract Type": "T&M",
-    "Trip Start Time": "07:00",
-    "Trip End Time": "09:00",
-    "Trip Duration": "120 min",
+    "Trip Start Time": "",
+    "Trip End Time": "",
+    "Trip Duration": "",
     "On Time Status": "",
-    "Delay Reason": "",
+    // "Delay Reason": "",
     "Trip Remarks": "",
   });
 
@@ -383,13 +404,13 @@ const TripSheetEntryDetails = ({ onClose, tripId, tripdetails }) => {
     if (data.length > 0 && newKey === "First Pickup Location") {
       setBillingInformation1((prev) => ({
         ...prev,
-        "First Pickup Location": data[0]?.point,
+        "First Pickup Location": data[0]?.areaName,
       }));
     }
     if (data.length > 0 && newKey === "Last Drop Location") {
       setBillingInformation1((prev) => ({
         ...prev,
-        "Last Drop Location": data[data.length - 1]?.point,
+        "Last Drop Location": data[data.length - 1]?.areaName,
       }));
     }
   }, [tripdetails[0].shiftType, data]);
@@ -479,6 +500,60 @@ const TripSheetEntryDetails = ({ onClose, tripId, tripdetails }) => {
     }
     console.log("Trip Details>>>>>>", tripdetails);
   }, [tripdetails]);
+
+  const updateTrip = async () => {
+    try {
+      const payload = {
+        "finalDistance": parseFloat(billingInformation1["Final Km."]),
+        "onTime": billingInformation2["On Time Status"] === "Yes" ? true : false,
+        "onTimeRemarks": billingInformation2["Trip Remarks"],
+        "tripId": tripdetails[0].tripId
+      }
+      console.log("Hello", payload);
+      const response = await BillingService.updateTrip(payload);
+      if(response.status === 200 || response.status === 201){
+        console.log(response.data);
+        resolveTripIssue()
+        billingOpsIssueApproval();
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  const resolveTripIssue = async() =>{
+    try{
+      const response = await BillingService.resolveBillingIssue(tripIssueId, true);
+      console.log(response.data);
+    }catch(err){
+      console.log(err);
+    }
+  }
+
+  const billingOpsIssueApproval = async() =>{
+    try{
+      const response = await BillingService.billingOpsIssueApproval(tripId, true);
+      console.log(response.data);
+    }catch(err){
+      console.log(err);
+    }
+  }
+
+  const [tripIssueId, setTripIssueId] = useState(null);
+  const getIssueIdUsingTripId = async () =>{
+    try{
+      const response = await BillingService.getIssueIdUsingTripId(tripId);
+      console.log(response.data);
+      setTripIssueId(response.data[0].id);
+      setSearchValues({ issueType : response.data[0].issueName})
+    }catch(err){
+      console.log(err);
+    }
+  }
+
+  useEffect(()=>{
+    getIssueIdUsingTripId()
+  },[]);
 
   return (
     <div
@@ -991,7 +1066,9 @@ const TripSheetEntryDetails = ({ onClose, tripId, tripdetails }) => {
               }}
             >
               <div
+                className="d-flex"
                 style={{
+                  justifyContent: 'space-between',
                   fontSize: "20px",
                   fontWeight: "600",
                   padding: "20px 25px 20px",
@@ -1001,7 +1078,23 @@ const TripSheetEntryDetails = ({ onClose, tripId, tripdetails }) => {
                   marginBottom: "25px",
                 }}
               >
+                <div>
                 Billing Information
+                </div>
+                
+                <div>
+                  <button
+                    className="btn btn-primary"
+                    style={{
+                      width: "170px",
+                      padding: "10px",
+                      marginLeft: "20px",
+                    }}
+                    onClick={() => updateTrip()}
+                  >
+                    Submit
+                  </button>
+                </div>
               </div>
               <div class="">
                 <Box

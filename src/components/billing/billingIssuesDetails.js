@@ -595,7 +595,7 @@ const BillingIssuesDetails = ({ onClose, tripId, tripdetails, officeId, date, Is
       setBillingInformation1((prev) => ({
         ...prev,
         ["Planned Km."]: response.distance,
-        ["Reference Km."]: response.distance,
+        // ["Reference Km."]: response.distance,
         ["Actual Km."]: `${parseFloat(distance).toFixed(2)} km`
       }));
     } catch (err) {
