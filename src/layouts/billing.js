@@ -62,12 +62,12 @@ const billing = (WrappedComponent) => {
           </button>
           <button
             style={{width: "200px"}}
-            onClick={() => changeRoute("contract-billing")}
+            onClick={() => changeRoute("generate-costing")}
             className={`btn btn-secondary ${
-              currentActiveState === "contract-billing" ? "btn-blk" : ""
+              currentActiveState === "generate-costing" ? "btn-blk" : ""
             }`}
           >
-            Contract Billing
+            Generate Costing
           </button>
         </div>
         <div>
