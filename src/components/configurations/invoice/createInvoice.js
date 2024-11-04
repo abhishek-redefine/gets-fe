@@ -112,13 +112,17 @@ const AddInvoice = ({ SetIsAddConfig }) => {
     const handleSave = async () => {
         if (validateFields()) {
             console.log("Values>>>", values.invoiceFields);
-
             // Map over invoiceFields to create an array of promises, then wait for all to resolve
-            const createConfigPromises = values.invoiceFields.map((val) => createConfig(val));
-
+            const createConfigPromises = values.invoiceFields.map((val) => {
+                let allInvoiceFields = {...val};
+                allInvoiceFields.month = `${val.month.substring(0,3)} (${moment(val.fromDate).format('DD/MMM/YYYY')} - ${moment(val.toDate).format('DD/MMM/YYYY')})`;
+                createConfig(allInvoiceFields);
+            });
             try {
                 await Promise.all(createConfigPromises); // Waits for all createConfig calls to complete
-                SetIsAddConfig(false); // Called after all API calls are done
+                setTimeout(()=>{
+                    SetIsAddConfig(false); // Called after all API calls are done
+                },[500]);
             } catch (error) {
                 console.error("Error in one of the createConfig calls:", error);
             }
@@ -275,6 +279,9 @@ const AddInvoice = ({ SetIsAddConfig }) => {
                         </button>
                     </div>
                     <div style={{ display: "flex" }}>
+                        <button className="btn btn-secondary" onClick={()=>SetIsAddConfig(false)}>
+                            Cancel
+                        </button>
                         <button className="btn btn-primary" onClick={handleSave}>
                             Save
                         </button>

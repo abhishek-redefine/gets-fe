@@ -23,6 +23,7 @@ const MenuProps = {
     style: {
       maxHeight: 150,
       width: 250,
+      overflowX : 'auto',
     },
   },
 };
@@ -150,7 +151,8 @@ const MainComponent = () => {
   };
 
   const fetchSummary = async () => {
-    if(vendorId !== "" && searchValues.month !== ""){
+    console.log(vendorId !== "")
+    if(searchValues.vendorId !== "" && searchValues.month !== ""){
       try {
         let allSearchValues = { ...searchValues };
         setLoading(true);
@@ -216,11 +218,11 @@ const MainComponent = () => {
   //   useEffect(() => {
   //   }, []);
 
-  useEffect(() => {
-    if (searchValues.vendorId) {
-      fetchVendorContracts();
-    }
-  }, [searchValues.vendorId]);
+  // useEffect(() => {
+  //   if (searchValues.vendorId) {
+  //     fetchVendorContracts();
+  //   }
+  // }, [searchValues.vendorId]);
 
   useEffect(() => {
     if (!selectedRow) {
