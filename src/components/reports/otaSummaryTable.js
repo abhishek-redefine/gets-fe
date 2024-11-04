@@ -3,8 +3,9 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
+import LoaderComponent from "../loader";
 
-const OnTimeArrivalSummaryTable = ({ list }) => {
+const OnTimeArrivalSummaryTable = ({ list, isLoading }) => {
   const [data, setData] = useState([]);
 
   const columns = useMemo(
@@ -71,6 +72,12 @@ const OnTimeArrivalSummaryTable = ({ list }) => {
   const tableInstance = useMaterialReactTable({
     columns,
     data,
+    state: {
+      isLoading,
+    },
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />,
+    },
   });
 
   useEffect(() => {

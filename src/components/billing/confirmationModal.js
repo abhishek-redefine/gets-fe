@@ -2,16 +2,24 @@ import * as React from "react";
 import Typography from "@mui/material/Typography";
 import { Box, TextField } from "@mui/material";
 import { useState } from "react";
+import BillingService from "@/services/billing.service";
 
-const ConfirmationModal = ({ pass, fail, onClose }) => {
+const ConfirmationModal = ({ pass, fail, onClose,tripId }) => {
   const [remarks, setRemarks] = useState("");
   const [remarksError, setRemarksError] = useState(false);
 
-  const handleSubmitClick = () => {
+  const handleSubmitClick = async() => {
     if (remarks.trim() === "") {
       setRemarksError(true);
     } else {
       console.log("Remarks:", remarks);
+      try{
+        const flag = pass ? true : false;
+        const response = await BillingService.auditApproval(tripId, flag);
+        console.log(response.data);
+      }catch(err){
+        console.log(err);
+      }
       setRemarksError(false);
       onClose();
     }

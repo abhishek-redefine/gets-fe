@@ -152,6 +152,7 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
     vehicleMake: "",
     vehicleModel: "",
     fuelType: "",
+    vendorId: "",
     vendorName: "",
     officeId: "",
     registrationDate: "",
@@ -246,7 +247,10 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
     console.log("on change handler", newValue);
     var allValues = { ...initialValues };
     console.log(allValues);
-    allValues.vendorName = newValue?.vendorName;
+    if(name === "Vendor") {
+      allValues.vendorId= newValue?.vendorId;
+      allValues.vendorName = newValue?.vendorName;
+    }
     console.log(allValues);
     setInitialValues(allValues);
     console.log(initialValues);
@@ -348,7 +352,8 @@ const AddNewVehicle = ({ EditVehicleData, SetAddVehicleOpen }) => {
           alert("Enter vendor name");
           return;
         }
-        apiData.driver = driverId;
+        apiData.vendorId = initialValues.vendorId;
+        // apiData.driver = driverId;
         apiData.vendorName = vendorName;
         // apiData.rfidStatus = "ACTIVE";
         // apiData.gpsStatus = "ACTIVE";

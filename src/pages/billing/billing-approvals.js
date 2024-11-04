@@ -12,15 +12,18 @@ import { setMasterData } from "@/redux/master.slice";
 import MasterDataService from "@/services/masterdata.service";
 import BillingApprovalsDetails from "@/components/billing/billingApprovalsDetails";
 import BillingApprovalsTable from "@/components/billing/billingApprovalsTable";
+import BillingService from "@/services/billing.service";
 
 const MainComponent = () => {
+  const [tripId, setTripId] = useState(null);
+  const [tripList,setTripList] = useState([]);
+  const [tripIssue, setTripIssue] = useState(null);
   const [office, setOffice] = useState([]);
   const [searchValues, setSearchValues] = useState({
     officeId: "",
     shiftType: "",
     date: moment().format("YYYY-MM-DD"),
-    tripStatus: "",
-    vendorType: "",
+    tripBillingState : "OPS_ISSUE"
   });
   const [list, setList] = useState([]);
 
@@ -94,29 +97,20 @@ const MainComponent = () => {
           delete allSearchValues[objKey];
         }
       });
-      const data = [
-        {
-          vehicleId: "VH740923",
-          vehicleRegistration: "RS-DEL-001",
-          vehicleType: "Cab",
-          vendor: "Active",
-          date: "04-08-2024",
-          id: "747",
-          km: "20",
-          hrs: "4",
-          issueType: "Km. Issue",
-          shiftTime: "09:30",
-          shiftType: "Login",
-        },
-      ];
+      const response = await BillingService.billingOpsIssueSearchByBean(params.toString(), allSearchValues);
+      console.log(response.data.content);
+      const data = response.data.content;
       setList(data);
     } catch (err) {
       console.log(err);
     }
   };
 
-  const handleTripClick = () => {
+  const handleTripClick = (tripId,row) => {
     setSelectedTripId(true);
+    setTripId(tripId || null);
+    setTripList([row]);
+    setTripIssue(row.issueName);
   };
 
   useEffect(() => {
@@ -126,10 +120,19 @@ const MainComponent = () => {
     fetchAllOffices();
   }, []);
 
+  
+
   return (
     <div>
       {selectedTripId ? (
-        <BillingApprovalsDetails onClose={handleTripInfoScreenClose} />
+        <BillingApprovalsDetails 
+        onClose={handleTripInfoScreenClose}
+          tripId={tripId}
+          tripdetails={tripList}
+          officeId={searchValues.officeId}
+          date={searchValues.tripDate}
+          IssueType={tripIssue}
+        />
       ) : (
         <div>
           <div
@@ -186,7 +189,7 @@ const MainComponent = () => {
               </LocalizationProvider>
             </div>
 
-            <div
+            {/* <div
               style={{ minWidth: "160px", backgroundColor: "white" }}
               className="form-control-input"
             >
@@ -206,7 +209,7 @@ const MainComponent = () => {
                   ))}
                 </Select>
               </FormControl>
-            </div>
+            </div> */}
 
             <div style={{ minWidth: "160px" }} className="form-control-input">
               <FormControl fullWidth>
@@ -285,7 +288,10 @@ const MainComponent = () => {
             >
               <h3>Details</h3>
             </div>
-            <BillingApprovalsTable list={list} vehicleIdClicked={handleTripClick} />
+            <BillingApprovalsTable 
+              list={list} 
+              vehicleIdClicked={(tripId,row)=>handleTripClick(tripId,row)}
+             />
           </div>
         </div>
       )}

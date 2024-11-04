@@ -12,6 +12,7 @@ import { setMasterData } from "@/redux/master.slice";
 import MasterDataService from "@/services/masterdata.service";
 import BillingAuditTable from "@/components/billing/billingAuditTable";
 import BillingAuditDetails from "@/components/billing/billingAuditDetails";
+import BillingService from "@/services/billing.service";
 
 const MainComponent = () => {
   const [office, setOffice] = useState([]);
@@ -19,8 +20,7 @@ const MainComponent = () => {
     officeId: "",
     shiftType: "",
     date: moment().format("YYYY-MM-DD"),
-    tripStatus: "",
-    vendorType: "",
+    "tripBillingState": "AUDIT"
   });
   const [list, setList] = useState([]);
 
@@ -32,6 +32,7 @@ const MainComponent = () => {
   });
 
   const [selectedTripId, setSelectedTripId] = useState(false);
+  const [tripDetails, setTripDetails] = useState(null);
   const handleTripInfoScreenClose = () => {
     console.log("Screen closed");
     setSelectedTripId(false);
@@ -59,7 +60,7 @@ const MainComponent = () => {
         (searchValues["officeId"] = clientOfficeDTO[0]?.officeId)
       );
       setOffice(clientOfficeDTO);
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const fetchMasterData = async (type) => {
@@ -70,7 +71,7 @@ const MainComponent = () => {
         console.log(data);
         dispatch(setMasterData({ data, type }));
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const resetFilter = () => {
@@ -94,30 +95,21 @@ const MainComponent = () => {
           delete allSearchValues[objKey];
         }
       });
-      const data = [
-        {
-          vehicleId: "VH740923",
-          vehicleRegistration: "RS-DEL-001",
-          vehicleType: "Cab",
-          vendor: "Active",
-          date: "04-08-2024",
-          id: "747",
-          km: "20",
-          hrs: "4",
-          issueType: "Km. Issue",
-          shiftTime: "09:30",
-          shiftType: "Login",
-        },
-      ];
+      const response = await BillingService.billingAuditSearchByBean(params.toString(), "BILLING", allSearchValues);
+      console.log(response.data);
+      const data = response.data.content;
       setList(data);
     } catch (err) {
       console.log(err);
     }
   };
 
-  const handleTripClick = () => {
+  const handleVehicleIdClick = (row) => {
+    console.log("Clicked vehicle id row>>>", row)
     setSelectedTripId(true);
+    setTripDetails(row);
   };
+
 
   useEffect(() => {
     if (!shiftTypes?.length) {
@@ -126,10 +118,22 @@ const MainComponent = () => {
     fetchAllOffices();
   }, []);
 
+  const auditDone = async () => {
+    try {
+      if (tripDetails) {
+        const response = await BillingService.auditApproval(tripDetails.id, true);
+        console.log(response.data);
+        fetchSummary();
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   return (
     <div>
       {selectedTripId ? (
-        <BillingAuditDetails onClose={handleTripInfoScreenClose} />
+        <BillingAuditDetails onClose={handleTripInfoScreenClose} tripDetails={tripDetails} />
       ) : (
         <div>
           <div
@@ -184,28 +188,6 @@ const MainComponent = () => {
                   }
                 />
               </LocalizationProvider>
-            </div>
-
-            <div
-              style={{ minWidth: "160px", backgroundColor: "white" }}
-              className="form-control-input"
-            >
-              <FormControl fullWidth>
-                <InputLabel id="vendor-type-label">Vendor</InputLabel>
-                <Select
-                  style={{ width: "180px", backgroundColor: "white" }}
-                  labelId="vendor-type-label"
-                  id="vendorType"
-                  name="vendorType"
-                  value={searchValues.vendorType}
-                  label="Vendor Type"
-                  onChange={handleFilterChange}
-                >
-                  {vendorType.map((item) => (
-                    <MenuItem value={item}>{item}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
             </div>
 
             <div style={{ minWidth: "160px" }} className="form-control-input">
@@ -285,8 +267,11 @@ const MainComponent = () => {
             >
               <h3>Details</h3>
             </div>
-            <BillingAuditTable list={list} vehicleIdClicked={handleTripClick} />
-            <div
+            <BillingAuditTable 
+              list={list} 
+              vehicleIdClicked={handleVehicleIdClick} 
+            />
+            {/* <div
               style={{
                 display: "flex",
                 justifyContent: "flex-end",
@@ -305,10 +290,11 @@ const MainComponent = () => {
                   padding: "15px",
                   margin: "0 10px",
                 }}
+                onClick={auditDone}
               >
                 Audit Done
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
       )}

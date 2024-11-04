@@ -10,11 +10,12 @@ import { useDispatch, useSelector } from "react-redux";
 import reports from "@/layouts/reports";
 import { setMasterData } from "@/redux/master.slice";
 import MasterDataService from "@/services/masterdata.service";
-import DispatchService from "@/services/dispatch.service";
 import ClickToCallTable from "@/components/reports/clickToCallTable";
 import SafeReachVerificationTable from "@/components/reports/safeReachVerificationTable";
 import SOSDeviceTable from "@/components/reports/sosDeviceTable";
 import VehicleStoppageNoCommunicationTable from "@/components/reports/vehicleStoppageNoCommunicationTable";
+import ReportService from "@/services/report.service";
+import xlsx from "json-as-xlsx";
 
 const MainComponent = () => {
   const [office, setOffice] = useState([]);
@@ -24,18 +25,14 @@ const MainComponent = () => {
     date: moment().format("YYYY-MM-DD"),
     reportType: "Click To Call Reports",
   });
-  const [list, setList] = useState([]);
+  const [clickToCallReport, setClickToCallReport] = useState([]);
+  const [safeReachReport, setSafeReachReport] = useState([]);
+  const [sosDeviceReport, setSosDeviceReport] = useState([]);
+  const [vehicleStoppageReport, setVehicleStoppageReport] = useState([]);
   const dispatch = useDispatch();
-  const [pagination, setPagination] = useState({
-    page: 0,
-    size: 100,
-  });
+  const [loading, setLoading] = useState(false);
 
   const { ShiftType: shiftTypes } = useSelector((state) => state.master);
-
-  const [selectedTable, setSelectedTable] = useState(
-    <ClickToCallTable list={list} />
-  );
   const [reportHeading, setReportHeading] = useState("Click To Call Reports");
 
   const reports = [
@@ -92,7 +89,7 @@ const MainComponent = () => {
 
   const fetchSummary = async () => {
     try {
-      let params = new URLSearchParams(pagination);
+      setLoading(true);
       let allSearchValues = { ...searchValues };
       Object.keys(allSearchValues).forEach((objKey) => {
         if (
@@ -102,42 +99,451 @@ const MainComponent = () => {
           delete allSearchValues[objKey];
         }
       });
-      const response = await DispatchService.getTripSearchByBean(
-        params,
-        allSearchValues
-      );
-      console.log("response data", response.data.data);
-      // setList(data);
-      // var requestType = data[0].requestType;
-      switch (searchValues.reportType) {
-        case "Click To Call Reports":
-          setReportHeading("Click To Call Reports");
-          setSelectedTable(<ClickToCallTable list={list} />);
-          break;
-        case "Safe Reach Verification Reports":
-          setReportHeading("Safe Reach Verification Reports");
-          setSelectedTable(<SafeReachVerificationTable list={list} />);
-          break;
-        case "SOS Device Reports":
-          setReportHeading("SOS Device Reports");
-          setSelectedTable(<SOSDeviceTable list={list} />);
-          break;
-        case "Vehicle Stoppage No Communication Reports":
-          setReportHeading("Vehicle Stoppage No Communication Reports");
-          setSelectedTable(<VehicleStoppageNoCommunicationTable list={list} />);
-          break;
-        default:
-          setReportHeading("Click To Call Reports");
-          setSelectedTable(<ClickToCallTable list={list} />);
+      if (searchValues.reportType === "Click To Call Reports") {
+        setReportHeading("Click To Call Reports");
+        // const response = await ReportService.(
+        //   allSearchValues
+        // );
+        // console.log(" data >>>>", response.data);
+        // setClickToCallReport(response.data);
+      } else if (
+        searchValues.reportType === "Safe Reach Verification Reports"
+      ) {
+        setReportHeading("Safe Reach Verification Reports");
+        // const response = await ReportService.(
+        //   allSearchValues
+        // );
+        // console.log(" data >>>>", response.data);
+        // setSafeReachReport(response.data);
+      } else if (searchValues.reportType === "SOS Device Reports") {
+        setReportHeading("SOS Device Reports");
+        // const response = await ReportService.(
+        //   allSearchValues
+        // );
+        // console.log(" data >>>>", response.data);
+        // setSosDeviceReport(response.data);
+      } else if (
+        searchValues.reportType === "Vehicle Stoppage No Communication Reports"
+      ) {
+        setReportHeading("Vehicle Stoppage No Communication Reports");
+        // const response = await ReportService.(
+        //   allSearchValues
+        // );
+        // console.log(" data >>>>", response.data);
+        // setVehicleStoppageReport(response.data);
       }
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const downloadReport = () => {
+    if (reportHeading) {
+      if (reportHeading && reportHeading === "Click To Call Reports") {
+        var data = [
+          {
+            sheet: reportHeading,
+            columns: [
+              {
+                value: "callID",
+                label: "Call ID",
+              },
+              {
+                value: "tripId",
+                label: "Trip ID",
+              },
+              {
+                value: "callStatus",
+                label: "Call Status",
+              },
+              {
+                value: "vehicleID",
+                label: "Vehicle ID",
+              },
+              {
+                value: "employeeID",
+                label: "Employee ID",
+              },
+              {
+                value: "employeeName",
+                label: "Employee Name",
+              },
+              {
+                value: "gender",
+                label: "Gender",
+              },
+              {
+                value: "timeOfCall",
+                label: "Time of Call",
+              },
+              {
+                value: "callInitiationLocation",
+                label: "Call Initiation Location",
+              },
+              {
+                value: "callDistancefromPickUpPoint",
+                label: "Call Distance from Pick-Up Point",
+              },
+              {
+                value: "driverPhoneNumber",
+                label: "Driver Phone Number",
+              },
+              {
+                value: "employeePhoneNumber",
+                label: "Employee Phone Number",
+              },
+              {
+                value: "callBilledUnits",
+                label: "Call Billed Units",
+              },
+              {
+                value: "driverCallDuration",
+                label: "Driver Call Duration",
+              },
+              {
+                value: "employeeCallDuration",
+                label: "Employee Call Duration",
+              },
+              {
+                value: "callStartTime",
+                label: "Call Start Time",
+              },
+              {
+                value: "callEndTime",
+                label: "Call End Time",
+              },
+              {
+                value: "driverHangUpCause",
+                label: "Driver Hang-Up Cause",
+              },
+              {
+                value: "employeeHangUpCause",
+                label: "Employee Hang-Up Cause",
+              },
+              {
+                value: "callLogURL",
+                label: "Call Log URL",
+              },
+              {
+                value: "travelledOffice",
+                label: "Travelled Office",
+              },
+            ],
+            content: clickToCallReport,
+          },
+        ];
+      } else if (
+        reportHeading &&
+        reportHeading === "Safe Reach Verification Reports"
+      ) {
+        var data = [
+          {
+            sheet: reportHeading,
+            columns: [
+              {
+                value: "facility",
+                label: "Facility",
+              },
+              {
+                value: "office",
+                label: "Office",
+              },
+              {
+                value: "empId",
+                label: "Employee ID",
+              },
+              {
+                value: "empName",
+                label: "Employee Name",
+              },
+              {
+                value: "gender",
+                label: "Gender",
+              },
+              {
+                value: "projectName",
+                label: "Project Name",
+              },
+              {
+                value: "empEmail",
+                label: "Employee Email",
+              },
+              {
+                value: "tripId",
+                label: "Trip ID",
+              },
+              {
+                value: "tripType",
+                label: "Trip Type",
+              },
+              {
+                value: "tripDate",
+                label: "Trip Date",
+              },
+              {
+                value: "vehicleId",
+                label: "Vehicle ID",
+              },
+              {
+                value: "vehicleRegistrationNo",
+                label: "Vehicle Registration No",
+              },
+              {
+                value: "driverName",
+                label: "Driver Name",
+              },
+              {
+                value: "driverContact",
+                label: "Driver Contact",
+              },
+              {
+                value: "verificationStatus",
+                label: "Verification Status",
+              },
+              {
+                value: "verificationType",
+                label: "Verification Type",
+              },
+              {
+                value: "verificationTime",
+                label: "Verification Time",
+              },
+              {
+                value: "logoutShift",
+                label: "Logout Shift",
+              },
+              {
+                value: "teamManager",
+                label: "Team Manager",
+              },
+              {
+                value: "Planned SignIn Time",
+                label: "Planned SignIn Time",
+              },
+              {
+                value: "Actual SignIn Time",
+                label: "Actual SignIn Time",
+              },
+              {
+                value: "plannedSignoffTime",
+                label: "Planned Signoff Time",
+              },
+              {
+                value: "actualSignoffTime",
+                label: "Actual Signoff Time",
+              },
+              {
+                value: "pickupAddress",
+                label: "Pickup Address",
+              },
+              {
+                value: "dropAddress",
+                label: "Drop Address",
+              },
+              {
+                value: "distanceFromPlannedPickup",
+                label: "Distance From Planned Pickup(Km)",
+              },
+              {
+                value: "distanceFromPlannedDrop",
+                label: "Distance From Planned Drop(Km)",
+              },
+              {
+                value: "escortName",
+                label: "Escort Name",
+              },
+              {
+                value: "escortContact",
+                label: "Escort Contact",
+              },
+              {
+                value: "escortSignInTime",
+                label: "Escort SignIn Time",
+              },
+              {
+                value: "verifiedBy",
+                label: "Verified By",
+              },
+              {
+                value: "verifiedTime",
+                label: "VerifiedTime",
+              },
+              {
+                value: "comment",
+                label: "Comment",
+              },
+            ],
+            content: safeReachReport,
+          },
+        ];
+      } else if (reportHeading && reportHeading === "SOS Device Reports") {
+        var data = [
+          {
+            sheet: reportHeading,
+            columns: [
+              {
+                value: "sNo",
+                label: "S. No",
+              },
+              {
+                value: "facility",
+                label: "Facility",
+              },
+              {
+                value: "vendorName",
+                label: "Vendor Name",
+              },
+              {
+                value: "vehicleId",
+                label: "Vehicle ID",
+              },
+              {
+                value: "vehicleRegistrationNo",
+                label: "Vehicle Registration No",
+              },
+              {
+                value: "driverName",
+                label: "Driver Name",
+              },
+              {
+                value: "driverContactNumber",
+                label: "Driver Contact Number",
+              },
+              {
+                value: "startTime",
+                label: "Start Time",
+              },
+              {
+                value: "triggerdTime",
+                label: "Triggerd Time",
+              },
+              {
+                value: "updateTime",
+                label: "Update Time",
+              },
+              {
+                value: "closedBy",
+                label: "Closed By",
+              },
+              {
+                value: "comments",
+                label: "Comments",
+              },
+              {
+                value: "triggeredLocation",
+                label: "Triggered Location",
+              },
+              {
+                value: "status",
+                label: "Status",
+              },
+              {
+                value: "severity",
+                label: "Severity",
+              },
+              {
+                value: "escalationLevel",
+                label: "Escalation Level",
+              },
+            ],
+            content: sosDeviceReport,
+          },
+        ];
+      } else if (
+        reportHeading &&
+        reportHeading === "Vehicle Stoppage No Communication Reports"
+      ) {
+        var data = [
+          {
+            sheet: "Vehicle Stoppage Report",
+            columns: [
+              {
+                value: "sNo",
+                label: "S. No",
+              },
+              {
+                value: "facility",
+                label: "Facility",
+              },
+              {
+                value: "Office",
+                label: "Office",
+              },
+              {
+                value: "vendorName",
+                label: "Vendor Name",
+              },
+              {
+                value: "vehicleId",
+                label: "Vehicle ID",
+              },
+              {
+                value: "vehicleRegistrationNo",
+                label: "Vehicle Registration No",
+              },
+              {
+                value: "tripId",
+                label: "Trip ID",
+              },
+              {
+                value: "driverName",
+                label: "Driver Name",
+              },
+              {
+                value: "driverContactNumber",
+                label: "Driver Contact Number",
+              },
+              {
+                value: "startTime",
+                label: "Start Time",
+              },
+              {
+                value: "updateTime",
+                label: "Update Time",
+              },
+              {
+                value: "closedBy",
+                label: "Closed By",
+              },
+              {
+                value: "comments",
+                label: "Comments",
+              },
+              {
+                value: "triggeredLocation",
+                label: "Triggered Location",
+              },
+              {
+                value: "status",
+                label: "Status",
+              },
+              {
+                value: "severity",
+                label: "Severity",
+              },
+            ],
+            content: vehicleStoppageReport,
+          },
+        ];
+      }
+    }
+
+    var settings = {
+      fileName: reportHeading,
+      extraLength: 20,
+      writeMode: "writeFile",
+      writeOptions: {},
+      RTL: false,
+    };
+
+    xlsx(data, settings);
+  };
+
   useEffect(() => {
-    console.log("list>>>", list);
-  }, [list]);
+    console.log("clickToCallReport data >>>", clickToCallReport);
+  }, [clickToCallReport]);
 
   useEffect(() => {
     if (!shiftTypes?.length) {
@@ -164,7 +570,7 @@ const MainComponent = () => {
             // backgroundColor: "yellow"
           }}
         >
-          <div className="filterContainer" style={{flexWrap: "wrap"}}>
+          <div className="filterContainer" style={{ flexWrap: "wrap" }}>
             {office.length > 0 && (
               <div style={{ minWidth: "180px" }} className="form-control-input">
                 <FormControl fullWidth>
@@ -306,12 +712,30 @@ const MainComponent = () => {
                 padding: "10px",
                 margin: "0 10px",
               }}
+              onClick={() => downloadReport()}
             >
               Download File
             </button>
           </div>
         </div>
-        {selectedTable}
+        {reportHeading === "Click To Call Reports" && (
+          <ClickToCallTable list={clickToCallReport} isLoading={loading} />
+        )}
+        {reportHeading === "Safe Reach Verification Reports" && (
+          <SafeReachVerificationTable
+            list={safeReachReport}
+            isLoading={loading}
+          />
+        )}
+        {reportHeading === "SOS Device Reports" && (
+          <SOSDeviceTable list={sosDeviceReport} isLoading={loading} />
+        )}
+        {reportHeading === "Vehicle Stoppage No Communication Reports" && (
+          <VehicleStoppageNoCommunicationTable
+            list={vehicleStoppageReport}
+            isLoading={loading}
+          />
+        )}
       </div>
     </div>
   );

@@ -3,8 +3,9 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
+import LoaderComponent from "../loader";
 
-const SafeReachVerificationTable = ({ list }) => {
+const SafeReachVerificationTable = ({ list, isLoading }) => {
   const [data, setData] = useState([]);
 
   const columns = useMemo(
@@ -181,6 +182,12 @@ const SafeReachVerificationTable = ({ list }) => {
   const tableInstance = useMaterialReactTable({
     columns,
     data,
+    state: {
+      isLoading,
+    },
+    muiCircularProgressProps: {
+      Component: <LoaderComponent />,
+    },
   });
 
   useEffect(() => {

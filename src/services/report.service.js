@@ -13,21 +13,47 @@ const RawBillingReport = async (body) => {
     });
 };
 
+const TripCompletionVendorReport = async (body) => {
+  ///api/v1/report/tripCompletionReportVendor
+  return axiosInstance
+    .post(
+      `${API_PATH.API_VERSION}${API_PATH.REPORT}${API_PATH.TRIP_COMPLETION_REPORT_VENDOR}`,
+      body
+    )
+    .then((response) => {
+      return response;
+    });
+};
+
 const NoShowSummaryReport = async (body) => {
-    ///api/v1/report/tripNoShowRosterReportSummary
-    return axiosInstance
-      .post(
-        `${API_PATH.API_VERSION}${API_PATH.REPORT}${API_PATH.NO_SHOW_SUMMARY_REPORT}`,
-        body
-      )
-      .then((response) => {
-        return response;
-      });
-  };
+  ///api/v1/report/tripNoShowRosterReportSummary
+  return axiosInstance
+    .post(
+      `${API_PATH.API_VERSION}${API_PATH.REPORT}${API_PATH.NO_SHOW_SUMMARY_REPORT}`,
+      body
+    )
+    .then((response) => {
+      return response;
+    });
+};
+
+const NoShowDetailedReport = async (body) => {
+  ///api/v1/report/noShowDetailedReport
+  return axiosInstance
+    .post(
+      `${API_PATH.API_VERSION}${API_PATH.REPORT}${API_PATH.NO_SHOW_DETAILED_REPORT}`,
+      body
+    )
+    .then((response) => {
+      return response;
+    });
+};
 
 const ReportService = {
-    RawBillingReport,
-    NoShowSummaryReport
+  RawBillingReport,
+  TripCompletionVendorReport,
+  NoShowSummaryReport,
+  NoShowDetailedReport,
 };
 
 export default ReportService;

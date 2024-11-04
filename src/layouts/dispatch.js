@@ -57,6 +57,14 @@ const dispatch = (WrappedComponent) => {
             Cab Allocation
           </button>
           <button
+            onClick={() => changeRoute("escort-allocation")}
+            className={`btn btn-secondary ${
+              currentActiveState === "escort-allocation" ? "btn-blk" : ""
+            }`}
+          >
+            Escort Allocation
+          </button>
+          <button
             onClick={() => changeRoute("dispatch-notification")}
             className={`btn btn-secondary ${
               currentActiveState === "dispatch-notification" ? "btn-blk" : ""

@@ -124,8 +124,8 @@ const MainComponent = () => {
       const response = await DispatchService.getTripByShiftIdAndTripDate(
         params
       );
+      console.log("allocate Vendor response>>>", response.data);
       setTripList(response.data);
-      console.log("trip list>>>>", response.data);
     } catch (err) {
       console.log(err);
     } finally {
@@ -178,6 +178,10 @@ const MainComponent = () => {
     }
     fetchAllOffices();
   }, []);
+
+  useEffect(() => {
+    console.log("tripList", tripList);
+  }, [tripList]);
 
   return (
     <div>
@@ -370,7 +374,11 @@ const MainComponent = () => {
         </div>
       ) : (
         <div style={{ margin: "20px 0", boxShadow: "none" }}>
-          <AllocateVendor tripList={tripList} isLoading={loading} />
+          <AllocateVendor
+            tripList={tripList}
+            isLoading={loading}
+            allocationComplete={() => setAllocateVendorShow(false)}
+          />
         </div>
       )}
     </div>

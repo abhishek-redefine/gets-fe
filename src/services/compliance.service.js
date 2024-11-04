@@ -339,6 +339,15 @@ const getEhsHistoryByVehicleId = (queryParams,searchValues) =>{
     });
 }
 
+const getVendorCompanyContractsById = (id) =>{
+    ///api/v1/vendorCompany/contracts/{id}
+    ///api/v1/vendorCompany/contracts/2
+    return axiosInstance.get(`${API_PATH.API_VERSION}${API_PATH.VENDOR_COMPANY}/${API_PATH.CONTRACTS}/${id}`).then((response) => {
+        return response;
+    });
+}
+
+
 
 const ComplianceService = {
     createDriver,
@@ -388,7 +397,8 @@ const ComplianceService = {
     updateDriverEhs,
     updateVehicleEhs,
     getEhsHistoryByDriverId,
-    getEhsHistoryByVehicleId
+    getEhsHistoryByVehicleId,
+    getVendorCompanyContractsById
 };
 
 export default ComplianceService;
