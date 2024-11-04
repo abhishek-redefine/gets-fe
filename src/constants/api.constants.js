@@ -191,4 +191,5 @@ export const API_PATH = {
   CALCULATE_BILL : "/calculateBill",
   CONTRACT_TYPE : 'contractType',
   OPS_ISSUE_APPROVAL: '/opsIssueApproval',
+  CONFIG : '/config',
 };

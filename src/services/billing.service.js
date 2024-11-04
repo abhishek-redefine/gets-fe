@@ -121,10 +121,10 @@ const markNoShow = async (tripId, id, flag, driverFlag) => {
   });
 };
 
-const getIssueIdUsingTripId = async(tripId) =>{
+const getIssueIdUsingTripId = async (tripId) => {
   // http://localhost:3000/api/v1/tripIssue/trip/73
   let url = `${API_PATH.API_VERSION}/tripIssue/trip/${tripId}`;
-  return axiosInstance.get(url).then((response)=>{
+  return axiosInstance.get(url).then((response) => {
     return response;
   })
 }
@@ -151,7 +151,7 @@ const getTripByVehicleNumber = (queryParams) => {
   });
 };
 
-const CalculatePackageBill = async (contractType,vendorId,startDate,endDate) => {
+const CalculatePackageBill = async (contractType, vendorId, startDate, endDate) => {
   ///api/v1/vendorCompany/calculatePackageBill
   ///api/v1/vendorCompany/calculatePackageBill
   let url = `${API_PATH.API_VERSION}${API_PATH.VENDOR_COMPANY}${API_PATH.CALCULATE_PACKAGE_BILL}?${API_PATH.CONTRACT_TYPE}=${contractType}&vendorId=${vendorId}&startDate=${startDate}&endDate=${endDate}`;
@@ -160,36 +160,53 @@ const CalculatePackageBill = async (contractType,vendorId,startDate,endDate) => 
   });
 };
 
-const CalculateBill = async (contractType,vendorId,startDate,endDate) => {
+const CalculateBill = async (month, vendorId, startDate, endDate) => {
   ///api/v1/vendorCompany/calculateBill
   ///api/v1/vendorCompany/calculateBill
-  let url = `${API_PATH.API_VERSION}${API_PATH.VENDOR_COMPANY}${API_PATH.CALCULATE_BILL}?${API_PATH.CONTRACT_TYPE}=${contractType}&vendorId=${vendorId}&startDate=${startDate}&endDate=${endDate}`;
+  let url = `${API_PATH.API_VERSION}${API_PATH.VENDOR_COMPANY}${API_PATH.CALCULATE_BILL}?month=${month}&vendorId=${vendorId}&startDate=${startDate}&endDate=${endDate}`;
   return axiosInstance.get(url).then((response) => {
     return response;
   });
 };
 
-const allIssueSearchByBean = async (queryParams, searchValues) =>{
+const allIssueSearchByBean = async (queryParams, searchValues) => {
   let url = `${API_PATH.API_VERSION}/tripIssue/allIssue?`;
-  if(queryParams){
+  if (queryParams) {
     url += queryParams
   }
-  return axiosInstance.post(url, searchValues).then((response)=>{
+  return axiosInstance.post(url, searchValues).then((response) => {
     return response;
   })
 }
 
-const resolveBillingIssue = async (issueId, status) =>{
+const resolveBillingIssue = async (issueId, status) => {
   let url = `${API_PATH.API_VERSION}/tripIssue/resolveIssue/${issueId}/${status}`;
-  return axiosInstance.post(url).then((response)=>{
+  return axiosInstance.post(url).then((response) => {
     return response;
   })
 }
 
-const billingOpsIssueApproval = async(tripId, flag) =>{
+const billingOpsIssueApproval = async (tripId, flag) => {
   // http://localhost:3000/api/v1/billing/opsIssueApproval/73/true
   let url = `${API_PATH.API_VERSION}${API_PATH.BILLING}${API_PATH.OPS_ISSUE_APPROVAL}/${tripId}/${flag}`;
-  return axiosInstance.post(url).then((response)=>{
+  return axiosInstance.post(url).then((response) => {
+    return response;
+  })
+}
+
+const createConfig = async (values) => {
+  let url = `${API_PATH.API_VERSION}${API_PATH.BILLING}${API_PATH.CONFIG}${API_PATH.CREATE}`;
+  return axiosInstance.post(url, values).then((response) => {
+    return response;
+  })
+}
+
+const getAllConfig = async (queryParams) => {
+  let url = `${API_PATH.API_VERSION}${API_PATH.BILLING}${API_PATH.CONFIG}${API_PATH.ALL}`;
+  if(queryParams){
+    url += `?queryParams`;
+  }
+  return axiosInstance.get(url).then((response) => {
     return response;
   })
 }
@@ -218,6 +235,8 @@ const BillingService = {
   getIssueIdUsingTripId,
   resolveBillingIssue,
   billingOpsIssueApproval,
+  createConfig,
+  getAllConfig
 };
 
 export default BillingService;
