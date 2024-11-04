@@ -35,6 +35,16 @@ const GenerateCostingTable = ({ list, isLoading }) => {
         header: "Total Trip Duration",
         size: 200,
       },
+      {
+        accessorKey: "fromDate",
+        header: "From Date",
+        size: 200,
+      },
+      {
+        accessorKey: "toDate",
+        header: "To Date",
+        size: 200,
+      }
     ],
     []
   );
@@ -49,6 +59,7 @@ const GenerateCostingTable = ({ list, isLoading }) => {
   });
 
   useEffect(() => {
+    console.log("Costing >>>>>>",list);
     setData(list);
   }, [list]);
 

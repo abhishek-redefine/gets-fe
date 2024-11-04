@@ -48,29 +48,35 @@ const MainComponent = () => {
   const [contractList, setContractList] = useState([]);
   const [vendorId, setVendorId] = useState("");
 
-  const monthList = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
+  const [monthList, setMonthList] = useState([]);
+  const [configListing, setConfigListing] = useState();
+  const [paginationData, setPaginationData] = useState();
+  const [pagination, setPagination] = useState({
+    pageNo: 0,
+    pageSize: 100,
+  })
 
   const handleFilterChange = (e) => {
-    const { target } = e;
-    const { value, name } = target;
-    let newSearchValues = { ...searchValues };
-    if (name === "tripFromDateStr" || name === "tripToDateStr")
-      newSearchValues[name] = value.format("YYYY-MM-DD");
-    else newSearchValues[name] = value;
-    setSearchValues(newSearchValues);
+    const value = e.target.value;
+    console.log(value);
+    let fromDate = '';
+    let toDate = '';
+    configListing.map((val) => {
+      if (value === val.month) {
+        fromDate = val.fromDate;
+        if(moment(val.toDate).isAfter(moment())){
+          toDate = moment().format('YYYY-MM-DD');
+        }else{
+          toDate = val.toDate;
+        }
+      }
+    });
+    setSearchValues((prev) => ({
+      ...prev,
+      month: value,
+      tripFromDateStr: fromDate,
+      tripToDateStr: toDate
+    }));
   };
 
   const searchForVendor = async (e) => {
@@ -116,65 +122,94 @@ const MainComponent = () => {
     setContractList([]);
   };
 
-  const fetchSummary = async () => {
+  const fetchAllConfig = async () => {
     try {
-      let allSearchValues = { ...searchValues };
-      // let reqBody = {};
-      //   Object.keys(allSearchValues).forEach((objKey) => {
-      //     if (
-      //       allSearchValues[objKey] === null ||
-      //       allSearchValues[objKey] === ""
-      //     ) {
-      //       delete allSearchValues[objKey];
-      //     }
-      //   });
-      // reqBody = {
-      //   vendorId: parseInt(allSearchValues.vendorId),
-      //   contractType: allSearchValues.contractType,
-      //   tripFromDateStr: allSearchValues.tripFromDateStr,
-      //   tripToDateStr: allSearchValues.tripToDateStr,
-      // };
       setLoading(true);
-      if (allSearchValues.contractType === "PACKAGE_BASED") {
-        const response = await BillingService.CalculatePackageBill(
-          allSearchValues.contractType,
-          parseInt(allSearchValues.vendorId),
-          allSearchValues.tripFromDateStr,
-          allSearchValues.tripToDateStr
-        );
-        console.log("response>>>", response);
-        const data = response.data;
-        setBillingData(response.data);
-        setCost(data[0].amountForContractTypePackageBased);
-      } else {
-        const response = await BillingService.CalculateBill(
-          allSearchValues.contractType,
-          parseInt(allSearchValues.vendorId),
-          allSearchValues.tripFromDateStr,
-          allSearchValues.tripToDateStr
-        );
-        const data = response.data;
-        setBillingData(data);
-        data &&
-          data.map((val) => {
-            if (val.contractTypeKMBased === "TRIP_SLAB_BASED") {
-              setCost(() => val.amountForContractTypeSlabBased);
-            } else if (val.contractTypeKMBased === "KM_BASED") {
-              setCost(() => val.amountForContractTypeKMBased);
-            } else if (val.contractTypeKMBased === "FLAT_TRIP_BASED") {
-              console.log(val);
-              setCost(val.amountForContractTypeFlatTripBased);
-            } else if (val.contractTypeKMBased === "ZONE_BASED") {
-              setCost(() => val.amountForContractTypeZoneBased);
-            }
-          });
-      }
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
+      let params = new URLSearchParams(pagination);
+      const response = await BillingService.getAllConfig(params);
+      const resData = response.data.paginatedResponse.content;
+      const todayDate = moment();
+      let newList = [];
+      resData.map((val) => {
+        if (moment(val.fromDate).isSameOrBefore(todayDate)) {
+          newList.push(val);
+        }
+      })
+      setConfigListing(newList);
 
-      // setList(response.data);
-    } catch (err) {
-      console.log(err);
+      const data = response.data.paginatedResponse;
+      let localPaginationData = { ...data };
+      delete localPaginationData?.data;
+      setPaginationData(localPaginationData);
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSummary = async () => {
+    if(vendorId !== "" && searchValues.month !== ""){
+      try {
+        let allSearchValues = { ...searchValues };
+        setLoading(true);
+        const response = await BillingService.CalculateBill(
+          allSearchValues.month,
+          parseInt(allSearchValues.vendorId),
+          allSearchValues.tripFromDateStr,
+          allSearchValues.tripToDateStr
+        );
+        const data = response.data;
+        console.log(data);
+        let totalDuration = 0;
+        let totalCost = 0;
+        let totalKm = 0;
+        data.billingDTOS.map((val) => {
+          if (val.contractTypeKMBased === "PACKAGE_BASED") {
+            totalCost += val.amountForContractTypePackageBased;
+            totalDuration += val.hourForContractTypePackageBased;
+            totalKm += val.distanceForContractTypePackageBased;
+          } 
+          else if (val.contractTypeKMBased === "TRIP_SLAB_BASED") {
+            totalCost += val.amountForContractTypeSlabBased;
+            totalDuration += val.hourForContractTypeSlabBased;
+            totalKm += val.distanceForContractTypeSlabBased;
+          } 
+          else if (val.contractTypeKMBased === "KM_BASED") {
+            totalCost += val.amountForContractTypeKMBased;
+            totalDuration += val.hourForContractTypeKMBased;
+            totalKm += val.distanceForContractTypeKMBased;
+          } 
+          else if (val.contractTypeKMBased === "FLAT_TRIP_BASED") {
+            totalCost += val.amountForContractTypeFlatTripBased;
+            totalDuration += val.hourForContractTypeFlatTripBased;
+            totalKm += val.distanceForContractTypeFlatTripBased;
+          } 
+          else {
+            totalCost += val.amountForContractTypeZoneBased;
+            totalDuration += val.distanceForContractTypeZoneBased;
+            totalKm += val.hourForContractTypeZoneBased;
+          }
+        })
+        let newList = [
+          {
+            vendorName : vendorName,
+            tripCount : data.tripCount,
+            totalKm : totalKm,
+            totalCost : totalCost,
+            totalTripDuration : totalDuration,
+            fromDate : moment(data.startDate).format('DD-MM-YYYY'),
+            toDate : moment(data.endDate).format('DD-MM-YYYY')
+          }
+        ];
+        setList(newList);
+  
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -199,8 +234,8 @@ const MainComponent = () => {
   }, [searchValues]);
 
   useEffect(() => {
-    console.log("list>>>", list);
-  }, [list]);
+    fetchAllConfig();
+  }, [])
 
   return (
     <div>
@@ -253,30 +288,6 @@ const MainComponent = () => {
             </FormControl>
           </div>
 
-          {/* <div className="form-control-input">
-            <FormControl fullWidth>
-              <InputLabel id="contract-label">Contract Type</InputLabel>
-              <Select
-                labelId="contract-label"
-                id="contractType"
-                value={searchValues.contractType}
-                name="contractType"
-                label="Contract Type"
-                onChange={handleFilterChange}
-                MenuProps={MenuProps}
-                style={{ backgroundColor: "#ffffff" }}
-              >
-                {!!contractList?.length &&
-                  contractList.map((contract, idx) => (
-                    <MenuItem key={idx} value={contract.contractType}>
-                      {contract.id}, {getFormattedLabel(contract.contractType)},{" "}
-                      {contract.contractId}
-                    </MenuItem>
-                  ))}
-              </Select>
-            </FormControl>
-          </div> */}
-
           <div className="form-control-input">
             <FormControl fullWidth>
               <InputLabel id="month-label">Month</InputLabel>
@@ -290,16 +301,19 @@ const MainComponent = () => {
                 MenuProps={MenuProps}
                 style={{ backgroundColor: "#ffffff" }}
               >
-                {monthList.map((month) => (
-                  <MenuItem key={month} value={month}>
-                    {month}
-                  </MenuItem>
-                ))}
+                {configListing &&
+                  configListing.length > 0 &&
+                  configListing.map((month) => {
+                    console.log(month)
+                    return (<MenuItem key={month.month} value={month.month}>
+                      {month.month}
+                    </MenuItem>)
+                  })}
               </Select>
             </FormControl>
           </div>
 
-          <div
+          {/* <div
             className="form-control-input"
             style={{ backgroundColor: "white" }}
           >
@@ -348,7 +362,7 @@ const MainComponent = () => {
                 }
               />
             </LocalizationProvider>
-          </div>
+          </div> */}
 
           <div className="form-control-input" style={{ minWidth: "70px" }}>
             <button
