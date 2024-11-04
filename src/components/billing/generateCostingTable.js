@@ -7,6 +7,9 @@ import LoaderComponent from "../loader";
 
 const GenerateCostingTable = ({ list, isLoading }) => {
   const [data, setData] = useState([]);
+  const [totalKm, setTotalKm] = useState(0);
+  const [totalCost, setTotalCost] = useState(0);
+  const [totalTripDuration, setTotalTripDuration] = useState(0);
 
   const columns = useMemo(
     () => [
@@ -24,16 +27,19 @@ const GenerateCostingTable = ({ list, isLoading }) => {
         accessorKey: "totalKm",
         header: "Total Km",
         size: 200,
+        footer: `${totalKm} Km`
       },
       {
         accessorKey: "totalCost",
         header: "Total Cost",
         size: 200,
+        footer: `Rs. ${totalCost}`
       },
       {
         accessorKey: "totalTripDuration",
         header: "Total Trip Duration",
         size: 200,
+        footer: `${totalTripDuration} hrs`
       },
       {
         accessorKey: "fromDate",
@@ -46,7 +52,7 @@ const GenerateCostingTable = ({ list, isLoading }) => {
         size: 200,
       }
     ],
-    []
+    [totalKm, totalCost, totalTripDuration]
   );
 
   const tableInstance = useMaterialReactTable({
@@ -59,7 +65,18 @@ const GenerateCostingTable = ({ list, isLoading }) => {
   });
 
   useEffect(() => {
-    console.log("Costing >>>>>>",list);
+    console.log("Costing >>>>>>", list);
+    let tc = 0;
+    let ttd = 0;
+    let tk = 0;
+    list.length > 0 && list.map((val) => {
+      tc += val.totalCost;
+      ttd += val.totalTripDuration;
+      tk += val.totalKm;
+    })
+    setTotalCost(tc);
+    setTotalKm(tk);
+    setTotalTripDuration(ttd);
     setData(list);
   }, [list]);
 

@@ -37,7 +37,7 @@ const Compliance = () => {
                     ))
                 }
             </div>
-            <div>
+            <div style={{overflowX: 'auto'}}>
                 {currentState === PENDING_APPROVAL_TYPES.DRIVER && <DriverPendingApproval onSuccess={onSuccess} isView={false}/>}
                 {currentState === PENDING_APPROVAL_TYPES.VEHICLE && <VehiclePendingApproval onSuccess={onSuccess} isView={false}/>}
             </div>

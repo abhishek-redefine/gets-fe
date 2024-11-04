@@ -169,6 +169,13 @@ const CalculateBill = async (month, vendorId, startDate, endDate) => {
   });
 };
 
+const CalculateBillForAll = async (month, startDate, endDate) => {
+  let url = `${API_PATH.API_VERSION}${API_PATH.VENDOR_COMPANY}${API_PATH.GENERATE_BILL}?month=${month}&startDate=${startDate}&endDate=${endDate}`;
+  return axiosInstance.get(url).then((response) => {
+    return response;
+  });
+}
+
 const allIssueSearchByBean = async (queryParams, searchValues) => {
   let url = `${API_PATH.API_VERSION}/tripIssue/allIssue?`;
   if (queryParams) {
@@ -236,7 +243,8 @@ const BillingService = {
   resolveBillingIssue,
   billingOpsIssueApproval,
   createConfig,
-  getAllConfig
+  getAllConfig,
+  CalculateBillForAll
 };
 
 export default BillingService;

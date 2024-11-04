@@ -151,62 +151,63 @@ const MainComponent = () => {
   };
 
   const fetchSummary = async () => {
-    console.log(vendorId !== "")
-    if(searchValues.vendorId !== "" && searchValues.month !== ""){
+    // console.log(vendorId !== "")
+    if(searchValues.month !== ""){
       try {
         let allSearchValues = { ...searchValues };
         setLoading(true);
-        const response = await BillingService.CalculateBill(
+        const response = await BillingService.CalculateBillForAll(
           allSearchValues.month,
-          parseInt(allSearchValues.vendorId),
           allSearchValues.tripFromDateStr,
           allSearchValues.tripToDateStr
         );
         const data = response.data;
         console.log(data);
-        let totalDuration = 0;
-        let totalCost = 0;
-        let totalKm = 0;
-        data.billingDTOS.map((val) => {
-          if (val.contractTypeKMBased === "PACKAGE_BASED") {
-            totalCost += val.amountForContractTypePackageBased;
-            totalDuration += val.hourForContractTypePackageBased;
-            totalKm += val.distanceForContractTypePackageBased;
-          } 
-          else if (val.contractTypeKMBased === "TRIP_SLAB_BASED") {
-            totalCost += val.amountForContractTypeSlabBased;
-            totalDuration += val.hourForContractTypeSlabBased;
-            totalKm += val.distanceForContractTypeSlabBased;
-          } 
-          else if (val.contractTypeKMBased === "KM_BASED") {
-            totalCost += val.amountForContractTypeKMBased;
-            totalDuration += val.hourForContractTypeKMBased;
-            totalKm += val.distanceForContractTypeKMBased;
-          } 
-          else if (val.contractTypeKMBased === "FLAT_TRIP_BASED") {
-            totalCost += val.amountForContractTypeFlatTripBased;
-            totalDuration += val.hourForContractTypeFlatTripBased;
-            totalKm += val.distanceForContractTypeFlatTripBased;
-          } 
-          else {
-            totalCost += val.amountForContractTypeZoneBased;
-            totalDuration += val.distanceForContractTypeZoneBased;
-            totalKm += val.hourForContractTypeZoneBased;
-          }
+        let billList = [];
+        data.map((val)=>{
+          let totalDuration = 0;
+          let totalCost = 0;
+          let totalKm = 0;
+          val.billingDTOS.map((val) => {
+            if (val.contractTypeKMBased === "PACKAGE_BASED") {
+              totalCost += val.amountForContractTypePackageBased;
+              totalDuration += val.hourForContractTypePackageBased;
+              totalKm += val.distanceForContractTypePackageBased;
+            } 
+            else if (val.contractTypeKMBased === "TRIP_SLAB_BASED") {
+              totalCost += val.amountForContractTypeSlabBased;
+              totalDuration += val.hourForContractTypeSlabBased;
+              totalKm += val.distanceForContractTypeSlabBased;
+            } 
+            else if (val.contractTypeKMBased === "KM_BASED") {
+              totalCost += val.amountForContractTypeKMBased;
+              totalDuration += val.hourForContractTypeKMBased;
+              totalKm += val.distanceForContractTypeKMBased;
+            } 
+            else if (val.contractTypeKMBased === "FLAT_TRIP_BASED") {
+              totalCost += val.amountForContractTypeFlatTripBased;
+              totalDuration += val.hourForContractTypeFlatTripBased;
+              totalKm += val.distanceForContractTypeFlatTripBased;
+            } 
+            else {
+              totalCost += val.amountForContractTypeZoneBased;
+              totalDuration += val.distanceForContractTypeZoneBased;
+              totalKm += val.hourForContractTypeZoneBased;
+            }
+          })
+          let newList =
+            {
+              vendorName : val.vendorName,
+              tripCount : val.tripCount,
+              totalKm : totalKm,
+              totalCost : totalCost,
+              totalTripDuration : totalDuration,
+              fromDate : moment(val.startDate).format('DD-MM-YYYY'),
+              toDate : moment(val.endDate).format('DD-MM-YYYY')
+            }
+          billList.push(newList);
         })
-        let newList = [
-          {
-            vendorName : vendorName,
-            tripCount : data.tripCount,
-            totalKm : totalKm,
-            totalCost : totalCost,
-            totalTripDuration : totalDuration,
-            fromDate : moment(data.startDate).format('DD-MM-YYYY'),
-            toDate : moment(data.endDate).format('DD-MM-YYYY')
-          }
-        ];
-        setList(newList);
-  
+        setList(billList);
       } catch (err) {
         console.log(err);
       } finally {
@@ -253,7 +254,8 @@ const MainComponent = () => {
             padding: "0 13px",
           }}
         >
-          <div className="form-control-input">
+          
+          {/* <div className="form-control-input">
             <FormControl fullWidth>
               <Autocomplete
                 disablePortal
@@ -272,7 +274,7 @@ const MainComponent = () => {
                     ...prev,
                     vendorId: val ? val.vendorId : "",
                   }));
-                  setVendorName(val.vendorName);
+                  setVendorName(val?.vendorName || "");
                 }}
                 getOptionKey={(vendor) => vendor.vendorId}
                 getOptionLabel={(vendor) => vendor.vendorName}
@@ -288,7 +290,7 @@ const MainComponent = () => {
                 style={{ backgroundColor: "#ffffff" }}
               />
             </FormControl>
-          </div>
+          </div> */}
 
           <div className="form-control-input">
             <FormControl fullWidth>

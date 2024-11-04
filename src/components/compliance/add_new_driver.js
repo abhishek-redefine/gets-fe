@@ -25,7 +25,7 @@ const validationSchemaStepOne = object({
         .max(10, 'Driver Mobile Number must be exactly 10 numbers'),
     dob: string()
         .required()
-        .test('is-over-18', 'You must be at least 18 years old', value => {
+        .test('is-over-18', 'You must be at least 21 years old', value => {
             if (!value) return false; // If value is not provided, return false
             const today = new Date();
             const birthDate = new Date(value);
@@ -34,9 +34,9 @@ const validationSchemaStepOne = object({
             if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
                 age--;
             }
-            return age >= 18;
+            return age >= 21;
         })
-        .test('is-under-120', 'Age cannot be greater than 120', value => {
+        .test('is-under-80', 'Age cannot be greater than 80', value => {
             if (!value) return false; // If value is not provided, return false
             const today = new Date();
             const birthDate = new Date(value);
@@ -45,7 +45,7 @@ const validationSchemaStepOne = object({
             if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
                 age--;
             }
-            return age <= 120;
+            return age <= 80;
         }),
     gender: string().required('Gender is required'),
     officeId: string().required('Office ID is required'),
