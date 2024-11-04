@@ -83,8 +83,8 @@ const Area = ({ roleType, onSuccess }) => {
     name: "",
     officeId: "",
     zoneName: "",
-    shiftType: "",
-    serviceType: "",
+    "serviceType": "SERVICE_ZONE",
+    "shiftType": "LOGIN",
     enabled: true,
   });
   const [openModal, setOpenModal] = useState(false);
@@ -434,7 +434,7 @@ const Area = ({ roleType, onSuccess }) => {
                   </FormControl>
                 </div>
               </div>
-              <div style={{ display: "flex" }}>
+              {/* <div style={{ display: "flex" }}>
                 <div style={{ padding: "10px 20px", width: "50%" }}>
                   <FormControl fullWidth>
                     <InputLabel id="shift-type-label">Shift Type</InputLabel>
@@ -481,7 +481,7 @@ const Area = ({ roleType, onSuccess }) => {
                     </Select>
                   </FormControl>
                 </div>
-              </div>
+              </div> */}
               <div style={{ padding: "10px 20px", width: "50%" }}>
                 <FormControl fullWidth>
                   <TextField

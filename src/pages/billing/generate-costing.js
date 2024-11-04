@@ -22,8 +22,8 @@ const MenuProps = {
   PaperProps: {
     style: {
       maxHeight: 150,
-      width: 250,
-      overflowX : 'auto',
+      width: 270,
+      overflowX: 'auto',
     },
   },
 };
@@ -65,9 +65,9 @@ const MainComponent = () => {
     configListing.map((val) => {
       if (value === val.month) {
         fromDate = val.fromDate;
-        if(moment(val.toDate).isAfter(moment())){
+        if (moment(val.toDate).isAfter(moment())) {
           toDate = moment().format('YYYY-MM-DD');
-        }else{
+        } else {
           toDate = val.toDate;
         }
       }
@@ -152,7 +152,7 @@ const MainComponent = () => {
 
   const fetchSummary = async () => {
     // console.log(vendorId !== "")
-    if(searchValues.month !== ""){
+    if (searchValues.month !== "") {
       try {
         let allSearchValues = { ...searchValues };
         setLoading(true);
@@ -164,7 +164,7 @@ const MainComponent = () => {
         const data = response.data;
         console.log(data);
         let billList = [];
-        data.map((val)=>{
+        data.map((val) => {
           let totalDuration = 0;
           let totalCost = 0;
           let totalKm = 0;
@@ -173,22 +173,22 @@ const MainComponent = () => {
               totalCost += val.amountForContractTypePackageBased;
               totalDuration += val.hourForContractTypePackageBased;
               totalKm += val.distanceForContractTypePackageBased;
-            } 
+            }
             else if (val.contractTypeKMBased === "TRIP_SLAB_BASED") {
               totalCost += val.amountForContractTypeSlabBased;
               totalDuration += val.hourForContractTypeSlabBased;
               totalKm += val.distanceForContractTypeSlabBased;
-            } 
+            }
             else if (val.contractTypeKMBased === "KM_BASED") {
               totalCost += val.amountForContractTypeKMBased;
               totalDuration += val.hourForContractTypeKMBased;
               totalKm += val.distanceForContractTypeKMBased;
-            } 
+            }
             else if (val.contractTypeKMBased === "FLAT_TRIP_BASED") {
               totalCost += val.amountForContractTypeFlatTripBased;
               totalDuration += val.hourForContractTypeFlatTripBased;
               totalKm += val.distanceForContractTypeFlatTripBased;
-            } 
+            }
             else {
               totalCost += val.amountForContractTypeZoneBased;
               totalDuration += val.distanceForContractTypeZoneBased;
@@ -196,15 +196,15 @@ const MainComponent = () => {
             }
           })
           let newList =
-            {
-              vendorName : val.vendorName,
-              tripCount : val.tripCount,
-              totalKm : totalKm,
-              totalCost : totalCost,
-              totalTripDuration : totalDuration,
-              fromDate : moment(val.startDate).format('DD-MM-YYYY'),
-              toDate : moment(val.endDate).format('DD-MM-YYYY')
-            }
+          {
+            vendorName: val.vendorName,
+            tripCount: val.tripCount,
+            totalKm: totalKm,
+            totalCost: totalCost,
+            totalTripDuration: totalDuration,
+            fromDate: moment(val.startDate).format('DD-MM-YYYY'),
+            toDate: moment(val.endDate).format('DD-MM-YYYY')
+          }
           billList.push(newList);
         })
         setList(billList);
@@ -254,7 +254,7 @@ const MainComponent = () => {
             padding: "0 13px",
           }}
         >
-          
+
           {/* <div className="form-control-input">
             <FormControl fullWidth>
               <Autocomplete
@@ -292,7 +292,11 @@ const MainComponent = () => {
             </FormControl>
           </div> */}
 
-          <div className="form-control-input">
+          <div className="form-control-input" style={{
+            display: 'inline-block',
+            margin: '20px',
+            minWidth: '300px'
+          }}>
             <FormControl fullWidth>
               <InputLabel id="month-label">Month</InputLabel>
               <Select
@@ -368,13 +372,14 @@ const MainComponent = () => {
             </LocalizationProvider>
           </div> */}
 
-          <div className="form-control-input" style={{ minWidth: "70px" }}>
+          <div className="form-control-input" style={{ minWidth: "170px" }}>
             <button
               type="submit"
               onClick={() => fetchSummary()}
-              className="btn btn-primary filterApplyBtn"
+              className="btn btn-primary"
+              style={{ padding: '18px' }}
             >
-              Apply
+              Generate Bill
             </button>
           </div>
           <div className="form-control-input" style={{ minWidth: "70px" }}>
