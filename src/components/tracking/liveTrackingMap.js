@@ -172,8 +172,9 @@ const LiveTrackingMap = ({ officeId, fullMapShow }) => {
   const socketRef = useRef(null);
   useEffect(() => {
     // Check if socketRef.current is null before creating a new connection
+    const baseURL = process.env.NEXT_PUBLIC_SOCKET_IO_URL;
     if (!socketRef.current) {
-      socketRef.current = io("http://localhost:3001", {
+      socketRef.current = io(baseURL, {
         auth: {
           token: "json-web-token",
         },
