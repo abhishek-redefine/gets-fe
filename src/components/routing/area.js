@@ -434,54 +434,6 @@ const Area = ({ roleType, onSuccess }) => {
                   </FormControl>
                 </div>
               </div>
-              {/* <div style={{ display: "flex" }}>
-                <div style={{ padding: "10px 20px", width: "50%" }}>
-                  <FormControl fullWidth>
-                    <InputLabel id="shift-type-label">Shift Type</InputLabel>
-                    <Select
-                      required
-                      labelId="shift-type-label"
-                      id="shiftType"
-                      value={values.shiftType}
-                      error={touched.shiftType && Boolean(errors.shiftType)}
-                      name="shiftType"
-                      label="Shift Type"
-                      onChange={handleChange}
-                    >
-                      {!!shiftTypes?.length &&
-                        shiftTypes.map((shift, idx) => (
-                          <MenuItem key={idx} value={shift.value}>
-                            {shift.displayName}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                  </FormControl>
-                </div>
-                <div style={{ padding: "10px 20px", width: "50%" }}>
-                  <FormControl fullWidth>
-                    <InputLabel id="service-type-label">
-                      Service Type
-                    </InputLabel>
-                    <Select
-                      required
-                      labelId="service-type-label"
-                      id="serviceType"
-                      value={values.serviceType}
-                      error={touched.serviceType && Boolean(errors.serviceType)}
-                      name="serviceType"
-                      label="Service Type"
-                      onChange={handleChange}
-                    >
-                      {!!serviceTypes?.length &&
-                        serviceTypes.map((service, idx) => (
-                          <MenuItem key={idx} value={service.value}>
-                            {service.displayName}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                  </FormControl>
-                </div>
-              </div> */}
               <div style={{ padding: "10px 20px", width: "50%" }}>
                 <FormControl fullWidth>
                   <TextField
