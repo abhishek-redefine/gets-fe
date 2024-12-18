@@ -62,6 +62,15 @@ const billing = (WrappedComponent) => {
           </button>
           <button
             style={{width: "200px"}}
+            onClick={() => changeRoute("toll-parking")}
+            className={`btn btn-secondary ${
+              currentActiveState === "toll-parking" ? "btn-blk" : ""
+            }`}
+          >
+            Toll and Parking
+          </button>
+          <button
+            style={{width: "200px"}}
             onClick={() => changeRoute("generate-costing")}
             className={`btn btn-secondary ${
               currentActiveState === "generate-costing" ? "btn-blk" : ""

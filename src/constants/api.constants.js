@@ -193,4 +193,5 @@ export const API_PATH = {
   OPS_ISSUE_APPROVAL: '/opsIssueApproval',
   CONFIG : '/config',
   GENERATE_BILL : '/generateBill',
+  TAX : '/tax'
 };

@@ -210,10 +210,17 @@ const createConfig = async (values) => {
 
 const getAllConfig = async (queryParams) => {
   let url = `${API_PATH.API_VERSION}${API_PATH.BILLING}${API_PATH.CONFIG}${API_PATH.ALL}`;
-  if(queryParams){
+  if (queryParams) {
     url += `?queryParams`;
   }
   return axiosInstance.get(url).then((response) => {
+    return response;
+  })
+}
+
+const createTax = async (values) => {
+  let url = `${API_PATH.API_VERSION}${API_PATH.TAX}${API_PATH.CREATE}`;
+  return axiosInstance.post(url, values).then((response) => {
     return response;
   })
 }
@@ -244,7 +251,8 @@ const BillingService = {
   billingOpsIssueApproval,
   createConfig,
   getAllConfig,
-  CalculateBillForAll
+  CalculateBillForAll,
+  createTax
 };
 
 export default BillingService;
